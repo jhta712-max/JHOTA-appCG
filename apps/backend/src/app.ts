@@ -7,6 +7,7 @@ import { env } from './config/env';
 import { errorHandler } from './middlewares/errorHandler';
 import { requestLogger } from './middlewares/requestLogger';
 import authRouter        from './modules/auth/auth.router';
+import setupRouter       from './modules/auth/setup.router';
 import usersRouter       from './modules/users/users.router';
 import projectsRouter    from './modules/projects/projects.router';
 import expensesRouter    from './modules/expenses/expenses.router';
@@ -88,6 +89,7 @@ app.use('/health', monitoringRouter);
 // Rutas API
 // ----------------------------------------------------------------
 app.use('/api/v1/auth',       authLimiter, authRouter);
+app.use('/api/v1/setup',      apiLimiter,  setupRouter);
 app.use('/api/v1/users',      apiLimiter,  usersRouter);
 app.use('/api/v1/projects',   apiLimiter,  projectsRouter);
 app.use('/api/v1/expenses',   apiLimiter,  expensesRouter);
