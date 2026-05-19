@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body { @apply text-gray-900 antialiased; }
+  input, select, textarea {
+    @apply text-base; /* evita zoom en iOS al hacer focus */
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-500 text-gray-900 font-semibold px-4 py-2.5 rounded-lg
+           hover:bg-primary-600 active:bg-primary-700
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-colors duration-150 flex items-center justify-center gap-2;
+  }
+  .btn-secondary {
+    @apply bg-white text-gray-700 font-medium px-4 py-2.5 rounded-lg border border-gray-300
+           hover:bg-gray-50 active:bg-gray-100
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-colors duration-150 flex items-center justify-center gap-2;
+  }
+  .btn-danger {
+    @apply bg-red-600 text-white font-medium px-4 py-2.5 rounded-lg
+           hover:bg-red-700 active:bg-red-800
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-colors duration-150 flex items-center justify-center gap-2;
+  }
+  .input-field {
+    @apply w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-900
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+           disabled:bg-gray-100 disabled:cursor-not-allowed
+           placeholder:text-gray-400 transition-shadow duration-150;
+  }
+  .input-error {
+    @apply border-red-400 focus:ring-red-400;
+  }
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm;
+  }
+  .badge-active    { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800; }
+  .badge-paused    { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800; }
+  .badge-completed { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800; }
+  .badge-cancelled { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600; }
+  .badge-voided    { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800; }
+}

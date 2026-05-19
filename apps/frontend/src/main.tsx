@@ -1,0 +1,85 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import './index.css';
+
+import { useAuthStore } from './stores/authStore';
+import Layout             from './components/layout/Layout';
+import LoginPage          from './pages/auth/LoginPage';
+import DashboardPage      from './pages/dashboard/DashboardPage';
+import ProjectsPage       from './pages/projects/ProjectsPage';
+import ProjectDetailPage  from './pages/projects/ProjectDetailPage';
+import ProjectFormPage     from './pages/projects/ProjectFormPage';
+import ProjectFinancialPage from './pages/projects/ProjectFinancialPage';
+import ExpensesPage       from './pages/expenses/ExpensesPage';
+import NewExpensePage     from './pages/expenses/NewExpensePage';
+import ExpenseDetailPage  from './pages/expenses/ExpenseDetailPage';
+import EditExpensePage    from './pages/expenses/EditExpensePage';
+import UsersPage          from './pages/users/UsersPage';
+import CategoriesPage     from './pages/categories/CategoriesPage';
+import ReportsPage        from './pages/reports/ReportsPage';
+import ExportPage         from './pages/reports/ExportPage';
+import AcceptInvitePage  from './pages/invitations/AcceptInvitePage';
+import PayrollsPage      from './pages/payroll/PayrollsPage';
+import PayrollDetailPage from './pages/payroll/PayrollDetailPage';
+import PayrollFormPage   from './pages/payroll/PayrollFormPage';
+import MonitoringPage    from './pages/admin/MonitoringPage';
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+});
+
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login"          element={<LoginPage />} />
+          <Route path="/invite/:token"  element={<AcceptInvitePage />} />
+
+          <Route path="/" element={
+            <PrivateRoute><Layout /></PrivateRoute>
+          }>
+            <Route index                        element={<DashboardPage />} />
+
+            {/* Proyectos */}
+            <Route path="projects"             element={<ProjectsPage />} />
+            <Route path="projects/new"         element={<ProjectFormPage />} />
+            <Route path="projects/:id"              element={<ProjectDetailPage />} />
+            <Route path="projects/:id/edit"         element={<ProjectFormPage />} />
+            <Route path="projects/:id/financial"    element={<ProjectFinancialPage />} />
+
+            {/* Gastos */}
+            <Route path="expenses"             element={<ExpensesPage />} />
+            <Route path="expenses/new"         element={<NewExpensePage />} />
+            <Route path="expenses/:id"         element={<ExpenseDetailPage />} />
+            <Route path="expenses/:id/edit"    element={<EditExpensePage />} />
+
+            {/* Reportes y Exportación */}
+            <Route path="reports"              element={<ReportsPage />} />
+            <Route path="export"               element={<ExportPage />} />
+
+            {/* Nóminas */}
+            <Route path="payrolls"             element={<PayrollsPage />} />
+            <Route path="payrolls/new"         element={<PayrollFormPage />} />
+            <Route path="payrolls/:id"         element={<PayrollDetailPage />} />
+            <Route path="payrolls/:id/edit"    element={<PayrollFormPage />} />
+
+            {/* Administración */}
+            <Route path="users"                element={<UsersPage />} />
+            <Route path="categories"           element={<CategoriesPage />} />
+            <Route path="monitoring"           element={<MonitoringPage />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </React.StrictMode>,
+);
