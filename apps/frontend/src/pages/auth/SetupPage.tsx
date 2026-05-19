@@ -33,10 +33,15 @@ export default function SetupPage() {
   useEffect(() => {
     api.get('/auth/needs-setup')
       .then((r) => {
-        if (!r.data.data.needsSetup) setLocked(true);
+        // Solo bloqueamos si el backend confirma explícitamente que ya hay usuarios
+        if (r.data?.data?.needsSetup === false) setLocked(true);
         setChecking(false);
       })
-      .catch(() => { setLocked(true); setChecking(false); });
+      .catch(() => {
+        // Si el endpoint no responde, mostramos el formulario de todas formas.
+        // El POST /auth/setup rechazará la petición si ya existen usuarios.
+        setChecking(false);
+      });
   }, []);
 
   const onSubmit = async (data: FormData) => {

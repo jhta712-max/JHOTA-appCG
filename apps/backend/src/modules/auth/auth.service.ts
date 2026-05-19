@@ -154,21 +154,24 @@ export async function setupAdmin(data: {
     throw new AppError(403, 'El sistema ya tiene usuarios registrados', 'SETUP_LOCKED');
   }
 
-  // Buscar o crear el rol admin
-  let adminRole = await prisma.role.findFirst({ where: { name: 'admin' } });
-  if (!adminRole) {
-    // Seed básico de roles si la BD está completamente vacía
-    adminRole = await prisma.role.create({
-      data: { name: 'admin', description: 'Administrador del sistema' },
-    });
-    await prisma.role.createMany({
-      data: [
-        { name: 'supervisor', description: 'Supervisor de proyectos' },
-        { name: 'operator',   description: 'Operador de gastos' },
-      ],
-      skipDuplicates: true,
-    });
-  }
+  // Buscar o crear el rol admin — seed básico si la BD está vacía
+  const existingRole = await prisma.role.findFirst({ where: { name: 'admin' } });
+
+  const adminRoleId: number = existingRole
+    ? existingRole.id
+    : await (async () => {
+        const created = await prisma.role.create({
+          data: { name: 'admin', description: 'Administrador del sistema' },
+        });
+        await prisma.role.createMany({
+          data: [
+            { name: 'supervisor', description: 'Supervisor de proyectos' },
+            { name: 'operator',   description: 'Operador de gastos' },
+          ],
+          skipDuplicates: true,
+        });
+        return created.id;
+      })();
 
   const hashed = await bcrypt.hash(data.password, 12);
 
@@ -177,7 +180,7 @@ export async function setupAdmin(data: {
       name:     data.name,
       email:    data.email,
       password: hashed,
-      roleId:   adminRole.id,
+      roleId:   adminRoleId,
       isActive: true,
     },
     include: { role: { select: { name: true, description: true } } },
