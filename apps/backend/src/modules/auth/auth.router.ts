@@ -18,4 +18,7 @@ router.post('/logout', controller.logoutHandler);
 // GET /api/v1/auth/me  (requiere token)
 router.get('/me', authenticate, controller.getMeHandler);
 
+// DELETE /api/v1/auth/refresh-tokens  (solo admin — mantenimiento)
+router.delete('/refresh-tokens', authenticate, controller.purgeRefreshTokensHandler);
+
 export default router;
