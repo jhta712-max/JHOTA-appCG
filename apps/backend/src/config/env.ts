@@ -7,9 +7,10 @@ const envSchema = z.object({
   NODE_ENV:           z.enum(['development', 'production', 'test']).default('development'),
   PORT:               z.coerce.number().default(3001),
   DATABASE_URL:       z.string().url('DATABASE_URL debe ser una URL válida'),
-  JWT_SECRET:         z.string().min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
-  JWT_ACCESS_EXPIRES: z.string().default('15m'),
-  JWT_REFRESH_EXPIRES:z.string().default('7d'),
+  JWT_SECRET:          z.string().min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
+  JWT_REFRESH_SECRET:  z.string().min(32).optional(), // Si no se define, usa JWT_SECRET
+  JWT_ACCESS_EXPIRES:  z.string().default('15m'),
+  JWT_REFRESH_EXPIRES: z.string().default('7d'),
   FRONTEND_URL:       z.string().url().default('http://localhost:5173'),
   STORAGE_TYPE:       z.enum(['local', 's3']).default('local'),
   UPLOAD_PATH:        z.string().default('./uploads'),
@@ -30,8 +31,9 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error('Error de configuración en variables de entorno:');
-  console.error(parsed.error.flatten().fieldErrors);
+  process.stderr.write('=== ERROR DE CONFIGURACIÓN EN VARIABLES DE ENTORNO ===\n');
+  process.stderr.write(JSON.stringify(parsed.error.flatten().fieldErrors, null, 2) + '\n');
+  process.stderr.write('======================================================\n');
   process.exit(1);
 }
 

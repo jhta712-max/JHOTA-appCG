@@ -7,10 +7,10 @@ import * as ctrl from './users.controller';
 
 const router = Router();
 
-// GET  /api/v1/users/roles  — público, datos de referencia
-router.get('/roles', ctrl.getRoles);
-
 router.use(authenticate);
+
+// GET  /api/v1/users/roles
+router.get('/roles', ctrl.getRoles);
 
 // GET  /api/v1/users  — solo admin
 router.get('/', authorize('admin'), ctrl.list);

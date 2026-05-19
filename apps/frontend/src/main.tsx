@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
 
 import { useAuthStore } from './stores/authStore';
+import { authApi }       from './api/index';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import Layout             from './components/layout/Layout';
 import LoginPage          from './pages/auth/LoginPage';
 import DashboardPage      from './pages/dashboard/DashboardPage';
@@ -31,6 +33,28 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
 });
 
+/** Verifica el token al arrancar la app — limpia el estado si expiró */
+function AuthHydrator({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  const { isAuthenticated, clearAuth } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setReady(true);
+      return;
+    }
+    authApi.me()
+      .then(() => setReady(true))
+      .catch(() => {
+        clearAuth();
+        setReady(true);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!ready) return null;
+  return <>{children}</>;
+}
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
@@ -38,50 +62,54 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login"          element={<LoginPage />} />
-          <Route path="/setup"          element={<SetupPage />} />
-          <Route path="/invite/:token"  element={<AcceptInvitePage />} />
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthHydrator>
+            <Routes>
+              <Route path="/login"          element={<LoginPage />} />
+              <Route path="/setup"          element={<SetupPage />} />
+              <Route path="/invite/:token"  element={<AcceptInvitePage />} />
 
-          <Route path="/" element={
-            <PrivateRoute><Layout /></PrivateRoute>
-          }>
-            <Route index                        element={<DashboardPage />} />
+              <Route path="/" element={
+                <PrivateRoute><Layout /></PrivateRoute>
+              }>
+                <Route index                        element={<DashboardPage />} />
 
-            {/* Proyectos */}
-            <Route path="projects"             element={<ProjectsPage />} />
-            <Route path="projects/new"         element={<ProjectFormPage />} />
-            <Route path="projects/:id"              element={<ProjectDetailPage />} />
-            <Route path="projects/:id/edit"         element={<ProjectFormPage />} />
-            <Route path="projects/:id/financial"    element={<ProjectFinancialPage />} />
+                {/* Proyectos */}
+                <Route path="projects"             element={<ProjectsPage />} />
+                <Route path="projects/new"         element={<ProjectFormPage />} />
+                <Route path="projects/:id"              element={<ProjectDetailPage />} />
+                <Route path="projects/:id/edit"         element={<ProjectFormPage />} />
+                <Route path="projects/:id/financial"    element={<ProjectFinancialPage />} />
 
-            {/* Gastos */}
-            <Route path="expenses"             element={<ExpensesPage />} />
-            <Route path="expenses/new"         element={<NewExpensePage />} />
-            <Route path="expenses/:id"         element={<ExpenseDetailPage />} />
-            <Route path="expenses/:id/edit"    element={<EditExpensePage />} />
+                {/* Gastos */}
+                <Route path="expenses"             element={<ExpensesPage />} />
+                <Route path="expenses/new"         element={<NewExpensePage />} />
+                <Route path="expenses/:id"         element={<ExpenseDetailPage />} />
+                <Route path="expenses/:id/edit"    element={<EditExpensePage />} />
 
-            {/* Reportes y Exportación */}
-            <Route path="reports"              element={<ReportsPage />} />
-            <Route path="export"               element={<ExportPage />} />
+                {/* Reportes y Exportación */}
+                <Route path="reports"              element={<ReportsPage />} />
+                <Route path="export"               element={<ExportPage />} />
 
-            {/* Nóminas */}
-            <Route path="payrolls"             element={<PayrollsPage />} />
-            <Route path="payrolls/new"         element={<PayrollFormPage />} />
-            <Route path="payrolls/:id"         element={<PayrollDetailPage />} />
-            <Route path="payrolls/:id/edit"    element={<PayrollFormPage />} />
+                {/* Nóminas */}
+                <Route path="payrolls"             element={<PayrollsPage />} />
+                <Route path="payrolls/new"         element={<PayrollFormPage />} />
+                <Route path="payrolls/:id"         element={<PayrollDetailPage />} />
+                <Route path="payrolls/:id/edit"    element={<PayrollFormPage />} />
 
-            {/* Administración */}
-            <Route path="users"                element={<UsersPage />} />
-            <Route path="categories"           element={<CategoriesPage />} />
-            <Route path="monitoring"           element={<MonitoringPage />} />
-          </Route>
+                {/* Administración */}
+                <Route path="users"                element={<UsersPage />} />
+                <Route path="categories"           element={<CategoriesPage />} />
+                <Route path="monitoring"           element={<MonitoringPage />} />
+              </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AuthHydrator>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

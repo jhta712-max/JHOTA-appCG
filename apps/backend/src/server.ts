@@ -7,7 +7,6 @@ import { forceFlush } from './middlewares/requestLogger';
 
 async function start() {
   try {
-    // Verificar conexión a la base de datos
     await prisma.$connect();
     logger.info('Conectado a PostgreSQL correctamente');
 
@@ -18,15 +17,13 @@ async function start() {
       logger.info(`Monitoring dashboard: http://localhost:${env.PORT}/api/v1/monitoring/dashboard`);
     });
 
-    // Arrancar jobs de monitoreo solo en producción o si se activa explícitamente
     if (env.NODE_ENV === 'production' || process.env.ENABLE_MONITORING === 'true') {
       startAllMonitoringJobs();
     }
 
-    // Apagado limpio
     const shutdown = async (signal: string) => {
       logger.info(`Señal ${signal} recibida. Cerrando servidor...`);
-      await forceFlush(); // Guardar logs pendientes antes de cerrar
+      await forceFlush();
       server.close(async () => {
         await prisma.$disconnect();
         logger.info('Servidor cerrado. Hasta pronto.');
@@ -38,7 +35,7 @@ async function start() {
     process.on('SIGINT',  () => shutdown('SIGINT'));
 
   } catch (error) {
-    logger.error('Error al iniciar el servidor', error);
+    logger.error('Error al iniciar servidor:', error);
     await prisma.$disconnect();
     process.exit(1);
   }

@@ -31,7 +31,13 @@ export async function update(req: Request, res: Response, next: NextFunction) {
       res.status(403).json({ success: false, error: 'No puedes editar otro usuario' });
       return;
     }
-    const data = await service.update(id, req.body);
+    // Solo admin puede cambiar roleId e isActive — evitar escalada de privilegios
+    const body = { ...req.body };
+    if (req.user!.role !== 'admin') {
+      delete body.roleId;
+      delete body.isActive;
+    }
+    const data = await service.update(id, body);
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }

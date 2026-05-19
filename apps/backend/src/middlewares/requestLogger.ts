@@ -92,7 +92,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
       ipAddress:  (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
                   ?? req.socket?.remoteAddress
                   ?? undefined,
-      userId:     (req as any).user?.id ?? undefined,
+      userId:     (req as any).user?.userId ?? undefined,
     };
 
     // Para errores 5xx incluir más contexto

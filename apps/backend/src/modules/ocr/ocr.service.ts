@@ -1,5 +1,4 @@
 import Anthropic from '@anthropic-ai/sdk';
-import sharp from 'sharp';
 import { env } from '../../config/env';
 import { AppError } from '../../middlewares/errorHandler';
 
@@ -115,6 +114,7 @@ export async function analyzeInvoice(fileBuffer: Buffer, mimeType: string): Prom
 // ── Preprocesado de imagen ─────────────────────────────────────
 
 async function preprocessImage(buffer: Buffer): Promise<Buffer> {
+  const sharp = (await import('sharp')).default;
   return sharp(buffer)
     .rotate()                    // Auto-rotar según EXIF (fotos móvil)
     .resize({ width: 1600, withoutEnlargement: true })  // Máx 1600px de ancho

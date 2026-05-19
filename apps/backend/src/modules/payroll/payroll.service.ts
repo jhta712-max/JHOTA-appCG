@@ -58,10 +58,15 @@ export async function getPayrolls(query: PayrollQuery, userId: string, userRole:
       select: { projectId: true },
     });
     const projectIds = assignments.map((a) => a.projectId);
-    where.projectId = { in: projectIds };
+    // Si el operador filtra por un proyecto específico, verificar que esté asignado a él
+    if (query.projectId) {
+      where.projectId = projectIds.includes(query.projectId) ? query.projectId : { in: [] };
+    } else {
+      where.projectId = { in: projectIds };
+    }
+  } else {
+    if (query.projectId) where.projectId = query.projectId;
   }
-
-  if (query.projectId) where.projectId = query.projectId;
   if (query.status)    where.status    = query.status;
   if (query.type)      where.type      = query.type;
 

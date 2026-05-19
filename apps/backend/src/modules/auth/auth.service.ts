@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import prisma from '../../config/database';
 import { env } from '../../config/env';
@@ -9,6 +10,15 @@ import type { LoginInput } from './auth.schema';
 // ----------------------------------------------------------------
 // Helpers internos
 // ----------------------------------------------------------------
+
+/** Secreto exclusivo para refresh tokens (distinto del access token) */
+const REFRESH_SECRET = env.JWT_REFRESH_SECRET ?? env.JWT_SECRET;
+
+/** Hash SHA-256 del token — lo que persiste en BD (nunca el JWT en texto plano) */
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
 function generateAccessToken(payload: JwtPayload): string {
   return jwt.sign(payload, env.JWT_SECRET, {
     expiresIn: env.JWT_ACCESS_EXPIRES as jwt.SignOptions['expiresIn'],
@@ -16,7 +26,7 @@ function generateAccessToken(payload: JwtPayload): string {
 }
 
 function generateRefreshToken(payload: JwtPayload): string {
-  return jwt.sign(payload, env.JWT_SECRET, {
+  return jwt.sign(payload, REFRESH_SECRET, {
     expiresIn: env.JWT_REFRESH_EXPIRES as jwt.SignOptions['expiresIn'],
   });
 }
@@ -28,8 +38,8 @@ function getRefreshTokenExpiry(): Date {
 
 /** Convierte duración tipo '7d', '15m', '1h' a milisegundos */
 function parseDuration(str: string): number {
-  const units: Record<string, number> = { s: 1000, m: 60000, h: 3600000, d: 86400000 };
-  const match = str.match(/^(\d+)([smhd])$/);
+  const units: Record<string, number> = { s: 1000, m: 60000, h: 3600000, d: 86400000, w: 604800000 };
+  const match = str.match(/^(\d+)([smhdw])$/);
   if (!match) return 7 * 86400000; // 7 días por defecto
   return parseInt(match[1]) * units[match[2]];
 }
@@ -68,11 +78,11 @@ export async function login(data: LoginInput) {
   const accessToken  = generateAccessToken(tokenPayload);
   const refreshToken = generateRefreshToken(tokenPayload);
 
-  // Guardar refresh token en BD
+  // Guardar HASH del refresh token en BD (nunca el JWT en texto plano)
   await prisma.refreshToken.create({
     data: {
       userId:    user.id,
-      token:     refreshToken,
+      token:     hashToken(refreshToken),
       expiresAt: getRefreshTokenExpiry(),
     },
   });
@@ -92,12 +102,13 @@ export async function login(data: LoginInput) {
 export async function refresh(token: string) {
   let payload: JwtPayload;
   try {
-    payload = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    payload = jwt.verify(token, REFRESH_SECRET) as JwtPayload;
   } catch {
     throw new AppError(401, 'Refresh token inválido o expirado', 'TOKEN_INVALID');
   }
 
-  const stored = await prisma.refreshToken.findUnique({ where: { token } });
+  // Buscar por hash — nunca almacenamos el JWT completo
+  const stored = await prisma.refreshToken.findUnique({ where: { token: hashToken(token) } });
 
   if (!stored || stored.revoked || stored.expiresAt < new Date()) {
     throw new AppError(401, 'Refresh token revocado o expirado', 'TOKEN_REVOKED');
@@ -120,7 +131,7 @@ export async function refresh(token: string) {
   const newRefreshToken = generateRefreshToken(newPayload);
 
   await prisma.refreshToken.create({
-    data: { userId: user.id, token: newRefreshToken, expiresAt: getRefreshTokenExpiry() },
+    data: { userId: user.id, token: hashToken(newRefreshToken), expiresAt: getRefreshTokenExpiry() },
   });
 
   return { accessToken: newAccessToken, refreshToken: newRefreshToken };
@@ -128,7 +139,7 @@ export async function refresh(token: string) {
 
 export async function logout(token: string): Promise<void> {
   await prisma.refreshToken.updateMany({
-    where: { token, revoked: false },
+    where: { token: hashToken(token), revoked: false },
     data:  { revoked: true },
   });
 }

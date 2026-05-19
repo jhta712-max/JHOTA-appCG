@@ -1,6 +1,6 @@
-FROM node:20-alpine
+FROM node:20-slim
 
-RUN apk add --no-cache openssl
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -19,4 +19,4 @@ RUN npm run build
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js 2>&1"]
