@@ -34,7 +34,7 @@ export default function LoginPage() {
 
   // Verificar si el sistema tiene usuarios registrados
   useEffect(() => {
-    api.get('/auth/needs-setup')
+    api.get('/setup/check')
       .then((r) => setNeedsSetup(r.data.data.needsSetup))
       .catch(() => {}); // silencioso — no interrumpir el login
   }, []);
@@ -48,11 +48,10 @@ export default function LoginPage() {
     try {
       const res = await authApi.login(data);
       const { accessToken, refreshToken } = res.data.data;
-      const meRes = await fetch('/api/v1/auth/me', {
+      const meRes = await api.get('/auth/me', {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      const me = await meRes.json();
-      setAuth(me.data, accessToken, refreshToken);
+      setAuth(meRes.data.data, accessToken, refreshToken);
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');

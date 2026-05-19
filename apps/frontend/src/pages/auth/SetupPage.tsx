@@ -31,7 +31,7 @@ export default function SetupPage() {
 
   // Verificar si el setup sigue disponible
   useEffect(() => {
-    api.get('/auth/needs-setup')
+    api.get('/setup/check')
       .then((r) => {
         // Solo bloqueamos si el backend confirma explícitamente que ya hay usuarios
         if (r.data?.data?.needsSetup === false) setLocked(true);
@@ -47,7 +47,7 @@ export default function SetupPage() {
   const onSubmit = async (data: FormData) => {
     setApiError('');
     try {
-      await api.post('/auth/setup', {
+      await api.post('/setup', {
         name:     data.name,
         email:    data.email,
         password: data.password,
