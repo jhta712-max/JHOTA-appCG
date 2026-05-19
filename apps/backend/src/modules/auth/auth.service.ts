@@ -133,6 +133,64 @@ export async function logout(token: string): Promise<void> {
   });
 }
 
+// ----------------------------------------------------------------
+// Primer acceso — crea el primer admin cuando la BD está vacía
+// ----------------------------------------------------------------
+
+/** Devuelve true si no existe ningún usuario en la BD */
+export async function needsSetup(): Promise<boolean> {
+  const count = await prisma.user.count();
+  return count === 0;
+}
+
+/** Crea el primer admin. Falla si ya hay usuarios. */
+export async function setupAdmin(data: {
+  name: string;
+  email: string;
+  password: string;
+}) {
+  const empty = await needsSetup();
+  if (!empty) {
+    throw new AppError(403, 'El sistema ya tiene usuarios registrados', 'SETUP_LOCKED');
+  }
+
+  // Buscar o crear el rol admin
+  let adminRole = await prisma.role.findFirst({ where: { name: 'admin' } });
+  if (!adminRole) {
+    // Seed básico de roles si la BD está completamente vacía
+    adminRole = await prisma.role.create({
+      data: { name: 'admin', description: 'Administrador del sistema' },
+    });
+    await prisma.role.createMany({
+      data: [
+        { name: 'supervisor', description: 'Supervisor de proyectos' },
+        { name: 'operator',   description: 'Operador de gastos' },
+      ],
+      skipDuplicates: true,
+    });
+  }
+
+  const hashed = await bcrypt.hash(data.password, 12);
+
+  const user = await prisma.user.create({
+    data: {
+      name:     data.name,
+      email:    data.email,
+      password: hashed,
+      roleId:   adminRole.id,
+      isActive: true,
+    },
+    include: { role: { select: { name: true, description: true } } },
+  });
+
+  return {
+    id:    user.id,
+    name:  user.name,
+    email: user.email,
+    role:  user.role,
+  };
+}
+
 export async function getMe(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },

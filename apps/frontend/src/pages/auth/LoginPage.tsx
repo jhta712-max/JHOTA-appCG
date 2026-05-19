@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { LogIn, Eye, EyeOff, AlertCircle, Settings } from 'lucide-react';
 import { authApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
+import api from '../../api/client';
 
 const schema = z.object({
   email:    z.string().email('Correo inválido'),
@@ -25,10 +26,18 @@ function ServingmiLogo({ className = 'w-12 h-14' }: { className?: string }) {
 }
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const setAuth  = useAuthStore((s) => s.setAuth);
-  const [showPwd, setShowPwd] = useState(false);
-  const [error,   setError]   = useState('');
+  const navigate  = useNavigate();
+  const setAuth   = useAuthStore((s) => s.setAuth);
+  const [showPwd,    setShowPwd]    = useState(false);
+  const [error,      setError]      = useState('');
+  const [needsSetup, setNeedsSetup] = useState(false);
+
+  // Verificar si el sistema tiene usuarios registrados
+  useEffect(() => {
+    api.get('/auth/needs-setup')
+      .then((r) => setNeedsSetup(r.data.data.needsSetup))
+      .catch(() => {}); // silencioso — no interrumpir el login
+  }, []);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -143,7 +152,26 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-xs text-gray-400 mt-8">
+          {/* Primer acceso — solo visible cuando no hay usuarios */}
+          {needsSetup && (
+            <div className="mt-6 border border-amber-200 bg-amber-50 rounded-xl p-4">
+              <p className="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1.5">
+                <Settings className="w-3.5 h-3.5" /> Sistema sin configurar
+              </p>
+              <p className="text-xs text-amber-600 mb-3">
+                No existe ningún usuario. Configura el administrador principal para comenzar.
+              </p>
+              <button
+                onClick={() => navigate('/setup')}
+                className="w-full text-xs font-semibold text-amber-700 border border-amber-300
+                           bg-white hover:bg-amber-50 rounded-lg py-2 transition-colors
+                           flex items-center justify-center gap-1.5">
+                <Settings className="w-3.5 h-3.5" /> Configurar primer acceso
+              </button>
+            </div>
+          )}
+
+          <p className="text-center text-xs text-gray-400 mt-6">
             Sistema interno — solo personal autorizado
           </p>
           <p className="text-center text-xs text-gray-300 mt-1">

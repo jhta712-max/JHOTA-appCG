@@ -21,6 +21,7 @@ import CategoriesPage     from './pages/categories/CategoriesPage';
 import ReportsPage        from './pages/reports/ReportsPage';
 import ExportPage         from './pages/reports/ExportPage';
 import AcceptInvitePage  from './pages/invitations/AcceptInvitePage';
+import SetupPage         from './pages/auth/SetupPage';
 import PayrollsPage      from './pages/payroll/PayrollsPage';
 import PayrollDetailPage from './pages/payroll/PayrollDetailPage';
 import PayrollFormPage   from './pages/payroll/PayrollFormPage';
@@ -41,6 +42,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/login"          element={<LoginPage />} />
+          <Route path="/setup"          element={<SetupPage />} />
           <Route path="/invite/:token"  element={<AcceptInvitePage />} />
 
           <Route path="/" element={
