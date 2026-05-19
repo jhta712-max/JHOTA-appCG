@@ -46,7 +46,7 @@ async function flushLogs() {
   if (logBuffer.length === 0) return;
   const batch = logBuffer.splice(0, MAX_BATCH_SIZE);
   try {
-    await prisma.systemLog.createMany({ data: batch });
+    await prisma.systemLog.createMany({ data: batch as any });
   } catch {
     // No romper la aplicación si falla el logging
   }

@@ -5,7 +5,7 @@ import prisma from '../../config/database';
 
 // ─── Helpers de formato ───────────────────────────────────────────────────────
 
-function fmtMoney(n: number | string) {
+function fmtMoney(n: number | string | { toNumber(): number }) {
   return new Intl.NumberFormat('es-DO', {
     style: 'currency', currency: 'DOP', minimumFractionDigits: 2,
   }).format(Number(n));

@@ -80,7 +80,7 @@ export async function runHealthCheck(): Promise<HealthResult> {
       memoryUsedPct:   result.memoryUsedPct,
       uptimeSeconds:   result.uptimeSeconds,
       responseTime:    result.responseTime,
-      details:         result.details,
+      details:         result.details as any,
     },
   }).catch(() => {/* silencioso si la DB está caída */});
 

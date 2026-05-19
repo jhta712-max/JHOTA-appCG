@@ -543,7 +543,7 @@ const DARK_TEXT    = '1C1C1C';
 const ROW_ALT      = 'F9F9F9';
 
 function makeBorders(color = BORDER_COLOR) {
-  const b = { style: BorderStyle.SINGLE as const, size: 1, color };
+  const b = { style: BorderStyle.SINGLE, size: 1, color } as const;
   return { top: b, bottom: b, left: b, right: b };
 }
 
