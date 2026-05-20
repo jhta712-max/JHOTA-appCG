@@ -133,4 +133,8 @@ export function logError(opts: {
   });
 }
 
-/** Fuerza el flush inmediato (llamar al cerrar el p
+/** Fuerza el flush inmediato (llamar al cerrar el proceso). */
+export async function forceFlush() {
+  if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+  await flushLogs();
+}

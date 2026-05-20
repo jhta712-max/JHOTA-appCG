@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
   Camera, CheckCircle, AlertCircle, ArrowLeft, Receipt,
-  Sparkles, Loader2, TriangleAlert, X, Info, FileText,
+  Sparkles, Loader2, TriangleAlert, X, Info, FileText, Upload,
 } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi, ocrApi, type OcrResult } from '../../api';
 
@@ -40,7 +40,8 @@ const CATEGORY_NAME_MAP: Record<string, string> = {
 
 export default function NewExpensePage() {
   const navigate  = useNavigate();
-  const fileRef   = useRef<HTMLInputElement>(null);
+  const fileRef       = useRef<HTMLInputElement>(null);
+  const cameraRef     = useRef<HTMLInputElement>(null);
 
   const [hasFiscal,   setHasFiscal]   = useState(false);
   const [photo,       setPhoto]       = useState<File | null>(null);
@@ -247,34 +248,69 @@ export default function NewExpensePage() {
             <span className="text-xs text-gray-400">Recomendado — activa el autocompletado IA</span>
           </div>
 
-          {/* Zona de upload */}
-          <label className="flex flex-col items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl p-5 cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all relative">
-            {photoPreview ? (
-              <img src={photoPreview} alt="Factura" className="max-h-48 rounded-lg object-contain shadow" />
-            ) : photo && photo.type === 'application/pdf' ? (
-              <div className="flex flex-col items-center gap-2 py-2">
-                <FileText className="w-10 h-10 text-red-400" />
-                <p className="text-sm font-medium text-gray-700">{photo.name}</p>
-                <p className="text-xs text-gray-400">PDF listo para analizar</p>
-              </div>
-            ) : (
-              <>
-                <Camera className="w-8 h-8 text-gray-400" />
-                <div className="text-center">
-                  <p className="text-sm font-medium text-gray-700">Toca para tomar foto, imagen o PDF</p>
-                  <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WEBP o PDF — máx. 10 MB</p>
+          {/* Zona de upload — previsualización */}
+          {(photoPreview || photo) && (
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center gap-2">
+              {photoPreview ? (
+                <img src={photoPreview} alt="Factura" className="max-h-48 rounded-lg object-contain shadow" />
+              ) : photo && photo.type === 'application/pdf' ? (
+                <div className="flex flex-col items-center gap-2 py-2">
+                  <FileText className="w-10 h-10 text-red-400" />
+                  <p className="text-sm font-medium text-gray-700">{photo.name}</p>
+                  <p className="text-xs text-gray-400">PDF listo para analizar</p>
                 </div>
-              </>
-            )}
-            <input
-              type="file"
-              className="hidden"
-              accept="image/*,application/pdf"
-              capture="environment"
-              ref={fileRef}
-              onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
-            />
-          </label>
+              ) : null}
+            </div>
+          )}
+
+          {/* Botones de carga */}
+          {!photo && (
+            <div className="grid grid-cols-2 gap-3">
+              {/* Opción 1: Tomar foto con cámara */}
+              <button
+                type="button"
+                onClick={() => cameraRef.current?.click()}
+                className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-4 cursor-pointer hover:border-yellow-400 hover:bg-yellow-50 transition-all"
+              >
+                <Camera className="w-7 h-7 text-gray-400" />
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-700">Tomar foto</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Usar cámara</p>
+                </div>
+              </button>
+
+              {/* Opción 2: Subir archivo desde el dispositivo */}
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-4 cursor-pointer hover:border-yellow-400 hover:bg-yellow-50 transition-all"
+              >
+                <Upload className="w-7 h-7 text-gray-400" />
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-700">Subir archivo</p>
+                  <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, PDF</p>
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* Input cámara (fuerza cámara en móvil) */}
+          <input
+            type="file"
+            className="hidden"
+            accept="image/*"
+            capture="environment"
+            ref={cameraRef}
+            onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
+          />
+          {/* Input archivo (galería, archivos, escaneados, PDF) */}
+          <input
+            type="file"
+            className="hidden"
+            accept="image/*,application/pdf"
+            ref={fileRef}
+            onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
+          />
 
           {photo && (
             <div className="flex items-center gap-2">

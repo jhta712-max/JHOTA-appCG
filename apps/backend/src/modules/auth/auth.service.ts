@@ -188,4 +188,33 @@ export async function setupAdmin(data: {
 
   const user = await prisma.user.create({
     data: {
- 
+      name:     data.name,
+      email:    data.email,
+      password: hashed,
+      roleId:   adminRoleId,
+      isActive: true,
+    },
+    include: { role: { select: { name: true, description: true } } },
+  });
+
+  return {
+    id:    user.id,
+    name:  user.name,
+    email: user.email,
+    role:  user.role,
+  };
+}
+
+export async function getMe(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true, name: true, email: true, phone: true,
+      avatarUrl: true, lastLogin: true, createdAt: true,
+      role: { select: { name: true, description: true } },
+    },
+  });
+
+  if (!user) throw new AppError(404, 'Usuario no encontrado', 'NOT_FOUND');
+  return user;
+}
