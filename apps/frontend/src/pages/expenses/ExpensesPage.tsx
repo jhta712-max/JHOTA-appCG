@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Receipt, Plus, Search, Filter } from 'lucide-react';
 import { expensesApi, projectsApi } from '../../api';
 import { PAYMENT_METHOD_LABELS } from '../../types';
+import { fmtDate } from '../../utils/date';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
@@ -100,7 +101,7 @@ export default function ExpensesPage() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-sm font-bold text-gray-900">{formatCurrency(Number(e.amount))}</p>
-                  <p className="text-xs text-gray-400">{new Date(e.expenseDate).toLocaleDateString('es-DO')}</p>
+                  <p className="text-xs text-gray-400">{fmtDate(e.expenseDate)}</p>
                 </div>
                 {e.status === 'VOIDED' && (
                   <span className="badge-voided shrink-0">Anulado</span>

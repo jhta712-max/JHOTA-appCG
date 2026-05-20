@@ -9,13 +9,10 @@ import {
 import { expensesApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import { PAYMENT_METHOD_LABELS } from '../../types';
+import { fmtDate } from '../../utils/date';
 
 function fmt(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
-}
-
-function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString('es-DO', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 export default function ExpenseDetailPage() {
@@ -118,7 +115,7 @@ export default function ExpenseDetailPage() {
             <Calendar className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
             <div>
               <p className="text-xs text-gray-400">Fecha</p>
-              <p className="font-medium text-gray-800">{fmtDate(expense.expenseDate)}</p>
+              <p className="font-medium text-gray-800">{fmtDate(expense.expenseDate, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
           </div>
 

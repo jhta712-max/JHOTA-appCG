@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { fmtDate } from '../../utils/date';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -97,7 +98,7 @@ function AddendumRow({
       <td className="px-3 py-2.5 text-sm font-medium text-gray-900">{fmt(addendum.amount)}</td>
       <td className="px-3 py-2.5 text-sm text-gray-700">{addendum.description}</td>
       <td className="px-3 py-2.5 text-sm text-gray-500">
-        {addendum.date ? new Date(addendum.date).toLocaleDateString('es-DO') : '—'}
+        {fmtDate(addendum.date)}
       </td>
       <td className="px-3 py-2.5">
         <div className="flex items-center gap-1">

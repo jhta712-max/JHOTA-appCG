@@ -7,6 +7,7 @@ import {
 import { projectsApi, expensesApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import { PAYMENT_METHOD_LABELS, PROJECT_STATUS_LABELS } from '../../types';
+import { fmtDate } from '../../utils/date';
 
 function fmt(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
@@ -101,7 +102,7 @@ export default function ProjectDetailPage() {
             )}
             <div className="flex items-start gap-2">
               <Calendar className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-              <div><p className="text-xs text-gray-400">Inicio</p><p className="font-medium text-gray-800">{new Date(projectData.startDate).toLocaleDateString('es-DO')}</p></div>
+              <div><p className="text-xs text-gray-400">Inicio</p><p className="font-medium text-gray-800">{fmtDate(projectData.startDate)}</p></div>
             </div>
             <div className="flex items-start gap-2">
               <Receipt className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
@@ -229,7 +230,7 @@ export default function ProjectDetailPage() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-sm font-semibold text-gray-900">{fmt(Number(e.amount))}</p>
-                  <p className="text-xs text-gray-400">{new Date(e.expenseDate).toLocaleDateString('es-DO')}</p>
+                  <p className="text-xs text-gray-400">{fmtDate(e.expenseDate)}</p>
                 </div>
               </Link>
             ))

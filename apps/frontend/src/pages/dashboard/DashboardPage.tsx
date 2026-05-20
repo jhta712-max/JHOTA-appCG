@@ -4,6 +4,7 @@ import { FolderOpen, Receipt, TrendingUp, Plus, ArrowRight, AlertCircle } from '
 import { projectsApi, expensesApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import { PAYMENT_METHOD_LABELS } from '../../types';
+import { fmtDate } from '../../utils/date';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(amount);
@@ -142,7 +143,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="text-right ml-3 shrink-0">
                     <p className="text-sm font-semibold text-gray-900">{formatCurrency(Number(e.amount))}</p>
-                    <p className="text-xs text-gray-400">{new Date(e.expenseDate).toLocaleDateString('es-DO')}</p>
+                    <p className="text-xs text-gray-400">{fmtDate(e.expenseDate)}</p>
                   </div>
                 </Link>
               ))

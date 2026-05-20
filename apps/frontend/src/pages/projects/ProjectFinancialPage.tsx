@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { fmtDate } from '../../utils/date';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/authStore';
 import {
@@ -14,8 +15,7 @@ import type { Cubicacion } from '../../types';
 const fmt = (n: number) =>
   new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', maximumFractionDigits: 0 }).format(n);
 
-const fmtDate = (d: string) =>
-  d ? new Date(d).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+// fmtDate importado desde utils/date (evita desplazamiento UTC)
 
 type CubForm = { amount: string; progressPct: string; description: string; date: string };
 
@@ -97,7 +97,7 @@ function CubicacionRow({
         </div>
       </td>
       <td className="px-3 py-3 text-sm text-gray-700 max-w-xs truncate">{cub.description}</td>
-      <td className="px-3 py-3 text-sm text-gray-500 whitespace-nowrap">{fmtDate(cub.date)}</td>
+      <td className="px-3 py-3 text-sm text-gray-500 whitespace-nowrap">{fmtDate(cub.date, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
       <td className="px-3 py-3">
         <div className="flex gap-1">
           <button onClick={() => setEditing(true)}
