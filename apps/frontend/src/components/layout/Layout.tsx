@@ -20,8 +20,8 @@ const navItems = [
   { to: '/monitoring',  icon: Activity,  label: 'Monitoreo',      adminOnly: true },
 ];
 
-// Ícono SVG inspirado en el logo de SERVINGMI
-function ServingmiIcon({ className = 'w-8 h-8' }: { className?: string }) {
+// Ícono SVG de la aplicación
+function AppIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
     <svg viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <path d="M20 1L39 11.5V36.5L20 47L1 36.5V11.5Z" fill="#1C1C1C" stroke="#F5C218" strokeWidth="1.5"/>
@@ -55,10 +55,10 @@ export default function Layout() {
              style={{ background: '#1C1C1C' }}>
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-          <ServingmiIcon className="w-9 h-10 shrink-0" />
+          <AppIcon className="w-9 h-10 shrink-0" />
           <div className="min-w-0">
-            <p className="font-bold text-white text-sm leading-tight tracking-wide">SERVINGMI</p>
-            <p className="text-xs text-gray-400 truncate leading-tight">Servicios Ing. & Mineros</p>
+            <p className="font-bold text-white text-sm leading-tight tracking-wide">Sistema de Gastos</p>
+            <p className="text-xs text-gray-400 truncate leading-tight">Control de Proyectos</p>
           </div>
         </div>
 
@@ -116,10 +116,10 @@ export default function Layout() {
       )} style={{ background: '#1C1C1C' }}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <ServingmiIcon className="w-8 h-9 shrink-0" />
+            <AppIcon className="w-8 h-9 shrink-0" />
             <div>
-              <p className="font-bold text-white tracking-wide">SERVINGMI</p>
-              <p className="text-xs text-gray-400">Servicios Ing. & Mineros</p>
+              <p className="font-bold text-white tracking-wide">Sistema de Gastos</p>
+              <p className="text-xs text-gray-400">Control de Proyectos</p>
             </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-white p-1">
@@ -177,8 +177,8 @@ export default function Layout() {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <ServingmiIcon className="w-6 h-7 shrink-0" />
-            <span className="font-bold text-white text-sm tracking-wide">SERVINGMI</span>
+            <AppIcon className="w-6 h-7 shrink-0" />
+            <span className="font-bold text-white text-sm tracking-wide">Sistema de Gastos</span>
           </div>
         </header>
 
@@ -190,9 +190,7 @@ export default function Layout() {
         {/* Pie de página — créditos */}
         <footer className="border-t border-gray-100 bg-white py-3 px-6 text-center">
           <p className="text-xs text-gray-400">
-            Desarrollado por{' '}
-            <span className="font-medium text-gray-500">Ing. Jhonny Tavarez Arias</span>
-            {' '}en conjunto con{' '}
+            Desarrollado con{' '}
             <span className="font-medium text-gray-500">Cowork Claude AI</span>
             {' '}· © {new Date().getFullYear()}
           </p>
@@ -201,3 +199,4 @@ export default function Layout() {
     </div>
   );
 }
+                                                                                                                                                       

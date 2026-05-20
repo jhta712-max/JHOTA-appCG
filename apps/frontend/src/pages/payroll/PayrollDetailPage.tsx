@@ -120,7 +120,7 @@ export default function PayrollDetailPage() {
     const baseUrl = (api.defaults.baseURL ?? '').replace(/\/$/, '');
     const url     = `${baseUrl}/payrolls/${id}/export.${format}`;
     const ext     = format;
-    const nom     = `SERVINGMI-nomina-${String(payroll!.number).padStart(3, '0')}.${ext}`;
+    const nom     = `nomina-${String(payroll!.number).padStart(3, '0')}.${ext}`;
     fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.blob())
       .then((blob) => {

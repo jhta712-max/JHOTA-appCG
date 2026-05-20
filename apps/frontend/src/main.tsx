@@ -90,26 +90,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Route path="expenses/:id/edit"    element={<EditExpensePage />} />
 
                 {/* Reportes y Exportación */}
-                <Route path="reports"              element={<ReportsPage />} />
-                <Route path="export"               element={<ExportPage />} />
-
-                {/* Nóminas */}
-                <Route path="payrolls"             element={<PayrollsPage />} />
-                <Route path="payrolls/new"         element={<PayrollFormPage />} />
-                <Route path="payrolls/:id"         element={<PayrollDetailPage />} />
-                <Route path="payrolls/:id/edit"    element={<PayrollFormPage />} />
-
-                {/* Administración */}
-                <Route path="users"                element={<UsersPage />} />
-                <Route path="categories"           element={<CategoriesPage />} />
-                <Route path="monitoring"           element={<MonitoringPage />} />
-              </Route>
-
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </AuthHydrator>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </ErrorBoundary>
-  </React.StrictMode>,
-);
+                

@@ -800,25 +800,4 @@ export async function exportPayrollDocx(id: string, res: Response) {
           children: [new TextRun({ text: 'Firma y sello de aprobación', size: 18, font: 'Arial', color: '888888', italics: true })],
         }),
         new Paragraph({
-          border: { top: { style: BorderStyle.SINGLE, size: 4, color: BORDER_COLOR } },
-          spacing: { before: 600, after: 80 },
-          children: [new TextRun({ text: 'Nombre: ___________________________________', size: 18, font: 'Arial', color: DARK_TEXT })],
-        }),
-        new Paragraph({
-          spacing: { before: 80, after: 80 },
-          children: [new TextRun({ text: 'Cargo: ____________________________________', size: 18, font: 'Arial', color: DARK_TEXT })],
-        }),
-        new Paragraph({
-          spacing: { before: 80, after: 0 },
-          children: [new TextRun({ text: `Fecha: ____________________________________`, size: 18, font: 'Arial', color: DARK_TEXT })],
-        }),
-      ],
-    }],
-  });
-
-  const buffer = await Packer.toBuffer(doc);
-  const filename = `SERVINGMI-nomina-${String(payroll.number).padStart(3,'0')}-${payroll.project.code}.docx`;
-  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-  res.send(buffer);
-}
+          border: { top: { style: BorderStyle.SINGLE, 

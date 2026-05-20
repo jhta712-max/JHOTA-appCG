@@ -45,13 +45,4 @@ export async function update(req: Request, res: Response, next: NextFunction) {
 export async function changePassword(req: Request, res: Response, next: NextFunction) {
   try {
     await service.changePassword(req.user!.userId, req.body);
-    res.json({ success: true, message: 'Contraseña actualizada. Por favor inicia sesión nuevamente.' });
-  } catch (err) { next(err); }
-}
-
-export async function getRoles(req: Request, res: Response, next: NextFunction) {
-  try {
-    const data = await service.getRoles();
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-}
+    res.json({ success: true, message: 'Contraseña actualizada. Por favor inicia sesi

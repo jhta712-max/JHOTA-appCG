@@ -239,7 +239,7 @@ export default function ExportPage() {
             const q = qs();
             return downloadFile(
               `/expenses/complete.xlsx${q ? '?' + q : ''}`,
-              `SERVINGMI-gastos-${startDate}_${endDate}.xlsx`,
+              `gastos-${startDate}_${endDate}.xlsx`,
             );
           }}
         />
@@ -339,7 +339,7 @@ export default function ExportPage() {
               variant="primary"
               onClick={() => downloadFile(
                 `/expenses/complete.xlsx?startDate=${firstDay}&endDate=${today}&status=ACTIVE`,
-                `SERVINGMI-mes-actual-${today}.xlsx`,
+                `mes-actual-${today}.xlsx`,
               )}
             />
           </div>
@@ -351,7 +351,7 @@ export default function ExportPage() {
         <Shield className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="font-semibold text-gray-600">Módulo de acceso restringido</p>
-          <p>Este módulo solo es visible para Administradores y Supervisores. Los archivos Excel incluyen formato profesional con colores SERVINGMI, semáforos de alerta presupuestal y totales automáticos. Los filtros aplicados arriba se reflejan en todas las exportaciones.</p>
+          <p>Este módulo solo es visible para Administradores y Supervisores. Los archivos Excel incluyen formato profesional con colores corporativos, semáforos de alerta presupuestal y totales automáticos. Los filtros aplicados arriba se reflejan en todas las exportaciones.</p>
         </div>
       </div>
     </div>

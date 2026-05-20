@@ -6,7 +6,7 @@ import api from '../../api/client';
 
 type FormData = { name: string; email: string; password: string; confirm: string };
 
-function ServingmiLogo({ className = 'w-12 h-14' }: { className?: string }) {
+function AppLogo({ className = 'w-12 h-14' }: { className?: string }) {
   return (
     <svg viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <path d="M20 1L39 11.5V36.5L20 47L1 36.5V11.5Z" fill="#1C1C1C" stroke="#F5C218" strokeWidth="1.5"/>
@@ -115,10 +115,10 @@ export default function SetupPage() {
       <div className="hidden lg:flex flex-col justify-between w-2/5 p-12"
            style={{ background: '#141414' }}>
         <div className="flex items-center gap-3">
-          <ServingmiLogo className="w-10 h-12" />
+          <AppLogo className="w-10 h-12" />
           <div>
-            <p className="font-bold text-white text-lg tracking-widest">SERVINGMI</p>
-            <p className="text-xs text-gray-500">Servicios Ingenieriles &amp; Mineros</p>
+            <p className="font-bold text-white text-lg tracking-widest">Sistema de Gastos</p>
+            <p className="text-xs text-gray-500">Control de Proyectos</p>
           </div>
         </div>
 
@@ -139,7 +139,7 @@ export default function SetupPage() {
         </div>
 
         <p className="text-xs text-gray-600">
-          © {new Date().getFullYear()} SERVINGMI · Sistema interno
+          © {new Date().getFullYear()} Sistema de Gastos · Sistema interno
         </p>
       </div>
 
@@ -149,7 +149,7 @@ export default function SetupPage() {
 
           {/* Header mobile */}
           <div className="flex lg:hidden items-center justify-center gap-3 mb-6">
-            <ServingmiLogo className="w-10 h-12" />
+            <AppLogo className="w-10 h-12" />
           </div>
 
           <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200
@@ -176,7 +176,7 @@ export default function SetupPage() {
               <label className="label">Nombre completo *</label>
               <input
                 className={`input-field ${errors.name ? 'input-error' : ''}`}
-                placeholder="Ej: Jhonny Tavarez"
+                placeholder="Ej: Juan Pérez"
                 {...register('name', {
                   required: 'El nombre es requerido',
                   minLength: { value: 2, message: 'Mínimo 2 caracteres' },
@@ -283,3 +283,4 @@ export default function SetupPage() {
     </div>
   );
 }
+                     
