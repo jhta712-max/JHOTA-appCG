@@ -49,7 +49,7 @@ function CubicacionRow({
       <tr className="bg-yellow-50">
         <td className="px-3 py-2 text-sm font-semibold text-gray-500 w-10">#{cub.number}</td>
         <td className="px-2 py-2">
-          <input type="number" min="1" step="1000" className="input-field text-sm py-1.5"
+          <input type="number" min="0.01" step="0.01" className="input-field text-sm py-1.5"
             value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
         </td>
         <td className="px-2 py-2 w-24">
@@ -445,7 +445,7 @@ export default function ProjectFinancialPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Monto cobrado (RD$) *</label>
-              <input type="number" min="1" step="1000" className="input-field"
+              <input type="number" min="0.01" step="0.01" className="input-field"
                 placeholder="1500000"
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })} />

@@ -55,7 +55,7 @@ function AddendumRow({
         <td className="px-3 py-2 text-sm font-medium text-gray-600">#{addendum.number}</td>
         <td className="px-3 py-2">
           <input
-            type="number" min="1" step="1000"
+            type="number" min="0.01" step="0.01"
             className="input-field text-sm py-1.5"
             value={form.amount}
             onChange={(e) => setForm({ ...form, amount: e.target.value })}
@@ -310,7 +310,7 @@ export default function ProjectFormPage() {
             </div>
             <div>
               <label className="label">Presupuesto base (RD$) *</label>
-              <input type="number" min="0" step="1000"
+              <input type="number" min="0" step="0.01"
                 className={`input-field ${errors.estimatedBudget ? 'input-error' : ''}`}
                 placeholder="500000"
                 {...register('estimatedBudget', {
@@ -468,7 +468,7 @@ export default function ProjectFormPage() {
                   <div>
                     <label className="label">Monto adicional (RD$) *</label>
                     <input
-                      type="number" min="1" step="1000"
+                      type="number" min="0.01" step="0.01"
                       className="input-field"
                       placeholder="250000"
                       value={newForm.amount}
