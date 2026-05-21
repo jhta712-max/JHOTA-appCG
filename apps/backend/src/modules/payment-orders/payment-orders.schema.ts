@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const createPaymentOrderSchema = z.object({
+  orderType:     z.enum(['GENERAL', 'PAYROLL', 'MATERIALS']).default('GENERAL'),
   payingCompany: z.string().min(2).max(200),
   beneficiaryId: z.string().uuid(),
   projectId:     z.string().uuid(),
@@ -8,6 +9,7 @@ export const createPaymentOrderSchema = z.object({
   currency:      z.enum(['RD$', 'US$', '€']).default('RD$'),
   concept:       z.string().min(3).max(2000),
   notes:         z.string().max(500).optional(),
+  payrollId:     z.string().uuid().optional(),   // Solo si orderType = PAYROLL
 });
 
 export const updatePaymentOrderSchema = createPaymentOrderSchema.partial();

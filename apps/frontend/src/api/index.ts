@@ -372,6 +372,14 @@ export const paymentOrdersApi = {
     api.post<{ success: boolean; data: PaymentOrder }>('/payment-orders', data),
   update: (id: string, data: unknown) =>
     api.put<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}`, data),
+  availablePayrolls: (projectId: string) =>
+    api.get<{ success: boolean; data: any[] }>('/payment-orders/available-payrolls', { params: { projectId } }),
+  availableExpenses: (projectId: string) =>
+    api.get<{ success: boolean; data: any[] }>('/payment-orders/available-expenses', { params: { projectId } }),
+  linkExpense: (id: string, expenseId: string) =>
+    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-expense`, { expenseId }),
+  unlinkExpense: (id: string) =>
+    api.delete<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-expense`),
   markAsPaid: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`),
   void: (id: string) =>

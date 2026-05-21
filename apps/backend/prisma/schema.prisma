@@ -244,9 +244,10 @@ model Expense {
   voidedBy     User?            @relation("ExpenseVoidedBy", fields: [voidedById], references: [id])
   fiscalVoucher FiscalVoucher?
   attachments  Attachment[]
-  payroll      Payroll?              @relation("PayrollExpense")
-  quotationPayment QuotationPayment? @relation("QuotationPaymentExpense")
+  payroll        Payroll?              @relation("PayrollExpense")
+  quotationPayment QuotationPayment?  @relation("QuotationPaymentExpense")
   quotationLink    QuotationExpenseLink? @relation("QuotationExpenseLink")
+  paymentOrder   PaymentOrder?         @relation("PaymentOrderExpense")
 
   @@index([projectId])
   @@index([expenseDate])
@@ -407,8 +408,9 @@ model Payroll {
   createdBy  User             @relation("PayrollCreatedBy", fields: [createdById], references: [id])
   approvedBy User?            @relation("PayrollApprovedBy", fields: [approvedById], references: [id])
   voidedBy   User?            @relation("PayrollVoidedBy", fields: [voidedById], references: [id])
-  expense    Expense?         @relation("PayrollExpense", fields: [expenseId], references: [id])
-  lines      PayrollLine[]
+  expense      Expense?       @relation("PayrollExpense", fields: [expenseId], references: [id])
+  paymentOrder PaymentOrder?
+  lines        PayrollLine[]
 
   @@unique([projectId, number])
   @@index([projectId])
@@ -659,17 +661,21 @@ model Beneficiary {
 model PaymentOrder {
   id            String   @id @default(uuid()) @db.Uuid
   number        Int                                               // Autoincremental por aplicación
+  orderType     String   @default("GENERAL") @map("order_type") @db.VarChar(20) // GENERAL | PAYROLL | MATERIALS
   payingCompany String   @map("paying_company") @db.VarChar(200)
   beneficiaryId String   @map("beneficiary_id") @db.Uuid
   projectId     String   @map("project_id") @db.Uuid
   amount        Decimal  @db.Decimal(15, 2)
   currency      String   @default("RD$") @db.VarChar(10)
   concept       String   @db.Text
-  status        String   @default("PENDING") @db.VarChar(20)    // PENDING | PAID
+  status        String   @default("PENDING") @db.VarChar(20)    // PENDING | PAID | VOIDED
   generatedText String?  @map("generated_text") @db.Text
   notes         String?  @db.VarChar(500)
   paidAt        DateTime? @map("paid_at")
   paidById      String?  @map("paid_by_id") @db.Uuid
+  // Vínculos opcionales
+  payrollId     String?  @unique @map("payroll_id") @db.Uuid    // Si es orden de nómina
+  expenseId     String?  @unique @map("expense_id") @db.Uuid    // Si es orden de materiales (vinculado después)
   createdById   String   @map("created_by_id") @db.Uuid
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
@@ -678,6 +684,8 @@ model PaymentOrder {
   project       Project     @relation(fields: [projectId], references: [id])
   createdBy     User        @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
   paidBy        User?       @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
+  payroll       Payroll?    @relation(fields: [payrollId], references: [id])
+  expense       Expense?    @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
 
   @@index([status])
   @@index([projectId])

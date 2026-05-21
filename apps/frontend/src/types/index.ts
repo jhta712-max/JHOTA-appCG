@@ -179,6 +179,7 @@ export interface Beneficiary {
 export interface PaymentOrder {
   id:            string;
   number:        number;
+  orderType:     'GENERAL' | 'PAYROLL' | 'MATERIALS';
   payingCompany: string;
   beneficiaryId: string;
   beneficiary:   Beneficiary;
@@ -192,6 +193,10 @@ export interface PaymentOrder {
   notes?:        string | null;
   paidAt?:       string | null;
   paidBy?:       { id: string; name: string } | null;
+  payrollId?:    string | null;
+  payroll?:      { id: string; number: number; type: string; totalAmount: number; periodStart: string; periodEnd: string; status: string } | null;
+  expenseId?:    string | null;
+  expense?:      { id: string; amount: number; expenseDate: string; description: string; status: string } | null;
   createdBy:     { id: string; name: string };
   createdAt:     string;
   updatedAt:     string;
