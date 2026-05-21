@@ -133,11 +133,22 @@ function parseCSVText(text: string): BeneForm[] {
 }
 
 // ── WhatsApp share ────────────────────────────────────────────
-function shareWhatsApp(text: string) {
-  const encoded = encodeURIComponent(text);
+async function shareWhatsApp(text: string) {
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  // En móvil: deep link nativo que abre la app directamente
-  // En desktop: WhatsApp Web
+
+  // En móvil: Web Share API pasa el texto nativamente sin encoding de URL
+  // → los emojis llegan intactos al portapapeles de WhatsApp
+  if (isMobile && navigator.share) {
+    try {
+      await navigator.share({ text });
+      return;
+    } catch {
+      // Usuario canceló o no es compatible — cae al fallback
+    }
+  }
+
+  // Desktop / fallback: WhatsApp Web o deep link
+  const encoded = encodeURIComponent(text);
   const url = isMobile
     ? `whatsapp://send?text=${encoded}`
     : `https://wa.me/?text=${encoded}`;
