@@ -384,6 +384,8 @@ export const paymentOrdersApi = {
     api.delete<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-expense`),
   markAsPaid: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`),
+  generateExpense: (id: string) =>
+    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/generate-expense`),
   void: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/void`),
 };

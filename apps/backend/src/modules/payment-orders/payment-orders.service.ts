@@ -245,6 +245,41 @@ export async function markAsPaid(id: string, userId: string) {
   });
 }
 
+// ── Generar gasto retroactivo para una orden ya pagada ────────
+export async function generateExpenseForOrder(id: string, userId: string) {
+  const po = await getPaymentOrderById(id);
+  if (po.status !== 'PAID') throw new AppError(400, 'Solo se puede generar gasto para órdenes pagadas', 'ORDER_NOT_PAID');
+  if (po.expenseId)         throw new AppError(409, 'Esta orden ya tiene un gasto vinculado', 'ALREADY_HAS_EXPENSE');
+
+  const categoryName =
+    po.orderType === 'PAYROLL'   ? 'Mano de obra' :
+    po.orderType === 'MATERIALS' ? 'Materiales'   : 'Servicios';
+
+  const category = await prisma.expenseCategory.findFirst({
+    where: { name: categoryName, isActive: true },
+  });
+  if (!category) throw new AppError(500, 'Categoría de gasto no disponible', 'CATEGORY_NOT_FOUND');
+
+  return prisma.$transaction(async (tx) => {
+    const opRef = `OP-${String(po.number).padStart(3, '0')}`;
+    const expense = await tx.expense.create({
+      data: {
+        projectId:     po.projectId,
+        categoryId:    category.id,
+        userId,
+        expenseDate:   po.paidAt ?? new Date(),
+        amount:        po.amount,
+        description:   `[${opRef}] ${po.concept}`,
+        paymentMethod: 'TRANSFER',
+        hasFiscalDoc:  false,
+        notes:         `Generado retroactivamente para ${opRef}. Beneficiario: ${(po as any).beneficiary?.name ?? po.beneficiaryId}. Empresa: ${po.payingCompany}.`,
+      },
+    });
+    await tx.paymentOrder.update({ where: { id }, data: { expenseId: expense.id } });
+    return tx.paymentOrder.findUniqueOrThrow({ where: { id }, include: INCLUDE });
+  });
+}
+
 // ── Anular ────────────────────────────────────────────────────
 export async function voidPaymentOrder(id: string) {
   const po = await getPaymentOrderById(id);

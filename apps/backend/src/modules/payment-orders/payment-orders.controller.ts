@@ -64,6 +64,12 @@ export async function markAsPaid(req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 }
 
+export async function generateExpense(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json({ success: true, data: await svc.generateExpenseForOrder(req.params.id, (req as any).user.userId) });
+  } catch (err) { next(err); }
+}
+
 export async function voidPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     res.json({ success: true, data: await svc.voidPaymentOrder(req.params.id) });
