@@ -94,6 +94,7 @@ export const quotationQuerySchema = z.object({
   dateFrom:     z.string().date().optional(),
   dateTo:       z.string().date().optional(),
   search:       z.string().optional(),
+  overdue:      z.coerce.boolean().optional(), // true = vencidas sin respuesta (validUntil < hoy AND estado abierto)
   orderBy:      z.enum(['quotationDate', 'total', 'supplierName', 'createdAt', 'status']).default('quotationDate'),
   order:        z.enum(['asc', 'desc']).default('desc'),
 });
@@ -105,4 +106,6 @@ export type UpdateQuotationInput  = z.infer<typeof updateQuotationSchema>;
 export type UpdateStatusInput     = z.infer<typeof updateStatusSchema>;
 export type CreatePaymentInput    = z.infer<typeof createPaymentSchema>;
 export type LinkExpenseInput      = z.infer<typeof linkExpenseSchema>;
+export type QuotationQuery        = z.infer<typeof quotationQuerySchema>;
+t      = z.infer<typeof linkExpenseSchema>;
 export type QuotationQuery        = z.infer<typeof quotationQuerySchema>;

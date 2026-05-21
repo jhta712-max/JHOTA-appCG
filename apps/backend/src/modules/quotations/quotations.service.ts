@@ -60,6 +60,14 @@ export async function getQuotations(query: QuotationQuery, requestingUser: { use
     ];
   }
 
+  // Cotizaciones vencidas sin respuesta: validUntil < hoy AND estado abierto
+  if (query.overdue) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    where.validUntil = { lt: today };
+    where.status     = { in: ['PENDING', 'APPROVED', 'ADVANCE_PAID', 'IN_PROGRESS', 'PARTIAL_INVOICED'] };
+  }
+
   // Operadores solo ven cotizaciones de proyectos asignados
   if (requestingUser.role === 'operator') {
     where.project = { assignments: { some: { userId: requestingUser.userId } } };
@@ -521,6 +529,23 @@ async function getDefaultCategoryId(): Promise<number> {
   const any = await prisma.expenseCategory.findFirst({ where: { isActive: true } });
   if (any) return any.id;
   throw new AppError(500, 'No hay categorías de gasto disponibles', 'NO_CATEGORIES');
+}
+
+/** Serializa Decimals a números para evitar problemas de JSON */
+function serializeQuotation(q: any): any {
+  return {
+    ...q,
+    subtotal:    Number(q.subtotal),
+    itbisAmount: Number(q.itbisAmount),
+    total:       Number(q.total),
+    advancePct:  q.advancePct != null ? Number(q.advancePct) : null,
+    payments: (q.payments ?? []).map((p: any) => ({
+      ...p,
+      amount: Number(p.amount),
+    })),
+  };
+}
+IES');
 }
 
 /** Serializa Decimals a números para evitar problemas de JSON */

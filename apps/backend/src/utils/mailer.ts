@@ -190,3 +190,110 @@ export async function sendWelcomeEmail(opts: {
     html:    baseTemplate(content),
   });
 }
+
+
+// ─── Email: Alerta de cotizaciones próximas a vencer ─────────────────────────
+
+export interface ExpiringQuotationItem {
+  id:              string;
+  supplierName:    string;
+  quotationNumber: string | null;
+  projectCode:     string;
+  projectName:     string;
+  total:           number;
+  currency:        string;
+  validUntil:      Date;
+  daysLeft:        number;
+}
+
+export async function sendQuotationExpiringEmail(opts: {
+  toEmail:     string;
+  toName:      string;
+  quotations:  ExpiringQuotationItem[];
+  appUrl:      string;
+}) {
+  const fmt = (n: number, currency = 'DOP') =>
+    new Intl.NumberFormat('es-DO', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n);
+
+  const rows = opts.quotations.map((q) => {
+    const urgency = q.daysLeft === 0
+      ? { color: '#DC2626', label: 'Vence hoy', bg: '#FEF2F2' }
+      : q.daysLeft === 1
+      ? { color: '#EA580C', label: 'Vence manana', bg: '#FFF7ED' }
+      : { color: '#D97706', label: `${q.daysLeft} dias`, bg: '#FFFBEB' };
+
+    const numLabel = q.quotationNumber ? ` #${q.quotationNumber}` : '';
+    return `
+      <tr>
+        <td style="padding:12px 16px;border-bottom:1px solid #F3F4F6;vertical-align:top;">
+          <p style="margin:0 0 2px 0;font-size:14px;font-weight:600;color:#1F2937;">
+            ${q.supplierName}<span style="font-size:12px;color:#6B7280;font-weight:400;">${numLabel}</span>
+          </p>
+          <p style="margin:0;font-size:12px;color:#6B7280;">${q.projectCode} - ${q.projectName}</p>
+        </td>
+        <td style="padding:12px 16px;border-bottom:1px solid #F3F4F6;text-align:right;vertical-align:top;">
+          <p style="margin:0 0 4px 0;font-size:14px;font-weight:700;color:#1F2937;">${fmt(q.total, q.currency)}</p>
+          <span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:${urgency.bg};color:${urgency.color};">${urgency.label}</span>
+        </td>
+        <td style="padding:12px 16px;border-bottom:1px solid #F3F4F6;text-align:right;vertical-align:top;">
+          <a href="${opts.appUrl}/quotations/${q.id}" style="font-size:12px;color:#2563EB;text-decoration:none;font-weight:500;">Ver</a>
+        </td>
+      </tr>`;
+  }).join('');
+
+  const todayCount    = opts.quotations.filter((q) => q.daysLeft === 0).length;
+  const tomorrowCount = opts.quotations.filter((q) => q.daysLeft === 1).length;
+  const laterCount    = opts.quotations.filter((q) => q.daysLeft > 1).length;
+
+  const summaryParts: string[] = [];
+  if (todayCount > 0)    summaryParts.push(`<strong style="color:#DC2626;">${todayCount} vence${todayCount > 1 ? 'n' : ''} hoy</strong>`);
+  if (tomorrowCount > 0) summaryParts.push(`<strong style="color:#EA580C;">${tomorrowCount} vence${tomorrowCount > 1 ? 'n' : ''} manana</strong>`);
+  if (laterCount > 0)    summaryParts.push(`<strong style="color:#D97706;">${laterCount} en los proximos dias</strong>`);
+  const summaryItems = summaryParts.join(' - ');
+
+  const count = opts.quotations.length;
+  const content = `
+    <h2 style="color:#1F2937;font-size:20px;font-weight:700;margin:0 0 6px 0;">
+      Cotizaciones proximas a vencer
+    </h2>
+    <p style="color:#6B7280;font-size:14px;margin:0 0 20px 0;">
+      Hola, <strong style="color:#1F2937;">${opts.toName}</strong>.
+      Tienes ${count} cotizacion${count > 1 ? 'es' : ''} abiertas que requieren atencion: ${summaryItems}
+    </p>
+
+    <table cellpadding="0" cellspacing="0" width="100%"
+           style="border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;margin-bottom:24px;">
+      <thead>
+        <tr style="background:#F9FAFB;">
+          <th style="padding:10px 16px;text-align:left;font-size:12px;color:#6B7280;font-weight:600;border-bottom:1px solid #E5E7EB;">COTIZACION</th>
+          <th style="padding:10px 16px;text-align:right;font-size:12px;color:#6B7280;font-weight:600;border-bottom:1px solid #E5E7EB;">TOTAL / VENCE</th>
+          <th style="padding:10px 16px;border-bottom:1px solid #E5E7EB;">&nbsp;</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 16px 0;">
+      <tr>
+        <td style="background:#2563EB;border-radius:8px;">
+          <a href="${opts.appUrl}/quotations"
+             style="display:inline-block;padding:12px 28px;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">
+            Ver cotizaciones
+          </a>
+        </td>
+      </tr>
+    </table>
+
+    <p style="color:#9CA3AF;font-size:12px;margin:0;">
+      Este recordatorio se envia automaticamente cada dia a las 8:00 AM.<br/>
+      Solo se notifican cotizaciones en estado abierto.
+    </p>`;
+
+  const plural = count > 1 ? 'es' : '';
+  await getTransporter().sendMail({
+    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
+    to:      opts.toEmail,
+    subject: `${count} cotizacion${plural} proxima${plural} a vencer - Control de Gastos`,
+    html:    baseTemplate(content),
+  });
+}

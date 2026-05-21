@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Plus, Search, Filter, ChevronRight } from 'lucide-react';
+import { FileText, Plus, Search, Filter, ChevronRight, AlertCircle } from 'lucide-react';
 import { quotationsApi, projectsApi } from '../../api';
 import {
   QUOTATION_STATUS_LABELS,
@@ -32,6 +32,7 @@ export default function QuotationsPage() {
   const [search,    setSearch]    = useState('');
   const [projectId, setProjectId] = useState('');
   const [status,    setStatus]    = useState('');
+  const [overdue,   setOverdue]   = useState(false);
   const [page,      setPage]      = useState(1);
 
   const { data: projectsData } = useQuery({
@@ -41,11 +42,12 @@ export default function QuotationsPage() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['quotations', search, projectId, status, page],
+    queryKey: ['quotations', search, projectId, status, overdue, page],
     queryFn:  () => quotationsApi.list({
       search:    search    || undefined,
       projectId: projectId || undefined,
-      status:    status    || undefined,
+      status:    (!overdue && status) ? status : undefined,
+      overdue:   overdue   || undefined,
       page,
       limit: 20,
     }),
@@ -71,8 +73,22 @@ export default function QuotationsPage() {
 
       {/* Filtros */}
       <div className="card p-4 space-y-3">
-        <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
-          <Filter className="w-4 h-4" /> Filtros
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
+            <Filter className="w-4 h-4" /> Filtros
+          </div>
+          {/* Filtro rápido: vencidas sin respuesta */}
+          <button
+            onClick={() => { setOverdue(v => !v); setStatus(''); setPage(1); }}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+              overdue
+                ? 'bg-red-50 border-red-300 text-red-700'
+                : 'bg-white border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-600'
+            }`}
+          >
+            <AlertCircle className="w-3.5 h-3.5" />
+            Vencidas sin respuesta
+          </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="relative">
@@ -88,13 +104,20 @@ export default function QuotationsPage() {
               <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
             ))}
           </select>
-          <select className="input-field" value={status}
+          <select className="input-field" value={overdue ? '' : status}
+            disabled={overdue}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
             {STATUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
         </div>
+        {overdue && (
+          <p className="text-xs text-red-600 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3 shrink-0" />
+            Mostrando cotizaciones con fecha de validez vencida que aún están en estado abierto.
+          </p>
+        )}
       </div>
 
       {/* Lista */}

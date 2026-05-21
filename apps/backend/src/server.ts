@@ -3,6 +3,7 @@ import { logger } from './utils/logger';
 import prisma from './config/database';
 import app from './app';
 import { startAllMonitoringJobs } from './jobs/healthMonitor';
+import { startQuotationNotificationJob } from './jobs/quotationNotifications';
 import { forceFlush } from './middlewares/requestLogger';
 
 async function start() {
@@ -20,6 +21,9 @@ async function start() {
     if (env.NODE_ENV === 'production' || process.env.ENABLE_MONITORING === 'true') {
       startAllMonitoringJobs();
     }
+
+    // Notificaciones de cotizaciones — activo siempre que EMAIL esté configurado
+    startQuotationNotificationJob();
 
     const shutdown = async (signal: string) => {
       logger.info(`Señal ${signal} recibida. Cerrando servidor...`);
