@@ -484,6 +484,10 @@ export default function PaymentOrdersPage() {
                   <p className="font-bold text-gray-900 mt-1 text-base">{viewingOrder.payingCompany}</p>
                   <p className="text-sm text-gray-500 mt-0.5">{viewingOrder.concept}</p>
                   <p className="text-lg font-bold text-primary-700 mt-1">{fmtMonto(viewingOrder.amount, viewingOrder.currency)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    <span className="font-mono">{viewingOrder.project.code}</span>
+                    {' — '}{viewingOrder.project.name}
+                  </p>
                 </div>
                 <button onClick={() => setViewingOrder(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
               </div>
@@ -618,7 +622,10 @@ export default function PaymentOrdersPage() {
                         <p className="font-medium text-gray-900">{o.beneficiary.name}</p>
                         <p className="text-xs text-gray-400">{o.beneficiary.bank}</p>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 text-xs">{o.project.code}</td>
+                      <td className="px-4 py-3">
+                        <p className="text-xs font-mono text-gray-500">{o.project.code}</p>
+                        <p className="text-xs text-gray-700 font-medium leading-tight">{o.project.name}</p>
+                      </td>
                       <td className="px-4 py-3 font-semibold text-gray-900">{fmtMonto(o.amount, o.currency)}</td>
                       <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
                       <td className="px-4 py-3 text-right">
