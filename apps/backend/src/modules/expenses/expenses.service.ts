@@ -8,6 +8,7 @@ const EXPENSE_INCLUDE = {
   project:      { select: { id: true, code: true, name: true } },
   category:     { select: { id: true, name: true, icon: true } },
   registeredBy: { select: { id: true, name: true } },
+  companyCard:  { select: { id: true, holderName: true, lastFour: true, cardType: true, bank: true } },
   fiscalVoucher: true,
   attachments:  { select: { id: true, fileName: true, mimeType: true, isPrimary: true, createdAt: true } },
 } as const;
@@ -100,6 +101,7 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
       amount:        data.amount,
       description:   data.description,
       paymentMethod: data.paymentMethod,
+      companyCardId: data.companyCardId ?? null,
       hasFiscalDoc:  data.hasFiscalDoc,
       notes:         data.notes,
       // Crear comprobante fiscal si aplica

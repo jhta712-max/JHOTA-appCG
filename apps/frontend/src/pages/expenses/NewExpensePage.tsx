@@ -4,14 +4,15 @@ import { useForm } from 'react-hook-form';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
   Camera, CheckCircle, AlertCircle, ArrowLeft, Receipt,
-  Sparkles, Loader2, TriangleAlert, X, Info, FileText, Upload,
+  Sparkles, Loader2, TriangleAlert, X, Info, FileText, Upload, CreditCard,
 } from 'lucide-react';
-import { expensesApi, projectsApi, categoriesApi, ocrApi, type OcrResult } from '../../api';
+import { expensesApi, projectsApi, categoriesApi, ocrApi, cardsApi, type OcrResult } from '../../api';
 
 type FV = { ncf: string; supplierRnc: string; supplierName: string; itbisAmount: number };
 type FormData = {
   projectId: string; categoryId: number; expenseDate: string;
   amount: number; description: string; paymentMethod: string;
+  companyCardId?: number;
   hasFiscalDoc: boolean; notes: string;
   fiscalVoucher?: FV;
 };
@@ -81,6 +82,12 @@ export default function NewExpensePage() {
     select:   (r) => r.data.data,
   });
 
+  const { data: cards } = useQuery({
+    queryKey: ['cards', 'active'],
+    queryFn:  () => cardsApi.list(true),
+    select:   (r) => r.data.data,
+  });
+
   const mutation = useMutation({
     mutationFn: (data: any) => expensesApi.create(data),
     onSuccess:  async (res) => {
@@ -113,6 +120,9 @@ export default function NewExpensePage() {
       hasFiscalDoc:  hasFiscal,
       notes:         data.notes || undefined,
     };
+    if (data.paymentMethod === 'CARD' && data.companyCardId) {
+      payload.companyCardId = Number(data.companyCardId);
+    }
     if (hasFiscal) {
       payload.fiscalVoucher = {
         ncf:          data.fiscalVoucher?.ncf?.toUpperCase(),
@@ -475,6 +485,39 @@ export default function NewExpensePage() {
               </select>
             </AiField>
           </div>
+
+          {/* Selector de tarjeta — solo cuando paymentMethod = CARD */}
+          {watch('paymentMethod') === 'CARD' && (
+            <div>
+              <label className="label flex items-center gap-1.5">
+                <CreditCard className="w-4 h-4 text-gray-500" />
+                Tarjeta utilizada *
+              </label>
+              <select
+                className={`input-field ${errors.companyCardId ? 'input-error' : ''}`}
+                {...register('companyCardId', {
+                  required: 'Selecciona la tarjeta utilizada',
+                  validate: (v) => (v && Number(v) > 0) ? true : 'Selecciona la tarjeta utilizada',
+                })}
+              >
+                <option value="">— Selecciona una tarjeta —</option>
+                {(cards ?? []).map((card) => (
+                  <option key={card.id} value={card.id}>
+                    {card.holderName} — **** {card.lastFour} ({card.cardType} · {card.bank})
+                  </option>
+                ))}
+              </select>
+              {errors.companyCardId && (
+                <p className="text-red-500 text-xs mt-1">{errors.companyCardId.message}</p>
+              )}
+              {(cards ?? []).length === 0 && (
+                <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  No hay tarjetas registradas. Contacta al administrador.
+                </p>
+              )}
+            </div>
+          )}
 
           <div>
             <label className="label">Notas (opcional)</label>

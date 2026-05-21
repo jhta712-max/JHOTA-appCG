@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Receipt, Users,
-  Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity, FileText,
+  Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity, FileText, CreditCard,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
@@ -17,8 +17,9 @@ const navItems = [
   { to: '/quotations', icon: FileText, label: 'Cotizaciones' },
   { to: '/export',      icon: Download,  label: 'Exportar Excel', adminOnly: true },
   { to: '/users',       icon: Users,     label: 'Usuarios',       adminOnly: true },
-  { to: '/categories',  icon: Tag,       label: 'Categorías',     adminOnly: true },
-  { to: '/monitoring',  icon: Activity,  label: 'Monitoreo',      adminOnly: true },
+  { to: '/categories',  icon: Tag,        label: 'Categorías',     adminOnly: true },
+  { to: '/cards',       icon: CreditCard, label: 'Tarjetas',       adminOnly: true },
+  { to: '/monitoring',  icon: Activity,   label: 'Monitoreo',      adminOnly: true },
 ];
 
 // Ícono SVG de la aplicación

@@ -28,6 +28,7 @@ import PayrollsPage      from './pages/payroll/PayrollsPage';
 import PayrollDetailPage from './pages/payroll/PayrollDetailPage';
 import PayrollFormPage   from './pages/payroll/PayrollFormPage';
 import MonitoringPage    from './pages/admin/MonitoringPage';
+import CardsPage         from './pages/admin/CardsPage';
 import QuotationsPage    from './pages/quotations/QuotationsPage';
 import QuotationFormPage from './pages/quotations/QuotationFormPage';
 import QuotationDetailPage from './pages/quotations/QuotationDetailPage';
@@ -111,6 +112,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 {/* Administración */}
                 <Route path="users"                element={<UsersPage />} />
                 <Route path="categories"           element={<CategoriesPage />} />
+                <Route path="cards"                element={<CardsPage />} />
                 <Route path="monitoring"           element={<MonitoringPage />} />
               </Route>
 

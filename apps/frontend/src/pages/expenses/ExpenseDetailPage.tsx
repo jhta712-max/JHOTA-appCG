@@ -138,6 +138,12 @@ export default function ExpenseDetailPage() {
             <div>
               <p className="text-xs text-gray-400">Método de pago</p>
               <p className="font-medium text-gray-800">{PAYMENT_METHOD_LABELS[expense.paymentMethod]}</p>
+              {expense.companyCard && (
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {expense.companyCard.holderName} — **** {expense.companyCard.lastFour}
+                  <span className="ml-1 text-gray-400">({expense.companyCard.cardType} · {expense.companyCard.bank})</span>
+                </p>
+              )}
             </div>
           </div>
 

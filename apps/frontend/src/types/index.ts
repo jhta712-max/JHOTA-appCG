@@ -64,6 +64,8 @@ export interface Expense {
   projectId: string;
   category: { id: number; name: string; icon?: string };
   registeredBy: { id: string; name: string };
+  companyCardId?: number;
+  companyCard?: { id: number; holderName: string; lastFour: string; cardType: string; bank: string } | null;
   fiscalVoucher?: FiscalVoucher;
   attachments: Attachment[];
   createdAt: string;

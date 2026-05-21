@@ -18,6 +18,7 @@ import ocrRouter          from './modules/ocr/ocr.router';
 import payrollRouter      from './modules/payroll/payroll.router';
 import monitoringRouter   from './modules/monitoring/monitoring.router';
 import quotationsRouter   from './modules/quotations/quotations.router';
+import cardsRouter        from './modules/cards/cards.router';
 
 const app = express();
 
@@ -100,6 +101,7 @@ app.use('/api/v1/invitations', apiLimiter,  invitationsRouter);
 app.use('/api/v1/ocr',         apiLimiter,  ocrRouter);
 app.use('/api/v1/payrolls',    apiLimiter,  payrollRouter);
 app.use('/api/v1/quotations',  apiLimiter,  quotationsRouter);
+app.use('/api/v1/cards',       apiLimiter,  cardsRouter);
 app.use('/api/v1/monitoring', apiLimiter,  monitoringRouter);
 
 // ----------------------------------------------------------------

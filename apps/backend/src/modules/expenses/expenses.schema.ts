@@ -32,6 +32,7 @@ const baseExpenseSchema = z.object({
   paymentMethod: z.enum(['CASH', 'TRANSFER', 'CARD', 'CHECK', 'OTHER'], {
     required_error: 'El método de pago es requerido',
   }),
+  companyCardId: z.coerce.number().int().positive().optional(), // Requerido si paymentMethod = CARD
   hasFiscalDoc:  z.boolean().default(false),
   notes:         z.string().max(1000).optional(),
   fiscalVoucher: fiscalVoucherSchema.optional(),
@@ -40,13 +41,21 @@ const baseExpenseSchema = z.object({
 // ---------------------------------------------------------------
 // Crear gasto — con validación cruzada fiscal
 // ---------------------------------------------------------------
-export const createExpenseSchema = baseExpenseSchema.refine(
-  (data) => {
-    if (data.hasFiscalDoc && !data.fiscalVoucher) return false;
-    return true;
-  },
-  { message: 'Debe ingresar los datos del comprobante fiscal (NCF, RNC y nombre del suplidor)', path: ['fiscalVoucher'] },
-);
+export const createExpenseSchema = baseExpenseSchema
+  .refine(
+    (data) => {
+      if (data.hasFiscalDoc && !data.fiscalVoucher) return false;
+      return true;
+    },
+    { message: 'Debe ingresar los datos del comprobante fiscal (NCF, RNC y nombre del suplidor)', path: ['fiscalVoucher'] },
+  )
+  .refine(
+    (data) => {
+      if (data.paymentMethod === 'CARD' && !data.companyCardId) return false;
+      return true;
+    },
+    { message: 'Debe seleccionar la tarjeta utilizada', path: ['companyCardId'] },
+  );
 
 // ---------------------------------------------------------------
 // Actualizar gasto — todos los campos opcionales, sin projectId

@@ -258,6 +258,30 @@ export const quotationsApi = {
     `/api/v1/quotations/${id}/attachments/${attId}`,
 };
 
+// ── Tarjetas corporativas ─────────────────────────────────────
+export interface CompanyCard {
+  id:         number;
+  holderName: string;
+  lastFour:   string;
+  cardType:   string;
+  bank:       string;
+  isActive:   boolean;
+  _count?:    { expenses: number };
+}
+
+export const cardsApi = {
+  list:       (onlyActive = true) =>
+    api.get<{ success: boolean; data: CompanyCard[] }>('/cards', { params: { active: onlyActive } }),
+  getById:    (id: number) =>
+    api.get<{ success: boolean; data: CompanyCard }>(`/cards/${id}`),
+  create:     (data: unknown) =>
+    api.post<{ success: boolean; data: CompanyCard }>('/cards', data),
+  update:     (id: number, data: unknown) =>
+    api.put<{ success: boolean; data: CompanyCard }>(`/cards/${id}`, data),
+  deactivate: (id: number) =>
+    api.delete<{ success: boolean; data: CompanyCard }>(`/cards/${id}`),
+};
+
 // ── Monitoring ────────────────────────────────────────────────
 export interface SystemLog {
   id:         string;
