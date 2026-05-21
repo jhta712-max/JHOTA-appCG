@@ -58,11 +58,25 @@ function fmtDate(d: string) {
 }
 
 // ── CSV helpers ───────────────────────────────────────────────
+
+/** Normaliza cualquier variante del tipo de cuenta al enum que acepta el backend */
+function normalizeAccountType(raw: string): 'Cuenta de Ahorros' | 'Cuenta Corriente' | 'Cuenta Nómina' {
+  const v = raw.toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g, ''); // sin tildes
+  if (v.includes('corriente'))              return 'Cuenta Corriente';
+  if (v.includes('nomina') || v.includes('nomina')) return 'Cuenta Nómina';
+  return 'Cuenta de Ahorros'; // default: ahorros
+}
+
 function downloadBeneTemplate() {
   const csv = [
-    'nombre,banco,tipoCuenta,numeroCuenta,cedula,telefono',
+    'nombre,banco,tipoCuenta,numeroCuenta,cedula_rnc,telefono',
+    // Persona física con cédula
     'Juan Pérez,Banco Popular,Cuenta de Ahorros,000-000000-0,001-0000000-0,809-000-0000',
-    'Ferretería ABC,BHD León,Cuenta Corriente,001-111111-1,,',
+    // Empresa con RNC (9 dígitos, formato XXX-XXXXX-X)
+    'Ferretería ABC SRL,BHD León,Cuenta Corriente,001-111111-1,1-31-91767-4,',
+    // También se aceptan variantes cortas en tipoCuenta:
+    'Pedro Díaz,Banreservas,Ahorro,9606780159,,809-111-2222',
+    'Corporación XYZ,Banco Santa Cruz,Corriente,0710016620,1-05-04879-5,',
   ].join('\n');
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
@@ -74,14 +88,21 @@ function downloadBeneTemplate() {
 function parseCSVText(text: string): BeneForm[] {
   const lines = text.replace(/\r/g, '').split('\n').map((l) => l.trim()).filter(Boolean);
   if (lines.length < 2) return [];
-  // Remove BOM if present
+  // Eliminar BOM si existe
   const headerLine = lines[0].replace(/^﻿/, '');
-  // Map positions by header name (case-insensitive)
-  const headers = headerLine.split(',').map((h) => h.trim().toLowerCase().replace(/[^a-z]/g, ''));
-  const idx = (name: string) => headers.indexOf(name);
+  // Normalizar encabezados: minúsculas, sin tildes ni caracteres especiales
+  const headers = headerLine
+    .split(',')
+    .map((h) => h.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z_]/g, ''));
+  const idx = (name: string) => {
+    // Busca coincidencia exacta o parcial
+    const exact = headers.indexOf(name);
+    if (exact !== -1) return exact;
+    return headers.findIndex((h) => h.includes(name));
+  };
 
   return lines.slice(1).map((line) => {
-    // Handle quoted fields
+    // Parseo de campos respetando comillas
     const vals: string[] = [];
     let cur = ''; let inQ = false;
     for (const ch of line + ',') {
@@ -90,15 +111,19 @@ function parseCSVText(text: string): BeneForm[] {
       else { cur += ch; }
     }
     const g = (name: string, fallback = '') => vals[idx(name)]?.trim() || fallback;
+
+    // Buscar cédula/RNC por varios nombres de columna posibles
+    const cedulaRaw = g('cedula_rnc') || g('cedula') || g('rnc') || '';
+
     return {
       name:          g('nombre'),
       bank:          g('banco'),
-      accountType:   g('tipocuenta', 'Cuenta de Ahorros'),
+      accountType:   normalizeAccountType(g('tipocuenta', '')),
       accountNumber: g('numerocuenta'),
-      cedula:        g('cedula'),
+      cedula:        cedulaRaw,
       phone:         g('telefono'),
     };
-  }).filter((r) => r.name && r.bank && r.accountNumber);
+  }).filter((r) => r.name.trim() && r.bank.trim() && r.accountNumber.trim());
 }
 
 // ── WhatsApp share ────────────────────────────────────────────
@@ -681,7 +706,7 @@ export default function PaymentOrdersPage() {
             <Field label="Número de cuenta *"><input className="input-field font-mono" placeholder="000-00000-0" value={beneForm.accountNumber} onChange={(e) => setBeneForm((f) => ({ ...f, accountNumber: e.target.value }))} /></Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Cédula / RNC (opcional)"><input className="input-field" placeholder="001-0000000-0" value={beneForm.cedula} onChange={(e) => setBeneForm((f) => ({ ...f, cedula: e.target.value }))} /></Field>
+            <Field label="Cédula / RNC (opcional)"><input className="input-field" placeholder="001-0000000-0 ó 1-31-12345-6" value={beneForm.cedula} onChange={(e) => setBeneForm((f) => ({ ...f, cedula: e.target.value }))} /></Field>
             <Field label="Teléfono (opcional)"><input className="input-field" placeholder="809-000-0000" value={beneForm.phone} onChange={(e) => setBeneForm((f) => ({ ...f, phone: e.target.value }))} /></Field>
           </div>
           <ModalFooter onCancel={closeBeneModal} onSave={saveBene} saving={createBeneMut.isPending || updateBeneMut.isPending} label={editingBene ? 'Guardar cambios' : 'Registrar'} />
@@ -958,8 +983,13 @@ export default function PaymentOrdersPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <p className="text-sm font-bold text-blue-800 mb-1">📝 Paso 1 — Descarga la plantilla CSV</p>
                 <p className="text-xs text-blue-600 mb-3">Abre el archivo en Excel, llena los datos y guárdalo como CSV.</p>
-                <div className="text-xs text-blue-500 bg-white rounded-lg border border-blue-200 px-3 py-2 font-mono mb-3">
-                  nombre, banco, tipoCuenta, numeroCuenta, cedula*, telefono*
+                <div className="bg-white rounded-lg border border-blue-200 px-3 py-2 mb-3 space-y-1">
+                  <p className="text-xs font-mono text-blue-600">nombre, banco, tipoCuenta, numeroCuenta, cedula_rnc*, telefono*</p>
+                  <div className="text-xs text-blue-500 space-y-0.5">
+                    <p>• <strong>tipoCuenta:</strong> Ahorro · Corriente · Nómina (o la forma completa)</p>
+                    <p>• <strong>cedula_rnc:</strong> Cédula <span className="font-mono">001-0000000-0</span> o RNC <span className="font-mono">1-31-12345-6</span> — opcional</p>
+                    <p>• <strong>telefono:</strong> opcional</p>
+                  </div>
                 </div>
                 <button onClick={downloadBeneTemplate} className="btn-secondary text-sm flex items-center gap-2">
                   <Download className="w-4 h-4" /> Descargar plantilla CSV
