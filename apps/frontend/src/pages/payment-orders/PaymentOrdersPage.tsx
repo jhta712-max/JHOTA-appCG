@@ -133,26 +133,22 @@ function parseCSVText(text: string): BeneForm[] {
 }
 
 // ── WhatsApp share ────────────────────────────────────────────
-async function shareWhatsApp(text: string) {
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+// isMobile: true en Android/iPhone → usa Web Share API nativa (emoji intactos)
+// Desktop: WhatsApp Web corrompe emoji via URL → copiamos al portapapeles directo
+const isMobileDevice = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-  // En móvil: Web Share API pasa el texto nativamente sin encoding de URL
-  // → los emojis llegan intactos al portapapeles de WhatsApp
-  if (isMobile && navigator.share) {
-    try {
-      await navigator.share({ text });
-      return;
-    } catch {
-      // Usuario canceló o no es compatible — cae al fallback
+async function shareWhatsApp(text: string, onCopied?: () => void) {
+  if (isMobileDevice()) {
+    if (navigator.share) {
+      try { await navigator.share({ text }); return; } catch { /* cancelado */ }
     }
+    // Fallback móvil sin Web Share API
+    window.open(`whatsapp://send?text=${encodeURIComponent(text)}`, '_blank');
+  } else {
+    // Desktop: copiar al portapapeles (WA Web corrompe emoji en URL)
+    await navigator.clipboard.writeText(text);
+    onCopied?.();
   }
-
-  // Desktop / fallback: WhatsApp Web o deep link
-  const encoded = encodeURIComponent(text);
-  const url = isMobile
-    ? `whatsapp://send?text=${encoded}`
-    : `https://wa.me/?text=${encoded}`;
-  window.open(url, '_blank');
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -481,7 +477,7 @@ export default function PaymentOrdersPage() {
                   <ClipboardCopy className="w-3.5 h-3.5" /> Copiar todas
                 </button>
                 <button
-                  onClick={() => shareWhatsApp(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'))}
+                  onClick={() => shareWhatsApp(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                   <MessageCircle className="w-3.5 h-3.5" /> Compartir todas
                 </button>
@@ -579,7 +575,7 @@ export default function PaymentOrdersPage() {
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
                     <button
-                      onClick={() => shareWhatsApp(viewingOrder.generatedText!)}
+                      onClick={() => shareWhatsApp(viewingOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
@@ -652,7 +648,7 @@ export default function PaymentOrdersPage() {
                             className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg" title="Copiar mensaje">
                             <ClipboardCopy className="w-4 h-4" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? ''); }}
+                          <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web')); }}
                             className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg" title="Compartir por WhatsApp">
                             <MessageCircle className="w-4 h-4" />
                           </button>
@@ -788,7 +784,7 @@ export default function PaymentOrdersPage() {
                       className="btn-secondary text-sm flex items-center gap-2">
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
-                    <button onClick={() => shareWhatsApp(lastCreatedOrder.generatedText!)}
+                    <button onClick={() => shareWhatsApp(lastCreatedOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
@@ -808,7 +804,7 @@ export default function PaymentOrdersPage() {
                         <ClipboardCopy className="w-3 h-3" /> Copiar todas
                       </button>
                       <button
-                        onClick={() => shareWhatsApp(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'))}
+                        onClick={() => shareWhatsApp(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
                         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                         <MessageCircle className="w-3 h-3" /> Compartir todas
                       </button>
@@ -825,7 +821,7 @@ export default function PaymentOrdersPage() {
                             className="p-1 text-gray-400 hover:text-primary-600 rounded">
                             <ClipboardCopy className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => shareWhatsApp(o.generatedText ?? '')} title="WhatsApp"
+                          <button onClick={() => shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web'))} title="WhatsApp"
                             className="p-1 text-gray-400 hover:text-green-600 rounded">
                             <MessageCircle className="w-3.5 h-3.5" />
                           </button>
