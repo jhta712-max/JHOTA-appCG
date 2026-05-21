@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Receipt, Users,
-  Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity,
+  Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity, FileText,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
@@ -13,7 +13,8 @@ const navItems = [
   { to: '/projects',   icon: FolderOpen,      label: 'Proyectos' },
   { to: '/expenses',   icon: Receipt,         label: 'Gastos' },
   { to: '/reports',    icon: BarChart3,        label: 'Reportes' },
-  { to: '/payrolls',   icon: Wallet,           label: 'Nóminas' },
+  { to: '/payrolls',    icon: Wallet,    label: 'Nóminas' },
+  { to: '/quotations', icon: FileText, label: 'Cotizaciones' },
   { to: '/export',      icon: Download,  label: 'Exportar Excel', adminOnly: true },
   { to: '/users',       icon: Users,     label: 'Usuarios',       adminOnly: true },
   { to: '/categories',  icon: Tag,       label: 'Categorías',     adminOnly: true },

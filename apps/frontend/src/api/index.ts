@@ -197,6 +197,67 @@ export const ocrApi = {
   },
 };
 
+// ── Cotizaciones ──────────────────────────────────────────────
+import type {
+  Quotation, QuotationSummary, QuotationPayment, QuotationExpenseLink, QuotationAttachment,
+} from '../types/quotation';
+
+export const quotationsApi = {
+  list: (params?: Record<string, unknown>) =>
+    api.get<{ success: boolean; data: Quotation[]; pagination: { total: number; page: number; limit: number; totalPages: number; hasNextPage: boolean; hasPrevPage: boolean } }>('/quotations', { params }),
+
+  getById: (id: string) =>
+    api.get<{ success: boolean; data: Quotation }>(`/quotations/${id}`),
+
+  getSummary: (id: string) =>
+    api.get<{ success: boolean; data: QuotationSummary }>(`/quotations/${id}/summary`),
+
+  create: (data: unknown) =>
+    api.post<{ success: boolean; data: Quotation }>('/quotations', data),
+
+  update: (id: string, data: unknown) =>
+    api.put<{ success: boolean; data: Quotation }>(`/quotations/${id}`, data),
+
+  updateStatus: (id: string, data: { status: string; notes?: string }) =>
+    api.patch<{ success: boolean; data: Quotation }>(`/quotations/${id}/status`, data),
+
+  remove: (id: string) =>
+    api.delete(`/quotations/${id}`),
+
+  suggest: (params: { projectId?: string; supplierName?: string; amount?: number }) =>
+    api.get<{ success: boolean; data: Quotation[] }>('/quotations/suggest', { params }),
+
+  // Pagos
+  createPayment: (id: string, data: unknown) =>
+    api.post<{ success: boolean; data: QuotationPayment }>(`/quotations/${id}/payments`, data),
+
+  deletePayment: (id: string, paymentId: string) =>
+    api.delete(`/quotations/${id}/payments/${paymentId}`),
+
+  // Vínculos con gastos
+  linkExpense: (id: string, data: { expenseId: string; linkType: string; notes?: string }) =>
+    api.post<{ success: boolean; data: QuotationExpenseLink }>(`/quotations/${id}/links`, data),
+
+  unlinkExpense: (id: string, linkId: string) =>
+    api.delete(`/quotations/${id}/links/${linkId}`),
+
+  // Adjuntos
+  uploadAttachment: (id: string, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post<{ success: boolean; data: QuotationAttachment }>(
+      `/quotations/${id}/attachments`,
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    );
+  },
+  deleteAttachment: (id: string, attId: string) =>
+    api.delete(`/quotations/${id}/attachments/${attId}`),
+
+  attachmentUrl: (id: string, attId: string) =>
+    `/api/v1/quotations/${id}/attachments/${attId}`,
+};
+
 // ── Monitoring ────────────────────────────────────────────────
 export interface SystemLog {
   id:         string;

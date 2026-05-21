@@ -28,6 +28,9 @@ import PayrollsPage      from './pages/payroll/PayrollsPage';
 import PayrollDetailPage from './pages/payroll/PayrollDetailPage';
 import PayrollFormPage   from './pages/payroll/PayrollFormPage';
 import MonitoringPage    from './pages/admin/MonitoringPage';
+import QuotationsPage    from './pages/quotations/QuotationsPage';
+import QuotationFormPage from './pages/quotations/QuotationFormPage';
+import QuotationDetailPage from './pages/quotations/QuotationDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -98,6 +101,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Route path="payrolls/new"         element={<PayrollFormPage />} />
                 <Route path="payrolls/:id"         element={<PayrollDetailPage />} />
                 <Route path="payrolls/:id/edit"    element={<PayrollFormPage />} />
+
+                {/* Cotizaciones */}
+                <Route path="quotations"           element={<QuotationsPage />} />
+                <Route path="quotations/new"       element={<QuotationFormPage />} />
+                <Route path="quotations/:id"       element={<QuotationDetailPage />} />
+                <Route path="quotations/:id/edit"  element={<QuotationFormPage />} />
 
                 {/* Administración */}
                 <Route path="users"                element={<UsersPage />} />
