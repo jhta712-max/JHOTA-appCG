@@ -134,7 +134,14 @@ function parseCSVText(text: string): BeneForm[] {
 
 // ── WhatsApp share ────────────────────────────────────────────
 function shareWhatsApp(text: string) {
-  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  const encoded = encodeURIComponent(text);
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  // En móvil: deep link nativo que abre la app directamente
+  // En desktop: WhatsApp Web
+  const url = isMobile
+    ? `whatsapp://send?text=${encoded}`
+    : `https://wa.me/?text=${encoded}`;
+  window.open(url, '_blank');
 }
 
 // ────────────────────────────────────────────────────────────────
