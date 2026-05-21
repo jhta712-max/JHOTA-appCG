@@ -356,6 +356,8 @@ export const beneficiariesApi = {
     api.get<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`),
   create:     (data: unknown) =>
     api.post<{ success: boolean; data: Beneficiary }>('/beneficiaries', data),
+  bulkCreate: (rows: unknown[]) =>
+    api.post<{ success: boolean; data: { ok: number; err: number; results: { index: number; name: string; status: 'ok' | 'error'; error?: string }[] } }>('/beneficiaries/bulk', rows),
   update:     (id: string, data: unknown) =>
     api.put<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`, data),
   deactivate: (id: string) =>

@@ -4,16 +4,18 @@ import { authorize }    from '../../middlewares/authorize';
 import {
   listBeneficiaries, getBeneficiary,
   createBeneficiary, updateBeneficiary, deactivateBeneficiary,
+  bulkCreateBeneficiaries,
 } from './beneficiaries.controller';
 
 const router = Router();
 router.use(authenticate);
 router.use(authorize('admin', 'supervisor'));
 
-router.get('/',     listBeneficiaries);
-router.get('/:id',  getBeneficiary);
-router.post('/',    createBeneficiary);
-router.put('/:id',  updateBeneficiary);
-router.delete('/:id', deactivateBeneficiary);
+router.get('/',          listBeneficiaries);
+router.get('/:id',       getBeneficiary);
+router.post('/',         createBeneficiary);
+router.post('/bulk',     bulkCreateBeneficiaries);
+router.put('/:id',       updateBeneficiary);
+router.delete('/:id',    deactivateBeneficiary);
 
 export default router;

@@ -385,27 +385,29 @@ export default function PaymentOrdersPage() {
   const runImport = async () => {
     setImportProgress('importing');
     setImportErrors([]);
-    let ok = 0; const errs: string[] = [];
-    for (const row of importRows) {
-      try {
-        await beneficiariesApi.create({
-          name:          row.name,
-          bank:          row.bank,
-          accountType:   row.accountType,
-          accountNumber: row.accountNumber,
-          cedula:        row.cedula || undefined,
-          phone:         row.phone  || undefined,
-        });
-        ok++;
-      } catch (e: any) {
-        const msg = e?.response?.data?.error || e?.response?.data?.message || e?.message || 'Error desconocido';
-        errs.push(`"${row.name}": ${msg}`);
-      }
+    try {
+      const payload = importRows.map((r) => ({
+        name:          r.name,
+        bank:          r.bank,
+        accountType:   r.accountType,
+        accountNumber: r.accountNumber,
+        cedula:        r.cedula || undefined,
+        phone:         r.phone  || undefined,
+      }));
+      const res = await beneficiariesApi.bulkCreate(payload);
+      const { ok, err, results } = res.data.data;
+      const errs = results
+        .filter((r) => r.status === 'error')
+        .map((r) => `"${r.name}": ${r.error}`);
+      setImportResults({ ok, err });
+      setImportErrors(errs);
+      if (ok > 0) qc.invalidateQueries({ queryKey: ['beneficiaries'] });
+    } catch (e: any) {
+      const msg = e?.response?.data?.error || e?.message || 'Error de conexión';
+      setImportErrors([msg]);
+      setImportResults({ ok: 0, err: importRows.length });
     }
-    setImportResults({ ok, err: errs.length });
-    setImportErrors(errs);
     setImportProgress('done');
-    if (ok > 0) qc.invalidateQueries({ queryKey: ['beneficiaries'] });
   };
 
   // ── Render ────────────────────────────────────────────────────
