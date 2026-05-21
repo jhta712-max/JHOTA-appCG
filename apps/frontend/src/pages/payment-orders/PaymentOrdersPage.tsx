@@ -161,6 +161,7 @@ export default function PaymentOrdersPage() {
   const [importRows,     setImportRows]     = useState<BeneForm[]>([]);
   const [importProgress, setImportProgress] = useState<'idle' | 'importing' | 'done'>('idle');
   const [importResults,  setImportResults]  = useState({ ok: 0, err: 0 });
+  const [importErrors,   setImportErrors]   = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [editingBene,  setEditingBene]  = useState<Beneficiary | null>(null);
@@ -364,7 +365,7 @@ export default function PaymentOrdersPage() {
   const copyText = (text: string) => { navigator.clipboard.writeText(text).then(() => flash('📋 Texto copiado')); };
 
   // ── Import CSV helpers ────────────────────────────────────────
-  const closeImportModal = () => { setImportModal(false); setImportRows([]); setImportProgress('idle'); setImportResults({ ok: 0, err: 0 }); };
+  const closeImportModal = () => { setImportModal(false); setImportRows([]); setImportProgress('idle'); setImportResults({ ok: 0, err: 0 }); setImportErrors([]); };
 
   const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -383,16 +384,28 @@ export default function PaymentOrdersPage() {
 
   const runImport = async () => {
     setImportProgress('importing');
-    let ok = 0; let err = 0;
+    setImportErrors([]);
+    let ok = 0; const errs: string[] = [];
     for (const row of importRows) {
       try {
-        await beneficiariesApi.create({ ...row, cedula: row.cedula || undefined, phone: row.phone || undefined });
+        await beneficiariesApi.create({
+          name:          row.name,
+          bank:          row.bank,
+          accountType:   row.accountType,
+          accountNumber: row.accountNumber,
+          cedula:        row.cedula || undefined,
+          phone:         row.phone  || undefined,
+        });
         ok++;
-      } catch { err++; }
+      } catch (e: any) {
+        const msg = e?.response?.data?.error || e?.response?.data?.message || e?.message || 'Error desconocido';
+        errs.push(`"${row.name}": ${msg}`);
+      }
     }
-    setImportResults({ ok, err });
+    setImportResults({ ok, err: errs.length });
+    setImportErrors(errs);
     setImportProgress('done');
-    qc.invalidateQueries({ queryKey: ['beneficiaries'] });
+    if (ok > 0) qc.invalidateQueries({ queryKey: ['beneficiaries'] });
   };
 
   // ── Render ────────────────────────────────────────────────────
@@ -965,9 +978,13 @@ export default function PaymentOrdersPage() {
 
           {importProgress === 'done' ? (
             /* Resultado */
-            <div className="text-center py-8 space-y-3">
-              <CheckCircle className="w-14 h-14 text-green-500 mx-auto" />
-              <p className="text-lg font-bold text-gray-800">Importación completada</p>
+            <div className="space-y-4">
+              <div className="text-center py-4">
+                {importResults.ok > 0
+                  ? <CheckCircle className="w-14 h-14 text-green-500 mx-auto mb-3" />
+                  : <AlertCircle className="w-14 h-14 text-red-400 mx-auto mb-3" />}
+                <p className="text-lg font-bold text-gray-800">Importación completada</p>
+              </div>
               <div className="flex gap-4 justify-center">
                 <div className="bg-green-50 border border-green-200 rounded-xl px-6 py-3 text-center">
                   <p className="text-2xl font-bold text-green-700">{importResults.ok}</p>
@@ -980,7 +997,25 @@ export default function PaymentOrdersPage() {
                   </div>
                 )}
               </div>
-              <button onClick={closeImportModal} className="btn-primary mt-2">Cerrar</button>
+              {importErrors.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                  <p className="text-xs font-bold text-red-700 mb-2">Detalle de errores:</p>
+                  <ul className="space-y-1 max-h-40 overflow-y-auto">
+                    {importErrors.map((e, i) => (
+                      <li key={i} className="text-xs text-red-600 flex items-start gap-1">
+                        <span className="shrink-0">•</span> {e}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="flex gap-2 justify-center">
+                {importResults.err > 0 && (
+                  <button onClick={() => { setImportProgress('idle'); }}
+                    className="btn-secondary text-sm">Reintentar</button>
+                )}
+                <button onClick={closeImportModal} className="btn-primary">Cerrar</button>
+              </div>
             </div>
           ) : (
             <div className="space-y-5">
