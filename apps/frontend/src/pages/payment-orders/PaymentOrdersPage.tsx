@@ -74,7 +74,7 @@ export default function PaymentOrdersPage() {
   const { data: orders = [], isLoading: loadingOrders } = useQuery({
     queryKey: ['payment-orders', filterStatus],
     queryFn:  () => paymentOrdersApi.list(filterStatus ? { status: filterStatus } : {}),
-    select:   (r) => r.data as PaymentOrder[],
+    select:   (r) => (r.data as any).data as PaymentOrder[],
   });
 
   const { data: beneficiaries = [], isLoading: loadingBenes } = useQuery({
