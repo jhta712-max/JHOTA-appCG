@@ -33,7 +33,7 @@ export async function getAvailableExpenses(req: Request, res: Response, next: Ne
 export async function createPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     const data = createPaymentOrderSchema.parse(req.body);
-    const po   = await svc.createPaymentOrder(data, (req as any).user.id);
+    const po   = await svc.createPaymentOrder(data, (req as any).user.userId);
     res.status(201).json({ success: true, data: po });
   } catch (err) { next(err); }
 }
@@ -60,7 +60,7 @@ export async function unlinkExpense(req: Request, res: Response, next: NextFunct
 
 export async function markAsPaid(req: Request, res: Response, next: NextFunction) {
   try {
-    res.json({ success: true, data: await svc.markAsPaid(req.params.id, (req as any).user.id) });
+    res.json({ success: true, data: await svc.markAsPaid(req.params.id, (req as any).user.userId) });
   } catch (err) { next(err); }
 }
 
