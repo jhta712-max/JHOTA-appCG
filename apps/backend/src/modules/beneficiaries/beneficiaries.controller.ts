@@ -43,7 +43,7 @@ export async function getBeneficiary(req: Request, res: Response, next: NextFunc
 export async function createBeneficiary(req: Request, res: Response, next: NextFunction) {
   try {
     const data = createBeneficiarySchema.parse(normalizeRow(req.body));
-    const b    = await svc.createBeneficiary(data, (req as any).user.id);
+    const b    = await svc.createBeneficiary(data, (req as any).user.userId);
     res.status(201).json({ success: true, data: b });
   } catch (err) { next(err); }
 }
@@ -65,7 +65,7 @@ export async function deactivateBeneficiary(req: Request, res: Response, next: N
 export async function bulkCreateBeneficiaries(req: Request, res: Response, next: NextFunction) {
   try {
     const rows = z.array(z.unknown()).parse(req.body);
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
 
     const results: { index: number; name: string; status: 'ok' | 'error'; error?: string }[] = [];
 
