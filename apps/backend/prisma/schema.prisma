@@ -59,6 +59,10 @@ model User {
   payrollsCreated     Payroll[]           @relation("PayrollCreatedBy")
   payrollsApproved    Payroll[]           @relation("PayrollApprovedBy")
   payrollsVoided      Payroll[]           @relation("PayrollVoidedBy")
+  quotationsCreated       Quotation[]            @relation("QuotationCreatedBy")
+  quotationPayments       QuotationPayment[]     @relation("QuotationPaymentCreatedBy")
+  quotationLinks          QuotationExpenseLink[] @relation("QuotationLinkCreatedBy")
+  quotationAttachments    QuotationAttachment[]
 
   @@index([email])
   @@index([roleId])
@@ -89,6 +93,7 @@ model Project {
   cubicaciones  ProjectCubicacion[]
   assignments   ProjectAssignment[]
   payrolls      Payroll[]
+  quotations    Quotation[]
 
   @@index([code])
   @@index([status])
@@ -182,7 +187,8 @@ model ExpenseCategory {
   isSystem    Boolean  @default(false) @map("is_system")  // Las 8 categorías base no se eliminan
   createdAt   DateTime @default(now()) @map("created_at")
 
-  expenses Expense[]
+  expenses   Expense[]
+  quotations Quotation[]
 
   @@map("expense_categories")
 }
@@ -214,7 +220,9 @@ model Expense {
   voidedBy     User?            @relation("ExpenseVoidedBy", fields: [voidedById], references: [id])
   fiscalVoucher FiscalVoucher?
   attachments  Attachment[]
-  payroll      Payroll?         @relation("PayrollExpense")
+  payroll      Payroll?              @relation("PayrollExpense")
+  quotationPayment QuotationPayment? @relation("QuotationPaymentExpense")
+  quotationLink    QuotationExpenseLink? @relation("QuotationExpenseLink")
 
   @@index([projectId])
   @@index([expenseDate])
@@ -476,4 +484,141 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+// ============================================================
+// COTIZACIONES Y ANTICIPOS
+// ============================================================
+
+enum QuotationStatus {
+  PENDING           // Cotización recibida, pendiente de aprobación
+  APPROVED          // Aprobada para proceder
+  ADVANCE_PAID      // Al menos un anticipo pagado
+  IN_PROGRESS       // En ejecución / fabricación
+  PARTIAL_INVOICED  // Factura parcial recibida
+  INVOICED          // Factura completa recibida
+  PAID              // Pagada completamente
+  CANCELLED         // Cancelada
+
+  @@map("quotation_status")
+}
+
+enum QuotationLinkType {
+  ADVANCE          // Anticipo (pago previo a factura)
+  PARTIAL_INVOICE  // Factura parcial
+  FINAL_INVOICE    // Factura final
+  COMPLEMENTARY    // Gasto complementario relacionado
+
+  @@map("quotation_link_type")
+}
+
+model Quotation {
+  id              String          @id @default(uuid()) @db.Uuid
+  projectId       String          @map("project_id") @db.Uuid
+  number          Int             // COTI-001 por proyecto — autoincremental
+  categoryId      Int?            @map("category_id")
+
+  // Datos del suplidor
+  supplierName    String          @map("supplier_name") @db.VarChar(200)
+  supplierRnc     String?         @map("supplier_rnc") @db.VarChar(11)
+
+  // Datos del documento
+  quotationNumber String?         @map("quotation_number") @db.VarChar(50)
+  quotationDate   DateTime        @map("quotation_date") @db.Date
+  validUntil      DateTime?       @map("valid_until") @db.Date
+
+  // Montos
+  currency        String          @default("DOP") @db.VarChar(3)
+  subtotal        Decimal         @db.Decimal(15, 2)
+  itbisAmount     Decimal         @default(0) @map("itbis_amount") @db.Decimal(15, 2)
+  total           Decimal         @db.Decimal(15, 2)
+
+  // Condiciones comerciales
+  description     String          @db.Text
+  paymentTerms    String?         @map("payment_terms") @db.Text
+  advancePct      Decimal?        @map("advance_pct") @db.Decimal(5, 2)
+  deliveryDays    Int?            @map("delivery_days")
+  observations    String?         @db.Text
+
+  // Estado y trazabilidad
+  status          QuotationStatus @default(PENDING)
+  notes           String?         @db.Text
+  createdById     String          @map("created_by") @db.Uuid
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  project         Project              @relation(fields: [projectId], references: [id])
+  category        ExpenseCategory?     @relation(fields: [categoryId], references: [id])
+  createdBy       User                 @relation("QuotationCreatedBy", fields: [createdById], references: [id])
+  payments        QuotationPayment[]
+  expenseLinks    QuotationExpenseLink[]
+  attachments     QuotationAttachment[]
+
+  @@unique([projectId, number])
+  @@index([projectId])
+  @@index([status])
+  @@index([supplierName])
+  @@map("quotations")
+}
+
+// Anticipos y pagos parciales vinculados a una cotización
+model QuotationPayment {
+  id            String        @id @default(uuid()) @db.Uuid
+  quotationId   String        @map("quotation_id") @db.Uuid
+  expenseId     String?       @unique @map("expense_id") @db.Uuid
+  sequence      Int
+  amount        Decimal       @db.Decimal(15, 2)
+  paymentDate   DateTime      @map("payment_date") @db.Date
+  paymentMethod PaymentMethod
+  description   String        @db.VarChar(300)
+  notes         String?       @db.Text
+  createdById   String        @map("created_by") @db.Uuid
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  quotation     Quotation     @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  expense       Expense?      @relation("QuotationPaymentExpense", fields: [expenseId], references: [id])
+  createdBy     User          @relation("QuotationPaymentCreatedBy", fields: [createdById], references: [id])
+
+  @@unique([quotationId, sequence])
+  @@index([quotationId])
+  @@index([expenseId])
+  @@map("quotation_payments")
+}
+
+// Vínculo de conciliación: cotización <-> gasto/factura final
+model QuotationExpenseLink {
+  id            String            @id @default(uuid()) @db.Uuid
+  quotationId   String            @map("quotation_id") @db.Uuid
+  expenseId     String            @unique @map("expense_id") @db.Uuid
+  linkType      QuotationLinkType
+  notes         String?           @db.Text
+  createdById   String            @map("created_by") @db.Uuid
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  quotation     Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  expense       Expense   @relation("QuotationExpenseLink", fields: [expenseId], references: [id])
+  createdBy     User      @relation("QuotationLinkCreatedBy", fields: [createdById], references: [id])
+
+  @@index([quotationId])
+  @@map("quotation_expense_links")
+}
+
+// Adjuntos de cotizaciones (separado de Attachment para no tocar estructura existente)
+model QuotationAttachment {
+  id           String    @id @default(uuid()) @db.Uuid
+  quotationId  String    @map("quotation_id") @db.Uuid
+  uploadedById String    @map("uploaded_by") @db.Uuid
+  fileName     String    @map("file_name") @db.VarChar(255)
+  filePath     String    @map("file_path") @db.VarChar(500)
+  fileSize     Int       @map("file_size")
+  mimeType     String    @map("mime_type") @db.VarChar(100)
+  isPrimary    Boolean   @default(false) @map("is_primary")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  quotation    Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  uploadedBy   User      @relation(fields: [uploadedById], references: [id])
+
+  @@index([quotationId])
+  @@map("quotation_attachments")
 }
