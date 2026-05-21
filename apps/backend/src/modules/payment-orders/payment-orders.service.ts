@@ -193,16 +193,55 @@ export async function unlinkExpense(id: string) {
   });
 }
 
-// ── Marcar como pagada ────────────────────────────────────────
+// ── Marcar como pagada + auto-crear gasto ─────────────────────
 export async function markAsPaid(id: string, userId: string) {
   const po = await getPaymentOrderById(id);
   if (po.status === 'PAID')   throw new AppError(400, 'La orden ya está marcada como pagada', 'ALREADY_PAID');
   if (po.status === 'VOIDED') throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
 
-  return prisma.paymentOrder.update({
-    where: { id },
-    data:  { status: 'PAID', paidAt: new Date(), paidById: userId },
-    include: INCLUDE,
+  // Categoría según tipo de orden
+  const categoryName =
+    po.orderType === 'PAYROLL'   ? 'Mano de obra' :
+    po.orderType === 'MATERIALS' ? 'Materiales'   : 'Servicios';
+
+  const category = await prisma.expenseCategory.findFirst({
+    where: { name: categoryName, isActive: true },
+  });
+  if (!category) throw new AppError(500, 'Categoría de gasto no disponible', 'CATEGORY_NOT_FOUND');
+
+  return prisma.$transaction(async (tx) => {
+    // 1. Marcar la orden como pagada
+    await tx.paymentOrder.update({
+      where: { id },
+      data:  { status: 'PAID', paidAt: new Date(), paidById: userId },
+    });
+
+    // 2. Crear gasto solo si la orden no tiene uno ya vinculado
+    if (!po.expenseId) {
+      const opRef = `OP-${String(po.number).padStart(3, '0')}`;
+      const expense = await tx.expense.create({
+        data: {
+          projectId:     po.projectId,
+          categoryId:    category.id,
+          userId,
+          expenseDate:   new Date(),
+          amount:        po.amount,
+          description:   `[${opRef}] ${po.concept}`,
+          paymentMethod: 'TRANSFER',
+          hasFiscalDoc:  false,
+          notes:         `Auto-generado al confirmar ${opRef}. Beneficiario: ${(po as any).beneficiary?.name ?? po.beneficiaryId}. Empresa: ${po.payingCompany}.`,
+        },
+      });
+
+      // 3. Vincular el gasto recién creado a la orden
+      await tx.paymentOrder.update({
+        where: { id },
+        data:  { expenseId: expense.id },
+      });
+    }
+
+    // 4. Devolver la orden actualizada con todos los includes
+    return tx.paymentOrder.findUniqueOrThrow({ where: { id }, include: INCLUDE });
   });
 }
 
