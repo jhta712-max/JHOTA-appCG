@@ -243,7 +243,7 @@ export async function updateLine(payrollId: string, lineId: string, data: Upsert
 export async function deleteLine(payrollId: string, lineId: string) {
   const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
   if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
-  if (!['DRAFT', 'APPROVED'].includes(payroll.status)) throw new AppError(400, 'No se pueden eliminar líneas en este estado', 'INVALID_STATUS');
+  if (payroll.status !== 'DRAFT') throw new AppError(400, 'Solo se modifican nóminas en borrador', 'INVALID_STATUS');
 
   const line = await prisma.payrollLine.findFirst({ where: { id: lineId, payrollId } });
   if (!line) throw new AppError(404, 'Línea no encontrada', 'NOT_FOUND');
@@ -256,17 +256,6 @@ export async function deleteLine(payrollId: string, lineId: string) {
   });
 
   return getPayrollById(payrollId);
-}
-
-// ─── REVERT TO DRAFT (APPROVED → DRAFT) ──────────────────────
-export async function revertToDraft(id: string) {
-  const payroll = await getPayrollById(id);
-  if (payroll.status !== 'APPROVED') throw new AppError(400, 'Solo se puede revertir a borrador una nómina aprobada', 'INVALID_STATUS');
-  return prisma.payroll.update({
-    where: { id },
-    data:  { status: 'DRAFT', approvedById: null, approvedAt: null },
-    include: PAYROLL_INCLUDE,
-  });
 }
 
 // ─── APPROVE (DRAFT → APPROVED) + auto-create Expense ────────
@@ -368,81 +357,6 @@ export async function voidPayroll(id: string, voidedById: string, data: VoidPayr
       include: PAYROLL_INCLUDE,
     });
   });
-}
-
-// ─── REGISTRAR COMPROBANTE POR LÍNEA ─────────────────────────
-export async function recordLinePayment(
-  payrollId: string,
-  lineId:    string,
-  data: { paymentBank?: string; paymentReference?: string; paidAt?: string },
-) {
-  const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
-  if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
-  if (!['APPROVED', 'PAID'].includes(payroll.status)) {
-    throw new AppError(400, 'Solo se registran comprobantes en nóminas aprobadas o pagadas', 'INVALID_STATUS');
-  }
-  const line = await prisma.payrollLine.findFirst({ where: { id: lineId, payrollId } });
-  if (!line) throw new AppError(404, 'Línea no encontrada', 'NOT_FOUND');
-
-  return prisma.payrollLine.update({
-    where: { id: lineId },
-    data:  {
-      paymentBank:      data.paymentBank      ?? null,
-      paymentReference: data.paymentReference ?? null,
-      paidAt:           data.paidAt ? new Date(data.paidAt + 'T12:00:00.000Z') : null,
-    },
-  });
-}
-
-// ─── IMPORTAR LÍNEAS DESDE ÓRDENES DE PAGO VINCULADAS ────────
-export async function importLinesFromOrders(payrollId: string) {
-  const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
-  if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
-  if (!['DRAFT', 'APPROVED'].includes(payroll.status)) {
-    throw new AppError(400, 'Solo se puede importar en nóminas en borrador o aprobadas', 'INVALID_STATUS');
-  }
-
-  // Buscar todas las órdenes de pago vinculadas a esta nómina
-  const orders = await prisma.paymentOrder.findMany({
-    where:   { payrollId },
-    include: { beneficiary: true },
-  });
-
-  if (orders.length === 0) throw new AppError(400, 'No hay órdenes de pago vinculadas a esta nómina', 'NO_ORDERS');
-
-  // Obtener número de línea actual más alto
-  const lastLine = await prisma.payrollLine.findFirst({
-    where:   { payrollId },
-    orderBy: { lineNumber: 'desc' },
-  });
-  let lineNum = (lastLine?.lineNumber ?? 0) + 1;
-
-  const created = [];
-  for (const order of orders) {
-    const amount = Number(order.amount);
-    const line = await prisma.payrollLine.create({
-      data: {
-        payrollId,
-        lineNumber:   lineNum++,
-        supplierName: order.beneficiary?.name ?? order.payingCompany,
-        description:  order.concept,
-        quantity:     1,
-        unit:         'PA',
-        unitPrice:    amount,
-        subtotal:     amount,
-        bankName:     order.beneficiary?.bank ?? '',
-        bankAccount:  order.beneficiary?.accountNumber ?? '',
-      },
-    });
-    created.push(line);
-  }
-
-  // Recalcular total de la nómina
-  const allLines = await prisma.payrollLine.findMany({ where: { payrollId } });
-  const newTotal = allLines.reduce((s, l) => s + Number(l.subtotal), 0);
-  await prisma.payroll.update({ where: { id: payrollId }, data: { totalAmount: newTotal } });
-
-  return getPayrollById(payrollId);
 }
 
 // ─── DELETE (DRAFT only) ──────────────────────────────────────

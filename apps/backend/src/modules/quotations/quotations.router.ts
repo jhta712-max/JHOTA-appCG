@@ -11,15 +11,13 @@ import {
   createQuotationSchema,
   updateQuotationSchema,
   updateStatusSchema,
-  changeProjectSchema,
   createPaymentSchema,
   linkExpenseSchema,
   quotationQuerySchema,
 } from './quotations.schema';
 import * as ctrl from './quotations.controller';
 
-// @ts-ignore
-const router: any = Router();
+const router = Router();
 
 // ── Multer para adjuntos de cotizaciones ──────────────────────
 const upload = multer({
@@ -84,13 +82,6 @@ router.patch('/:id/status',
   authorize('admin', 'supervisor'),
   validate(updateStatusSchema),
   ctrl.updateStatus,
-);
-
-// PATCH /api/v1/quotations/:id/project — solo admin (migra todos los datos)
-router.patch('/:id/project',
-  authorize('admin'),
-  validate(changeProjectSchema),
-  ctrl.changeProject,
 );
 
 // DELETE /api/v1/quotations/:id — solo admin y supervisor

@@ -4,18 +4,19 @@ RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copiar archivos de este directorio (apps/backend) que Render proporciona
-COPY . .
+# Copiar archivos de dependencias y prisma
+COPY package.json ./
+COPY prisma ./prisma/
+COPY tsconfig.json ./
+COPY src ./src
 
-# Instalar dependencias con npm
+# Instalar dependencias
 RUN npm install
 
-# Generar cliente Prisma
+# Generar cliente Prisma y compilar TypeScript
 RUN npx prisma generate
-
-# Compilar TypeScript (ignora errores de tipo pre-existentes)
-RUN npm run build || true
+RUN npm run build
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js 2>&1"]

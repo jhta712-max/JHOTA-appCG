@@ -51,7 +51,6 @@ model User {
   attachments   Attachment[]
   auditLogs     AuditLog[]
   refreshTokens RefreshToken[]
-  passwordResets PasswordReset[]
   invitationsSent Invitation[]     @relation("InvitedBy")
   addendums           ProjectAddendum[]   @relation("AddendumCreatedBy")
   cubicaciones        ProjectCubicacion[] @relation("CubicacionCreatedBy")
@@ -67,7 +66,6 @@ model User {
   beneficiaries           Beneficiary[]          @relation("BeneficiaryCreatedBy")
   paymentOrdersCreated    PaymentOrder[]         @relation("PaymentOrderCreatedBy")
   paymentOrdersPaid       PaymentOrder[]         @relation("PaymentOrderPaidBy")
-  officeExpenses          OfficeExpense[]        @relation("OfficeExpenseCreatedBy")
 
   @@index([email])
   @@index([roleId])
@@ -87,7 +85,6 @@ model Project {
   endDate         DateTime?     @map("end_date") @db.Date
   status          ProjectStatus @default(ACTIVE)
   estimatedBudget Decimal       @default(0) @map("estimated_budget") @db.Decimal(15, 2)
-  batchesEnabled  Boolean       @default(false) @map("batches_enabled")  // Habilitar modo lotes con múltiples items
   notes           String?       @db.Text
   createdById     String        @map("created_by") @db.Uuid
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -101,53 +98,10 @@ model Project {
   payrolls      Payroll[]
   quotations    Quotation[]
   paymentOrders PaymentOrder[]
-  batches       Batch[]
 
   @@index([code])
   @@index([status])
   @@map("projects")
-}
-
-// ============================================================
-// LOTES Y ITEMS (para proyectos con múltiples ubicaciones)
-// ============================================================
-model Batch {
-  id          String   @id @default(uuid()) @db.Uuid
-  projectId   String   @map("project_id") @db.Uuid
-  code        String   @db.VarChar(50)  // ej. LOTE-001
-  name        String   @db.VarChar(200)
-  description String?  @db.Text
-  totalBudget Decimal  @default(0) @map("total_budget") @db.Decimal(15, 2)
-  status      String   @default("ACTIVE") @db.VarChar(20)  // ACTIVE, COMPLETED, CANCELLED
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  project Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  items   BatchItem[]
-
-  @@unique([projectId, code])
-  @@index([projectId])
-  @@map("batches")
-}
-
-model BatchItem {
-  id         String   @id @default(uuid()) @db.Uuid
-  batchId    String   @map("batch_id") @db.Uuid
-  code       String   @db.VarChar(50)  // ej. ITEM-001
-  description String  @db.Text
-  provincia  String   @db.VarChar(100)  // Provincia
-  sector     String   @db.VarChar(200)  // Sector / Barrio
-  budget     Decimal  @default(0) @db.Decimal(15, 2)
-  status     String   @default("ACTIVE") @db.VarChar(20)  // ACTIVE, COMPLETED, CANCELLED
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  batch     Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  expenses  Expense[]
-
-  @@unique([batchId, code])
-  @@index([batchId])
-  @@map("batch_items")
 }
 
 // ============================================================
@@ -238,8 +192,7 @@ model CompanyCard {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  expenses       Expense[]
-  officeExpenses OfficeExpense[]
+  expenses Expense[]
 
   @@map("company_cards")
 }
@@ -268,7 +221,6 @@ model ExpenseCategory {
 model Expense {
   id            String        @id @default(uuid()) @db.Uuid
   projectId     String        @map("project_id") @db.Uuid
-  batchItemId   String?       @map("batch_item_id") @db.Uuid  // Opcional: vinculación a item de lote
   categoryId    Int           @map("category_id")
   userId        String        @map("user_id") @db.Uuid
   expenseDate   DateTime      @map("expense_date") @db.Date
@@ -276,12 +228,8 @@ model Expense {
   description   String        @db.Text
   paymentMethod PaymentMethod @map("payment_method")
   companyCardId Int?          @map("company_card_id")          // Requerido si paymentMethod = CARD
-  hasFiscalDoc    Boolean       @default(false) @map("has_fiscal_doc")
-  // Moneda extranjera (opcional)
-  foreignAmount   Decimal?      @map("foreign_amount")   @db.Decimal(15, 2)
-  foreignCurrency String?       @map("foreign_currency") @db.VarChar(10)  // USD, EUR, etc.
-  exchangeRate    Decimal?      @map("exchange_rate")    @db.Decimal(10, 4) // 1 USD = X DOP
-  notes           String?       @db.Text
+  hasFiscalDoc  Boolean       @default(false) @map("has_fiscal_doc")
+  notes         String?       @db.Text
   status        ExpenseStatus @default(ACTIVE)
   voidedAt      DateTime?     @map("voided_at")
   voidedById    String?       @map("voided_by") @db.Uuid
@@ -290,7 +238,6 @@ model Expense {
   updatedAt     DateTime      @updatedAt @map("updated_at")
 
   project      Project          @relation(fields: [projectId], references: [id])
-  batchItem    BatchItem?       @relation(fields: [batchItemId], references: [id])
   category     ExpenseCategory  @relation(fields: [categoryId], references: [id])
   companyCard  CompanyCard?     @relation(fields: [companyCardId], references: [id])
   registeredBy User             @relation("ExpenseRegisteredBy", fields: [userId], references: [id])
@@ -303,7 +250,6 @@ model Expense {
   paymentOrder   PaymentOrder?         @relation("PaymentOrderExpense")
 
   @@index([projectId])
-  @@index([batchItemId])
   @@index([expenseDate])
   @@index([categoryId])
   @@index([userId])
@@ -484,13 +430,9 @@ model PayrollLine {
   subtotal    Decimal  @db.Decimal(15, 2)     // quantity * unitPrice (computed, stored)
   notes        String?  @db.VarChar(300)
   supplierName String?  @map("supplier_name") @db.VarChar(200) // Nombre del suplidor / trabajador
-  bankName          String?   @map("bank_name")          @db.VarChar(100) // Banco receptor del beneficiario
-  bankAccount       String?   @map("bank_account")        @db.VarChar(100) // Cuenta del beneficiario
-  // Comprobante de pago individual
-  paymentBank       String?   @map("payment_bank")        @db.VarChar(100) // Banco desde donde se transfirió
-  paymentReference  String?   @map("payment_reference")   @db.VarChar(100) // No. de transacción / comprobante
-  paidAt            DateTime? @map("paid_at")                               // Fecha de la transferencia
-  createdAt         DateTime  @default(now()) @map("created_at")
+  bankName     String?  @map("bank_name")     @db.VarChar(100) // Nombre del banco
+  bankAccount  String?  @map("bank_account")  @db.VarChar(100) // No. cuenta bancaria para depositar
+  createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   payroll Payroll @relation(fields: [payrollId], references: [id], onDelete: Cascade)
@@ -569,24 +511,6 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
-}
-
-// ============================================================
-// PASSWORD RESET TOKENS
-// ============================================================
-model PasswordReset {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  token     String   @unique @db.VarChar(100)
-  expiresAt DateTime @map("expires_at")
-  usedAt    DateTime? @map("used_at")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([token])
-  @@map("password_resets")
 }
 
 // ============================================================
@@ -768,51 +692,6 @@ model PaymentOrder {
   @@index([beneficiaryId])
   @@index([createdAt])
   @@map("payment_orders")
-}
-
-// ============================================================
-// GASTOS DE OFICINA (independiente de proyectos)
-// ============================================================
-model OfficeExpense {
-  id            String              @id @default(uuid()) @db.Uuid
-  category      OfficeExpenseCategory
-  description   String              @db.VarChar(500)
-  amount        Decimal             @db.Decimal(12, 2)
-  expenseDate   DateTime            @map("expense_date") @db.Date
-  paymentMethod PaymentMethod       @map("payment_method")
-  companyCardId Int?                @map("company_card_id")
-  hasFiscalDoc  Boolean             @default(false) @map("has_fiscal_doc")
-  fiscalDocNum  String?             @map("fiscal_doc_num") @db.VarChar(50)
-  notes         String?             @db.Text
-  receiptUrl    String?             @map("receipt_url") @db.VarChar(500)
-  status        OfficeExpenseStatus @default(ACTIVE)
-  createdById   String              @map("created_by") @db.Uuid
-  createdAt     DateTime            @default(now()) @map("created_at")
-  updatedAt     DateTime            @updatedAt @map("updated_at")
-
-  createdBy     User                @relation("OfficeExpenseCreatedBy", fields: [createdById], references: [id])
-  companyCard   CompanyCard?        @relation(fields: [companyCardId], references: [id])
-
-  @@index([category])
-  @@index([expenseDate])
-  @@index([createdAt])
-  @@map("office_expenses")
-}
-
-enum OfficeExpenseCategory {
-  CLEANING_SUPPLIES
-  CONSUMABLES
-  OFFICE_SERVICES
-  OTHER
-
-  @@map("office_expense_category")
-}
-
-enum OfficeExpenseStatus {
-  ACTIVE
-  VOIDED
-
-  @@map("office_expense_status")
 }
 
 // Adjuntos de cotizaciones (separado de Attachment para no tocar estructura existente)

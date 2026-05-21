@@ -6,9 +6,8 @@ import {
   FileText, CreditCard, Clock, Percent, Paperclip,
   Plus, CheckCircle, X, Loader2, ExternalLink, Receipt,
 } from 'lucide-react';
-import { quotationsApi, projectsApi } from '../../api';
+import { quotationsApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
-import type { Project } from '../../types';
 import {
   QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS,
   QUOTATION_LINK_LABELS, PAYMENT_METHOD_LABELS_Q,
@@ -47,19 +46,15 @@ export default function QuotationDetailPage() {
   const qc       = useQueryClient();
   const user     = useAuthStore((s) => s.user);
   const isAdmin  = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
-  const isAdminOnly = user?.role?.name === 'admin';
 
   // UI state
-  const [showStatusForm,     setShowStatusForm]     = useState(false);
-  const [newStatus,          setNewStatus]          = useState('');
-  const [statusNote,         setStatusNote]         = useState('');
-  const [showProjectForm,    setShowProjectForm]    = useState(false);
-  const [newProjectId,       setNewProjectId]       = useState('');
-  const [showPaymentForm,    setShowPaymentForm]    = useState(false);
-  const [showDeleteConf,     setShowDeleteConf]     = useState(false);
-  const [payErr,             setPayErr]             = useState('');
-  const [statusErr,          setStatusErr]          = useState('');
-  const [projectErr,         setProjectErr]         = useState('');
+  const [showStatusForm,  setShowStatusForm]  = useState(false);
+  const [newStatus,       setNewStatus]       = useState('');
+  const [statusNote,      setStatusNote]      = useState('');
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showDeleteConf,  setShowDeleteConf]  = useState(false);
+  const [payErr,          setPayErr]          = useState('');
+  const [statusErr,       setStatusErr]       = useState('');
 
   // Payment form
   const [payForm, setPayForm] = useState({
@@ -82,38 +77,6 @@ export default function QuotationDetailPage() {
     enabled:  !!id,
   });
 
-  const { data: projects, isLoading: projectsLoading, error: projectsError } = useQuery({
-    queryKey: ['projects-list'],
-    queryFn:  async () => {
-      try {
-        const result = await projectsApi.list();
-        console.log('[DEBUG] Full API response:', result);
-        console.log('[DEBUG] Response data structure:', result?.data);
-        return result;
-      } catch (err: any) {
-        console.error('[DEBUG] Projects error:', err);
-        console.error('[DEBUG] Error details:', err?.response?.data || err?.message);
-        throw err;
-      }
-    },
-    select:   (r: any) => {
-      try {
-        // r es la respuesta de axios: { data: PaginatedResponse, status, headers, ... }
-        // r.data es PaginatedResponse: { success, data: Project[], pagination }
-        // r.data.data es Project[]
-        const projects = r?.data?.data;
-        console.log('[DEBUG] Selected projects count:', projects?.length);
-        return Array.isArray(projects) ? projects : [];
-      } catch (err) {
-        console.error('[DEBUG] Error in select:', err);
-        return [];
-      }
-    },
-    staleTime: 0,
-    gcTime: 0,
-    retry: false,
-  });
-
   // Mutations
   const statusMutation = useMutation({
     mutationFn: () => quotationsApi.updateStatus(id!, { status: newStatus, notes: statusNote || undefined }),
@@ -123,16 +86,6 @@ export default function QuotationDetailPage() {
       setShowStatusForm(false); setNewStatus(''); setStatusNote(''); setStatusErr('');
     },
     onError: (err: any) => setStatusErr(err.response?.data?.error ?? 'Error al actualizar estado'),
-  });
-
-  const projectMutation = useMutation({
-    mutationFn: () => quotationsApi.changeProject(id!, { projectId: newProjectId }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['quotation', id] });
-      qc.invalidateQueries({ queryKey: ['quotations'] });
-      setShowProjectForm(false); setNewProjectId(''); setProjectErr('');
-    },
-    onError: (err: any) => setProjectErr(err.response?.data?.error ?? 'Error al cambiar proyecto'),
   });
 
   const paymentMutation = useMutation({
@@ -234,17 +187,9 @@ export default function QuotationDetailPage() {
           </span>
         )}
         {isAdmin && !isCancelled && !isPaid && (
-          <>
-            <button onClick={() => setShowStatusForm(s => !s)}
-              className="text-xs text-primary-600 hover:text-primary-700 font-medium underline">
-              Cambiar estado
-            </button>
-          </>
-        )}
-        {isAdminOnly && !isCancelled && !isPaid && (
-          <button onClick={() => setShowProjectForm(s => !s)}
+          <button onClick={() => setShowStatusForm(s => !s)}
             className="text-xs text-primary-600 hover:text-primary-700 font-medium underline">
-            Cambiar proyecto
+            Cambiar estado
           </button>
         )}
       </div>
@@ -273,42 +218,6 @@ export default function QuotationDetailPage() {
               disabled={!newStatus || statusMutation.isPending}
               onClick={() => statusMutation.mutate()}>
               {statusMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirmar'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Form cambio de proyecto */}
-      {showProjectForm && (
-        <div className="card p-4 space-y-3 border-2 border-amber-200">
-          <h3 className="font-semibold text-gray-800 text-sm">Cambiar proyecto</h3>
-          <p className="text-xs text-gray-500">Se migrarán automáticamente todos los gastos vinculados al nuevo proyecto.</p>
-          {projectsLoading && (
-            <p className="text-xs text-amber-600 mb-2">Cargando proyectos...</p>
-          )}
-          {projectsError && (
-            <p className="text-xs text-red-600 mb-2">Error al cargar proyectos: {String(projectsError)}</p>
-          )}
-          <select className="input-field" value={newProjectId}
-            onChange={(e) => setNewProjectId(e.target.value)}>
-            <option value="">Seleccionar nuevo proyecto...</option>
-            {projects
-              ?.filter((p: Project) => p.id !== quotation.projectId)
-              .filter((p: Project) => p.status === 'ACTIVE')
-              .map((p: Project) => (
-                <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
-              ))}
-          </select>
-          {projectErr && <p className="text-xs text-red-500">{projectErr}</p>}
-          <div className="flex gap-2">
-            <button className="btn-secondary text-sm flex-1"
-              onClick={() => { setShowProjectForm(false); setNewProjectId(''); setProjectErr(''); }}>
-              Cancelar
-            </button>
-            <button className="btn-primary text-sm flex-1"
-              disabled={!newProjectId || projectMutation.isPending}
-              onClick={() => projectMutation.mutate()}>
-              {projectMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Cambiar proyecto'}
             </button>
           </div>
         </div>

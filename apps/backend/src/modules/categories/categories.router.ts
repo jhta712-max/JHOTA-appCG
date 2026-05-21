@@ -5,8 +5,7 @@ import { validate }     from '../../middlewares/validate';
 import { createCategorySchema, updateCategorySchema } from './categories.schema';
 import * as ctrl from './categories.controller';
 
-// @ts-ignore
-const router: any = Router();
+const router = Router();
 
 router.use(authenticate);
 

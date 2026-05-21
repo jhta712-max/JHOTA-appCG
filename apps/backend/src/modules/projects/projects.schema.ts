@@ -22,7 +22,6 @@ export const updateProjectSchema = createProjectSchema
   .partial()
   .extend({
     status: z.enum(['ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED']).optional(),
-    batchesEnabled: z.boolean().optional(),
   });
 
 export const projectQuerySchema = z.object({
@@ -40,7 +39,7 @@ export type ProjectQuery       = z.infer<typeof projectQuerySchema>;
 
 // ── Adendas de contrato ───────────────────────────────────────
 export const createAddendumSchema = z.object({
-  amount:      z.coerce.number().nonnegative('El monto no puede ser negativo'),
+  amount:      z.coerce.number().positive('El monto debe ser mayor a 0'),
   description: z.string().min(3, 'La descripción es requerida').max(1000),
   date:        z.string().date('Formato inválido, use YYYY-MM-DD'),
 });

@@ -14,7 +14,6 @@ import ProjectsPage       from './pages/projects/ProjectsPage';
 import ProjectDetailPage  from './pages/projects/ProjectDetailPage';
 import ProjectFormPage     from './pages/projects/ProjectFormPage';
 import ProjectFinancialPage from './pages/projects/ProjectFinancialPage';
-import ImportBatchesPage   from './pages/projects/ImportBatchesPage';
 import ExpensesPage       from './pages/expenses/ExpensesPage';
 import NewExpensePage     from './pages/expenses/NewExpensePage';
 import ExpenseDetailPage  from './pages/expenses/ExpenseDetailPage';
@@ -23,17 +22,14 @@ import UsersPage          from './pages/users/UsersPage';
 import CategoriesPage     from './pages/categories/CategoriesPage';
 import ReportsPage        from './pages/reports/ReportsPage';
 import ExportPage         from './pages/reports/ExportPage';
-import AcceptInvitePage   from './pages/invitations/AcceptInvitePage';
-import SetupPage          from './pages/auth/SetupPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import ResetPasswordPage  from './pages/auth/ResetPasswordPage';
+import AcceptInvitePage  from './pages/invitations/AcceptInvitePage';
+import SetupPage         from './pages/auth/SetupPage';
 import PayrollsPage      from './pages/payroll/PayrollsPage';
 import PayrollDetailPage from './pages/payroll/PayrollDetailPage';
 import PayrollFormPage   from './pages/payroll/PayrollFormPage';
 import MonitoringPage    from './pages/admin/MonitoringPage';
 import CardsPage           from './pages/admin/CardsPage';
 import PaymentOrdersPage   from './pages/payment-orders/PaymentOrdersPage';
-import OfficeExpensesPage  from './pages/office-expenses/OfficeExpensesPage';
 import QuotationsPage    from './pages/quotations/QuotationsPage';
 import QuotationFormPage from './pages/quotations/QuotationFormPage';
 import QuotationDetailPage from './pages/quotations/QuotationDetailPage';
@@ -76,11 +72,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <AuthHydrator>
             <Routes>
-              <Route path="/login"              element={<LoginPage />} />
-              <Route path="/setup"              element={<SetupPage />} />
-              <Route path="/invite/:token"      element={<AcceptInvitePage />} />
-              <Route path="/forgot-password"    element={<ForgotPasswordPage />} />
-              <Route path="/reset-password"     element={<ResetPasswordPage />} />
+              <Route path="/login"          element={<LoginPage />} />
+              <Route path="/setup"          element={<SetupPage />} />
+              <Route path="/invite/:token"  element={<AcceptInvitePage />} />
 
               <Route path="/" element={
                 <PrivateRoute><Layout /></PrivateRoute>
@@ -90,7 +84,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 {/* Proyectos */}
                 <Route path="projects"             element={<ProjectsPage />} />
                 <Route path="projects/new"         element={<ProjectFormPage />} />
-                <Route path="projects/import"      element={<ImportBatchesPage />} />
                 <Route path="projects/:id"              element={<ProjectDetailPage />} />
                 <Route path="projects/:id/edit"         element={<ProjectFormPage />} />
                 <Route path="projects/:id/financial"    element={<ProjectFinancialPage />} />
@@ -122,7 +115,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Route path="categories"           element={<CategoriesPage />} />
                 <Route path="cards"                element={<CardsPage />} />
                 <Route path="payment-orders"      element={<PaymentOrdersPage />} />
-                <Route path="office-expenses"     element={<OfficeExpensesPage />} />
                 <Route path="monitoring"           element={<MonitoringPage />} />
               </Route>
 

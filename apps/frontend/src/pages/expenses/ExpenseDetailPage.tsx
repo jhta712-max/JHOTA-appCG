@@ -25,9 +25,8 @@ export default function ExpenseDetailPage() {
   const [voidReason, setVoidReason] = useState('');
   const [voidError, setVoidError] = useState('');
 
-  const canEdit    = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
-  const canVoid    = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
-  const isAdmin    = user?.role?.name === 'admin';
+  const canEdit   = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const canVoid   = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
   const isOperator = user?.role?.name === 'operator';
 
   const { data: expense, isLoading, error } = useQuery({
@@ -48,11 +47,6 @@ export default function ExpenseDetailPage() {
     select:   (r) => r.data.data,
     enabled:  !!expense,
     staleTime: 60_000,
-  });
-
-  const hardDeleteMut = useMutation({
-    mutationFn: () => expensesApi.hardDelete(id!),
-    onSuccess: () => navigate('/expenses', { replace: true }),
   });
 
   const voidMutation = useMutation({
@@ -291,19 +285,6 @@ export default function ExpenseDetailPage() {
           {expense.voidReason && (
             <p className="text-sm text-red-600 mt-1">Motivo: {expense.voidReason}</p>
           )}
-        </div>
-      )}
-
-      {/* Eliminar permanentemente — solo admin */}
-      {isAdmin && (
-        <div className="pb-2">
-          <button
-            onClick={() => { if (window.confirm('⚠️ ¿Eliminar este gasto PERMANENTEMENTE? Esta acción no se puede deshacer.')) hardDeleteMut.mutate(); }}
-            disabled={hardDeleteMut.isPending}
-            className="w-full py-2 rounded-xl border-2 border-red-400 bg-red-50 text-red-700 text-sm font-bold
-                       hover:bg-red-100 transition-all flex items-center justify-center gap-2">
-            <Trash2 className="w-4 h-4" /> {hardDeleteMut.isPending ? 'Eliminando...' : '🗑 Eliminar permanentemente (Admin)'}
-          </button>
         </div>
       )}
 

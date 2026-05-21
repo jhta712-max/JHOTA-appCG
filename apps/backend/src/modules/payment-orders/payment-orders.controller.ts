@@ -5,16 +5,14 @@ import { z } from 'zod';
 
 export async function listPaymentOrders(req: Request, res: Response, next: NextFunction) {
   try {
-    const query    = querySchema.parse(req.query);
-    const userCtx  = { userId: (req as any).user.userId, role: (req as any).user.role };
-    res.json(await svc.getPaymentOrders(query, userCtx));
+    const query = querySchema.parse(req.query);
+    res.json(await svc.getPaymentOrders(query));
   } catch (err) { next(err); }
 }
 
 export async function getPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
-    const userCtx = { userId: (req as any).user.userId, role: (req as any).user.role };
-    res.json({ success: true, data: await svc.getPaymentOrderById(req.params.id, userCtx) });
+    res.json({ success: true, data: await svc.getPaymentOrderById(req.params.id) });
   } catch (err) { next(err); }
 }
 
@@ -35,7 +33,7 @@ export async function getAvailableExpenses(req: Request, res: Response, next: Ne
 export async function createPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     const data = createPaymentOrderSchema.parse(req.body);
-    const po   = await svc.createPaymentOrder(data, (req as any).user.userId);
+    const po   = await svc.createPaymentOrder(data, (req as any).user.id);
     res.status(201).json({ success: true, data: po });
   } catch (err) { next(err); }
 }
@@ -60,41 +58,14 @@ export async function unlinkExpense(req: Request, res: Response, next: NextFunct
   } catch (err) { next(err); }
 }
 
-export async function linkPayroll(req: Request, res: Response, next: NextFunction) {
-  try {
-    const payrollId = req.body?.payrollId;
-    if (!payrollId) { res.status(400).json({ success: false, error: 'payrollId requerido' }); return; }
-    res.json({ success: true, data: await svc.linkPayroll(req.params.id, payrollId) });
-  } catch (err) { next(err); }
-}
-
-export async function unlinkPayroll(req: Request, res: Response, next: NextFunction) {
-  try {
-    res.json({ success: true, data: await svc.unlinkPayroll(req.params.id) });
-  } catch (err) { next(err); }
-}
-
 export async function markAsPaid(req: Request, res: Response, next: NextFunction) {
   try {
-    res.json({ success: true, data: await svc.markAsPaid(req.params.id, (req as any).user.userId) });
-  } catch (err) { next(err); }
-}
-
-export async function generateExpense(req: Request, res: Response, next: NextFunction) {
-  try {
-    res.json({ success: true, data: await svc.generateExpenseForOrder(req.params.id, (req as any).user.userId) });
+    res.json({ success: true, data: await svc.markAsPaid(req.params.id, (req as any).user.id) });
   } catch (err) { next(err); }
 }
 
 export async function voidPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     res.json({ success: true, data: await svc.voidPaymentOrder(req.params.id) });
-  } catch (err) { next(err); }
-}
-
-export async function hardDeletePaymentOrder(req: Request, res: Response, next: NextFunction) {
-  try {
-    await svc.hardDeletePaymentOrder(req.params.id);
-    res.json({ success: true, message: 'Orden eliminada permanentemente' });
   } catch (err) { next(err); }
 }

@@ -61,8 +61,6 @@ export const expensesApi = {
     api.put<{ success: boolean; data: Expense }>(`/expenses/${id}`, data),
   void:    (id: string, reason: string) =>
     api.post(`/expenses/${id}/void`, { reason }),
-  hardDelete: (id: string) =>
-    api.delete(`/expenses/${id}`),
   uploadAttachment: (id: string, file: File) => {
     const form = new FormData();
     form.append('file', file);
@@ -116,13 +114,10 @@ export interface PayrollLine {
   subtotal:     number;
   notes:        string | null;
   supplierName: string | null;
-  bankName:          string | null;
-  bankAccount:       string | null;
-  paymentBank:       string | null;
-  paymentReference:  string | null;
-  paidAt:            string | null;
-  createdAt:         string;
-  updatedAt:         string;
+  bankName:     string | null;
+  bankAccount:  string | null;
+  createdAt:    string;
+  updatedAt:    string;
 }
 
 export interface Payroll {
@@ -179,12 +174,6 @@ export const payrollApi = {
   deleteLine: (id: string, lineId: string) =>
     api.delete<{ success: boolean; data: Payroll }>(`/payrolls/${id}/lines/${lineId}`),
   // Actions
-  revertToDraft: (id: string) =>
-    api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/revert-to-draft`),
-  importFromOrders: (id: string) =>
-    api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/import-from-orders`),
-  recordLinePayment: (id: string, lineId: string, data: { paymentBank?: string; paymentReference?: string; paidAt?: string }) =>
-    api.patch<{ success: boolean; data: PayrollLine }>(`/payrolls/${id}/lines/${lineId}/payment`, data),
   approve: (id: string) =>
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/approve`),
   pay:     (id: string, data: unknown) =>
@@ -231,9 +220,6 @@ export const quotationsApi = {
 
   updateStatus: (id: string, data: { status: string; notes?: string }) =>
     api.patch<{ success: boolean; data: Quotation }>(`/quotations/${id}/status`, data),
-
-  changeProject: (id: string, data: { projectId: string }) =>
-    api.patch<{ success: boolean; data: Quotation }>(`/quotations/${id}/project`, data),
 
   remove: (id: string) =>
     api.delete(`/quotations/${id}`),
@@ -370,8 +356,6 @@ export const beneficiariesApi = {
     api.get<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`),
   create:     (data: unknown) =>
     api.post<{ success: boolean; data: Beneficiary }>('/beneficiaries', data),
-  bulkCreate: (rows: unknown[]) =>
-    api.post<{ success: boolean; data: { ok: number; err: number; results: { index: number; name: string; status: 'ok' | 'error'; error?: string }[] } }>('/beneficiaries/bulk', rows),
   update:     (id: string, data: unknown) =>
     api.put<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`, data),
   deactivate: (id: string) =>
@@ -396,68 +380,10 @@ export const paymentOrdersApi = {
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-expense`, { expenseId }),
   unlinkExpense: (id: string) =>
     api.delete<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-expense`),
-  linkPayroll: (id: string, payrollId: string) =>
-    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-payroll`, { payrollId }),
-  unlinkPayroll: (id: string) =>
-    api.delete<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-payroll`),
   markAsPaid: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`),
-  generateExpense: (id: string) =>
-    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/generate-expense`),
   void: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/void`),
-  hardDelete: (id: string) =>
-    api.delete(`/payment-orders/${id}`),
-};
-
-// ── Gastos de Oficina ─────────────────────────────────────────
-export type OfficeExpenseCategory = 'CLEANING_SUPPLIES' | 'CONSUMABLES' | 'OFFICE_SERVICES' | 'OTHER';
-export type OfficeExpenseStatus   = 'ACTIVE' | 'VOIDED';
-
-export const OFFICE_EXPENSE_CATEGORY_LABELS: Record<OfficeExpenseCategory, string> = {
-  CLEANING_SUPPLIES: 'Insumos de limpieza',
-  CONSUMABLES:       'Material gastable',
-  OFFICE_SERVICES:   'Servicios de oficina',
-  OTHER:             'Otros gastos de oficina',
-};
-
-export interface OfficeExpense {
-  id:            string;
-  category:      OfficeExpenseCategory;
-  description:   string;
-  amount:        string;
-  expenseDate:   string;
-  paymentMethod: string;
-  companyCardId: string | null;
-  hasFiscalDoc:  boolean;
-  fiscalDocNum:  string | null;
-  notes:         string | null;
-  status:        OfficeExpenseStatus;
-  createdById:   string;
-  createdAt:     string;
-  createdBy:     { id: string; name: string; email: string };
-  companyCard:   { id: string; holderName: string; lastFour: string; bank: string } | null;
-}
-
-export interface OfficeExpenseSummary {
-  currentMonth: { total: number; count: number };
-  allTime:      { total: number; count: number };
-  byCategory:   { category: OfficeExpenseCategory; total: number; count: number }[];
-}
-
-export const officeExpensesApi = {
-  list: (params?: Record<string, unknown>) =>
-    api.get<{ success: boolean; data: OfficeExpense[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>('/office-expenses', { params }),
-  getOne: (id: string) =>
-    api.get<{ success: boolean; data: OfficeExpense }>(`/office-expenses/${id}`),
-  summary: () =>
-    api.get<{ success: boolean; data: OfficeExpenseSummary }>('/office-expenses/summary'),
-  create: (data: Record<string, unknown>) =>
-    api.post<{ success: boolean; data: OfficeExpense }>('/office-expenses', data),
-  update: (id: string, data: Record<string, unknown>) =>
-    api.put<{ success: boolean; data: OfficeExpense }>(`/office-expenses/${id}`, data),
-  void: (id: string) =>
-    api.delete<{ success: boolean; data: OfficeExpense }>(`/office-expenses/${id}`),
 };
 
 // ── Monitoreo ─────────────────────────────────────────────────

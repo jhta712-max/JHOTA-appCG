@@ -6,8 +6,7 @@ import {
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
   Upload, Download, MessageCircle,
 } from 'lucide-react';
-import { beneficiariesApi, paymentOrdersApi, projectsApi, payrollApi } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { beneficiariesApi, paymentOrdersApi, projectsApi } from '../../api';
 import type { Beneficiary, PaymentOrder } from '../../types';
 
 // ── Tipos locales ─────────────────────────────────────────────
@@ -54,18 +53,6 @@ const PAYROLL_TYPE_LABEL: Record<string, string> = { LABOR: 'Mano de obra', SERV
 function fmtMonto(amount: number | string, currency: string) {
   return `${currency} ${Number(amount).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
-
-// Formatea un string numérico como moneda mientras se escribe: "300000" → "300,000"
-function fmtAmountInput(raw: string): string {
-  const clean = raw.replace(/[^0-9.]/g, '');
-  const parts  = clean.split('.');
-  const int    = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return parts.length > 1 ? `${int}.${parts[1].slice(0, 2)}` : int;
-}
-// Extrae el valor numérico de un string formateado: "300,000.00" → "300000.00"
-function parseAmountInput(formatted: string): string {
-  return formatted.replace(/,/g, '');
-}
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' });
 }
@@ -74,13 +61,10 @@ function fmtDate(d: string) {
 
 /** Normaliza cualquier variante del tipo de cuenta al enum que acepta el backend */
 function normalizeAccountType(raw: string): 'Cuenta de Ahorros' | 'Cuenta Corriente' | 'Cuenta Nómina' {
-  // Quitar tildes manualmente (sin regex Unicode que puede fallar)
-  const v = raw.toLowerCase().trim()
-    .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
-    .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
-  if (v.includes('corriente'))           return 'Cuenta Corriente';
-  if (v.includes('nomina'))              return 'Cuenta Nómina';
-  return 'Cuenta de Ahorros'; // cubre: ahorro, ahorros, cuenta de ahorros, etc.
+  const v = raw.toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g, ''); // sin tildes
+  if (v.includes('corriente'))              return 'Cuenta Corriente';
+  if (v.includes('nomina') || v.includes('nomina')) return 'Cuenta Nómina';
+  return 'Cuenta de Ahorros'; // default: ahorros
 }
 
 function downloadBeneTemplate() {
@@ -104,15 +88,12 @@ function downloadBeneTemplate() {
 function parseCSVText(text: string): BeneForm[] {
   const lines = text.replace(/\r/g, '').split('\n').map((l) => l.trim()).filter(Boolean);
   if (lines.length < 2) return [];
-  // Eliminar BOM si existe (UTF-8 BOM = EF BB BF o el carácter ﻿)
+  // Eliminar BOM si existe
   const headerLine = lines[0].replace(/^﻿/, '');
-  // Normalizar encabezados: minúsculas, quitar tildes manualmente, solo letras y _
-  const stripAccents = (s: string) => s
-    .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
-    .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
+  // Normalizar encabezados: minúsculas, sin tildes ni caracteres especiales
   const headers = headerLine
     .split(',')
-    .map((h) => stripAccents(h.trim().toLowerCase()).replace(/[^a-z_]/g, ''));
+    .map((h) => h.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z_]/g, ''));
   const idx = (name: string) => {
     // Busca coincidencia exacta o parcial
     const exact = headers.indexOf(name);
@@ -146,29 +127,13 @@ function parseCSVText(text: string): BeneForm[] {
 }
 
 // ── WhatsApp share ────────────────────────────────────────────
-// isMobile: true en Android/iPhone → usa Web Share API nativa (emoji intactos)
-// Desktop: WhatsApp Web corrompe emoji via URL → copiamos al portapapeles directo
-const isMobileDevice = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-async function shareWhatsApp(text: string, onCopied?: () => void) {
-  if (isMobileDevice()) {
-    if (navigator.share) {
-      try { await navigator.share({ text }); return; } catch { /* cancelado */ }
-    }
-    // Fallback móvil sin Web Share API
-    window.open(`whatsapp://send?text=${encodeURIComponent(text)}`, '_blank');
-  } else {
-    // Desktop: copiar al portapapeles (WA Web corrompe emoji en URL)
-    await navigator.clipboard.writeText(text);
-    onCopied?.();
-  }
+function shareWhatsApp(text: string) {
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
 // ────────────────────────────────────────────────────────────────
 export default function PaymentOrdersPage() {
-  const qc      = useQueryClient();
-  const authUser = useAuthStore((s) => s.user);
-  const isAdmin  = authUser?.role?.name === 'admin';
+  const qc = useQueryClient();
   const [tab, setTab]               = useState<Tab>('orders');
   const [viewingOrder, setViewingOrder] = useState<PaymentOrder | null>(null);
   const [toast, setToast]           = useState('');
@@ -190,7 +155,6 @@ export default function PaymentOrdersPage() {
   const [importRows,     setImportRows]     = useState<BeneForm[]>([]);
   const [importProgress, setImportProgress] = useState<'idle' | 'importing' | 'done'>('idle');
   const [importResults,  setImportResults]  = useState({ ok: 0, err: 0 });
-  const [importErrors,   setImportErrors]   = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [editingBene,  setEditingBene]  = useState<Beneficiary | null>(null);
@@ -198,9 +162,7 @@ export default function PaymentOrdersPage() {
   const [beneForm,  setBeneForm]  = useState<BeneForm>(EMPTY_BENE);
   const [orderForm, setOrderForm] = useState<OrderForm>(EMPTY_ORDER);
   const [formErr,   setFormErr]   = useState('');
-  const [selectedExpenseId,  setSelectedExpenseId]  = useState('');
-  const [selectedPayrollId,  setSelectedPayrollId]  = useState('');
-  const [linkPayrollModal,   setLinkPayrollModal]   = useState(false);
+  const [selectedExpenseId, setSelectedExpenseId] = useState('');
 
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3500); };
 
@@ -232,15 +194,14 @@ export default function PaymentOrdersPage() {
     select:   (r) => r.data.data,
   });
 
-  const linkingOrderProjectId = viewingOrder?.projectId ?? '';
-
-  // Nóminas del proyecto para vincular retroactivamente
-  const { data: projectPayrolls = [] } = useQuery({
-    queryKey: ['payrolls', 'by-project', linkingOrderProjectId],
-    queryFn:  () => payrollApi.list({ projectId: linkingOrderProjectId, limit: 50 }),
-    select:   (r) => r.data.data as any[],
-    enabled:  linkPayrollModal && !!linkingOrderProjectId,
+  const { data: availablePayrolls = [] } = useQuery({
+    queryKey: ['payment-orders', 'payrolls', orderForm.projectId],
+    queryFn:  () => paymentOrdersApi.availablePayrolls(orderForm.projectId),
+    select:   (r) => r.data.data,
+    enabled:  orderModal && orderForm.orderType === 'PAYROLL' && !!orderForm.projectId,
   });
+
+  const linkingOrderProjectId = viewingOrder?.projectId ?? '';
   const { data: availableExpenses = [] } = useQuery({
     queryKey: ['payment-orders', 'expenses', linkingOrderProjectId],
     queryFn:  () => paymentOrdersApi.availableExpenses(linkingOrderProjectId),
@@ -294,11 +255,6 @@ export default function PaymentOrdersPage() {
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Orden anulada'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
   });
-  const generateExpenseMut = useMutation({
-    mutationFn: (id: string) => paymentOrdersApi.generateExpense(id),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('✅ Gasto generado y vinculado al proyecto'); },
-    onError:   (e: any) => flash(e.response?.data?.error || 'Error al generar gasto'),
-  });
   const linkExpenseMut = useMutation({
     mutationFn: ({ id, expenseId }: { id: string; expenseId: string }) => paymentOrdersApi.linkExpense(id, expenseId),
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkModal(false); flash('✅ Gasto vinculado'); },
@@ -308,21 +264,6 @@ export default function PaymentOrdersPage() {
     mutationFn: (id: string) => paymentOrdersApi.unlinkExpense(id),
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Gasto desvinculado'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
-  });
-  const linkPayrollMut = useMutation({
-    mutationFn: ({ id, payrollId }: { id: string; payrollId: string }) => paymentOrdersApi.linkPayroll(id, payrollId),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkPayrollModal(false); setSelectedPayrollId(''); flash('✅ Nómina vinculada'); },
-    onError:   (e: any) => flash(e.response?.data?.error || 'Error al vincular nómina'),
-  });
-  const unlinkPayrollMut = useMutation({
-    mutationFn: (id: string) => paymentOrdersApi.unlinkPayroll(id),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Nómina desvinculada'); },
-    onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
-  });
-  const hardDeleteOrderMut = useMutation({
-    mutationFn: (id: string) => paymentOrdersApi.hardDelete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(null); flash('🗑 Orden eliminada permanentemente'); },
-    onError:   (e: any) => flash(e.response?.data?.error || 'Error al eliminar'),
   });
 
   // ── Bene modal helpers ────────────────────────────────────────
@@ -374,12 +315,27 @@ export default function PaymentOrdersPage() {
     setModalView('form');
   };
 
+  const onPayrollSelect = (payrollId: string) => {
+    const p = availablePayrolls.find((x: any) => x.id === payrollId);
+    if (p) {
+      setOrderForm((f) => ({
+        ...f,
+        payrollId,
+        amount:  String(p.totalAmount),
+        concept: `Pago de ${PAYROLL_TYPE_LABEL[p.type] ?? p.type} — Período ${fmtDate(p.periodStart)} al ${fmtDate(p.periodEnd)}`,
+      }));
+    } else {
+      setOrderForm((f) => ({ ...f, payrollId }));
+    }
+  };
+
   const saveOrder = () => {
     if (!orderForm.payingCompany.trim()) return setFormErr('La empresa pagadora es requerida');
     if (!orderForm.beneficiaryId)        return setFormErr('Selecciona un beneficiario');
     if (!orderForm.projectId)            return setFormErr('Selecciona un proyecto');
     if (!orderForm.amount || Number(orderForm.amount) <= 0) return setFormErr('El monto debe ser mayor a 0');
     if (!orderForm.concept.trim())       return setFormErr('El concepto es requerido');
+    if (orderForm.orderType === 'PAYROLL' && !orderForm.payrollId) return setFormErr('Selecciona la nómina a pagar');
 
     const payload: any = {
       orderType:     orderForm.orderType,
@@ -391,6 +347,9 @@ export default function PaymentOrdersPage() {
       concept:       orderForm.concept,
       notes:         orderForm.notes || undefined,
     };
+    if (orderForm.orderType === 'PAYROLL' && orderForm.payrollId) {
+      payload.payrollId = orderForm.payrollId;
+    }
 
     if (editingOrder) updateOrderMut.mutate({ id: editingOrder.id, d: payload });
     else              createOrderMut.mutate(payload);
@@ -399,7 +358,7 @@ export default function PaymentOrdersPage() {
   const copyText = (text: string) => { navigator.clipboard.writeText(text).then(() => flash('📋 Texto copiado')); };
 
   // ── Import CSV helpers ────────────────────────────────────────
-  const closeImportModal = () => { setImportModal(false); setImportRows([]); setImportProgress('idle'); setImportResults({ ok: 0, err: 0 }); setImportErrors([]); };
+  const closeImportModal = () => { setImportModal(false); setImportRows([]); setImportProgress('idle'); setImportResults({ ok: 0, err: 0 }); };
 
   const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -418,30 +377,16 @@ export default function PaymentOrdersPage() {
 
   const runImport = async () => {
     setImportProgress('importing');
-    setImportErrors([]);
-    try {
-      const payload = importRows.map((r) => ({
-        name:          r.name,
-        bank:          r.bank,
-        accountType:   r.accountType,
-        accountNumber: r.accountNumber,
-        cedula:        r.cedula || undefined,
-        phone:         r.phone  || undefined,
-      }));
-      const res = await beneficiariesApi.bulkCreate(payload);
-      const { ok, err, results } = res.data.data;
-      const errs = results
-        .filter((r) => r.status === 'error')
-        .map((r) => `"${r.name}": ${r.error}`);
-      setImportResults({ ok, err });
-      setImportErrors(errs);
-      if (ok > 0) qc.invalidateQueries({ queryKey: ['beneficiaries'] });
-    } catch (e: any) {
-      const msg = e?.response?.data?.error || e?.message || 'Error de conexión';
-      setImportErrors([msg]);
-      setImportResults({ ok: 0, err: importRows.length });
+    let ok = 0; let err = 0;
+    for (const row of importRows) {
+      try {
+        await beneficiariesApi.create({ ...row, cedula: row.cedula || undefined, phone: row.phone || undefined });
+        ok++;
+      } catch { err++; }
     }
+    setImportResults({ ok, err });
     setImportProgress('done');
+    qc.invalidateQueries({ queryKey: ['beneficiaries'] });
   };
 
   // ── Render ────────────────────────────────────────────────────
@@ -496,36 +441,21 @@ export default function PaymentOrdersPage() {
       {tab === 'orders' && (
         <div className="space-y-4">
 
-          {/* Filtros + acciones masivas */}
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Filtros */}
+          <div className="flex flex-wrap gap-2">
             {(['', 'PENDING', 'PAID'] as const).map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === s ? 'bg-primary-500 text-gray-900' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                 {s === '' ? 'Todas' : s === 'PENDING' ? '🕐 Pendientes' : '✅ Pagadas'}
               </button>
             ))}
-            <div className="w-px bg-gray-200 mx-1 self-stretch" />
+            <div className="w-px bg-gray-200 mx-1" />
             {(['', 'GENERAL', 'PAYROLL', 'MATERIALS'] as const).map((t) => (
               <button key={t} onClick={() => setFilterType(t)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                 {t === '' ? 'Todos tipos' : ORDER_TYPE_CFG[t as OrderType].label}
               </button>
             ))}
-            {orders.filter((o) => o.generatedText).length > 1 && (
-              <>
-                <div className="w-px bg-gray-200 mx-1 self-stretch" />
-                <button
-                  onClick={() => copyText(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'))}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all">
-                  <ClipboardCopy className="w-3.5 h-3.5" /> Copiar todas
-                </button>
-                <button
-                  onClick={() => shareWhatsApp(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
-                  <MessageCircle className="w-3.5 h-3.5" /> Compartir todas
-                </button>
-              </>
-            )}
           </div>
 
           {/* Detalle expandido */}
@@ -541,10 +471,6 @@ export default function PaymentOrdersPage() {
                   <p className="font-bold text-gray-900 mt-1 text-base">{viewingOrder.payingCompany}</p>
                   <p className="text-sm text-gray-500 mt-0.5">{viewingOrder.concept}</p>
                   <p className="text-lg font-bold text-primary-700 mt-1">{fmtMonto(viewingOrder.amount, viewingOrder.currency)}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    <span className="font-mono">{viewingOrder.project.code}</span>
-                    {' — '}{viewingOrder.project.name}
-                  </p>
                 </div>
                 <button onClick={() => setViewingOrder(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
               </div>
@@ -552,18 +478,7 @@ export default function PaymentOrdersPage() {
               {/* Vínculo nómina */}
               {viewingOrder.orderType === 'PAYROLL' && (
                 <div className={`rounded-xl p-3 border text-sm ${viewingOrder.payroll ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Nómina vinculada</p>
-                    {viewingOrder.status !== 'VOIDED' && (
-                      viewingOrder.payroll
-                        ? <button onClick={() => { if (confirm('¿Desvincular nómina?')) unlinkPayrollMut.mutate(viewingOrder.id); }}
-                            className="text-xs text-red-500 hover:text-red-700 font-semibold">Desvincular</button>
-                        : <button onClick={() => setLinkPayrollModal(true)}
-                            className="text-xs text-blue-600 hover:text-blue-800 font-semibold border border-blue-300 px-2 py-0.5 rounded-lg">
-                            + Vincular nómina
-                          </button>
-                    )}
-                  </div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">📋 Nómina vinculada</p>
                   {viewingOrder.payroll ? (
                     <div>
                       <p className="font-semibold text-blue-800">
@@ -578,7 +493,7 @@ export default function PaymentOrdersPage() {
                       </p>
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-xs">Sin nómina vinculada — haz clic en "+ Vincular nómina" para asociar una retroactivamente</p>
+                    <p className="text-gray-400 text-xs">Sin nómina vinculada</p>
                   )}
                 </div>
               )}
@@ -629,23 +544,11 @@ export default function PaymentOrdersPage() {
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
                     <button
-                      onClick={() => shareWhatsApp(viewingOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
+                      onClick={() => shareWhatsApp(viewingOrder.generatedText!)}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
                   </div>
-                </div>
-              )}
-
-              {/* Eliminar permanente — admin */}
-              {isAdmin && (
-                <div className="pt-2 border-t border-red-100">
-                  <button
-                    onClick={() => { if (confirm('⚠️ ¿ELIMINAR esta orden PERMANENTEMENTE? No se puede deshacer.')) hardDeleteOrderMut.mutate(viewingOrder.id); }}
-                    disabled={hardDeleteOrderMut.isPending}
-                    className="w-full text-xs text-red-700 font-bold border border-red-300 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all">
-                    🗑 Eliminar permanentemente (Admin)
-                  </button>
                 </div>
               )}
 
@@ -663,22 +566,6 @@ export default function PaymentOrdersPage() {
                   <button onClick={() => { if (confirm('¿Anular esta orden de pago?')) voidOrderMut.mutate(viewingOrder.id); }}
                     className="text-sm text-red-600 hover:text-red-700 border border-red-300 hover:bg-red-50 px-3 py-2 rounded-lg font-semibold transition-all">
                     Anular
-                  </button>
-                </div>
-              )}
-
-              {/* Generar gasto retroactivo — solo para GENERAL y MATERIALS, no PAYROLL */}
-              {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && viewingOrder.orderType !== 'PAYROLL' && (
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                  <p className="text-xs text-amber-600 flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" /> Esta orden no tiene gasto registrado en el proyecto.
-                  </p>
-                  <button
-                    onClick={() => generateExpenseMut.mutate(viewingOrder.id)}
-                    disabled={generateExpenseMut.isPending}
-                    className="text-sm text-primary-600 hover:text-primary-700 border border-primary-300 hover:bg-primary-50 px-3 py-2 rounded-lg font-semibold transition-all flex items-center gap-1.5">
-                    {generateExpenseMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
-                    Generar gasto
                   </button>
                 </div>
               )}
@@ -718,10 +605,7 @@ export default function PaymentOrdersPage() {
                         <p className="font-medium text-gray-900">{o.beneficiary.name}</p>
                         <p className="text-xs text-gray-400">{o.beneficiary.bank}</p>
                       </td>
-                      <td className="px-4 py-3">
-                        <p className="text-xs font-mono text-gray-500">{o.project.code}</p>
-                        <p className="text-xs text-gray-700 font-medium leading-tight">{o.project.name}</p>
-                      </td>
+                      <td className="px-4 py-3 text-gray-600 text-xs">{o.project.code}</td>
                       <td className="px-4 py-3 font-semibold text-gray-900">{fmtMonto(o.amount, o.currency)}</td>
                       <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
                       <td className="px-4 py-3 text-right">
@@ -730,7 +614,7 @@ export default function PaymentOrdersPage() {
                             className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg" title="Copiar mensaje">
                             <ClipboardCopy className="w-4 h-4" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web')); }}
+                          <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? ''); }}
                             className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg" title="Compartir por WhatsApp">
                             <MessageCircle className="w-4 h-4" />
                           </button>
@@ -866,7 +750,7 @@ export default function PaymentOrdersPage() {
                       className="btn-secondary text-sm flex items-center gap-2">
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
-                    <button onClick={() => shareWhatsApp(lastCreatedOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
+                    <button onClick={() => shareWhatsApp(lastCreatedOrder.generatedText!)}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
@@ -877,25 +761,11 @@ export default function PaymentOrdersPage() {
               {/* Resumen de sesión (si hay más de una) */}
               {sessionOrders.length > 1 && (
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Órdenes de esta sesión ({sessionOrders.length})</p>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => copyText(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'))}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all">
-                        <ClipboardCopy className="w-3 h-3" /> Copiar todas
-                      </button>
-                      <button
-                        onClick={() => shareWhatsApp(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
-                        <MessageCircle className="w-3 h-3" /> Compartir todas
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-1 max-h-48 overflow-y-auto">
-                    {sessionOrders.map((o, i) => (
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">📋 Órdenes de esta sesión</p>
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {sessionOrders.map((o) => (
                       <div key={o.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-sm">
-                        <span className="text-xs text-gray-400 font-mono shrink-0">{i + 1}. OP-{String(o.number).padStart(3, '0')}</span>
+                        <span className="text-xs text-gray-400 font-mono shrink-0">OP-{String(o.number).padStart(3, '0')}</span>
                         <span className="text-gray-700 truncate mx-3 flex-1">{o.beneficiary.name}</span>
                         <span className="text-gray-500 shrink-0 text-xs">{fmtMonto(o.amount, o.currency)}</span>
                         <div className="flex gap-1 ml-2">
@@ -903,7 +773,7 @@ export default function PaymentOrdersPage() {
                             className="p-1 text-gray-400 hover:text-primary-600 rounded">
                             <ClipboardCopy className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web'))} title="WhatsApp"
+                          <button onClick={() => shareWhatsApp(o.generatedText ?? '')} title="WhatsApp"
                             className="p-1 text-gray-400 hover:text-green-600 rounded">
                             <MessageCircle className="w-3.5 h-3.5" />
                           </button>
@@ -934,29 +804,25 @@ export default function PaymentOrdersPage() {
               {formErr && <AlertBox msg={formErr} />}
 
               {/* Tipo de orden */}
-              <div className="mb-5">
-                <label className="label">Tipo de orden *</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {(Object.keys(ORDER_TYPE_CFG) as OrderType[]).map((t) => {
-                    const cfg = ORDER_TYPE_CFG[t];
-                    return (
-                      <button key={t} type="button"
-                        onClick={() => setOrderForm((f) => ({
-                          ...f,
-                          orderType: t,
-                          // solo reinicia payrollId al cambiar tipo; conserva monto y concepto al editar
-                          payrollId: '',
-                          ...(!editingOrder ? { amount: '', concept: '' } : {}),
-                        }))}
-                        className={`p-3 rounded-xl border-2 text-left transition-all ${orderForm.orderType === t ? cfg.color + ' border-opacity-100' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                        <div className={`mb-1 ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-400'}`}>{cfg.icon}</div>
-                        <p className={`text-xs font-bold ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-600'}`}>{cfg.label}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 leading-tight">{cfg.desc}</p>
-                      </button>
-                    );
-                  })}
+              {!editingOrder && (
+                <div className="mb-5">
+                  <label className="label">Tipo de orden *</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {(Object.keys(ORDER_TYPE_CFG) as OrderType[]).map((t) => {
+                      const cfg = ORDER_TYPE_CFG[t];
+                      return (
+                        <button key={t} type="button"
+                          onClick={() => setOrderForm((f) => ({ ...f, orderType: t, payrollId: '', amount: '', concept: '' }))}
+                          className={`p-3 rounded-xl border-2 text-left transition-all ${orderForm.orderType === t ? cfg.color + ' border-opacity-100' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                          <div className={`mb-1 ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-400'}`}>{cfg.icon}</div>
+                          <p className={`text-xs font-bold ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-600'}`}>{cfg.label}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 leading-tight">{cfg.desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Empresa pagadora *">
@@ -972,11 +838,24 @@ export default function PaymentOrdersPage() {
                 </Field>
               </div>
 
-              {/* Info nómina */}
+              {/* Selector nómina (PAYROLL) */}
               {orderForm.orderType === 'PAYROLL' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 mb-2">
-                  <strong>👷 Orden de Nómina:</strong> Especifica el monto y concepto del pago de mano de obra o servicios. La orden queda registrada independientemente.
-                </div>
+                <Field label="Nómina a pagar *">
+                  {!orderForm.projectId ? (
+                    <p className="text-xs text-amber-600 mt-1">Selecciona primero el proyecto para ver las nóminas disponibles.</p>
+                  ) : availablePayrolls.length === 0 ? (
+                    <p className="text-xs text-gray-400 mt-1">No hay nóminas aprobadas disponibles en este proyecto.</p>
+                  ) : (
+                    <select className="input-field" value={orderForm.payrollId} onChange={(e) => onPayrollSelect(e.target.value)}>
+                      <option value="">— Selecciona nómina —</option>
+                      {availablePayrolls.map((p: any) => (
+                        <option key={p.id} value={p.id}>
+                          #{p.number} · {PAYROLL_TYPE_LABEL[p.type] ?? p.type} · {fmtDate(p.periodStart)}–{fmtDate(p.periodEnd)} · {fmtMonto(p.totalAmount, 'RD$')}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </Field>
               )}
 
               {/* Info materiales */}
@@ -1007,19 +886,8 @@ export default function PaymentOrdersPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Monto *">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    className="input-field"
-                    placeholder="0.00"
-                    value={fmtAmountInput(orderForm.amount)}
-                    onChange={(e) => {
-                      const raw = parseAmountInput(e.target.value);
-                      if (/^[0-9]*\.?[0-9]{0,2}$/.test(raw) || raw === '') {
-                        setOrderForm((f) => ({ ...f, amount: raw }));
-                      }
-                    }}
-                  />
+                  <input type="number" min="0.01" step="0.01" className="input-field" placeholder="0.00"
+                    value={orderForm.amount} onChange={(e) => setOrderForm((f) => ({ ...f, amount: e.target.value }))} />
                 </Field>
                 <Field label="Moneda *">
                   <select className="input-field" value={orderForm.currency}
@@ -1085,57 +953,15 @@ export default function PaymentOrdersPage() {
         </Modal>
       )}
 
-      {/* ── MODAL: VINCULAR NÓMINA ─────────────────────────── */}
-      {linkPayrollModal && viewingOrder && (
-        <Modal title="📋 Vincular nómina a esta orden" onClose={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}>
-          {projectPayrolls.length === 0 ? (
-            <p className="text-gray-400 text-sm py-4 text-center">No hay nóminas registradas para este proyecto.</p>
-          ) : (
-            <div className="space-y-2 max-h-72 overflow-y-auto">
-              {projectPayrolls.map((p: any) => (
-                <label key={p.id}
-                  className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${selectedPayrollId === p.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                  <input type="radio" name="payroll-select" checked={selectedPayrollId === p.id}
-                    onChange={() => setSelectedPayrollId(p.id)} className="mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm">
-                      NOM-{String(p.number).padStart(3, '0')} — {p.description || p.type}
-                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${p.status === 'PAID' ? 'bg-green-100 text-green-700' : p.status === 'APPROVED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
-                        {p.status === 'PAID' ? 'Pagada' : p.status === 'APPROVED' ? 'Aprobada' : 'Borrador'}
-                      </span>
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {fmtDate(p.periodStart)} — {fmtDate(p.periodEnd)}
-                      &nbsp;·&nbsp; RD$ {Number(p.totalAmount).toLocaleString('es-DO')}
-                      &nbsp;·&nbsp; {p.lines?.length ?? 0} líneas
-                    </p>
-                  </div>
-                </label>
-              ))}
-            </div>
-          )}
-          <ModalFooter
-            onCancel={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}
-            onSave={() => { if (!selectedPayrollId) return; linkPayrollMut.mutate({ id: viewingOrder.id, payrollId: selectedPayrollId }); }}
-            saving={linkPayrollMut.isPending}
-            label="Vincular nómina"
-          />
-        </Modal>
-      )}
-
       {/* ── MODAL: IMPORTAR BENEFICIARIOS ──────────────────── */}
       {importModal && (
         <Modal title="📥 Importar beneficiarios" onClose={closeImportModal} wide>
 
           {importProgress === 'done' ? (
             /* Resultado */
-            <div className="space-y-4">
-              <div className="text-center py-4">
-                {importResults.ok > 0
-                  ? <CheckCircle className="w-14 h-14 text-green-500 mx-auto mb-3" />
-                  : <AlertCircle className="w-14 h-14 text-red-400 mx-auto mb-3" />}
-                <p className="text-lg font-bold text-gray-800">Importación completada</p>
-              </div>
+            <div className="text-center py-8 space-y-3">
+              <CheckCircle className="w-14 h-14 text-green-500 mx-auto" />
+              <p className="text-lg font-bold text-gray-800">Importación completada</p>
               <div className="flex gap-4 justify-center">
                 <div className="bg-green-50 border border-green-200 rounded-xl px-6 py-3 text-center">
                   <p className="text-2xl font-bold text-green-700">{importResults.ok}</p>
@@ -1148,25 +974,7 @@ export default function PaymentOrdersPage() {
                   </div>
                 )}
               </div>
-              {importErrors.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                  <p className="text-xs font-bold text-red-700 mb-2">Detalle de errores:</p>
-                  <ul className="space-y-1 max-h-40 overflow-y-auto">
-                    {importErrors.map((e, i) => (
-                      <li key={i} className="text-xs text-red-600 flex items-start gap-1">
-                        <span className="shrink-0">•</span> {e}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <div className="flex gap-2 justify-center">
-                {importResults.err > 0 && (
-                  <button onClick={() => { setImportProgress('idle'); }}
-                    className="btn-secondary text-sm">Reintentar</button>
-                )}
-                <button onClick={closeImportModal} className="btn-primary">Cerrar</button>
-              </div>
+              <button onClick={closeImportModal} className="btn-primary mt-2">Cerrar</button>
             </div>
           ) : (
             <div className="space-y-5">

@@ -13,12 +13,8 @@ const INCLUDE = {
 } as const;
 
 // ── Listar con filtros y paginación ───────────────────────────
-export async function getPaymentOrders(
-  query:   PaymentOrderQuery,
-  userCtx: { userId: string; role: string },
-) {
+export async function getPaymentOrders(query: PaymentOrderQuery) {
   const { page, limit, skip } = parsePagination(query);
-  const isAdmin = userCtx.role === 'admin';
 
   const where: any = {};
   if (query.status)        where.status        = query.status;
@@ -33,12 +29,6 @@ export async function getPaymentOrders(
     ];
   }
 
-  // Supervisores: solo ven sus propias órdenes y únicamente las no pagadas/anuladas
-  if (!isAdmin) {
-    where.createdById = userCtx.userId;
-    where.status      = { notIn: ['PAID', 'VOIDED'] };
-  }
-
   const [data, total] = await Promise.all([
     prisma.paymentOrder.findMany({ where, skip, take: limit, orderBy: { [query.orderBy]: query.order }, include: INCLUDE }),
     prisma.paymentOrder.count({ where }),
@@ -48,22 +38,9 @@ export async function getPaymentOrders(
 }
 
 // ── Obtener una ───────────────────────────────────────────────
-export async function getPaymentOrderById(
-  id:      string,
-  userCtx?: { userId: string; role: string },
-) {
+export async function getPaymentOrderById(id: string) {
   const po = await prisma.paymentOrder.findUnique({ where: { id }, include: INCLUDE });
   if (!po) throw new AppError(404, 'Orden de pago no encontrada', 'NOT_FOUND');
-
-  // Supervisores solo pueden ver sus propias órdenes no pagadas
-  if (userCtx && userCtx.role !== 'admin') {
-    if (po.createdById !== userCtx.userId) {
-      throw new AppError(403, 'No tienes acceso a esta orden de pago', 'FORBIDDEN');
-    }
-    if (['PAID', 'VOIDED'].includes(po.status)) {
-      throw new AppError(404, 'Orden de pago no encontrada', 'NOT_FOUND');
-    }
-  }
   return po;
 }
 
@@ -216,118 +193,16 @@ export async function unlinkExpense(id: string) {
   });
 }
 
-// ── Vincular nómina retroactivamente ─────────────────────────
-export async function linkPayroll(id: string, payrollId: string) {
-  const po = await getPaymentOrderById(id);
-  if (po.orderType !== 'PAYROLL') throw new AppError(400, 'Solo se puede vincular una nómina a órdenes de tipo Nómina', 'WRONG_TYPE');
-  if (po.status === 'VOIDED')     throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
-  if (po.payrollId)               throw new AppError(409, 'Esta orden ya tiene una nómina vinculada', 'DUPLICATE');
-
-  const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
-  if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
-  if (payroll.projectId !== po.projectId) throw new AppError(400, 'La nómina no pertenece al mismo proyecto', 'PROJECT_MISMATCH');
-
-  return prisma.paymentOrder.update({
-    where: { id },
-    data:  { payrollId },
-    include: INCLUDE,
-  });
-}
-
-// ── Desvincular nómina ────────────────────────────────────────
-export async function unlinkPayroll(id: string) {
-  await getPaymentOrderById(id);
-  return prisma.paymentOrder.update({
-    where: { id },
-    data:  { payrollId: null },
-    include: INCLUDE,
-  });
-}
-
-// ── Marcar como pagada + auto-crear gasto ─────────────────────
+// ── Marcar como pagada ────────────────────────────────────────
 export async function markAsPaid(id: string, userId: string) {
   const po = await getPaymentOrderById(id);
   if (po.status === 'PAID')   throw new AppError(400, 'La orden ya está marcada como pagada', 'ALREADY_PAID');
   if (po.status === 'VOIDED') throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
 
-  return prisma.$transaction(async (tx) => {
-    // 1. Marcar la orden como pagada
-    await tx.paymentOrder.update({
-      where: { id },
-      data:  { status: 'PAID', paidAt: new Date(), paidById: userId },
-    });
-
-    // 2. Las órdenes tipo PAYROLL NO crean gasto individual —
-    //    el gasto consolidado lo genera la nómina al aprobarse.
-    //    Las de tipo GENERAL y MATERIALS sí crean su gasto.
-    if (!po.expenseId && po.orderType !== 'PAYROLL') {
-      const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : 'Servicios';
-      const category = await tx.expenseCategory.upsert({
-        where:  { name: categoryName },
-        update: { isActive: true },
-        create: { name: categoryName, description: 'Auto-creada para órdenes de pago', isActive: true },
-      });
-
-      const opRef   = `OP-${String(po.number).padStart(3, '0')}`;
-      const expense = await tx.expense.create({
-        data: {
-          projectId:     po.projectId,
-          categoryId:    category.id,
-          userId,
-          expenseDate:   new Date(),
-          amount:        po.amount,
-          description:   `[${opRef}] ${po.concept}`,
-          paymentMethod: 'TRANSFER',
-          hasFiscalDoc:  false,
-          notes:         `Auto-generado al confirmar ${opRef}. Beneficiario: ${(po as any).beneficiary?.name ?? po.beneficiaryId}. Empresa: ${po.payingCompany}.`,
-        },
-      });
-
-      await tx.paymentOrder.update({
-        where: { id },
-        data:  { expenseId: expense.id },
-      });
-    }
-
-    // 4. Devolver la orden actualizada con todos los includes
-    return tx.paymentOrder.findUniqueOrThrow({ where: { id }, include: INCLUDE });
-  });
-}
-
-// ── Generar gasto retroactivo para una orden ya pagada ────────
-export async function generateExpenseForOrder(id: string, userId: string) {
-  const po = await getPaymentOrderById(id);
-  if (po.status !== 'PAID')      throw new AppError(400, 'Solo se puede generar gasto para órdenes pagadas', 'ORDER_NOT_PAID');
-  if (po.expenseId)              throw new AppError(409, 'Esta orden ya tiene un gasto vinculado', 'ALREADY_HAS_EXPENSE');
-  if (po.orderType === 'PAYROLL') throw new AppError(400, 'Las órdenes de nómina no generan gasto individual — el gasto lo registra la nómina al aprobarse', 'PAYROLL_NO_EXPENSE');
-
-  const categoryName =
-    po.orderType === 'PAYROLL'   ? 'Mano de obra' :
-    po.orderType === 'MATERIALS' ? 'Materiales'   : 'Servicios';
-
-  const category = await prisma.expenseCategory.upsert({
-    where:  { name: categoryName },
-    update: { isActive: true },
-    create: { name: categoryName, description: `Auto-creada para órdenes de pago`, isActive: true },
-  });
-
-  return prisma.$transaction(async (tx) => {
-    const opRef = `OP-${String(po.number).padStart(3, '0')}`;
-    const expense = await tx.expense.create({
-      data: {
-        projectId:     po.projectId,
-        categoryId:    category.id,
-        userId,
-        expenseDate:   po.paidAt ?? new Date(),
-        amount:        po.amount,
-        description:   `[${opRef}] ${po.concept}`,
-        paymentMethod: 'TRANSFER',
-        hasFiscalDoc:  false,
-        notes:         `Generado retroactivamente para ${opRef}. Beneficiario: ${(po as any).beneficiary?.name ?? po.beneficiaryId}. Empresa: ${po.payingCompany}.`,
-      },
-    });
-    await tx.paymentOrder.update({ where: { id }, data: { expenseId: expense.id } });
-    return tx.paymentOrder.findUniqueOrThrow({ where: { id }, include: INCLUDE });
+  return prisma.paymentOrder.update({
+    where: { id },
+    data:  { status: 'PAID', paidAt: new Date(), paidById: userId },
+    include: INCLUDE,
   });
 }
 
@@ -342,13 +217,6 @@ export async function voidPaymentOrder(id: string) {
     data:  { status: 'VOIDED' },
     include: INCLUDE,
   });
-}
-
-// ── Borrado permanente (solo admin) ──────────────────────────
-export async function hardDeletePaymentOrder(id: string) {
-  const po = await prisma.paymentOrder.findUnique({ where: { id } });
-  if (!po) throw new AppError(404, 'Orden no encontrada', 'NOT_FOUND');
-  await prisma.paymentOrder.delete({ where: { id } });
 }
 
 // ── Helper ────────────────────────────────────────────────────

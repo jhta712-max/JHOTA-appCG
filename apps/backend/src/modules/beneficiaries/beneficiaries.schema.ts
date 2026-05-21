@@ -1,11 +1,9 @@
 import { z } from 'zod';
 
-export const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'] as const;
-
 export const createBeneficiarySchema = z.object({
   name:          z.string().min(2).max(200),
   bank:          z.string().min(2).max(100),
-  accountType:   z.enum(ACCOUNT_TYPES),
+  accountType:   z.enum(['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina']),
   accountNumber: z.string().min(4).max(50),
   cedula:        z.string().max(20).optional(),
   phone:         z.string().max(20).optional(),

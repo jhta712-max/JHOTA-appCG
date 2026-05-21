@@ -5,7 +5,7 @@ import { validate }     from '../../middlewares/validate';
 import { createUserSchema, updateUserSchema, changePasswordSchema } from './users.schema';
 import * as ctrl from './users.controller';
 
-const router: any = Router();
+const router = Router();
 
 router.use(authenticate);
 

@@ -10,15 +10,23 @@ import {
 } from './expenses.schema';
 import * as ctrl from './expenses.controller';
 
-// @ts-ignore
-const router: any = Router();
+const router = Router();
+
 router.use(authenticate);
-router.get('/',              validate(expenseQuerySchema, 'query'), ctrl.list);
-router.post('/bulk-import',  authorize('admin'), ctrl.bulkImport);
-router.get('/:id',           ctrl.getOne);
-router.post('/',             validate(createExpenseSchema), ctrl.create);
-router.put('/:id',           validate(updateExpenseSchema), ctrl.update);
-router.post('/:id/void',     authorize('admin', 'supervisor'), validate(voidExpenseSchema), ctrl.voidExpense);
-router.delete('/:id',        authorize('admin'), ctrl.hardDelete);
+
+// GET  /api/v1/expenses
+router.get('/',    validate(expenseQuerySchema, 'query'), ctrl.list);
+
+// GET  /api/v1/expenses/:id
+router.get('/:id', ctrl.getOne);
+
+// POST /api/v1/expenses  — todos los roles
+router.post('/',   validate(createExpenseSchema), ctrl.create);
+
+// PUT  /api/v1/expenses/:id
+router.put('/:id', validate(updateExpenseSchema), ctrl.update);
+
+// POST /api/v1/expenses/:id/void  — solo admin y supervisor
+router.post('/:id/void', authorize('admin', 'supervisor'), validate(voidExpenseSchema), ctrl.voidExpense);
 
 export default router;

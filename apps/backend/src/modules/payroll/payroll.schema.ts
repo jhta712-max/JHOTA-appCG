@@ -21,7 +21,7 @@ export const createPayrollSchema = z.object({
     supplierName: z.string().max(200).optional(),
     bankName:     z.string().max(100).optional(),
     bankAccount:  z.string().max(100).optional(),
-  })).optional().default([]),
+  })).min(1, 'Debe tener al menos una línea'),
 });
 
 // ─── Update Payroll (solo en DRAFT) ──────────────────────────

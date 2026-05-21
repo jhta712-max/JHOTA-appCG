@@ -57,20 +57,6 @@ export const deleteLine = async (req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 };
 
-export const recordLinePayment = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const data = await svc.recordLinePayment(req.params.id, req.params.lineId, req.body);
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-};
-
-export const revertToDraft = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const data = await svc.revertToDraft(req.params.id);
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-};
-
 export const approve = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await svc.approvePayroll(req.params.id, req.user!.userId);
@@ -101,12 +87,5 @@ export const exportExcel = async (req: Request, res: Response, next: NextFunctio
 export const exportDocx = async (req: Request, res: Response, next: NextFunction) => {
   try {
     await svc.exportPayrollDocx(req.params.id, res);
-  } catch (err) { next(err); }
-};
-
-export const importLinesFromOrders = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const data = await svc.importLinesFromOrders(req.params.id);
-    res.json({ success: true, data });
   } catch (err) { next(err); }
 };

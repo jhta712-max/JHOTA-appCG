@@ -130,6 +130,7 @@ export default function PayrollFormPage() {
     if (!description.trim())           { setError('Ingrese una descripción'); return; }
 
     const validLines = lines.filter((l) => l.description.trim() && l.quantity && l.unitPrice);
+    if (!isEdit && validLines.length === 0) { setError('Agregue al menos una línea completa'); return; }
 
     if (isEdit) {
       updateMut.mutate({

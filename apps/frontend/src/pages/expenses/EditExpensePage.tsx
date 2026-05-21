@@ -26,10 +26,8 @@ export default function EditExpensePage() {
   const { id }   = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [hasFiscal,       setHasFiscal]       = useState(false);
-  const [useForeign,      setUseForeign]      = useState(false);
-  const [foreignCurrency, setForeignCurrency] = useState('USD');
-  const [apiError,        setApiError]        = useState('');
+  const [hasFiscal, setHasFiscal] = useState(false);
+  const [apiError,  setApiError]  = useState('');
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
 
@@ -58,10 +56,6 @@ export default function EditExpensePage() {
     if (!expense) return;
     const hasFV = !!expense.fiscalVoucher;
     setHasFiscal(hasFV);
-    if ((expense as any).foreignAmount) {
-      setUseForeign(true);
-      setForeignCurrency((expense as any).foreignCurrency ?? 'USD');
-    }
     reset({
       projectId:     expense.project?.id ?? expense.projectId,
       categoryId:    expense.category.id,
@@ -101,9 +95,6 @@ export default function EditExpensePage() {
       paymentMethod: data.paymentMethod,
       hasFiscalDoc:  hasFiscal,
       notes:         data.notes || undefined,
-      foreignAmount:   useForeign ? Number((data as any).foreignAmount) || null : null,
-      foreignCurrency: useForeign ? foreignCurrency : null,
-      exchangeRate:    useForeign ? Number((data as any).exchangeRate) || null : null,
     };
     if (hasFiscal) {
       payload.fiscalVoucher = {
@@ -208,42 +199,6 @@ export default function EditExpensePage() {
                 })} />
               {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
             </div>
-          </div>
-
-          {/* Moneda extranjera */}
-          <div className="rounded-xl border border-dashed border-blue-300 bg-blue-50 p-4 space-y-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={useForeign} onChange={(e) => setUseForeign(e.target.checked)} className="rounded border-gray-300" />
-              <span className="text-sm font-medium text-blue-800">💱 Pago realizado en moneda extranjera</span>
-            </label>
-            {useForeign && (
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Moneda</label>
-                  <select value={foreignCurrency} onChange={(e) => setForeignCurrency(e.target.value)} className="input-field text-sm">
-                    <option value="USD">USD — Dólar</option>
-                    <option value="EUR">EUR — Euro</option>
-                    <option value="GBP">GBP — Libra</option>
-                    <option value="CAD">CAD — Dólar canadiense</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Monto en {foreignCurrency}</label>
-                  <input type="number" step="0.01" min="0.01" placeholder="0.00"
-                    defaultValue={(expense as any)?.foreignAmount ?? ''}
-                    className="input-field text-sm"
-                    {...(register as any)('foreignAmount')} />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Tasa (1 {foreignCurrency} = X DOP)</label>
-                  <input type="number" step="0.01" min="0.01" placeholder="ej: 60.50"
-                    defaultValue={(expense as any)?.exchangeRate ?? ''}
-                    className="input-field text-sm"
-                    {...(register as any)('exchangeRate')} />
-                </div>
-              </div>
-            )}
-            {useForeign && <p className="text-xs text-blue-600">El campo <strong>Monto (RD$)</strong> es el valor final que se registra en el proyecto.</p>}
           </div>
 
           <div>

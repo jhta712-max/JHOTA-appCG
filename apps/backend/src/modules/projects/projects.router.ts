@@ -9,8 +9,7 @@ import {
 } from './projects.schema';
 import * as ctrl from './projects.controller';
 
-// @ts-ignore
-const router: any = Router();
+const router = Router();
 
 // Todos los endpoints requieren estar autenticado
 router.use(authenticate);

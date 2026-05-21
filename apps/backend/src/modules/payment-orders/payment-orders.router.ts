@@ -6,13 +6,10 @@ import {
   getAvailablePayrolls, getAvailableExpenses,
   createPaymentOrder, updatePaymentOrder,
   linkExpense, unlinkExpense,
-  linkPayroll, unlinkPayroll,
   markAsPaid, voidPaymentOrder,
-  generateExpense, hardDeletePaymentOrder,
 } from './payment-orders.controller';
 
-// @ts-ignore
-const router: any = Router();
+const router = Router();
 router.use(authenticate);
 router.use(authorize('admin', 'supervisor'));
 
@@ -24,11 +21,7 @@ router.post('/',                      createPaymentOrder);
 router.put('/:id',                    updatePaymentOrder);
 router.post('/:id/link-expense',      linkExpense);
 router.delete('/:id/link-expense',    unlinkExpense);
-router.post('/:id/link-payroll',      linkPayroll);
-router.delete('/:id/link-payroll',    unlinkPayroll);
 router.post('/:id/pay',               markAsPaid);
-router.post('/:id/generate-expense',  generateExpense);
 router.post('/:id/void',              voidPaymentOrder);
-router.delete('/:id',                 authorize('admin'), hardDeletePaymentOrder);
 
 export default router;

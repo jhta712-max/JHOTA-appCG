@@ -17,7 +17,7 @@ const fmt = (n: number) =>
 type FormData = {
   code: string; name: string; client: string; location: string;
   startDate: string; endDate: string; estimatedBudget: number;
-  status: string; notes: string; batchesEnabled?: boolean;
+  status: string; notes: string;
 };
 
 type AddendumForm = { amount: string; description: string; date: string };
@@ -148,7 +148,6 @@ export default function ProjectFormPage() {
         estimatedBudget: Number(existing.estimatedBudget),
         status:          existing.status,
         notes:           existing.notes ?? '',
-        batchesEnabled:  existing.batchesEnabled ?? false,
       });
     }
   }, [existing, reset]);
@@ -194,8 +193,8 @@ export default function ProjectFormPage() {
       setNewError('Todos los campos son requeridos');
       return;
     }
-    if (Number(newForm.amount) < 0) {
-      setNewError('El monto no puede ser negativo');
+    if (Number(newForm.amount) <= 0) {
+      setNewError('El monto debe ser mayor a 0');
       return;
     }
     setSavingNew(true);
@@ -358,26 +357,14 @@ export default function ProjectFormPage() {
           </div>
 
           {isEdit && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="label">Estado</label>
-                <select className="input-field" {...register('status')}>
-                  <option value="ACTIVE">Activo</option>
-                  <option value="PAUSED">Pausado</option>
-                  <option value="COMPLETED">Completado</option>
-                  <option value="CANCELLED">Cancelado</option>
-                </select>
-              </div>
-              <div className="flex items-end pb-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300"
-                    {...register('batchesEnabled')}
-                  />
-                  <span className="text-sm font-medium text-gray-700">Habilitar modo lotes</span>
-                </label>
-              </div>
+            <div>
+              <label className="label">Estado</label>
+              <select className="input-field" {...register('status')}>
+                <option value="ACTIVE">Activo</option>
+                <option value="PAUSED">Pausado</option>
+                <option value="COMPLETED">Completado</option>
+                <option value="CANCELLED">Cancelado</option>
+              </select>
             </div>
           )}
 

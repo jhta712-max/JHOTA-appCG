@@ -21,11 +21,7 @@ import quotationsRouter   from './modules/quotations/quotations.router';
 import cardsRouter           from './modules/cards/cards.router';
 import beneficiariesRouter   from './modules/beneficiaries/beneficiaries.router';
 import paymentOrdersRouter   from './modules/payment-orders/payment-orders.router';
-import officeExpensesRouter  from './modules/office-expenses/office-expenses.router';
-import backupRouter          from './modules/backup/backup.router';
-import batchesRouter         from './modules/batches/batches.router';
 
-// @ts-ignore
 const app = express();
 
 // ----------------------------------------------------------------
@@ -36,24 +32,8 @@ app.use(helmet());
 // ----------------------------------------------------------------
 // CORS
 // ----------------------------------------------------------------
-const allowedOrigins = [
-  env.FRONTEND_URL,
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'https://servingmi-appCG.onrender.com', // Render frontend
-];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    // En desarrollo sin origin (como requests desde Node/Postman), permitir
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin) || origin.includes('localhost')) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS not allowed'));
-    }
-  },
+  origin: [env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -103,7 +83,6 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
     environment: env.NODE_ENV,
     uptime: Math.round(process.uptime()),
-    version: '1.0.0-batch-import',
   });
 });
 
@@ -125,11 +104,8 @@ app.use('/api/v1/ocr',         apiLimiter,  ocrRouter);
 app.use('/api/v1/payrolls',    apiLimiter,  payrollRouter);
 app.use('/api/v1/quotations',  apiLimiter,  quotationsRouter);
 app.use('/api/v1/cards',          apiLimiter,  cardsRouter);
-app.use('/api/v1/beneficiaries',   apiLimiter,  beneficiariesRouter);
-app.use('/api/v1/payment-orders',  apiLimiter,  paymentOrdersRouter);
-app.use('/api/v1/office-expenses', apiLimiter,  officeExpensesRouter);
-app.use('/api/v1/backup',          apiLimiter,  backupRouter);
-app.use('/api/v1/batches',         apiLimiter,  batchesRouter);
+app.use('/api/v1/beneficiaries',  apiLimiter,  beneficiariesRouter);
+app.use('/api/v1/payment-orders', apiLimiter,  paymentOrdersRouter);
 app.use('/api/v1/monitoring', apiLimiter,  monitoringRouter);
 
 // ----------------------------------------------------------------

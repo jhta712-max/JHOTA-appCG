@@ -18,9 +18,8 @@ const navItems = [
   { to: '/export',      icon: Download,  label: 'Exportar Excel', adminOnly: true },
   { to: '/users',       icon: Users,     label: 'Usuarios',       adminOnly: true },
   { to: '/categories',  icon: Tag,        label: 'Categorías',     adminOnly: true },
-  { to: '/payment-orders',  icon: FileText,   label: 'Órd. de Pago',    adminOnly: true },
-  { to: '/office-expenses', icon: Receipt,    label: 'Gtos. Oficina',   adminOnly: true },
-  { to: '/cards',           icon: CreditCard, label: 'Tarjetas',        adminOnly: true },
+  { to: '/payment-orders', icon: FileText,   label: 'Órd. de Pago', adminOnly: true },
+  { to: '/cards',          icon: CreditCard, label: 'Tarjetas',     adminOnly: true },
   { to: '/monitoring',  icon: Activity,   label: 'Monitoreo',      adminOnly: true },
 ];
 

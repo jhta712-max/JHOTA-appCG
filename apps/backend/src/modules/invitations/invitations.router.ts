@@ -11,8 +11,7 @@ import {
   revokeInvitation,
 } from './invitations.service';
 
-// @ts-ignore
-const router: any = Router();
+const router = Router();
 
 // ── POST /invitations — Crear y enviar invitación (admin y supervisor)
 router.post(
