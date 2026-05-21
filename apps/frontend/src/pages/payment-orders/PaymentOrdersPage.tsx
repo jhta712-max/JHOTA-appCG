@@ -61,10 +61,13 @@ function fmtDate(d: string) {
 
 /** Normaliza cualquier variante del tipo de cuenta al enum que acepta el backend */
 function normalizeAccountType(raw: string): 'Cuenta de Ahorros' | 'Cuenta Corriente' | 'Cuenta Nómina' {
-  const v = raw.toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g, ''); // sin tildes
-  if (v.includes('corriente'))              return 'Cuenta Corriente';
-  if (v.includes('nomina') || v.includes('nomina')) return 'Cuenta Nómina';
-  return 'Cuenta de Ahorros'; // default: ahorros
+  // Quitar tildes manualmente (sin regex Unicode que puede fallar)
+  const v = raw.toLowerCase().trim()
+    .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+    .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
+  if (v.includes('corriente'))           return 'Cuenta Corriente';
+  if (v.includes('nomina'))              return 'Cuenta Nómina';
+  return 'Cuenta de Ahorros'; // cubre: ahorro, ahorros, cuenta de ahorros, etc.
 }
 
 function downloadBeneTemplate() {
@@ -88,12 +91,15 @@ function downloadBeneTemplate() {
 function parseCSVText(text: string): BeneForm[] {
   const lines = text.replace(/\r/g, '').split('\n').map((l) => l.trim()).filter(Boolean);
   if (lines.length < 2) return [];
-  // Eliminar BOM si existe
+  // Eliminar BOM si existe (UTF-8 BOM = EF BB BF o el carácter ﻿)
   const headerLine = lines[0].replace(/^﻿/, '');
-  // Normalizar encabezados: minúsculas, sin tildes ni caracteres especiales
+  // Normalizar encabezados: minúsculas, quitar tildes manualmente, solo letras y _
+  const stripAccents = (s: string) => s
+    .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+    .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
   const headers = headerLine
     .split(',')
-    .map((h) => h.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z_]/g, ''));
+    .map((h) => stripAccents(h.trim().toLowerCase()).replace(/[^a-z_]/g, ''));
   const idx = (name: string) => {
     // Busca coincidencia exacta o parcial
     const exact = headers.indexOf(name);
