@@ -161,6 +161,42 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   OTHER:    'Otro',
 };
 
+// ── Beneficiarios ─────────────────────────────────────────────
+export interface Beneficiary {
+  id:            string;
+  name:          string;
+  bank:          string;
+  accountType:   string;
+  accountNumber: string;
+  cedula?:       string | null;
+  phone?:        string | null;
+  isActive:      boolean;
+  createdBy:     { id: string; name: string };
+  createdAt:     string;
+}
+
+// ── Órdenes de Pago ───────────────────────────────────────────
+export interface PaymentOrder {
+  id:            string;
+  number:        number;
+  payingCompany: string;
+  beneficiaryId: string;
+  beneficiary:   Beneficiary;
+  projectId:     string;
+  project:       { id: string; code: string; name: string };
+  amount:        number;
+  currency:      string;
+  concept:       string;
+  status:        'PENDING' | 'PAID' | 'VOIDED';
+  generatedText: string | null;
+  notes?:        string | null;
+  paidAt?:       string | null;
+  paidBy?:       { id: string; name: string } | null;
+  createdBy:     { id: string; name: string };
+  createdAt:     string;
+  updatedAt:     string;
+}
+
 export const PROJECT_STATUS_LABELS: Record<string, string> = {
   ACTIVE:    'Activo',
   PAUSED:    'Pausado',

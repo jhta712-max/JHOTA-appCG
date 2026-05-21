@@ -63,6 +63,9 @@ model User {
   quotationPayments       QuotationPayment[]     @relation("QuotationPaymentCreatedBy")
   quotationLinks          QuotationExpenseLink[] @relation("QuotationLinkCreatedBy")
   quotationAttachments    QuotationAttachment[]
+  beneficiaries           Beneficiary[]          @relation("BeneficiaryCreatedBy")
+  paymentOrdersCreated    PaymentOrder[]         @relation("PaymentOrderCreatedBy")
+  paymentOrdersPaid       PaymentOrder[]         @relation("PaymentOrderPaidBy")
 
   @@index([email])
   @@index([roleId])
@@ -94,6 +97,7 @@ model Project {
   assignments   ProjectAssignment[]
   payrolls      Payroll[]
   quotations    Quotation[]
+  paymentOrders PaymentOrder[]
 
   @@index([code])
   @@index([status])
@@ -623,6 +627,63 @@ model QuotationExpenseLink {
 
   @@index([quotationId])
   @@map("quotation_expense_links")
+}
+
+// ============================================================
+// BENEFICIARIOS (órdenes de pago)
+// ============================================================
+model Beneficiary {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String   @db.VarChar(200)
+  bank          String   @db.VarChar(100)
+  accountType   String   @map("account_type") @db.VarChar(30)   // Cuenta de Ahorros | Cuenta Corriente | Cuenta Nómina
+  accountNumber String   @map("account_number") @db.VarChar(50)
+  cedula        String?  @db.VarChar(20)
+  phone         String?  @db.VarChar(20)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdById   String   @map("created_by_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  createdBy     User           @relation("BeneficiaryCreatedBy", fields: [createdById], references: [id])
+  paymentOrders PaymentOrder[]
+
+  @@index([name])
+  @@index([isActive])
+  @@map("beneficiaries")
+}
+
+// ============================================================
+// ÓRDENES DE PAGO
+// ============================================================
+model PaymentOrder {
+  id            String   @id @default(uuid()) @db.Uuid
+  number        Int                                               // Autoincremental por aplicación
+  payingCompany String   @map("paying_company") @db.VarChar(200)
+  beneficiaryId String   @map("beneficiary_id") @db.Uuid
+  projectId     String   @map("project_id") @db.Uuid
+  amount        Decimal  @db.Decimal(15, 2)
+  currency      String   @default("RD$") @db.VarChar(10)
+  concept       String   @db.Text
+  status        String   @default("PENDING") @db.VarChar(20)    // PENDING | PAID
+  generatedText String?  @map("generated_text") @db.Text
+  notes         String?  @db.VarChar(500)
+  paidAt        DateTime? @map("paid_at")
+  paidById      String?  @map("paid_by_id") @db.Uuid
+  createdById   String   @map("created_by_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id])
+  project       Project     @relation(fields: [projectId], references: [id])
+  createdBy     User        @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
+  paidBy        User?       @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
+
+  @@index([status])
+  @@index([projectId])
+  @@index([beneficiaryId])
+  @@index([createdAt])
+  @@map("payment_orders")
 }
 
 // Adjuntos de cotizaciones (separado de Attachment para no tocar estructura existente)

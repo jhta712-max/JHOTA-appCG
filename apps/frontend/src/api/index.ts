@@ -346,6 +346,39 @@ export interface AiAnalysisResult {
   analyzedAt:      string;
 }
 
+// ── Beneficiarios ─────────────────────────────────────────────
+import type { Beneficiary, PaymentOrder } from '../types';
+
+export const beneficiariesApi = {
+  list:       (onlyActive = true) =>
+    api.get<{ success: boolean; data: Beneficiary[] }>('/beneficiaries', { params: { active: onlyActive ? 'true' : 'false' } }),
+  getById:    (id: string) =>
+    api.get<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`),
+  create:     (data: unknown) =>
+    api.post<{ success: boolean; data: Beneficiary }>('/beneficiaries', data),
+  update:     (id: string, data: unknown) =>
+    api.put<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`, data),
+  deactivate: (id: string) =>
+    api.delete<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`),
+};
+
+// ── Órdenes de Pago ───────────────────────────────────────────
+export const paymentOrdersApi = {
+  list: (params?: Record<string, unknown>) =>
+    api.get<PaginatedResponse<PaymentOrder>>('/payment-orders', { params }),
+  getById: (id: string) =>
+    api.get<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}`),
+  create: (data: unknown) =>
+    api.post<{ success: boolean; data: PaymentOrder }>('/payment-orders', data),
+  update: (id: string, data: unknown) =>
+    api.put<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}`, data),
+  markAsPaid: (id: string) =>
+    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`),
+  void: (id: string) =>
+    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/void`),
+};
+
+// ── Monitoreo ─────────────────────────────────────────────────
 export const monitoringApi = {
   dashboard: () =>
     api.get<{ success: boolean; data: MonitoringDashboard }>('/monitoring/dashboard'),
