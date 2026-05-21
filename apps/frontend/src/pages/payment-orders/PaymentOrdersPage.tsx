@@ -439,21 +439,36 @@ export default function PaymentOrdersPage() {
       {tab === 'orders' && (
         <div className="space-y-4">
 
-          {/* Filtros */}
-          <div className="flex flex-wrap gap-2">
+          {/* Filtros + acciones masivas */}
+          <div className="flex flex-wrap items-center gap-2">
             {(['', 'PENDING', 'PAID'] as const).map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === s ? 'bg-primary-500 text-gray-900' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                 {s === '' ? 'Todas' : s === 'PENDING' ? '🕐 Pendientes' : '✅ Pagadas'}
               </button>
             ))}
-            <div className="w-px bg-gray-200 mx-1" />
+            <div className="w-px bg-gray-200 mx-1 self-stretch" />
             {(['', 'GENERAL', 'PAYROLL', 'MATERIALS'] as const).map((t) => (
               <button key={t} onClick={() => setFilterType(t)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                 {t === '' ? 'Todos tipos' : ORDER_TYPE_CFG[t as OrderType].label}
               </button>
             ))}
+            {orders.filter((o) => o.generatedText).length > 1 && (
+              <>
+                <div className="w-px bg-gray-200 mx-1 self-stretch" />
+                <button
+                  onClick={() => copyText(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'))}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all">
+                  <ClipboardCopy className="w-3.5 h-3.5" /> Copiar todas
+                </button>
+                <button
+                  onClick={() => shareWhatsApp(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'))}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
+                  <MessageCircle className="w-3.5 h-3.5" /> Compartir todas
+                </button>
+              </>
+            )}
           </div>
 
           {/* Detalle expandido */}
