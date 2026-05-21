@@ -545,20 +545,3 @@ function serializeQuotation(q: any): any {
     })),
   };
 }
-IES');
-}
-
-/** Serializa Decimals a números para evitar problemas de JSON */
-function serializeQuotation(q: any): any {
-  return {
-    ...q,
-    subtotal:    Number(q.subtotal),
-    itbisAmount: Number(q.itbisAmount),
-    total:       Number(q.total),
-    advancePct:  q.advancePct != null ? Number(q.advancePct) : null,
-    payments: (q.payments ?? []).map((p: any) => ({
-      ...p,
-      amount: Number(p.amount),
-    })),
-  };
-}

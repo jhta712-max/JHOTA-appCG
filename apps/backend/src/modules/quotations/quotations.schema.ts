@@ -107,5 +107,3 @@ export type UpdateStatusInput     = z.infer<typeof updateStatusSchema>;
 export type CreatePaymentInput    = z.infer<typeof createPaymentSchema>;
 export type LinkExpenseInput      = z.infer<typeof linkExpenseSchema>;
 export type QuotationQuery        = z.infer<typeof quotationQuerySchema>;
-t      = z.infer<typeof linkExpenseSchema>;
-export type QuotationQuery        = z.infer<typeof quotationQuerySchema>;

@@ -106,7 +106,10 @@ export async function runQuotationExpiryNotifications() {
 
     results.forEach((r, i) => {
       if (r.status === 'rejected') {
-        logger.error(`[QuotationNotifications] Error enviando a ${recipients[i]!.email}:`, (r as PromiseRejectedResult).reason);
+        logger.error(
+          `[QuotationNotifications] Error enviando a ${recipients[i]!.email}:`,
+          (r as PromiseRejectedResult).reason,
+        );
       }
     });
 
