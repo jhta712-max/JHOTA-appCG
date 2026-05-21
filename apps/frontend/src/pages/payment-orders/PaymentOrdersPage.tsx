@@ -201,12 +201,7 @@ export default function PaymentOrdersPage() {
     select:   (r) => r.data.data,
   });
 
-  const { data: availablePayrolls = [] } = useQuery({
-    queryKey: ['payment-orders', 'payrolls', orderForm.projectId],
-    queryFn:  () => paymentOrdersApi.availablePayrolls(orderForm.projectId),
-    select:   (r) => r.data.data,
-    enabled:  orderModal && orderForm.orderType === 'PAYROLL' && !!orderForm.projectId,
-  });
+  // availablePayrolls: ya no se requiere — órdenes de Nómina son independientes del módulo de nóminas
 
   const linkingOrderProjectId = viewingOrder?.projectId ?? '';
   const { data: availableExpenses = [] } = useQuery({
@@ -322,27 +317,12 @@ export default function PaymentOrdersPage() {
     setModalView('form');
   };
 
-  const onPayrollSelect = (payrollId: string) => {
-    const p = availablePayrolls.find((x: any) => x.id === payrollId);
-    if (p) {
-      setOrderForm((f) => ({
-        ...f,
-        payrollId,
-        amount:  String(p.totalAmount),
-        concept: `Pago de ${PAYROLL_TYPE_LABEL[p.type] ?? p.type} — Período ${fmtDate(p.periodStart)} al ${fmtDate(p.periodEnd)}`,
-      }));
-    } else {
-      setOrderForm((f) => ({ ...f, payrollId }));
-    }
-  };
-
   const saveOrder = () => {
     if (!orderForm.payingCompany.trim()) return setFormErr('La empresa pagadora es requerida');
     if (!orderForm.beneficiaryId)        return setFormErr('Selecciona un beneficiario');
     if (!orderForm.projectId)            return setFormErr('Selecciona un proyecto');
     if (!orderForm.amount || Number(orderForm.amount) <= 0) return setFormErr('El monto debe ser mayor a 0');
     if (!orderForm.concept.trim())       return setFormErr('El concepto es requerido');
-    if (orderForm.orderType === 'PAYROLL' && !orderForm.payrollId) return setFormErr('Selecciona la nómina a pagar');
 
     const payload: any = {
       orderType:     orderForm.orderType,
@@ -354,9 +334,6 @@ export default function PaymentOrdersPage() {
       concept:       orderForm.concept,
       notes:         orderForm.notes || undefined,
     };
-    if (orderForm.orderType === 'PAYROLL' && orderForm.payrollId) {
-      payload.payrollId = orderForm.payrollId;
-    }
 
     if (editingOrder) updateOrderMut.mutate({ id: editingOrder.id, d: payload });
     else              createOrderMut.mutate(payload);
@@ -782,11 +759,25 @@ export default function PaymentOrdersPage() {
               {/* Resumen de sesión (si hay más de una) */}
               {sessionOrders.length > 1 && (
                 <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">📋 Órdenes de esta sesión</p>
-                  <div className="space-y-1 max-h-40 overflow-y-auto">
-                    {sessionOrders.map((o) => (
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Órdenes de esta sesión ({sessionOrders.length})</p>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => copyText(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'))}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all">
+                        <ClipboardCopy className="w-3 h-3" /> Copiar todas
+                      </button>
+                      <button
+                        onClick={() => shareWhatsApp(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'))}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
+                        <MessageCircle className="w-3 h-3" /> Compartir todas
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {sessionOrders.map((o, i) => (
                       <div key={o.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-sm">
-                        <span className="text-xs text-gray-400 font-mono shrink-0">OP-{String(o.number).padStart(3, '0')}</span>
+                        <span className="text-xs text-gray-400 font-mono shrink-0">{i + 1}. OP-{String(o.number).padStart(3, '0')}</span>
                         <span className="text-gray-700 truncate mx-3 flex-1">{o.beneficiary.name}</span>
                         <span className="text-gray-500 shrink-0 text-xs">{fmtMonto(o.amount, o.currency)}</span>
                         <div className="flex gap-1 ml-2">
@@ -859,24 +850,11 @@ export default function PaymentOrdersPage() {
                 </Field>
               </div>
 
-              {/* Selector nómina (PAYROLL) */}
+              {/* Info nómina */}
               {orderForm.orderType === 'PAYROLL' && (
-                <Field label="Nómina a pagar *">
-                  {!orderForm.projectId ? (
-                    <p className="text-xs text-amber-600 mt-1">Selecciona primero el proyecto para ver las nóminas disponibles.</p>
-                  ) : availablePayrolls.length === 0 ? (
-                    <p className="text-xs text-gray-400 mt-1">No hay nóminas aprobadas disponibles en este proyecto.</p>
-                  ) : (
-                    <select className="input-field" value={orderForm.payrollId} onChange={(e) => onPayrollSelect(e.target.value)}>
-                      <option value="">— Selecciona nómina —</option>
-                      {availablePayrolls.map((p: any) => (
-                        <option key={p.id} value={p.id}>
-                          #{p.number} · {PAYROLL_TYPE_LABEL[p.type] ?? p.type} · {fmtDate(p.periodStart)}–{fmtDate(p.periodEnd)} · {fmtMonto(p.totalAmount, 'RD$')}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </Field>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 mb-2">
+                  <strong>👷 Orden de Nómina:</strong> Especifica el monto y concepto del pago de mano de obra o servicios. La orden queda registrada independientemente.
+                </div>
               )}
 
               {/* Info materiales */}
