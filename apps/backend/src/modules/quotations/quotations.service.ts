@@ -128,18 +128,18 @@ export async function getQuotationSummary(id: string) {
   const pendingBalance  = Math.max(total - totalApplied, 0);
   const isOverpaid      = totalApplied > total;
 
+  // Estructura plana para el frontend
   return {
-    quotation: { id: q.id, total, supplierName: q.supplierName, status: q.status },
-    financial: {
-      totalPayments:   Math.round(totalPayments * 100) / 100,
-      totalLinked:     Math.round(totalLinked * 100) / 100,
-      totalApplied:    Math.round(totalApplied * 100) / 100,
-      pendingBalance:  Math.round(pendingBalance * 100) / 100,
-      paymentsCount:   q.payments.length,
-      linksCount:      q.expenseLinks.length,
-      isOverpaid,
-      completionPct:   total > 0 ? Math.round((totalApplied / total) * 10000) / 100 : 0,
-    },
+    quotationId:    q.id,
+    total:          Math.round(total * 100) / 100,
+    totalPaid:      Math.round(totalPayments * 100) / 100,
+    totalLinked:    Math.round(totalLinked * 100) / 100,
+    pendingBalance: Math.round(pendingBalance * 100) / 100,
+    advanceAmount:  Math.round(totalPayments * 100) / 100,
+    paymentsCount:  q.payments.length,
+    linksCount:     q.expenseLinks.length,
+    paidPct:        total > 0 ? Math.round((totalApplied / total) * 10000) / 100 : 0,
+    isOverpaid,
   };
 }
 
@@ -453,7 +453,9 @@ export async function suggestQuotations(projectId: string, supplierName?: string
     select: {
       id: true, number: true, supplierName: true, total: true,
       status: true, quotationDate: true, description: true,
-      _count: { select: { payments: true } },
+      currency: true, quotationNumber: true,
+      project: { select: { id: true, code: true, name: true } },
+      _count: { select: { payments: true, expenseLinks: true, attachments: true } },
     },
   });
 
@@ -490,15 +492,14 @@ async function autoUpdateStatus(quotationId: string): Promise<void> {
 
   let newStatus = q.status;
 
-  if (totalApplied >= total && (hasFiscalLink || q.status === 'INVOICED')) {
-    newStatus = 'PAID';
-  } else if (hasFiscalLink && totalApplied < total) {
-    newStatus = 'PARTIAL_INVOICED';
-  } else if (hasFiscalLink && totalApplied >= total) {
+  if (hasFiscalLink && totalApplied >= total) {
+    // Factura recibida que cubre el total → INVOICED (PAID lo marca el usuario manualmente)
     newStatus = 'INVOICED';
-  } else if (totalPayments > 0 && q.status === 'APPROVED') {
-    newStatus = 'ADVANCE_PAID';
-  } else if (totalPayments > 0 && q.status === 'PENDING') {
+  } else if (hasFiscalLink && totalApplied < total) {
+    // Factura parcial
+    newStatus = 'PARTIAL_INVOICED';
+  } else if (totalPayments > 0 && (q.status === 'APPROVED' || q.status === 'PENDING')) {
+    // Al menos un anticipo registrado
     newStatus = 'ADVANCE_PAID';
   }
 

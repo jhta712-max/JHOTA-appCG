@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { FileText, Plus, Search, Filter, ChevronRight } from 'lucide-react';
-import { quotationsApi } from '../../api';
-import { projectsApi } from '../../api';
+import { quotationsApi, projectsApi } from '../../api';
 import {
   QUOTATION_STATUS_LABELS,
   QUOTATION_STATUS_COLORS,
