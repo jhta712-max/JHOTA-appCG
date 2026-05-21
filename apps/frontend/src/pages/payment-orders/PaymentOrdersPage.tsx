@@ -271,6 +271,11 @@ export default function PaymentOrdersPage() {
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Orden anulada'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
   });
+  const generateExpenseMut = useMutation({
+    mutationFn: (id: string) => paymentOrdersApi.generateExpense(id),
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('✅ Gasto generado y vinculado al proyecto'); },
+    onError:   (e: any) => flash(e.response?.data?.error || 'Error al generar gasto'),
+  });
   const linkExpenseMut = useMutation({
     mutationFn: ({ id, expenseId }: { id: string; expenseId: string }) => paymentOrdersApi.linkExpense(id, expenseId),
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkModal(false); flash('✅ Gasto vinculado'); },
@@ -597,6 +602,22 @@ export default function PaymentOrdersPage() {
                   <button onClick={() => { if (confirm('¿Anular esta orden de pago?')) voidOrderMut.mutate(viewingOrder.id); }}
                     className="text-sm text-red-600 hover:text-red-700 border border-red-300 hover:bg-red-50 px-3 py-2 rounded-lg font-semibold transition-all">
                     Anular
+                  </button>
+                </div>
+              )}
+
+              {/* Generar gasto retroactivo — órdenes pagadas sin gasto */}
+              {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && (
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <p className="text-xs text-amber-600 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" /> Esta orden no tiene gasto registrado en el proyecto.
+                  </p>
+                  <button
+                    onClick={() => generateExpenseMut.mutate(viewingOrder.id)}
+                    disabled={generateExpenseMut.isPending}
+                    className="text-sm text-primary-600 hover:text-primary-700 border border-primary-300 hover:bg-primary-50 px-3 py-2 rounded-lg font-semibold transition-all flex items-center gap-1.5">
+                    {generateExpenseMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                    Generar gasto
                   </button>
                 </div>
               )}

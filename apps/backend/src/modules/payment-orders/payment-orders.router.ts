@@ -7,6 +7,7 @@ import {
   createPaymentOrder, updatePaymentOrder,
   linkExpense, unlinkExpense,
   markAsPaid, voidPaymentOrder,
+  generateExpense,
 } from './payment-orders.controller';
 
 const router = Router();
@@ -22,6 +23,7 @@ router.put('/:id',                    updatePaymentOrder);
 router.post('/:id/link-expense',      linkExpense);
 router.delete('/:id/link-expense',    unlinkExpense);
 router.post('/:id/pay',               markAsPaid);
+router.post('/:id/generate-expense',  generateExpense);
 router.post('/:id/void',              voidPaymentOrder);
 
 export default router;
