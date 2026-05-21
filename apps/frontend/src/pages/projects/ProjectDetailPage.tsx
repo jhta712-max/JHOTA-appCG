@@ -2,11 +2,12 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, FolderOpen, MapPin, User,
-  Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2,
+  Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight,
 } from 'lucide-react';
-import { projectsApi, expensesApi } from '../../api';
+import { projectsApi, expensesApi, quotationsApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import { PAYMENT_METHOD_LABELS, PROJECT_STATUS_LABELS } from '../../types';
+import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
 
 function fmt(n: number) {
@@ -45,12 +46,20 @@ export default function ProjectDetailPage() {
     enabled:  !!id,
   });
 
+  const { data: quotationsData } = useQuery({
+    queryKey: ['quotations', 'project', id],
+    queryFn:  () => quotationsApi.list({ projectId: id, limit: 5, orderBy: 'quotationDate', order: 'desc' }),
+    select:   (r) => r.data,
+    enabled:  !!id,
+  });
+
   if (isLoading) return <div className="text-center py-20 text-gray-400">Cargando proyecto...</div>;
   if (!summaryData) return <div className="text-center py-20 text-gray-400">Proyecto no encontrado</div>;
 
   const { project, summary, byCategory, addendums = [] } = summaryData;
-  const expenses = expensesData?.data ?? [];
-  const usedPct  = Math.min(summary.budgetUsedPct, 100);
+  const expenses   = expensesData?.data ?? [];
+  const quotations = quotationsData?.data ?? [];
+  const usedPct    = Math.min(summary.budgetUsedPct, 100);
   const barColor = usedPct >= 90 ? 'bg-red-500' : usedPct >= 70 ? 'bg-amber-500' : 'bg-green-500';
 
   return (
@@ -202,6 +211,60 @@ export default function ProjectDetailPage() {
                 );
               })}
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Cotizaciones del proyecto */}
+      <div className="card">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-gray-400" />
+            Cotizaciones
+            {quotationsData?.pagination?.total != null && quotationsData.pagination.total > 0 && (
+              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                {quotationsData.pagination.total}
+              </span>
+            )}
+          </h2>
+          <Link to={`/quotations/new?projectId=${id}`} className="btn-secondary text-xs py-1.5 px-3">
+            <Plus className="w-3.5 h-3.5" /> Nueva cotización
+          </Link>
+        </div>
+        <div className="divide-y divide-gray-50">
+          {quotations.length === 0 ? (
+            <p className="text-center text-gray-400 py-6 text-sm">No hay cotizaciones en este proyecto</p>
+          ) : (
+            quotations.map((q) => (
+              <Link key={q.id} to={`/quotations/${q.id}`}
+                className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors group">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate group-hover:text-primary-700">
+                    {q.supplierName}
+                    {q.quotationNumber && (
+                      <span className="text-xs text-gray-400 font-mono ml-1">#{q.quotationNumber}</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate">{q.description.slice(0, 60)}</p>
+                </div>
+                <div className="text-right shrink-0 space-y-1">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {new Intl.NumberFormat('es-DO', { style: 'currency', currency: q.currency, minimumFractionDigits: 0 }).format(Number(q.total))}
+                  </p>
+                  <span className={`inline-flex text-xs px-2 py-0.5 rounded-full font-medium ${QUOTATION_STATUS_COLORS[q.status as QuotationStatus]}`}>
+                    {QUOTATION_STATUS_LABELS[q.status as QuotationStatus]}
+                  </span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
+              </Link>
+            ))
+          )}
+        </div>
+        {(quotationsData?.pagination?.total ?? 0) > 5 && (
+          <div className="px-5 py-3 border-t border-gray-100">
+            <Link to={`/quotations?projectId=${id}`} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+              Ver todas las cotizaciones →
+            </Link>
           </div>
         )}
       </div>

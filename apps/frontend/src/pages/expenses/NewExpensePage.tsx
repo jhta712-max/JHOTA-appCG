@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
@@ -40,6 +40,7 @@ const CATEGORY_NAME_MAP: Record<string, string> = {
 
 export default function NewExpensePage() {
   const navigate  = useNavigate();
+  const location  = useLocation();
   const fileRef       = useRef<HTMLInputElement>(null);
   const cameraRef     = useRef<HTMLInputElement>(null);
 
@@ -59,6 +60,14 @@ export default function NewExpensePage() {
     useForm<FormData>({
       defaultValues: { expenseDate: new Date().toISOString().split('T')[0], hasFiscalDoc: false },
     });
+
+  // Pre-seleccionar proyecto desde state (botón del proyecto) o query param
+  useEffect(() => {
+    const stateProjectId = (location.state as any)?.projectId;
+    const queryProjectId = new URLSearchParams(location.search).get('projectId');
+    const pid = stateProjectId ?? queryProjectId;
+    if (pid) setValue('projectId', pid);
+  }, [location, setValue]);
 
   const { data: projects } = useQuery({
     queryKey: ['projects', 'active'],

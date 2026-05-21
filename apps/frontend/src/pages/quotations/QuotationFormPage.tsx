@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Save, Loader2, AlertCircle, Sparkles, X,
@@ -36,11 +36,15 @@ const EMPTY: FormData = {
 
 export default function QuotationFormPage() {
   const { id } = useParams<{ id: string }>();
-  const isEdit  = !!id;
+  const isEdit   = !!id;
   const navigate = useNavigate();
+  const location = useLocation();
   const qc       = useQueryClient();
 
-  const [form,    setForm]    = useState<FormData>(EMPTY);
+  const [form,    setForm]    = useState<FormData>(() => {
+    const queryProjectId = new URLSearchParams(location.search).get('projectId');
+    return { ...EMPTY, projectId: queryProjectId ?? '' };
+  });
   const [errors,  setErrors]  = useState<Record<string, string>>({});
   const [apiErr,  setApiErr]  = useState('');
 

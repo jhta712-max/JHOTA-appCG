@@ -6,9 +6,10 @@ import {
   CreditCard, FileText, AlertCircle, CheckCircle, XCircle,
   Paperclip, Trash2, ExternalLink,
 } from 'lucide-react';
-import { expensesApi } from '../../api';
+import { expensesApi, quotationsApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import { PAYMENT_METHOD_LABELS } from '../../types';
+import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
 
 function fmt(n: number) {
@@ -33,6 +34,19 @@ export default function ExpenseDetailPage() {
     queryFn:  () => expensesApi.getById(id!),
     select:   (r) => r.data.data,
     enabled:  !!id,
+  });
+
+  // Cotización vinculada a este gasto (si existe)
+  const { data: linkedQuotations } = useQuery({
+    queryKey: ['quotations', 'suggest', expense?.project?.id, expense?.fiscalVoucher?.supplierName],
+    queryFn:  () => quotationsApi.suggest({
+      projectId:    expense!.project.id,
+      supplierName: expense!.fiscalVoucher?.supplierName ?? undefined,
+      amount:       Number(expense!.amount),
+    }),
+    select:   (r) => r.data.data,
+    enabled:  !!expense,
+    staleTime: 60_000,
   });
 
   const voidMutation = useMutation({
@@ -200,6 +214,39 @@ export default function ExpenseDetailPage() {
         <div className="card p-4 flex items-center gap-3 text-sm text-gray-500">
           <Receipt className="w-4 h-4 text-gray-300 shrink-0" />
           <span>Este gasto no tiene comprobante fiscal</span>
+        </div>
+      )}
+
+      {/* Cotizaciones relacionadas */}
+      {linkedQuotations && linkedQuotations.length > 0 && (
+        <div className="card p-5 space-y-3">
+          <h2 className="font-semibold text-gray-800 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-amber-500" /> Cotizaciones relacionadas
+          </h2>
+          <p className="text-xs text-gray-400">
+            Estas cotizaciones del mismo proyecto y suplidor podrían estar relacionadas con este gasto.
+          </p>
+          <div className="space-y-2">
+            {linkedQuotations.map((q) => (
+              <Link key={q.id} to={`/quotations/${q.id}`}
+                className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-100 rounded-xl hover:bg-amber-100 transition-colors">
+                <FileText className="w-4 h-4 text-amber-600 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-800">{q.supplierName}</p>
+                  <p className="text-xs text-gray-500 truncate">{q.description.slice(0, 60)}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-xs font-semibold text-gray-700">
+                    {new Intl.NumberFormat('es-DO', { style: 'currency', currency: q.currency, minimumFractionDigits: 0 }).format(Number(q.total))}
+                  </p>
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${QUOTATION_STATUS_COLORS[q.status as QuotationStatus]}`}>
+                    {QUOTATION_STATUS_LABELS[q.status as QuotationStatus]}
+                  </span>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 
