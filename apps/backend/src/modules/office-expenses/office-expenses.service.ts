@@ -1,4 +1,4 @@
-import prisma from '../../config/database';
+import { prisma } from '../../lib/prisma';
 import { AppError } from '../../middlewares/errorHandler';
 import type { CreateOfficeExpenseInput, UpdateOfficeExpenseInput, ListOfficeExpensesInput } from './office-expenses.schema';
 
@@ -146,7 +146,7 @@ export async function getOfficeExpenseSummary() {
       total: Number(totalAll._sum.amount ?? 0),
       count: totalAll._count,
     },
-    byCategory: byCategory.map((r: any) => ({
+    byCategory: byCategory.map((r) => ({
       category: r.category,
       total:    Number(r._sum.amount ?? 0),
       count:    r._count,

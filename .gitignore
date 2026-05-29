@@ -11,3 +11,7 @@ uploads/*
 Thumbs.db
 coverage/
 .nyc_output/
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json
