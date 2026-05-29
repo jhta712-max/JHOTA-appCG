@@ -390,6 +390,56 @@ export const paymentOrdersApi = {
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/void`),
 };
 
+// ── Gastos de Oficina ─────────────────────────────────────────
+export type OfficeExpenseCategory = 'CLEANING_SUPPLIES' | 'CONSUMABLES' | 'OFFICE_SERVICES' | 'OTHER';
+export type OfficeExpenseStatus   = 'ACTIVE' | 'VOIDED';
+
+export const OFFICE_EXPENSE_CATEGORY_LABELS: Record<OfficeExpenseCategory, string> = {
+  CLEANING_SUPPLIES: 'Insumos de limpieza',
+  CONSUMABLES:       'Material gastable',
+  OFFICE_SERVICES:   'Servicios de oficina',
+  OTHER:             'Otros gastos de oficina',
+};
+
+export interface OfficeExpense {
+  id:            string;
+  category:      OfficeExpenseCategory;
+  description:   string;
+  amount:        string;
+  expenseDate:   string;
+  paymentMethod: string;
+  companyCardId: string | null;
+  hasFiscalDoc:  boolean;
+  fiscalDocNum:  string | null;
+  notes:         string | null;
+  status:        OfficeExpenseStatus;
+  createdById:   string;
+  createdAt:     string;
+  createdBy:     { id: string; name: string; email: string };
+  companyCard:   { id: string; holderName: string; lastFour: string; bank: string } | null;
+}
+
+export interface OfficeExpenseSummary {
+  currentMonth: { total: number; count: number };
+  allTime:      { total: number; count: number };
+  byCategory:   { category: OfficeExpenseCategory; total: number; count: number }[];
+}
+
+export const officeExpensesApi = {
+  list: (params?: Record<string, unknown>) =>
+    api.get<{ success: boolean; data: OfficeExpense[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>('/office-expenses', { params }),
+  getOne: (id: string) =>
+    api.get<{ success: boolean; data: OfficeExpense }>(`/office-expenses/${id}`),
+  summary: () =>
+    api.get<{ success: boolean; data: OfficeExpenseSummary }>('/office-expenses/summary'),
+  create: (data: Record<string, unknown>) =>
+    api.post<{ success: boolean; data: OfficeExpense }>('/office-expenses', data),
+  update: (id: string, data: Record<string, unknown>) =>
+    api.put<{ success: boolean; data: OfficeExpense }>(`/office-expenses/${id}`, data),
+  void: (id: string) =>
+    api.delete<{ success: boolean; data: OfficeExpense }>(`/office-expenses/${id}`),
+};
+
 // ── Monitoreo ─────────────────────────────────────────────────
 export const monitoringApi = {
   dashboard: () =>
