@@ -78,7 +78,8 @@ export default function PayrollDetailPage() {
   const deleteMut     = useMutation({ mutationFn: () => payrollApi.delete(id!),                onSuccess: () => navigate('/payrolls') });
   const addLineMut    = useMutation({ mutationFn: (d: unknown) => payrollApi.addLine(id!, d),  onSuccess: () => { invalidate(); setAddingLine(false); setLineForm(emptyLine); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al agregar línea') });
   const updateLineMut = useMutation({ mutationFn: ({ lineId, d }: { lineId: string; d: unknown }) => payrollApi.updateLine(id!, lineId, d), onSuccess: () => { invalidate(); setEditLineId(null); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al actualizar línea') });
-  const deleteLineMut = useMutation({ mutationFn: (lineId: string) => payrollApi.deleteLine(id!, lineId), onSuccess: invalidate });
+  const deleteLineMut   = useMutation({ mutationFn: (lineId: string) => payrollApi.deleteLine(id!, lineId), onSuccess: invalidate });
+  const revertDraftMut  = useMutation({ mutationFn: () => payrollApi.revertToDraft(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al revertir') });
 
   if (isLoading) return <div className="text-center py-16 text-gray-400 text-sm">Cargando nómina…</div>;
   if (!payroll)  return <div className="text-center py-16 text-red-500 text-sm">Nómina no encontrada.</div>;
@@ -305,6 +306,12 @@ export default function PayrollDetailPage() {
                 <DollarSign className="w-4 h-4" /> Marcar como Pagada
               </button>
               <button
+                onClick={() => { if (window.confirm('¿Revertir esta nómina a Borrador? Podrás editar sus líneas nuevamente.')) revertDraftMut.mutate(); }}
+                disabled={revertDraftMut.isPending}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-amber-300 rounded-lg text-amber-700 hover:bg-amber-50">
+                ↩ Revertir a Borrador
+              </button>
+              <button
                 onClick={() => setVoidModal(true)}
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-red-200 rounded-lg text-red-600 hover:bg-red-50">
                 <Ban className="w-4 h-4" /> Anular
@@ -365,7 +372,7 @@ export default function PayrollDetailPage() {
                 <th className="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 w-28">Monto a Pagar</th>
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 w-28">Banco</th>
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 w-36">No. Cuenta</th>
-                {isDraft && <th className="px-3 py-2.5 w-16"></th>}
+                {(isDraft || isApproved) && <th className="px-3 py-2.5 w-16"></th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -471,13 +478,13 @@ export default function PayrollDetailPage() {
                     <td className="px-3 py-2.5 text-sm text-gray-600">
                       {line.bankAccount || <span className="text-gray-400">—</span>}
                     </td>
-                    {isDraft && (
+                    {(isDraft || isApproved) && (
                       <td className="px-2 py-2.5">
                         <div className="flex gap-1 justify-end">
-                          <button
+                          {isDraft && <button
                             onClick={() => openEdit(line)}
                             className="p-1.5 rounded border border-gray-200 hover:bg-yellow-50 text-gray-500 hover:text-yellow-700"
-                          ><Pencil className="w-3.5 h-3.5" /></button>
+                          ><Pencil className="w-3.5 h-3.5" /></button>}
                           <button
                             onClick={() => { if (window.confirm('¿Eliminar línea?')) deleteLineMut.mutate(line.id); }}
                             className="p-1.5 rounded border border-gray-200 hover:bg-red-50 text-gray-500 hover:text-red-600"
@@ -567,7 +574,7 @@ export default function PayrollDetailPage() {
                 <td className="px-4 py-3 text-right font-bold text-gray-900 text-base whitespace-nowrap">
                   RD$ {Number(payroll.totalAmount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                 </td>
-                {isDraft && <td />}
+                {(isDraft || isApproved) && <td />}
               </tr>
             </tfoot>
           </table>

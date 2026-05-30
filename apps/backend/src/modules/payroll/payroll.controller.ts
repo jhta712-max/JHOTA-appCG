@@ -57,6 +57,13 @@ export const deleteLine = async (req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 };
 
+export const revertToDraft = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await svc.revertToDraft(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+};
+
 export const approve = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await svc.approvePayroll(req.params.id, req.user!.userId);

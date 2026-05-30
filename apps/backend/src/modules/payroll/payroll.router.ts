@@ -30,7 +30,8 @@ router.put('/:id/lines/:lineId',      validate(upsertLineSchema), ctrl.updateLin
 router.delete('/:id/lines/:lineId',   ctrl.deleteLine);
 
 // ── Workflow actions (admin / supervisor only) ─────────────────
-router.post('/:id/approve', authorize('admin', 'supervisor'), ctrl.approve);
+router.post('/:id/revert-to-draft', authorize('admin', 'supervisor'), ctrl.revertToDraft);
+router.post('/:id/approve',         authorize('admin', 'supervisor'), ctrl.approve);
 router.post('/:id/pay',     authorize('admin', 'supervisor'), validate(markPaidSchema), ctrl.markPaid);
 router.post('/:id/void',    authorize('admin', 'supervisor'), validate(voidPayrollSchema), ctrl.voidOne);
 

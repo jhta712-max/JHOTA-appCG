@@ -243,7 +243,7 @@ export async function updateLine(payrollId: string, lineId: string, data: Upsert
 export async function deleteLine(payrollId: string, lineId: string) {
   const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
   if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
-  if (payroll.status !== 'DRAFT') throw new AppError(400, 'Solo se modifican nóminas en borrador', 'INVALID_STATUS');
+  if (!['DRAFT', 'APPROVED'].includes(payroll.status)) throw new AppError(400, 'No se pueden eliminar líneas en este estado', 'INVALID_STATUS');
 
   const line = await prisma.payrollLine.findFirst({ where: { id: lineId, payrollId } });
   if (!line) throw new AppError(404, 'Línea no encontrada', 'NOT_FOUND');
@@ -256,6 +256,17 @@ export async function deleteLine(payrollId: string, lineId: string) {
   });
 
   return getPayrollById(payrollId);
+}
+
+// ─── REVERT TO DRAFT (APPROVED → DRAFT) ──────────────────────
+export async function revertToDraft(id: string) {
+  const payroll = await getPayrollById(id);
+  if (payroll.status !== 'APPROVED') throw new AppError(400, 'Solo se puede revertir a borrador una nómina aprobada', 'INVALID_STATUS');
+  return prisma.payroll.update({
+    where: { id },
+    data:  { status: 'DRAFT', approvedById: null, approvedAt: null },
+    include: PAYROLL_INCLUDE,
+  });
 }
 
 // ─── APPROVE (DRAFT → APPROVED) + auto-create Expense ────────
