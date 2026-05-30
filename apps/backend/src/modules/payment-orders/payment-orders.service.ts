@@ -216,6 +216,34 @@ export async function unlinkExpense(id: string) {
   });
 }
 
+// ── Vincular nómina retroactivamente ─────────────────────────
+export async function linkPayroll(id: string, payrollId: string) {
+  const po = await getPaymentOrderById(id);
+  if (po.orderType !== 'PAYROLL') throw new AppError(400, 'Solo se puede vincular una nómina a órdenes de tipo Nómina', 'WRONG_TYPE');
+  if (po.status === 'VOIDED')     throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
+  if (po.payrollId)               throw new AppError(409, 'Esta orden ya tiene una nómina vinculada', 'DUPLICATE');
+
+  const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
+  if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
+  if (payroll.projectId !== po.projectId) throw new AppError(400, 'La nómina no pertenece al mismo proyecto', 'PROJECT_MISMATCH');
+
+  return prisma.paymentOrder.update({
+    where: { id },
+    data:  { payrollId },
+    include: INCLUDE,
+  });
+}
+
+// ── Desvincular nómina ────────────────────────────────────────
+export async function unlinkPayroll(id: string) {
+  await getPaymentOrderById(id);
+  return prisma.paymentOrder.update({
+    where: { id },
+    data:  { payrollId: null },
+    include: INCLUDE,
+  });
+}
+
 // ── Marcar como pagada + auto-crear gasto ─────────────────────
 export async function markAsPaid(id: string, userId: string) {
   const po = await getPaymentOrderById(id);

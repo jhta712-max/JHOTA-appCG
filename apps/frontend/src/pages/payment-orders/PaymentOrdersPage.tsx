@@ -6,7 +6,7 @@ import {
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
   Upload, Download, MessageCircle,
 } from 'lucide-react';
-import { beneficiariesApi, paymentOrdersApi, projectsApi } from '../../api';
+import { beneficiariesApi, paymentOrdersApi, projectsApi, payrollApi } from '../../api';
 import type { Beneficiary, PaymentOrder } from '../../types';
 
 // ── Tipos locales ─────────────────────────────────────────────
@@ -195,7 +195,9 @@ export default function PaymentOrdersPage() {
   const [beneForm,  setBeneForm]  = useState<BeneForm>(EMPTY_BENE);
   const [orderForm, setOrderForm] = useState<OrderForm>(EMPTY_ORDER);
   const [formErr,   setFormErr]   = useState('');
-  const [selectedExpenseId, setSelectedExpenseId] = useState('');
+  const [selectedExpenseId,  setSelectedExpenseId]  = useState('');
+  const [selectedPayrollId,  setSelectedPayrollId]  = useState('');
+  const [linkPayrollModal,   setLinkPayrollModal]   = useState(false);
 
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3500); };
 
@@ -227,9 +229,15 @@ export default function PaymentOrdersPage() {
     select:   (r) => r.data.data,
   });
 
-  // availablePayrolls: ya no se requiere — órdenes de Nómina son independientes del módulo de nóminas
-
   const linkingOrderProjectId = viewingOrder?.projectId ?? '';
+
+  // Nóminas del proyecto para vincular retroactivamente
+  const { data: projectPayrolls = [] } = useQuery({
+    queryKey: ['payrolls', 'by-project', linkingOrderProjectId],
+    queryFn:  () => payrollApi.list({ projectId: linkingOrderProjectId, limit: 50 }),
+    select:   (r) => r.data.data as any[],
+    enabled:  linkPayrollModal && !!linkingOrderProjectId,
+  });
   const { data: availableExpenses = [] } = useQuery({
     queryKey: ['payment-orders', 'expenses', linkingOrderProjectId],
     queryFn:  () => paymentOrdersApi.availableExpenses(linkingOrderProjectId),
@@ -296,6 +304,16 @@ export default function PaymentOrdersPage() {
   const unlinkExpenseMut = useMutation({
     mutationFn: (id: string) => paymentOrdersApi.unlinkExpense(id),
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Gasto desvinculado'); },
+    onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
+  });
+  const linkPayrollMut = useMutation({
+    mutationFn: ({ id, payrollId }: { id: string; payrollId: string }) => paymentOrdersApi.linkPayroll(id, payrollId),
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkPayrollModal(false); setSelectedPayrollId(''); flash('✅ Nómina vinculada'); },
+    onError:   (e: any) => flash(e.response?.data?.error || 'Error al vincular nómina'),
+  });
+  const unlinkPayrollMut = useMutation({
+    mutationFn: (id: string) => paymentOrdersApi.unlinkPayroll(id),
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Nómina desvinculada'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
   });
 
@@ -526,7 +544,18 @@ export default function PaymentOrdersPage() {
               {/* Vínculo nómina */}
               {viewingOrder.orderType === 'PAYROLL' && (
                 <div className={`rounded-xl p-3 border text-sm ${viewingOrder.payroll ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">📋 Nómina vinculada</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Nómina vinculada</p>
+                    {viewingOrder.status !== 'VOIDED' && (
+                      viewingOrder.payroll
+                        ? <button onClick={() => { if (confirm('¿Desvincular nómina?')) unlinkPayrollMut.mutate(viewingOrder.id); }}
+                            className="text-xs text-red-500 hover:text-red-700 font-semibold">Desvincular</button>
+                        : <button onClick={() => setLinkPayrollModal(true)}
+                            className="text-xs text-blue-600 hover:text-blue-800 font-semibold border border-blue-300 px-2 py-0.5 rounded-lg">
+                            + Vincular nómina
+                          </button>
+                    )}
+                  </div>
                   {viewingOrder.payroll ? (
                     <div>
                       <p className="font-semibold text-blue-800">
@@ -541,7 +570,7 @@ export default function PaymentOrdersPage() {
                       </p>
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-xs">Sin nómina vinculada</p>
+                    <p className="text-gray-400 text-xs">Sin nómina vinculada — haz clic en "+ Vincular nómina" para asociar una retroactivamente</p>
                   )}
                 </div>
               )}
@@ -1032,6 +1061,44 @@ export default function PaymentOrdersPage() {
             onSave={() => { if (!selectedExpenseId) return; linkExpenseMut.mutate({ id: viewingOrder.id, expenseId: selectedExpenseId }); }}
             saving={linkExpenseMut.isPending}
             label="Vincular gasto"
+          />
+        </Modal>
+      )}
+
+      {/* ── MODAL: VINCULAR NÓMINA ─────────────────────────── */}
+      {linkPayrollModal && viewingOrder && (
+        <Modal title="📋 Vincular nómina a esta orden" onClose={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}>
+          {projectPayrolls.length === 0 ? (
+            <p className="text-gray-400 text-sm py-4 text-center">No hay nóminas registradas para este proyecto.</p>
+          ) : (
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {projectPayrolls.map((p: any) => (
+                <label key={p.id}
+                  className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${selectedPayrollId === p.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <input type="radio" name="payroll-select" checked={selectedPayrollId === p.id}
+                    onChange={() => setSelectedPayrollId(p.id)} className="mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm">
+                      NOM-{String(p.number).padStart(3, '0')} — {p.description || p.type}
+                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${p.status === 'PAID' ? 'bg-green-100 text-green-700' : p.status === 'APPROVED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                        {p.status === 'PAID' ? 'Pagada' : p.status === 'APPROVED' ? 'Aprobada' : 'Borrador'}
+                      </span>
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {fmtDate(p.periodStart)} — {fmtDate(p.periodEnd)}
+                      &nbsp;·&nbsp; RD$ {Number(p.totalAmount).toLocaleString('es-DO')}
+                      &nbsp;·&nbsp; {p.lines?.length ?? 0} líneas
+                    </p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+          <ModalFooter
+            onCancel={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}
+            onSave={() => { if (!selectedPayrollId) return; linkPayrollMut.mutate({ id: viewingOrder.id, payrollId: selectedPayrollId }); }}
+            saving={linkPayrollMut.isPending}
+            label="Vincular nómina"
           />
         </Modal>
       )}

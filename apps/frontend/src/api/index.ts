@@ -389,6 +389,10 @@ export const paymentOrdersApi = {
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-expense`, { expenseId }),
   unlinkExpense: (id: string) =>
     api.delete<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-expense`),
+  linkPayroll: (id: string, payrollId: string) =>
+    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-payroll`, { payrollId }),
+  unlinkPayroll: (id: string) =>
+    api.delete<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-payroll`),
   markAsPaid: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`),
   generateExpense: (id: string) =>
