@@ -13,8 +13,12 @@ const INCLUDE = {
 } as const;
 
 // ── Listar con filtros y paginación ───────────────────────────
-export async function getPaymentOrders(query: PaymentOrderQuery) {
+export async function getPaymentOrders(
+  query:   PaymentOrderQuery,
+  userCtx: { userId: string; role: string },
+) {
   const { page, limit, skip } = parsePagination(query);
+  const isAdmin = userCtx.role === 'admin';
 
   const where: any = {};
   if (query.status)        where.status        = query.status;
@@ -29,6 +33,12 @@ export async function getPaymentOrders(query: PaymentOrderQuery) {
     ];
   }
 
+  // Supervisores: solo ven sus propias órdenes y únicamente las no pagadas/anuladas
+  if (!isAdmin) {
+    where.createdById = userCtx.userId;
+    where.status      = { notIn: ['PAID', 'VOIDED'] };
+  }
+
   const [data, total] = await Promise.all([
     prisma.paymentOrder.findMany({ where, skip, take: limit, orderBy: { [query.orderBy]: query.order }, include: INCLUDE }),
     prisma.paymentOrder.count({ where }),
@@ -38,9 +48,22 @@ export async function getPaymentOrders(query: PaymentOrderQuery) {
 }
 
 // ── Obtener una ───────────────────────────────────────────────
-export async function getPaymentOrderById(id: string) {
+export async function getPaymentOrderById(
+  id:      string,
+  userCtx?: { userId: string; role: string },
+) {
   const po = await prisma.paymentOrder.findUnique({ where: { id }, include: INCLUDE });
   if (!po) throw new AppError(404, 'Orden de pago no encontrada', 'NOT_FOUND');
+
+  // Supervisores solo pueden ver sus propias órdenes no pagadas
+  if (userCtx && userCtx.role !== 'admin') {
+    if (po.createdById !== userCtx.userId) {
+      throw new AppError(403, 'No tienes acceso a esta orden de pago', 'FORBIDDEN');
+    }
+    if (['PAID', 'VOIDED'].includes(po.status)) {
+      throw new AppError(404, 'Orden de pago no encontrada', 'NOT_FOUND');
+    }
+  }
   return po;
 }
 

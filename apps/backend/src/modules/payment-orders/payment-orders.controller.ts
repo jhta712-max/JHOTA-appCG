@@ -5,14 +5,16 @@ import { z } from 'zod';
 
 export async function listPaymentOrders(req: Request, res: Response, next: NextFunction) {
   try {
-    const query = querySchema.parse(req.query);
-    res.json(await svc.getPaymentOrders(query));
+    const query    = querySchema.parse(req.query);
+    const userCtx  = { userId: (req as any).user.userId, role: (req as any).user.role };
+    res.json(await svc.getPaymentOrders(query, userCtx));
   } catch (err) { next(err); }
 }
 
 export async function getPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
-    res.json({ success: true, data: await svc.getPaymentOrderById(req.params.id) });
+    const userCtx = { userId: (req as any).user.userId, role: (req as any).user.role };
+    res.json({ success: true, data: await svc.getPaymentOrderById(req.params.id, userCtx) });
   } catch (err) { next(err); }
 }
 
