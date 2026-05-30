@@ -9,8 +9,8 @@ const envSchema = z.object({
   DATABASE_URL:       z.string().url('DATABASE_URL debe ser una URL válida'),
   JWT_SECRET:          z.string().min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
   JWT_REFRESH_SECRET:  z.string().min(32).optional(), // Si no se define, usa JWT_SECRET
-  JWT_ACCESS_EXPIRES:  z.string().default('15m'),
-  JWT_REFRESH_EXPIRES: z.string().default('7d'),
+  JWT_ACCESS_EXPIRES:  z.string().default('8h'),
+  JWT_REFRESH_EXPIRES: z.string().default('30d'),
   FRONTEND_URL:       z.string().url().default('http://localhost:5173'),
   STORAGE_TYPE:       z.enum(['local', 's3']).default('local'),
   UPLOAD_PATH:        z.string().default('./uploads'),
