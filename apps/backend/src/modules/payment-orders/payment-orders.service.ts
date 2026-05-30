@@ -199,17 +199,6 @@ export async function markAsPaid(id: string, userId: string) {
   if (po.status === 'PAID')   throw new AppError(400, 'La orden ya está marcada como pagada', 'ALREADY_PAID');
   if (po.status === 'VOIDED') throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
 
-  // Categoría según tipo de orden (crea si no existe)
-  const categoryName =
-    po.orderType === 'PAYROLL'   ? 'Mano de obra' :
-    po.orderType === 'MATERIALS' ? 'Materiales'   : 'Servicios';
-
-  const category = await prisma.expenseCategory.upsert({
-    where:  { name: categoryName },
-    update: { isActive: true },
-    create: { name: categoryName, description: `Auto-creada para órdenes de pago`, isActive: true },
-  });
-
   return prisma.$transaction(async (tx) => {
     // 1. Marcar la orden como pagada
     await tx.paymentOrder.update({
@@ -217,9 +206,18 @@ export async function markAsPaid(id: string, userId: string) {
       data:  { status: 'PAID', paidAt: new Date(), paidById: userId },
     });
 
-    // 2. Crear gasto solo si la orden no tiene uno ya vinculado
-    if (!po.expenseId) {
-      const opRef = `OP-${String(po.number).padStart(3, '0')}`;
+    // 2. Las órdenes tipo PAYROLL NO crean gasto individual —
+    //    el gasto consolidado lo genera la nómina al aprobarse.
+    //    Las de tipo GENERAL y MATERIALS sí crean su gasto.
+    if (!po.expenseId && po.orderType !== 'PAYROLL') {
+      const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : 'Servicios';
+      const category = await tx.expenseCategory.upsert({
+        where:  { name: categoryName },
+        update: { isActive: true },
+        create: { name: categoryName, description: 'Auto-creada para órdenes de pago', isActive: true },
+      });
+
+      const opRef   = `OP-${String(po.number).padStart(3, '0')}`;
       const expense = await tx.expense.create({
         data: {
           projectId:     po.projectId,
@@ -234,7 +232,6 @@ export async function markAsPaid(id: string, userId: string) {
         },
       });
 
-      // 3. Vincular el gasto recién creado a la orden
       await tx.paymentOrder.update({
         where: { id },
         data:  { expenseId: expense.id },
@@ -249,8 +246,9 @@ export async function markAsPaid(id: string, userId: string) {
 // ── Generar gasto retroactivo para una orden ya pagada ────────
 export async function generateExpenseForOrder(id: string, userId: string) {
   const po = await getPaymentOrderById(id);
-  if (po.status !== 'PAID') throw new AppError(400, 'Solo se puede generar gasto para órdenes pagadas', 'ORDER_NOT_PAID');
-  if (po.expenseId)         throw new AppError(409, 'Esta orden ya tiene un gasto vinculado', 'ALREADY_HAS_EXPENSE');
+  if (po.status !== 'PAID')      throw new AppError(400, 'Solo se puede generar gasto para órdenes pagadas', 'ORDER_NOT_PAID');
+  if (po.expenseId)              throw new AppError(409, 'Esta orden ya tiene un gasto vinculado', 'ALREADY_HAS_EXPENSE');
+  if (po.orderType === 'PAYROLL') throw new AppError(400, 'Las órdenes de nómina no generan gasto individual — el gasto lo registra la nómina al aprobarse', 'PAYROLL_NO_EXPENSE');
 
   const categoryName =
     po.orderType === 'PAYROLL'   ? 'Mano de obra' :
