@@ -230,8 +230,12 @@ model Expense {
   description   String        @db.Text
   paymentMethod PaymentMethod @map("payment_method")
   companyCardId Int?          @map("company_card_id")          // Requerido si paymentMethod = CARD
-  hasFiscalDoc  Boolean       @default(false) @map("has_fiscal_doc")
-  notes         String?       @db.Text
+  hasFiscalDoc    Boolean       @default(false) @map("has_fiscal_doc")
+  // Moneda extranjera (opcional)
+  foreignAmount   Decimal?      @map("foreign_amount")   @db.Decimal(15, 2)
+  foreignCurrency String?       @map("foreign_currency") @db.VarChar(10)  // USD, EUR, etc.
+  exchangeRate    Decimal?      @map("exchange_rate")    @db.Decimal(10, 4) // 1 USD = X DOP
+  notes           String?       @db.Text
   status        ExpenseStatus @default(ACTIVE)
   voidedAt      DateTime?     @map("voided_at")
   voidedById    String?       @map("voided_by") @db.Uuid

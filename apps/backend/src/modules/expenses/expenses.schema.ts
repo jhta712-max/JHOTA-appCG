@@ -33,9 +33,13 @@ const baseExpenseSchema = z.object({
     required_error: 'El método de pago es requerido',
   }),
   companyCardId: z.coerce.number().int().positive().optional(), // Requerido si paymentMethod = CARD
-  hasFiscalDoc:  z.boolean().default(false),
-  notes:         z.string().max(1000).optional(),
-  fiscalVoucher: fiscalVoucherSchema.optional(),
+  hasFiscalDoc:    z.boolean().default(false),
+  notes:           z.string().max(1000).optional(),
+  fiscalVoucher:   fiscalVoucherSchema.optional(),
+  // Moneda extranjera
+  foreignAmount:   z.coerce.number().positive().optional().nullable(),
+  foreignCurrency: z.string().max(10).optional().nullable(),
+  exchangeRate:    z.coerce.number().positive().optional().nullable(),
 });
 
 // ---------------------------------------------------------------
