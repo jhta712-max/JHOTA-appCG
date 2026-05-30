@@ -370,6 +370,30 @@ export async function voidPayroll(id: string, voidedById: string, data: VoidPayr
   });
 }
 
+// ─── REGISTRAR COMPROBANTE POR LÍNEA ─────────────────────────
+export async function recordLinePayment(
+  payrollId: string,
+  lineId:    string,
+  data: { paymentBank?: string; paymentReference?: string; paidAt?: string },
+) {
+  const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
+  if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
+  if (!['APPROVED', 'PAID'].includes(payroll.status)) {
+    throw new AppError(400, 'Solo se registran comprobantes en nóminas aprobadas o pagadas', 'INVALID_STATUS');
+  }
+  const line = await prisma.payrollLine.findFirst({ where: { id: lineId, payrollId } });
+  if (!line) throw new AppError(404, 'Línea no encontrada', 'NOT_FOUND');
+
+  return prisma.payrollLine.update({
+    where: { id: lineId },
+    data:  {
+      paymentBank:      data.paymentBank      ?? null,
+      paymentReference: data.paymentReference ?? null,
+      paidAt:           data.paidAt ? new Date(data.paidAt) : null,
+    },
+  });
+}
+
 // ─── DELETE (DRAFT only) ──────────────────────────────────────
 export async function deletePayroll(id: string) {
   const payroll = await prisma.payroll.findUnique({ where: { id } });
