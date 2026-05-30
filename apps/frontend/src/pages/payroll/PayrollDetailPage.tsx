@@ -529,7 +529,7 @@ export default function PayrollDetailPage() {
                           />
                         ) : (
                           line.paidAt
-                            ? <span className="text-green-700">{new Date(line.paidAt).toLocaleDateString('es-DO')}</span>
+                            ? <span className="text-green-700">{new Date(line.paidAt).toLocaleDateString('es-DO', { timeZone: 'UTC' })}</span>
                             : <span className="text-gray-300 text-xs">pendiente</span>
                         )}
                       </td>
