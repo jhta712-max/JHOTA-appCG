@@ -873,25 +873,29 @@ export default function PaymentOrdersPage() {
               {formErr && <AlertBox msg={formErr} />}
 
               {/* Tipo de orden */}
-              {!editingOrder && (
-                <div className="mb-5">
-                  <label className="label">Tipo de orden *</label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {(Object.keys(ORDER_TYPE_CFG) as OrderType[]).map((t) => {
-                      const cfg = ORDER_TYPE_CFG[t];
-                      return (
-                        <button key={t} type="button"
-                          onClick={() => setOrderForm((f) => ({ ...f, orderType: t, payrollId: '', amount: '', concept: '' }))}
-                          className={`p-3 rounded-xl border-2 text-left transition-all ${orderForm.orderType === t ? cfg.color + ' border-opacity-100' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                          <div className={`mb-1 ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-400'}`}>{cfg.icon}</div>
-                          <p className={`text-xs font-bold ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-600'}`}>{cfg.label}</p>
-                          <p className="text-xs text-gray-400 mt-0.5 leading-tight">{cfg.desc}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
+              <div className="mb-5">
+                <label className="label">Tipo de orden *</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {(Object.keys(ORDER_TYPE_CFG) as OrderType[]).map((t) => {
+                    const cfg = ORDER_TYPE_CFG[t];
+                    return (
+                      <button key={t} type="button"
+                        onClick={() => setOrderForm((f) => ({
+                          ...f,
+                          orderType: t,
+                          // solo reinicia payrollId al cambiar tipo; conserva monto y concepto al editar
+                          payrollId: '',
+                          ...(!editingOrder ? { amount: '', concept: '' } : {}),
+                        }))}
+                        className={`p-3 rounded-xl border-2 text-left transition-all ${orderForm.orderType === t ? cfg.color + ' border-opacity-100' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                        <div className={`mb-1 ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-400'}`}>{cfg.icon}</div>
+                        <p className={`text-xs font-bold ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-600'}`}>{cfg.label}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 leading-tight">{cfg.desc}</p>
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Empresa pagadora *">
