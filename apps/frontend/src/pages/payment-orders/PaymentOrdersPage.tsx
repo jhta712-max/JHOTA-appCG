@@ -618,8 +618,8 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              {/* Generar gasto retroactivo — órdenes pagadas sin gasto */}
-              {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && (
+              {/* Generar gasto retroactivo — solo para GENERAL y MATERIALS, no PAYROLL */}
+              {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && viewingOrder.orderType !== 'PAYROLL' && (
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                   <p className="text-xs text-amber-600 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" /> Esta orden no tiene gasto registrado en el proyecto.
