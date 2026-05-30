@@ -101,9 +101,12 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
       amount:        data.amount,
       description:   data.description,
       paymentMethod: data.paymentMethod,
-      companyCardId: data.companyCardId ?? null,
-      hasFiscalDoc:  data.hasFiscalDoc,
-      notes:         data.notes,
+      companyCardId:   data.companyCardId   ?? null,
+      hasFiscalDoc:    data.hasFiscalDoc,
+      notes:           data.notes,
+      foreignAmount:   (data as any).foreignAmount   ?? null,
+      foreignCurrency: (data as any).foreignCurrency ?? null,
+      exchangeRate:    (data as any).exchangeRate    ?? null,
       // Crear comprobante fiscal si aplica
       ...(data.hasFiscalDoc && data.fiscalVoucher && {
         fiscalVoucher: {

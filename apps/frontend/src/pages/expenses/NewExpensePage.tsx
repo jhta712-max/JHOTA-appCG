@@ -15,6 +15,10 @@ type FormData = {
   companyCardId?: number;
   hasFiscalDoc: boolean; notes: string;
   fiscalVoucher?: FV;
+  // Moneda extranjera
+  foreignCurrency?: string;
+  foreignAmount?: number;
+  exchangeRate?: number;
 };
 
 const NCF_REGEX   = /^[A-Z]\d{10}$/;
@@ -45,7 +49,9 @@ export default function NewExpensePage() {
   const fileRef       = useRef<HTMLInputElement>(null);
   const cameraRef     = useRef<HTMLInputElement>(null);
 
-  const [hasFiscal,   setHasFiscal]   = useState(false);
+  const [hasFiscal,      setHasFiscal]      = useState(false);
+  const [useForeign,     setUseForeign]     = useState(false);
+  const [foreignCurrency, setForeignCurrency] = useState('USD');
   const [photo,       setPhoto]       = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [success,     setSuccess]     = useState('');
@@ -122,6 +128,15 @@ export default function NewExpensePage() {
     };
     if (data.paymentMethod === 'CARD' && data.companyCardId) {
       payload.companyCardId = Number(data.companyCardId);
+    }
+    if (useForeign && data.foreignAmount && data.exchangeRate) {
+      payload.foreignAmount   = Number(data.foreignAmount);
+      payload.foreignCurrency = foreignCurrency;
+      payload.exchangeRate    = Number(data.exchangeRate);
+      // El monto en DOP se calcula automáticamente si el usuario no lo ingresó
+      if (!data.amount || data.amount <= 0) {
+        payload.amount = Number(data.foreignAmount) * Number(data.exchangeRate);
+      }
     }
     if (hasFiscal) {
       payload.fiscalVoucher = {
@@ -444,10 +459,62 @@ export default function NewExpensePage() {
               <input
                 type="number" step="0.01" min="0.01" placeholder="0.00"
                 className={`input-field ${errors.amount ? 'input-error' : ''} ${aiFields.has('amount') ? 'ring-2 ring-violet-400' : ''}`}
-                {...register('amount', { required: 'El monto es requerido', min: { value: 0.01, message: 'Debe ser mayor a 0' } })}
+                {...register('amount', { required: !useForeign ? 'El monto es requerido' : false, min: { value: 0.01, message: 'Debe ser mayor a 0' } })}
               />
               {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
             </AiField>
+          </div>
+
+          {/* Sección de moneda extranjera */}
+          <div className="rounded-xl border border-dashed border-blue-300 bg-blue-50 p-4 space-y-3">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={useForeign} onChange={(e) => setUseForeign(e.target.checked)}
+                className="rounded border-gray-300" />
+              <span className="text-sm font-medium text-blue-800">💱 Pago realizado en moneda extranjera</span>
+            </label>
+            {useForeign && (
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Moneda</label>
+                  <select value={foreignCurrency} onChange={(e) => setForeignCurrency(e.target.value)}
+                    className="input-field text-sm">
+                    <option value="USD">USD — Dólar</option>
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="GBP">GBP — Libra</option>
+                    <option value="CAD">CAD — Dólar canadiense</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Monto en {foreignCurrency} *</label>
+                  <input type="number" step="0.01" min="0.01" placeholder="0.00"
+                    className="input-field text-sm"
+                    {...register('foreignAmount', { required: useForeign })}
+                    onChange={(e) => {
+                      const fa = parseFloat(e.target.value);
+                      const er = parseFloat((document.querySelector('[name="exchangeRate"]') as HTMLInputElement)?.value ?? '0');
+                      if (fa > 0 && er > 0) setValue('amount', parseFloat((fa * er).toFixed(2)));
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Tasa de cambio (1 {foreignCurrency} = X DOP)</label>
+                  <input type="number" step="0.01" min="0.01" placeholder="ej: 60.50"
+                    className="input-field text-sm"
+                    {...register('exchangeRate', { required: useForeign })}
+                    onChange={(e) => {
+                      const er = parseFloat(e.target.value);
+                      const fa = parseFloat((document.querySelector('[name="foreignAmount"]') as HTMLInputElement)?.value ?? '0');
+                      if (fa > 0 && er > 0) setValue('amount', parseFloat((fa * er).toFixed(2)));
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            {useForeign && (
+              <p className="text-xs text-blue-600">
+                El campo <strong>Monto (RD$)</strong> se calcula automáticamente. Puedes ajustarlo si la tasa real fue diferente.
+              </p>
+            )}
           </div>
 
           <AiField label="Descripción *" aiActive={aiFields.has('description')} onClear={() => clearAiField('description')}>
