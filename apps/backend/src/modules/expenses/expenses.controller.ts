@@ -40,3 +40,15 @@ export async function voidExpense(req: Request, res: Response, next: NextFunctio
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }
+
+export async function bulkImport(req: Request, res: Response, next: NextFunction) {
+  try {
+    const rows = req.body?.rows;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      res.status(400).json({ success: false, error: 'Se requiere un array de filas en rows' });
+      return;
+    }
+    const result = await service.bulkImportExpenses(rows, req.user!.userId);
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}
