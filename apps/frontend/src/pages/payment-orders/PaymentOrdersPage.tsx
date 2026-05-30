@@ -53,6 +53,18 @@ const PAYROLL_TYPE_LABEL: Record<string, string> = { LABOR: 'Mano de obra', SERV
 function fmtMonto(amount: number | string, currency: string) {
   return `${currency} ${Number(amount).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
+
+// Formatea un string numérico como moneda mientras se escribe: "300000" → "300,000"
+function fmtAmountInput(raw: string): string {
+  const clean = raw.replace(/[^0-9.]/g, '');
+  const parts  = clean.split('.');
+  const int    = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.length > 1 ? `${int}.${parts[1].slice(0, 2)}` : int;
+}
+// Extrae el valor numérico de un string formateado: "300,000.00" → "300000.00"
+function parseAmountInput(formatted: string): string {
+  return formatted.replace(/,/g, '');
+}
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' });
 }
@@ -946,8 +958,19 @@ export default function PaymentOrdersPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Monto *">
-                  <input type="number" min="0.01" step="0.01" className="input-field" placeholder="0.00"
-                    value={orderForm.amount} onChange={(e) => setOrderForm((f) => ({ ...f, amount: e.target.value }))} />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="input-field"
+                    placeholder="0.00"
+                    value={fmtAmountInput(orderForm.amount)}
+                    onChange={(e) => {
+                      const raw = parseAmountInput(e.target.value);
+                      if (/^[0-9]*\.?[0-9]{0,2}$/.test(raw) || raw === '') {
+                        setOrderForm((f) => ({ ...f, amount: raw }));
+                      }
+                    }}
+                  />
                 </Field>
                 <Field label="Moneda *">
                   <select className="input-field" value={orderForm.currency}
