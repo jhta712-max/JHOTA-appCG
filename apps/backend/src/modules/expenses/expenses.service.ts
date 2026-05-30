@@ -197,3 +197,85 @@ export async function voidExpense(id: string, data: VoidExpenseInput, userId: st
     include: EXPENSE_INCLUDE,
   });
 }
+
+// ── Importación masiva desde CSV ──────────────────────────────
+export interface BulkExpenseRow {
+  fecha:        string;   // YYYY-MM-DD
+  descripcion:  string;
+  proveedor?:   string;
+  categoria:    string;   // nombre de categoría
+  monto:        number;
+  metodo_pago?: string;   // CASH | TRANSFER | CARD | CHECK | OTHER
+  proyecto:     string;   // código del proyecto
+  notas?:       string;
+}
+
+export async function bulkImportExpenses(rows: BulkExpenseRow[], userId: string) {
+  const results: { index: number; status: 'ok' | 'error'; error?: string }[] = [];
+
+  // Cache de proyectos y categorías para no hacer N queries
+  const projectCache  = new Map<string, string>();   // code → id
+  const categoryCache = new Map<string, number>();   // name → id
+
+  const VALID_METHODS = new Set(['CASH', 'TRANSFER', 'CARD', 'CHECK', 'OTHER']);
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    try {
+      // Proyecto
+      let projectId = projectCache.get(row.proyecto);
+      if (!projectId) {
+        const proj = await prisma.project.findFirst({ where: { code: { equals: row.proyecto, mode: 'insensitive' } } });
+        if (!proj) throw new Error(`Proyecto '${row.proyecto}' no encontrado`);
+        projectCache.set(row.proyecto, proj.id);
+        projectId = proj.id;
+      }
+
+      // Categoría (crea si no existe)
+      let categoryId = categoryCache.get(row.categoria);
+      if (!categoryId) {
+        const cat = await prisma.expenseCategory.upsert({
+          where:  { name: row.categoria },
+          update: { isActive: true },
+          create: { name: row.categoria, isActive: true },
+        });
+        categoryCache.set(row.categoria, cat.id);
+        categoryId = cat.id;
+      }
+
+      // Método de pago
+      const method = VALID_METHODS.has((row.metodo_pago ?? '').toUpperCase())
+        ? (row.metodo_pago!.toUpperCase() as any)
+        : 'CASH';
+
+      // Fecha (mediodía UTC para evitar desfase de zona horaria)
+      const expenseDate = new Date(row.fecha + 'T12:00:00.000Z');
+
+      const desc = row.proveedor
+        ? `[${row.proveedor}] ${row.descripcion}`
+        : row.descripcion;
+
+      await prisma.expense.create({
+        data: {
+          projectId,
+          categoryId,
+          userId,
+          expenseDate,
+          amount:        row.monto,
+          description:   desc.slice(0, 500),
+          paymentMethod: method,
+          hasFiscalDoc:  false,
+          notes:         row.notas?.slice(0, 1000) ?? null,
+        },
+      });
+
+      results.push({ index: i, status: 'ok' });
+    } catch (err: any) {
+      results.push({ index: i, status: 'error', error: err.message });
+    }
+  }
+
+  const ok  = results.filter((r) => r.status === 'ok').length;
+  const err = results.filter((r) => r.status === 'error').length;
+  return { ok, err, results };
+}

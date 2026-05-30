@@ -17,6 +17,9 @@ router.use(authenticate);
 // GET  /api/v1/expenses
 router.get('/',    validate(expenseQuerySchema, 'query'), ctrl.list);
 
+// POST /api/v1/expenses/bulk-import  — solo admin (antes de /:id para evitar conflicto)
+router.post('/bulk-import', authorize('admin'), ctrl.bulkImport);
+
 // GET  /api/v1/expenses/:id
 router.get('/:id', ctrl.getOne);
 
