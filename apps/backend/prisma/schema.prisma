@@ -432,9 +432,13 @@ model PayrollLine {
   subtotal    Decimal  @db.Decimal(15, 2)     // quantity * unitPrice (computed, stored)
   notes        String?  @db.VarChar(300)
   supplierName String?  @map("supplier_name") @db.VarChar(200) // Nombre del suplidor / trabajador
-  bankName     String?  @map("bank_name")     @db.VarChar(100) // Nombre del banco
-  bankAccount  String?  @map("bank_account")  @db.VarChar(100) // No. cuenta bancaria para depositar
-  createdAt    DateTime @default(now()) @map("created_at")
+  bankName          String?   @map("bank_name")          @db.VarChar(100) // Banco receptor del beneficiario
+  bankAccount       String?   @map("bank_account")        @db.VarChar(100) // Cuenta del beneficiario
+  // Comprobante de pago individual
+  paymentBank       String?   @map("payment_bank")        @db.VarChar(100) // Banco desde donde se transfirió
+  paymentReference  String?   @map("payment_reference")   @db.VarChar(100) // No. de transacción / comprobante
+  paidAt            DateTime? @map("paid_at")                               // Fecha de la transferencia
+  createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   payroll Payroll @relation(fields: [payrollId], references: [id], onDelete: Cascade)

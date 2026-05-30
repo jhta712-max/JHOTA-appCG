@@ -59,6 +59,8 @@ export default function PayrollDetailPage() {
   const [editLineId, setEditLineId]     = useState<string | null>(null);
   const [editLineForm, setEditLineForm] = useState<LineForm>(emptyLine);
   const [actionError, setActionError]   = useState('');
+  const [paymentLineId, setPaymentLineId] = useState<string | null>(null);
+  const [paymentForm, setPaymentForm]     = useState({ paymentBank: '', paymentReference: '', paidAt: '' });
 
   const { data, isLoading } = useQuery({
     queryKey: ['payroll', id],
@@ -79,7 +81,12 @@ export default function PayrollDetailPage() {
   const addLineMut    = useMutation({ mutationFn: (d: unknown) => payrollApi.addLine(id!, d),  onSuccess: () => { invalidate(); setAddingLine(false); setLineForm(emptyLine); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al agregar línea') });
   const updateLineMut = useMutation({ mutationFn: ({ lineId, d }: { lineId: string; d: unknown }) => payrollApi.updateLine(id!, lineId, d), onSuccess: () => { invalidate(); setEditLineId(null); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al actualizar línea') });
   const deleteLineMut   = useMutation({ mutationFn: (lineId: string) => payrollApi.deleteLine(id!, lineId), onSuccess: invalidate });
-  const revertDraftMut  = useMutation({ mutationFn: () => payrollApi.revertToDraft(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al revertir') });
+  const revertDraftMut    = useMutation({ mutationFn: () => payrollApi.revertToDraft(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al revertir') });
+  const recordPaymentMut  = useMutation({
+    mutationFn: (lineId: string) => payrollApi.recordLinePayment(id!, lineId, paymentForm),
+    onSuccess: () => { invalidate(); setPaymentLineId(null); setPaymentForm({ paymentBank: '', paymentReference: '', paidAt: '' }); },
+    onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al registrar comprobante'),
+  });
 
   if (isLoading) return <div className="text-center py-16 text-gray-400 text-sm">Cargando nómina…</div>;
   if (!payroll)  return <div className="text-center py-16 text-red-500 text-sm">Nómina no encontrada.</div>;
@@ -135,7 +142,7 @@ export default function PayrollDetailPage() {
 
   // Column count for colSpan calculations
   // Cols: # | Suplidor | Concepto | Unidad | Cant | Precio | Monto | Banco | No.Cuenta | [actions?]
-  const FIXED_COLS = 9;
+  const FIXED_COLS = isPaid ? 12 : 9; // +3 columnas comprobante cuando está pagada
 
   return (
     <div className="space-y-5 max-w-5xl">
@@ -372,6 +379,10 @@ export default function PayrollDetailPage() {
                 <th className="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 w-28">Monto a Pagar</th>
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 w-28">Banco</th>
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 w-36">No. Cuenta</th>
+                {isPaid && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-32">Banco Origen</th>}
+                {isPaid && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-36">No. Transacción</th>}
+                {isPaid && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-24">Fecha Pago</th>}
+                {isPaid && <th className="px-3 py-2.5 w-10"></th>}
                 {(isDraft || isApproved) && <th className="px-3 py-2.5 w-16"></th>}
               </tr>
             </thead>
@@ -478,6 +489,77 @@ export default function PayrollDetailPage() {
                     <td className="px-3 py-2.5 text-sm text-gray-600">
                       {line.bankAccount || <span className="text-gray-400">—</span>}
                     </td>
+                    {/* Columnas de comprobante — solo en PAID */}
+                    {isPaid && (
+                      <td className="px-3 py-2.5 text-sm">
+                        {paymentLineId === line.id ? (
+                          <input className="w-full border border-green-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+                            placeholder="Banco origen"
+                            value={paymentForm.paymentBank}
+                            onChange={(e) => setPaymentForm((f) => ({ ...f, paymentBank: e.target.value }))}
+                          />
+                        ) : (
+                          line.paymentBank
+                            ? <span className="text-green-700 font-medium">{line.paymentBank}</span>
+                            : <span className="text-gray-300">—</span>
+                        )}
+                      </td>
+                    )}
+                    {isPaid && (
+                      <td className="px-3 py-2.5 text-sm">
+                        {paymentLineId === line.id ? (
+                          <input className="w-full border border-green-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+                            placeholder="No. transacción"
+                            value={paymentForm.paymentReference}
+                            onChange={(e) => setPaymentForm((f) => ({ ...f, paymentReference: e.target.value }))}
+                          />
+                        ) : (
+                          line.paymentReference
+                            ? <span className="text-green-700 font-medium font-mono">{line.paymentReference}</span>
+                            : <span className="text-gray-300">—</span>
+                        )}
+                      </td>
+                    )}
+                    {isPaid && (
+                      <td className="px-3 py-2.5 text-sm">
+                        {paymentLineId === line.id ? (
+                          <input type="date" className="w-full border border-green-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+                            value={paymentForm.paidAt}
+                            onChange={(e) => setPaymentForm((f) => ({ ...f, paidAt: e.target.value }))}
+                          />
+                        ) : (
+                          line.paidAt
+                            ? <span className="text-green-700">{new Date(line.paidAt).toLocaleDateString('es-DO')}</span>
+                            : <span className="text-gray-300">—</span>
+                        )}
+                      </td>
+                    )}
+                    {isPaid && (
+                      <td className="px-2 py-2.5">
+                        {paymentLineId === line.id ? (
+                          <div className="flex gap-1">
+                            <button onClick={() => recordPaymentMut.mutate(line.id)}
+                              disabled={recordPaymentMut.isPending}
+                              className="p-1.5 rounded bg-green-600 text-white hover:bg-green-700 text-xs font-bold">✓</button>
+                            <button onClick={() => setPaymentLineId(null)}
+                              className="p-1.5 rounded border border-gray-200 text-gray-500 hover:bg-gray-50 text-xs">✕</button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setPaymentLineId(line.id);
+                              setPaymentForm({
+                                paymentBank:      line.paymentBank ?? '',
+                                paymentReference: line.paymentReference ?? '',
+                                paidAt:           line.paidAt ? line.paidAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
+                              });
+                            }}
+                            className="p-1.5 rounded border border-green-200 text-green-600 hover:bg-green-50"
+                            title="Registrar comprobante"
+                          >✎</button>
+                        )}
+                      </td>
+                    )}
                     {(isDraft || isApproved) && (
                       <td className="px-2 py-2.5">
                         <div className="flex gap-1 justify-end">

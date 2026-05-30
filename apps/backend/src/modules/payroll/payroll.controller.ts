@@ -57,6 +57,13 @@ export const deleteLine = async (req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 };
 
+export const recordLinePayment = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await svc.recordLinePayment(req.params.id, req.params.lineId, req.body);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+};
+
 export const revertToDraft = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await svc.revertToDraft(req.params.id);

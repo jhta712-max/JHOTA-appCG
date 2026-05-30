@@ -114,10 +114,13 @@ export interface PayrollLine {
   subtotal:     number;
   notes:        string | null;
   supplierName: string | null;
-  bankName:     string | null;
-  bankAccount:  string | null;
-  createdAt:    string;
-  updatedAt:    string;
+  bankName:          string | null;
+  bankAccount:       string | null;
+  paymentBank:       string | null;
+  paymentReference:  string | null;
+  paidAt:            string | null;
+  createdAt:         string;
+  updatedAt:         string;
 }
 
 export interface Payroll {
@@ -176,6 +179,8 @@ export const payrollApi = {
   // Actions
   revertToDraft: (id: string) =>
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/revert-to-draft`),
+  recordLinePayment: (id: string, lineId: string, data: { paymentBank?: string; paymentReference?: string; paidAt?: string }) =>
+    api.patch<{ success: boolean; data: PayrollLine }>(`/payrolls/${id}/lines/${lineId}/payment`, data),
   approve: (id: string) =>
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/approve`),
   pay:     (id: string, data: unknown) =>
