@@ -199,15 +199,16 @@ export async function markAsPaid(id: string, userId: string) {
   if (po.status === 'PAID')   throw new AppError(400, 'La orden ya está marcada como pagada', 'ALREADY_PAID');
   if (po.status === 'VOIDED') throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
 
-  // Categoría según tipo de orden
+  // Categoría según tipo de orden (crea si no existe)
   const categoryName =
     po.orderType === 'PAYROLL'   ? 'Mano de obra' :
     po.orderType === 'MATERIALS' ? 'Materiales'   : 'Servicios';
 
-  const category = await prisma.expenseCategory.findFirst({
-    where: { name: categoryName, isActive: true },
+  const category = await prisma.expenseCategory.upsert({
+    where:  { name: categoryName },
+    update: { isActive: true },
+    create: { name: categoryName, description: `Auto-creada para órdenes de pago`, isActive: true },
   });
-  if (!category) throw new AppError(500, 'Categoría de gasto no disponible', 'CATEGORY_NOT_FOUND');
 
   return prisma.$transaction(async (tx) => {
     // 1. Marcar la orden como pagada
@@ -255,10 +256,11 @@ export async function generateExpenseForOrder(id: string, userId: string) {
     po.orderType === 'PAYROLL'   ? 'Mano de obra' :
     po.orderType === 'MATERIALS' ? 'Materiales'   : 'Servicios';
 
-  const category = await prisma.expenseCategory.findFirst({
-    where: { name: categoryName, isActive: true },
+  const category = await prisma.expenseCategory.upsert({
+    where:  { name: categoryName },
+    update: { isActive: true },
+    create: { name: categoryName, description: `Auto-creada para órdenes de pago`, isActive: true },
   });
-  if (!category) throw new AppError(500, 'Categoría de gasto no disponible', 'CATEGORY_NOT_FOUND');
 
   return prisma.$transaction(async (tx) => {
     const opRef = `OP-${String(po.number).padStart(3, '0')}`;
