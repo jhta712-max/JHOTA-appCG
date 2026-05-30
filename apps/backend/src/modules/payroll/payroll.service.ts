@@ -389,7 +389,7 @@ export async function recordLinePayment(
     data:  {
       paymentBank:      data.paymentBank      ?? null,
       paymentReference: data.paymentReference ?? null,
-      paidAt:           data.paidAt ? new Date(data.paidAt) : null,
+      paidAt:           data.paidAt ? new Date(data.paidAt + 'T12:00:00.000Z') : null,
     },
   });
 }
