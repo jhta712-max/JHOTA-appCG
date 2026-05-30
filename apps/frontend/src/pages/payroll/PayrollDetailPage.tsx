@@ -142,7 +142,7 @@ export default function PayrollDetailPage() {
 
   // Column count for colSpan calculations
   // Cols: # | Suplidor | Concepto | Unidad | Cant | Precio | Monto | Banco | No.Cuenta | [actions?]
-  const FIXED_COLS = isPaid ? 12 : 9; // +3 columnas comprobante cuando está pagada
+  const FIXED_COLS = (isPaid || isApproved) ? 12 : 9; // +3 columnas comprobante
 
   return (
     <div className="space-y-5 max-w-5xl">
@@ -379,10 +379,10 @@ export default function PayrollDetailPage() {
                 <th className="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 w-28">Monto a Pagar</th>
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 w-28">Banco</th>
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 w-36">No. Cuenta</th>
-                {isPaid && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-32">Banco Origen</th>}
-                {isPaid && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-36">No. Transacción</th>}
-                {isPaid && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-24">Fecha Pago</th>}
-                {isPaid && <th className="px-3 py-2.5 w-10"></th>}
+                {(isPaid || isApproved) && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-32">Banco Origen</th>}
+                {(isPaid || isApproved) && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-36">No. Transacción</th>}
+                {(isPaid || isApproved) && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-24">Fecha Pago</th>}
+                {(isPaid || isApproved) && <th className="px-3 py-2.5 w-10"></th>}
                 {(isDraft || isApproved) && <th className="px-3 py-2.5 w-16"></th>}
               </tr>
             </thead>
@@ -490,7 +490,7 @@ export default function PayrollDetailPage() {
                       {line.bankAccount || <span className="text-gray-400">—</span>}
                     </td>
                     {/* Columnas de comprobante — solo en PAID */}
-                    {isPaid && (
+                    {(isPaid || isApproved) && (
                       <td className="px-3 py-2.5 text-sm">
                         {paymentLineId === line.id ? (
                           <input className="w-full border border-green-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
@@ -501,11 +501,11 @@ export default function PayrollDetailPage() {
                         ) : (
                           line.paymentBank
                             ? <span className="text-green-700 font-medium">{line.paymentBank}</span>
-                            : <span className="text-gray-300">—</span>
+                            : <span className="text-gray-300 text-xs">pendiente</span>
                         )}
                       </td>
                     )}
-                    {isPaid && (
+                    {(isPaid || isApproved) && (
                       <td className="px-3 py-2.5 text-sm">
                         {paymentLineId === line.id ? (
                           <input className="w-full border border-green-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
@@ -516,11 +516,11 @@ export default function PayrollDetailPage() {
                         ) : (
                           line.paymentReference
                             ? <span className="text-green-700 font-medium font-mono">{line.paymentReference}</span>
-                            : <span className="text-gray-300">—</span>
+                            : <span className="text-gray-300 text-xs">pendiente</span>
                         )}
                       </td>
                     )}
-                    {isPaid && (
+                    {(isPaid || isApproved) && (
                       <td className="px-3 py-2.5 text-sm">
                         {paymentLineId === line.id ? (
                           <input type="date" className="w-full border border-green-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
@@ -530,11 +530,11 @@ export default function PayrollDetailPage() {
                         ) : (
                           line.paidAt
                             ? <span className="text-green-700">{new Date(line.paidAt).toLocaleDateString('es-DO')}</span>
-                            : <span className="text-gray-300">—</span>
+                            : <span className="text-gray-300 text-xs">pendiente</span>
                         )}
                       </td>
                     )}
-                    {isPaid && (
+                    {(isPaid || isApproved) && (
                       <td className="px-2 py-2.5">
                         {paymentLineId === line.id ? (
                           <div className="flex gap-1">
