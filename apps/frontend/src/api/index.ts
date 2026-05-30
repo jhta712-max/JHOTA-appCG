@@ -174,6 +174,8 @@ export const payrollApi = {
   deleteLine: (id: string, lineId: string) =>
     api.delete<{ success: boolean; data: Payroll }>(`/payrolls/${id}/lines/${lineId}`),
   // Actions
+  revertToDraft: (id: string) =>
+    api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/revert-to-draft`),
   approve: (id: string) =>
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/approve`),
   pay:     (id: string, data: unknown) =>
