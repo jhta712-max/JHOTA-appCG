@@ -1,4 +1,4 @@
-import { prisma } from '../../lib/prisma';
+import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import type { CreateOfficeExpenseInput, UpdateOfficeExpenseInput, ListOfficeExpensesInput } from './office-expenses.schema';
 
