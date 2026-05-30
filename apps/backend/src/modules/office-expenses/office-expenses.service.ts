@@ -146,7 +146,7 @@ export async function getOfficeExpenseSummary() {
       total: Number(totalAll._sum.amount ?? 0),
       count: totalAll._count,
     },
-    byCategory: byCategory.map((r) => ({
+    byCategory: byCategory.map((r: any) => ({
       category: r.category,
       total:    Number(r._sum.amount ?? 0),
       count:    r._count,
