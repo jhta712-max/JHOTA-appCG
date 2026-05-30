@@ -60,6 +60,20 @@ export async function unlinkExpense(req: Request, res: Response, next: NextFunct
   } catch (err) { next(err); }
 }
 
+export async function linkPayroll(req: Request, res: Response, next: NextFunction) {
+  try {
+    const payrollId = req.body?.payrollId;
+    if (!payrollId) { res.status(400).json({ success: false, error: 'payrollId requerido' }); return; }
+    res.json({ success: true, data: await svc.linkPayroll(req.params.id, payrollId) });
+  } catch (err) { next(err); }
+}
+
+export async function unlinkPayroll(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json({ success: true, data: await svc.unlinkPayroll(req.params.id) });
+  } catch (err) { next(err); }
+}
+
 export async function markAsPaid(req: Request, res: Response, next: NextFunction) {
   try {
     res.json({ success: true, data: await svc.markAsPaid(req.params.id, (req as any).user.userId) });
