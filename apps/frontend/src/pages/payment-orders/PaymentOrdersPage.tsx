@@ -7,6 +7,7 @@ import {
   Upload, Download, MessageCircle,
 } from 'lucide-react';
 import { beneficiariesApi, paymentOrdersApi, projectsApi, payrollApi } from '../../api';
+import { useAuthStore } from '../../stores/authStore';
 import type { Beneficiary, PaymentOrder } from '../../types';
 
 // ── Tipos locales ─────────────────────────────────────────────
@@ -165,7 +166,9 @@ async function shareWhatsApp(text: string, onCopied?: () => void) {
 
 // ────────────────────────────────────────────────────────────────
 export default function PaymentOrdersPage() {
-  const qc = useQueryClient();
+  const qc      = useQueryClient();
+  const authUser = useAuthStore((s) => s.user);
+  const isAdmin  = authUser?.role?.name === 'admin';
   const [tab, setTab]               = useState<Tab>('orders');
   const [viewingOrder, setViewingOrder] = useState<PaymentOrder | null>(null);
   const [toast, setToast]           = useState('');
@@ -315,6 +318,11 @@ export default function PaymentOrdersPage() {
     mutationFn: (id: string) => paymentOrdersApi.unlinkPayroll(id),
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Nómina desvinculada'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
+  });
+  const hardDeleteOrderMut = useMutation({
+    mutationFn: (id: string) => paymentOrdersApi.hardDelete(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(null); flash('🗑 Orden eliminada permanentemente'); },
+    onError:   (e: any) => flash(e.response?.data?.error || 'Error al eliminar'),
   });
 
   // ── Bene modal helpers ────────────────────────────────────────
@@ -626,6 +634,18 @@ export default function PaymentOrdersPage() {
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Eliminar permanente — admin */}
+              {isAdmin && (
+                <div className="pt-2 border-t border-red-100">
+                  <button
+                    onClick={() => { if (confirm('⚠️ ¿ELIMINAR esta orden PERMANENTEMENTE? No se puede deshacer.')) hardDeleteOrderMut.mutate(viewingOrder.id); }}
+                    disabled={hardDeleteOrderMut.isPending}
+                    className="w-full text-xs text-red-700 font-bold border border-red-300 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all">
+                    🗑 Eliminar permanentemente (Admin)
+                  </button>
                 </div>
               )}
 

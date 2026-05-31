@@ -201,6 +201,18 @@ export async function voidExpense(id: string, data: VoidExpenseInput, userId: st
   });
 }
 
+// ── Borrado permanente (solo admin) ───────────────────────────
+export async function hardDeleteExpense(id: string) {
+  const expense = await prisma.expense.findUnique({ where: { id } });
+  if (!expense) throw new AppError(404, 'Gasto no encontrado', 'NOT_FOUND');
+  // Eliminar registros dependientes primero
+  await prisma.fiscalVoucher.deleteMany({ where: { expenseId: id } });
+  await prisma.attachment.deleteMany({ where: { expenseId: id } });
+  // Desvincular de órdenes de pago sin borrarlas
+  await prisma.paymentOrder.updateMany({ where: { expenseId: id }, data: { expenseId: null } });
+  await prisma.expense.delete({ where: { id } });
+}
+
 // ── Importación masiva desde CSV ──────────────────────────────
 export interface BulkExpenseRow {
   fecha:        string;   // YYYY-MM-DD
