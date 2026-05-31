@@ -11,28 +11,13 @@ import {
 import * as ctrl from './expenses.controller';
 
 const router = Router();
-
 router.use(authenticate);
-
-// GET  /api/v1/expenses
-router.get('/',    validate(expenseQuerySchema, 'query'), ctrl.list);
-
-// POST /api/v1/expenses/bulk-import  — solo admin (antes de /:id para evitar conflicto)
-router.post('/bulk-import', authorize('admin'), ctrl.bulkImport);
-
-// GET  /api/v1/expenses/:id
-router.get('/:id', ctrl.getOne);
-
-// POST /api/v1/expenses  — todos los roles
-router.post('/',   validate(createExpenseSchema), ctrl.create);
-
-// PUT  /api/v1/expenses/:id
-router.put('/:id', validate(updateExpenseSchema), ctrl.update);
-
-// POST /api/v1/expenses/:id/void  — solo admin y supervisor
-router.post('/:id/void', authorize('admin', 'supervisor'), validate(voidExpenseSchema), ctrl.voidExpense);
-
-// DELETE /api/v1/expenses/:id  — borrado permanente solo admin
-router.delete('/:id', authorize('admin'), ctrl.hardDelete);
+router.get('/',              validate(expenseQuerySchema, 'query'), ctrl.list);
+router.post('/bulk-import',  authorize('admin'), ctrl.bulkImport);
+router.get('/:id',           ctrl.getOne);
+router.post('/',             validate(createExpenseSchema), ctrl.create);
+router.put('/:id',           validate(updateExpenseSchema), ctrl.update);
+router.post('/:id/void',     authorize('admin', 'supervisor'), validate(voidExpenseSchema), ctrl.voidExpense);
+router.delete('/:id',        authorize('admin'), ctrl.hardDelete);
 
 export default router;
