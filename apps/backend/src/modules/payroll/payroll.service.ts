@@ -394,6 +394,57 @@ export async function recordLinePayment(
   });
 }
 
+// ─── IMPORTAR LÍNEAS DESDE ÓRDENES DE PAGO VINCULADAS ────────
+export async function importLinesFromOrders(payrollId: string) {
+  const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
+  if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
+  if (!['DRAFT', 'APPROVED'].includes(payroll.status)) {
+    throw new AppError(400, 'Solo se puede importar en nóminas en borrador o aprobadas', 'INVALID_STATUS');
+  }
+
+  // Buscar todas las órdenes de pago vinculadas a esta nómina
+  const orders = await prisma.paymentOrder.findMany({
+    where:   { payrollId },
+    include: { beneficiary: true },
+  });
+
+  if (orders.length === 0) throw new AppError(400, 'No hay órdenes de pago vinculadas a esta nómina', 'NO_ORDERS');
+
+  // Obtener número de línea actual más alto
+  const lastLine = await prisma.payrollLine.findFirst({
+    where:   { payrollId },
+    orderBy: { lineNumber: 'desc' },
+  });
+  let lineNum = (lastLine?.lineNumber ?? 0) + 1;
+
+  const created = [];
+  for (const order of orders) {
+    const amount = Number(order.amount);
+    const line = await prisma.payrollLine.create({
+      data: {
+        payrollId,
+        lineNumber:   lineNum++,
+        supplierName: order.beneficiary?.name ?? order.payingCompany,
+        description:  order.concept,
+        quantity:     1,
+        unit:         'PA',
+        unitPrice:    amount,
+        subtotal:     amount,
+        bankName:     order.beneficiary?.bank ?? '',
+        bankAccount:  order.beneficiary?.accountNumber ?? '',
+      },
+    });
+    created.push(line);
+  }
+
+  // Recalcular total de la nómina
+  const allLines = await prisma.payrollLine.findMany({ where: { payrollId } });
+  const newTotal = allLines.reduce((s, l) => s + Number(l.subtotal), 0);
+  await prisma.payroll.update({ where: { id: payrollId }, data: { totalAmount: newTotal } });
+
+  return getPayrollById(payrollId);
+}
+
 // ─── DELETE (DRAFT only) ──────────────────────────────────────
 export async function deletePayroll(id: string) {
   const payroll = await prisma.payroll.findUnique({ where: { id } });

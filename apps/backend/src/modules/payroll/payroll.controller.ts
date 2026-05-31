@@ -103,3 +103,10 @@ export const exportDocx = async (req: Request, res: Response, next: NextFunction
     await svc.exportPayrollDocx(req.params.id, res);
   } catch (err) { next(err); }
 };
+
+export const importLinesFromOrders = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await svc.importLinesFromOrders(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+};
