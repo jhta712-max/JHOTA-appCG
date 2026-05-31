@@ -348,10 +348,6 @@ export async function voidPaymentOrder(id: string) {
 export async function hardDeletePaymentOrder(id: string) {
   const po = await prisma.paymentOrder.findUnique({ where: { id } });
   if (!po) throw new AppError(404, 'Orden no encontrada', 'NOT_FOUND');
-  // Si está pagada, desvincular el gasto pero no borrarlo
-  if (po.expenseId) {
-    await prisma.expense.update({ where: { id: po.expenseId }, data: { } }); // keep expense
-  }
   await prisma.paymentOrder.delete({ where: { id } });
 }
 
