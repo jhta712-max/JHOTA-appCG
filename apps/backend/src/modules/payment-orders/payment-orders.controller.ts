@@ -91,3 +91,10 @@ export async function voidPaymentOrder(req: Request, res: Response, next: NextFu
     res.json({ success: true, data: await svc.voidPaymentOrder(req.params.id) });
   } catch (err) { next(err); }
 }
+
+export async function hardDeletePaymentOrder(req: Request, res: Response, next: NextFunction) {
+  try {
+    await svc.hardDeletePaymentOrder(req.params.id);
+    res.json({ success: true, message: 'Orden eliminada permanentemente' });
+  } catch (err) { next(err); }
+}

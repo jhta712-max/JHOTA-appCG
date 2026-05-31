@@ -32,4 +32,7 @@ router.put('/:id', validate(updateExpenseSchema), ctrl.update);
 // POST /api/v1/expenses/:id/void  — solo admin y supervisor
 router.post('/:id/void', authorize('admin', 'supervisor'), validate(voidExpenseSchema), ctrl.voidExpense);
 
+// DELETE /api/v1/expenses/:id  — borrado permanente solo admin
+router.delete('/:id', authorize('admin'), ctrl.hardDelete);
+
 export default router;

@@ -41,6 +41,13 @@ export async function voidExpense(req: Request, res: Response, next: NextFunctio
   } catch (err) { next(err); }
 }
 
+export async function hardDelete(req: Request, res: Response, next: NextFunction) {
+  try {
+    await service.hardDeleteExpense(req.params.id);
+    res.json({ success: true, message: 'Gasto eliminado permanentemente' });
+  } catch (err) { next(err); }
+}
+
 export async function bulkImport(req: Request, res: Response, next: NextFunction) {
   try {
     const rows = req.body?.rows;

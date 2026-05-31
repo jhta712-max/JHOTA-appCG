@@ -8,7 +8,7 @@ import {
   linkExpense, unlinkExpense,
   linkPayroll, unlinkPayroll,
   markAsPaid, voidPaymentOrder,
-  generateExpense,
+  generateExpense, hardDeletePaymentOrder,
 } from './payment-orders.controller';
 
 const router = Router();
@@ -28,5 +28,6 @@ router.delete('/:id/link-payroll',    unlinkPayroll);
 router.post('/:id/pay',               markAsPaid);
 router.post('/:id/generate-expense',  generateExpense);
 router.post('/:id/void',              voidPaymentOrder);
+router.delete('/:id',                 authorize('admin'), hardDeletePaymentOrder);
 
 export default router;

@@ -61,6 +61,8 @@ export const expensesApi = {
     api.put<{ success: boolean; data: Expense }>(`/expenses/${id}`, data),
   void:    (id: string, reason: string) =>
     api.post(`/expenses/${id}/void`, { reason }),
+  hardDelete: (id: string) =>
+    api.delete(`/expenses/${id}`),
   uploadAttachment: (id: string, file: File) => {
     const form = new FormData();
     form.append('file', file);
@@ -399,6 +401,8 @@ export const paymentOrdersApi = {
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/generate-expense`),
   void: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/void`),
+  hardDelete: (id: string) =>
+    api.delete(`/payment-orders/${id}`),
 };
 
 // ── Gastos de Oficina ─────────────────────────────────────────
