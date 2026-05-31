@@ -7,6 +7,11 @@ import { env }          from '../../config/env';
 
 const router = Router();
 
+// Convierte BigInt a string para serialización JSON
+const bigIntReplacer = (_key: string, value: any) =>
+  typeof value === 'bigint' ? value.toString() : value;
+
+
 async function generateBackup() {
   const safe = async (fn: () => Promise<any[]>) => { try { return await fn(); } catch { return []; } };
 
@@ -61,7 +66,7 @@ router.get('/export', authenticate, authorize('admin'), async (req: Request, res
     const filename = 'backup_servingmi_' + new Date().toISOString().slice(0, 10) + '.json';
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', 'attachment; filename="' + filename + '"');
-    res.json({ exportedAt: new Date().toISOString(), version: '2.0', database: 'servingmi', counts, tables });
+    res.send(JSON.stringify({ exportedAt: new Date().toISOString(), version: '2.0', database: 'servingmi', counts, tables }, bigIntReplacer));
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -75,7 +80,7 @@ router.post('/auto', async (req: Request, res: Response) => {
   }
   try {
     const { tables, counts } = await generateBackup();
-    const backup   = JSON.stringify({ exportedAt: new Date().toISOString(), version: '2.0', counts, tables });
+    const backup   = JSON.stringify({ exportedAt: new Date().toISOString(), version: '2.0', counts, tables }, bigIntReplacer);
     const filename = 'backup_servingmi_' + new Date().toISOString().slice(0, 10) + '.json';
     const dest     = env.BACKUP_EMAIL ?? env.GMAIL_USER;
     if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD && dest) {
