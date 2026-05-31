@@ -129,11 +129,36 @@ function LogRow({ log }: { log: SystemLog }) {
 // ─── Main Page ────────────────────────────────────────────────
 export default function MonitoringPage() {
   const user    = useAuthStore((s) => s.user);
-  const isAdmin = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const isAdmin = user?.role?.name === 'admin';
+  const isSupervisorOrAdmin = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
 
-  const [logLevel, setLogLevel]   = useState<string>('');
-  const [logCat,   setLogCat]     = useState<string>('');
-  const [logPage,  setLogPage]    = useState(1);
+  const [logLevel,     setLogLevel]     = useState<string>('');
+  const [logCat,       setLogCat]       = useState<string>('');
+  const [logPage,      setLogPage]      = useState(1);
+  const [backupLoading, setBackupLoading] = useState(false);
+
+  async function handleBackup() {
+    setBackupLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const apiUrl = import.meta.env.VITE_API_URL ?? '/api/v1';
+      const res = await fetch(`${apiUrl}/backup/export`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Error al generar backup');
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `backup_servingmi_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      alert('Error al descargar backup: ' + e.message);
+    } finally {
+      setBackupLoading(false);
+    }
+  }
 
   // IA
   const [aiResult,  setAiResult]  = useState<AiAnalysisResult | null>(null);
@@ -154,7 +179,7 @@ export default function MonitoringPage() {
   }
 
   // Protección: admin y supervisor
-  if (!isAdmin) return <Navigate to="/" replace />;
+  if (!isSupervisorOrAdmin) return <Navigate to="/" replace />;
 
   const { data: dashData, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey:  ['monitoring-dashboard'],
@@ -230,14 +255,26 @@ export default function MonitoringPage() {
             Última actualización: {new Date(d.generatedAt).toLocaleTimeString('es-DO')}
           </p>
         </div>
-        <button
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-          Actualizar
-        </button>
+        <div className="flex gap-2">
+          {isAdmin && (
+            <button
+              onClick={handleBackup}
+              disabled={backupLoading}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold border-2 border-green-400 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 disabled:opacity-50"
+              title="Descargar backup completo de la base de datos"
+            >
+              {backupLoading ? '⏳ Generando...' : '💾 Backup BD'}
+            </button>
+          )}
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+            Actualizar
+          </button>
+        </div>
       </div>
 
       {/* Status banner */}
