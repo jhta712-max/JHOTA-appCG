@@ -54,7 +54,8 @@ async function generateBackup() {
 }
 
 // GET /api/v1/backup/export — descarga manual (JWT admin)
-router.get('/export', authenticate, authorize('admin'), async (_req: Request, res: Response) => {
+router.get('/export', authenticate, authorize('admin'), async (req: Request, res: Response) => {
+  console.log('[BACKUP] user:', JSON.stringify((req as any).user));
   try {
     const { tables, counts } = await generateBackup();
     const filename = 'backup_servingmi_' + new Date().toISOString().slice(0, 10) + '.json';
