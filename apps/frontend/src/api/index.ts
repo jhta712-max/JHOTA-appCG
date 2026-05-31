@@ -181,6 +181,8 @@ export const payrollApi = {
   // Actions
   revertToDraft: (id: string) =>
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/revert-to-draft`),
+  importFromOrders: (id: string) =>
+    api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/import-from-orders`),
   recordLinePayment: (id: string, lineId: string, data: { paymentBank?: string; paymentReference?: string; paidAt?: string }) =>
     api.patch<{ success: boolean; data: PayrollLine }>(`/payrolls/${id}/lines/${lineId}/payment`, data),
   approve: (id: string) =>

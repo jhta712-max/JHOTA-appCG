@@ -31,7 +31,8 @@ router.delete('/:id/lines/:lineId',          ctrl.deleteLine);
 router.patch('/:id/lines/:lineId/payment',   ctrl.recordLinePayment);
 
 // ── Workflow actions (admin / supervisor only) ─────────────────
-router.post('/:id/revert-to-draft', authorize('admin', 'supervisor'), ctrl.revertToDraft);
+router.post('/:id/revert-to-draft',      authorize('admin', 'supervisor'), ctrl.revertToDraft);
+router.post('/:id/import-from-orders',   authorize('admin', 'supervisor'), ctrl.importLinesFromOrders);
 router.post('/:id/approve',         authorize('admin', 'supervisor'), ctrl.approve);
 router.post('/:id/pay',     authorize('admin', 'supervisor'), validate(markPaidSchema), ctrl.markPaid);
 router.post('/:id/void',    authorize('admin', 'supervisor'), validate(voidPayrollSchema), ctrl.voidOne);

@@ -82,6 +82,7 @@ export default function PayrollDetailPage() {
   const updateLineMut = useMutation({ mutationFn: ({ lineId, d }: { lineId: string; d: unknown }) => payrollApi.updateLine(id!, lineId, d), onSuccess: () => { invalidate(); setEditLineId(null); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al actualizar línea') });
   const deleteLineMut   = useMutation({ mutationFn: (lineId: string) => payrollApi.deleteLine(id!, lineId), onSuccess: invalidate });
   const revertDraftMut    = useMutation({ mutationFn: () => payrollApi.revertToDraft(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al revertir') });
+  const importOrdersMut   = useMutation({ mutationFn: () => payrollApi.importFromOrders(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al importar') });
   const recordPaymentMut  = useMutation({
     mutationFn: (lineId: string) => payrollApi.recordLinePayment(id!, lineId, paymentForm),
     onSuccess: () => { invalidate(); setPaymentLineId(null); setPaymentForm({ paymentBank: '', paymentReference: '', paidAt: '' }); },
@@ -357,12 +358,23 @@ export default function PayrollDetailPage() {
             Líneas de nómina ({payroll.lines?.length ?? 0})
           </h2>
           {isDraft && (
-            <button
-              onClick={() => { setAddingLine(true); setActionError(''); }}
-              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg text-gray-900 hover:opacity-90"
-              style={{ background: '#F5C218' }}>
-              <Plus className="w-3.5 h-3.5" /> Agregar línea
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (confirm('¿Importar automáticamente las líneas desde las órdenes de pago vinculadas a esta nómina?'))
+                    importOrdersMut.mutate();
+                }}
+                disabled={importOrdersMut.isPending}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300">
+                📥 {importOrdersMut.isPending ? 'Importando...' : 'Importar desde órdenes'}
+              </button>
+              <button
+                onClick={() => { setAddingLine(true); setActionError(''); }}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg text-gray-900 hover:opacity-90"
+                style={{ background: '#F5C218' }}>
+                <Plus className="w-3.5 h-3.5" /> Agregar línea
+              </button>
+            </div>
           )}
         </div>
 
