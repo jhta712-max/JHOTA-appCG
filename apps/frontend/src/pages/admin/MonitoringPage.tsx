@@ -146,6 +146,11 @@ export default function MonitoringPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Error al generar backup');
+      if (!res.ok) {
+        const errBody = await res.text();
+        alert('Error ' + res.status + ': ' + errBody.slice(0, 300));
+        return;
+      }
       const blob = await res.blob();
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
