@@ -26,6 +26,9 @@ const envSchema = z.object({
   GMAIL_APP_PASSWORD:     z.string().optional(),
   // Anthropic (OCR con IA)
   ANTHROPIC_API_KEY:      z.string().optional(),
+  // Backup automático
+  BACKUP_SECRET_KEY:      z.string().optional(),
+  BACKUP_EMAIL:           z.string().email().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
