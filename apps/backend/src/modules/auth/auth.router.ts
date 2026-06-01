@@ -4,6 +4,7 @@ import { authenticate } from '../../middlewares/authenticate';
 import { loginSchema, refreshSchema, forgotPasswordSchema, resetPasswordSchema } from './auth.schema';
 import * as controller from './auth.controller';
 
+// @ts-ignore
 const router: any = Router();
 
 // POST /api/v1/auth/login

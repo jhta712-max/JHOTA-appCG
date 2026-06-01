@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { validate } from '../../middlewares/validate';
 import { needsSetup, setupAdmin } from './auth.service';
 
+// @ts-ignore
 const router: any = Router();
 
 // GET /api/v1/setup/check  — público

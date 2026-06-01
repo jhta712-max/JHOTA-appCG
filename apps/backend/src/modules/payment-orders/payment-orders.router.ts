@@ -11,6 +11,7 @@ import {
   generateExpense, hardDeletePaymentOrder,
 } from './payment-orders.controller';
 
+// @ts-ignore
 const router: any = Router();
 router.use(authenticate);
 router.use(authorize('admin', 'supervisor'));

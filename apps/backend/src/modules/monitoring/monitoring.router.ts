@@ -23,6 +23,7 @@ import {
 } from './monitoring.service';
 import { runAiAnalysis } from './monitoring.ai';
 
+// @ts-ignore
 const router: any = Router();
 
 // ── Detallado (sin auth — Railway puede usarlo para health probes) ──

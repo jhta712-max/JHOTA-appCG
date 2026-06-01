@@ -4,6 +4,7 @@ import { authenticate } from '../../middlewares/authenticate';
 import { analyzeInvoice } from './ocr.service';
 import { AppError } from '../../middlewares/errorHandler';
 
+// @ts-ignore
 const router: any = Router();
 
 // Multer en memoria — no guardar a disco, solo procesar

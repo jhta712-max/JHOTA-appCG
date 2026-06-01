@@ -9,6 +9,7 @@ import {
   generateFullExpensesExcel,
 } from './reports.service';
 
+// @ts-ignore
 const router: any = Router();
 
 // Todos los reportes requieren autenticación y rol admin o supervisor

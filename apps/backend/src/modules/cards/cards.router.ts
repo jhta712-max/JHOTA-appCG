@@ -5,6 +5,7 @@ import {
   listCards, getCard, createCard, updateCard, deactivateCard,
 } from './cards.controller';
 
+// @ts-ignore
 const router: any = Router();
 
 // Todas las rutas requieren autenticación

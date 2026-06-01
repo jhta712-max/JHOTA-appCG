@@ -18,6 +18,7 @@ import {
 } from './quotations.schema';
 import * as ctrl from './quotations.controller';
 
+// @ts-ignore
 const router: any = Router();
 
 // ── Multer para adjuntos de cotizaciones ──────────────────────

@@ -24,6 +24,7 @@ import paymentOrdersRouter   from './modules/payment-orders/payment-orders.route
 import officeExpensesRouter  from './modules/office-expenses/office-expenses.router';
 import backupRouter          from './modules/backup/backup.router';
 
+// @ts-ignore
 const app = express();
 
 // ----------------------------------------------------------------

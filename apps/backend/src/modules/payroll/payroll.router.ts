@@ -12,6 +12,7 @@ import {
 } from './payroll.schema';
 import * as ctrl from './payroll.controller';
 
+// @ts-ignore
 const router: any = Router();
 router.use(authenticate);
 

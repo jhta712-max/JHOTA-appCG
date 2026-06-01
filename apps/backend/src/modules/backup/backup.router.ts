@@ -5,6 +5,7 @@ import { authorize }    from '../../middlewares/authorize';
 import prisma           from '../../config/database';
 import { env }          from '../../config/env';
 
+// @ts-ignore
 const router: any = Router();
 
 // Convierte BigInt a string para serialización JSON

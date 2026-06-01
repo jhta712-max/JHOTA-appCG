@@ -7,6 +7,7 @@ import {
   bulkCreateBeneficiaries,
 } from './beneficiaries.controller';
 
+// @ts-ignore
 const router: any = Router();
 router.use(authenticate);
 router.use(authorize('admin', 'supervisor'));

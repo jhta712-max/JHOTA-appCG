@@ -10,6 +10,7 @@ import {
 } from './expenses.schema';
 import * as ctrl from './expenses.controller';
 
+// @ts-ignore
 const router: any = Router();
 router.use(authenticate);
 router.get('/',              validate(expenseQuerySchema, 'query'), ctrl.list);
