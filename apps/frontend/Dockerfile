@@ -8,8 +8,8 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY src ./src
-COPY index.html vite.config.ts tsconfig.json tsconfig.app.json ./
 COPY public ./public
+COPY index.html vite.config.ts tsconfig.json ./
 
 RUN npm ci
 RUN npm run build
