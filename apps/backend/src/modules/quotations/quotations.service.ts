@@ -2,7 +2,7 @@ import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import type {
-  CreateQuotationInput, UpdateQuotationInput, UpdateStatusInput,
+  CreateQuotationInput, UpdateQuotationInput, UpdateStatusInput, ChangeProjectInput,
   CreatePaymentInput, LinkExpenseInput, QuotationQuery,
 } from './quotations.schema';
 
@@ -254,6 +254,55 @@ export async function updateStatus(id: string, data: UpdateStatusInput) {
     where: { id },
     data:  { status: data.status, ...(data.notes && { notes: data.notes }) },
     include: QUOTATION_INCLUDE,
+  });
+
+  return serializeQuotation(updated);
+}
+
+// ── Cambiar proyecto (migrar todos los datos relacionados) ──────
+
+export async function changeQuotationProject(id: string, data: ChangeProjectInput) {
+  const q = await prisma.quotation.findUnique({
+    where: { id },
+    include: {
+      payments:     { select: { expenseId: true } },
+      expenseLinks: { select: { expenseId: true } },
+    },
+  });
+  if (!q) throw new AppError(404, 'Cotización no encontrada', 'NOT_FOUND');
+
+  if (q.projectId === data.projectId) {
+    throw new AppError(400, 'El nuevo proyecto debe ser diferente al actual', 'SAME_PROJECT');
+  }
+
+  const newProject = await prisma.project.findUnique({ where: { id: data.projectId } });
+  if (!newProject) throw new AppError(404, 'Proyecto de destino no encontrado', 'NOT_FOUND');
+  if (newProject.status !== 'ACTIVE') {
+    throw new AppError(400, 'El proyecto de destino debe estar activo', 'PROJECT_INACTIVE');
+  }
+
+  // Recolectar IDs de gastos relacionados
+  const expenseIds = new Set<string>();
+  q.payments.forEach((p) => { if (p.expenseId) expenseIds.add(p.expenseId); });
+  q.expenseLinks.forEach((l) => { expenseIds.add(l.expenseId); });
+
+  const updated = await prisma.$transaction(async (tx) => {
+    // Actualizar la cotización al nuevo proyecto
+    const quotation = await tx.quotation.update({
+      where: { id },
+      data:  { projectId: data.projectId },
+      include: QUOTATION_INCLUDE,
+    });
+
+    // Migrar todos los gastos relacionados al nuevo proyecto
+    if (expenseIds.size > 0) {
+      await tx.expense.updateMany({
+        where: { id: { in: Array.from(expenseIds) } },
+        data:  { projectId: data.projectId },
+      });
+    }
+
+    return quotation;
   });
 
   return serializeQuotation(updated);

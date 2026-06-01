@@ -43,6 +43,13 @@ export async function updateStatus(req: Request, res: Response, next: NextFuncti
   } catch (err) { next(err); }
 }
 
+export async function changeProject(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.changeQuotationProject(req.params.id, req.body);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
 export async function remove(req: Request, res: Response, next: NextFunction) {
   try {
     const data = await service.deleteQuotation(req.params.id);

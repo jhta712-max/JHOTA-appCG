@@ -40,7 +40,6 @@ export const createQuotationSchema = baseQuotationSchema;
 // ── Actualizar cotización ──────────────────────────────────────
 
 export const updateQuotationSchema = baseQuotationSchema
-  .omit({ projectId: true })
   .partial();
 
 // ── Cambiar estado ─────────────────────────────────────────────
@@ -51,6 +50,12 @@ export const updateStatusSchema = z.object({
     { required_error: 'El estado es requerido' },
   ),
   notes: z.string().max(500).optional(),
+});
+
+// ── Cambiar proyecto (migrar todos los datos relacionados) ──────
+
+export const changeProjectSchema = z.object({
+  projectId: z.string({ required_error: 'El nuevo proyecto es requerido' }).uuid(),
 });
 
 // ── Registrar pago / anticipo ──────────────────────────────────
@@ -104,6 +109,7 @@ export const quotationQuerySchema = z.object({
 export type CreateQuotationInput  = z.infer<typeof createQuotationSchema>;
 export type UpdateQuotationInput  = z.infer<typeof updateQuotationSchema>;
 export type UpdateStatusInput     = z.infer<typeof updateStatusSchema>;
+export type ChangeProjectInput    = z.infer<typeof changeProjectSchema>;
 export type CreatePaymentInput    = z.infer<typeof createPaymentSchema>;
 export type LinkExpenseInput      = z.infer<typeof linkExpenseSchema>;
 export type QuotationQuery        = z.infer<typeof quotationQuerySchema>;

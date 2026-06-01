@@ -11,6 +11,7 @@ import {
   createQuotationSchema,
   updateQuotationSchema,
   updateStatusSchema,
+  changeProjectSchema,
   createPaymentSchema,
   linkExpenseSchema,
   quotationQuerySchema,
@@ -82,6 +83,13 @@ router.patch('/:id/status',
   authorize('admin', 'supervisor'),
   validate(updateStatusSchema),
   ctrl.updateStatus,
+);
+
+// PATCH /api/v1/quotations/:id/project — solo admin y supervisor (migra todos los datos)
+router.patch('/:id/project',
+  authorize('admin', 'supervisor'),
+  validate(changeProjectSchema),
+  ctrl.changeProject,
 );
 
 // DELETE /api/v1/quotations/:id — solo admin y supervisor
