@@ -232,6 +232,9 @@ export const quotationsApi = {
   updateStatus: (id: string, data: { status: string; notes?: string }) =>
     api.patch<{ success: boolean; data: Quotation }>(`/quotations/${id}/status`, data),
 
+  changeProject: (id: string, data: { projectId: string }) =>
+    api.patch<{ success: boolean; data: Quotation }>(`/quotations/${id}/project`, data),
+
   remove: (id: string) =>
     api.delete(`/quotations/${id}`),
 
