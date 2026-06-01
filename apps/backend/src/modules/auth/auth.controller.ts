@@ -43,3 +43,17 @@ export async function purgeRefreshTokensHandler(req: Request, res: Response, nex
     res.json({ success: true, message: `${result.count} refresh tokens eliminados.` });
   } catch (err) { next(err); }
 }
+
+export async function forgotPasswordHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await authService.forgotPassword(req.body.email);
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}
+
+export async function resetPasswordHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await authService.resetPassword(req.body.token, req.body.password);
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}

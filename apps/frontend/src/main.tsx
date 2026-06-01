@@ -22,8 +22,10 @@ import UsersPage          from './pages/users/UsersPage';
 import CategoriesPage     from './pages/categories/CategoriesPage';
 import ReportsPage        from './pages/reports/ReportsPage';
 import ExportPage         from './pages/reports/ExportPage';
-import AcceptInvitePage  from './pages/invitations/AcceptInvitePage';
-import SetupPage         from './pages/auth/SetupPage';
+import AcceptInvitePage   from './pages/invitations/AcceptInvitePage';
+import SetupPage          from './pages/auth/SetupPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage  from './pages/auth/ResetPasswordPage';
 import PayrollsPage      from './pages/payroll/PayrollsPage';
 import PayrollDetailPage from './pages/payroll/PayrollDetailPage';
 import PayrollFormPage   from './pages/payroll/PayrollFormPage';
@@ -73,9 +75,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <AuthHydrator>
             <Routes>
-              <Route path="/login"          element={<LoginPage />} />
-              <Route path="/setup"          element={<SetupPage />} />
-              <Route path="/invite/:token"  element={<AcceptInvitePage />} />
+              <Route path="/login"              element={<LoginPage />} />
+              <Route path="/setup"              element={<SetupPage />} />
+              <Route path="/invite/:token"      element={<AcceptInvitePage />} />
+              <Route path="/forgot-password"    element={<ForgotPasswordPage />} />
+              <Route path="/reset-password"     element={<ResetPasswordPage />} />
 
               <Route path="/" element={
                 <PrivateRoute><Layout /></PrivateRoute>

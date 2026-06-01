@@ -149,6 +149,16 @@ export default function LoginPage() {
                 : <><LogIn className="w-4 h-4" /> Entrar al sistema</>
               }
             </button>
+
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
           </form>
 
           {/* Primer acceso — solo visible cuando no hay usuarios */}
