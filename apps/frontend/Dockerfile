@@ -6,10 +6,10 @@ ENV VITE_API_URL=$VITE_API_URL
 
 WORKDIR /app
 
-COPY package.json ./
+COPY package.json package-lock.json ./
 COPY . .
 
-RUN npm install
+RUN npm ci
 RUN npm run build
 
 FROM nginx:alpine
