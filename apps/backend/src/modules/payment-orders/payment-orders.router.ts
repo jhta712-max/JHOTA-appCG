@@ -11,7 +11,7 @@ import {
   generateExpense, hardDeletePaymentOrder,
 } from './payment-orders.controller';
 
-const router = Router() as any;
+const router: any = Router();
 router.use(authenticate);
 router.use(authorize('admin', 'supervisor'));
 

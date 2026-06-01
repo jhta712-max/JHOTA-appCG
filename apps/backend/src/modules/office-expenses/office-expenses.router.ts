@@ -3,7 +3,7 @@ import { authenticate } from '../../middlewares/authenticate';
 import { authorize }    from '../../middlewares/authorize';
 import * as ctrl from './office-expenses.controller';
 
-const router = Router() as any;
+const router: any = Router();
 
 // Todos los endpoints requieren autenticación y rol admin o supervisor
 router.use(authenticate, authorize('admin', 'supervisor'));

@@ -4,7 +4,7 @@ import { authenticate } from '../../middlewares/authenticate';
 import { analyzeInvoice } from './ocr.service';
 import { AppError } from '../../middlewares/errorHandler';
 
-const router = Router() as any;
+const router: any = Router();
 
 // Multer en memoria — no guardar a disco, solo procesar
 const upload = multer({

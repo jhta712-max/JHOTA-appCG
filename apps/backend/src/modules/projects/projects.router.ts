@@ -9,7 +9,7 @@ import {
 } from './projects.schema';
 import * as ctrl from './projects.controller';
 
-const router = Router() as any;
+const router: any = Router();
 
 // Todos los endpoints requieren estar autenticado
 router.use(authenticate);

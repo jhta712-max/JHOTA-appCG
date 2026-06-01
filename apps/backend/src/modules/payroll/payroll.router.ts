@@ -12,7 +12,7 @@ import {
 } from './payroll.schema';
 import * as ctrl from './payroll.controller';
 
-const router = Router() as any;
+const router: any = Router();
 router.use(authenticate);
 
 // ── List & Create ────────────────────────────────────────────

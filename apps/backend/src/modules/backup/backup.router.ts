@@ -5,7 +5,7 @@ import { authorize }    from '../../middlewares/authorize';
 import prisma           from '../../config/database';
 import { env }          from '../../config/env';
 
-const router = Router() as any;
+const router: any = Router();
 
 // Convierte BigInt a string para serialización JSON
 const bigIntReplacer = (_key: string, value: any) =>
