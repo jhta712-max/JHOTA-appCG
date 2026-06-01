@@ -5,7 +5,7 @@ import {
   listCards, getCard, createCard, updateCard, deactivateCard,
 } from './cards.controller';
 
-const router = Router();
+const router = Router() as any;
 
 // Todas las rutas requieren autenticación
 router.use(authenticate);

@@ -4,7 +4,7 @@ import { authenticate } from '../../middlewares/authenticate';
 import { loginSchema, refreshSchema, forgotPasswordSchema, resetPasswordSchema } from './auth.schema';
 import * as controller from './auth.controller';
 
-const router = Router();
+const router = Router() as any;
 
 // POST /api/v1/auth/login
 router.post('/login', validate(loginSchema), controller.loginHandler);

@@ -11,7 +11,7 @@ import {
   revokeInvitation,
 } from './invitations.service';
 
-const router = Router();
+const router = Router() as any;
 
 // ── POST /invitations — Crear y enviar invitación (admin y supervisor)
 router.post(

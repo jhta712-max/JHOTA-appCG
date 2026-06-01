@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { validate } from '../../middlewares/validate';
 import { needsSetup, setupAdmin } from './auth.service';
 
-const router = Router();
+const router = Router() as any;
 
 // GET /api/v1/setup/check  — público
 router.get('/check', async (_req: Request, res: Response, next: NextFunction) => {

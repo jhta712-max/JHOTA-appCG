@@ -23,7 +23,7 @@ import {
 } from './monitoring.service';
 import { runAiAnalysis } from './monitoring.ai';
 
-const router = Router();
+const router = Router() as any;
 
 // ── Detallado (sin auth — Railway puede usarlo para health probes) ──
 router.get('/detailed', async (_req: Request, res: Response) => {

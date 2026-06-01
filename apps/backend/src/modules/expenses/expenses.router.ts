@@ -10,7 +10,7 @@ import {
 } from './expenses.schema';
 import * as ctrl from './expenses.controller';
 
-const router = Router();
+const router = Router() as any;
 router.use(authenticate);
 router.get('/',              validate(expenseQuerySchema, 'query'), ctrl.list);
 router.post('/bulk-import',  authorize('admin'), ctrl.bulkImport);
