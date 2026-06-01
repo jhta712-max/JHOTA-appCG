@@ -34,8 +34,24 @@ app.use(helmet());
 // ----------------------------------------------------------------
 // CORS
 // ----------------------------------------------------------------
+const allowedOrigins = [
+  env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://servingmi-appCG.onrender.com', // Render frontend
+];
+
 app.use(cors({
-  origin: [env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000'],
+  origin: (origin, callback) => {
+    // En desarrollo sin origin (como requests desde Node/Postman), permitir
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin) || origin.includes('localhost')) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
