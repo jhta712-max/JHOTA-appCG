@@ -1,0 +1,3 @@
+# Sistema de Gastos por Proyectos
+Versión: 1.0.0
+Última actualización: Mon Jun  1 19:38:19 UTC 2026
