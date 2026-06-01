@@ -1,13 +1,15 @@
 FROM node:20-alpine AS builder
 
-# Declarar build arg para que Railway lo inyecte en el build
+# Declarar build arg para que Render lo inyecte en el build
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY . .
+COPY src ./src
+COPY index.html vite.config.ts tsconfig.json tsconfig.app.json ./
+COPY public ./public
 
 RUN npm ci
 RUN npm run build
