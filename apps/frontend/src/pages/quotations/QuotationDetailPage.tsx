@@ -85,7 +85,7 @@ export default function QuotationDetailPage() {
     queryKey: ['projects-list'],
     queryFn:  async () => {
       try {
-        const result = await projectsApi.list({ limit: 1000 });
+        const result = await projectsApi.list();
         console.log('[DEBUG] Projects loaded:', result);
         return result;
       } catch (err) {
