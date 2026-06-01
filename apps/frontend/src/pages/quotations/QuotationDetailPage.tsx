@@ -97,7 +97,10 @@ export default function QuotationDetailPage() {
     },
     select:   (r: any) => {
       try {
-        const projects = r?.data;
+        // r es la respuesta de axios: { data: PaginatedResponse, status, headers, ... }
+        // r.data es PaginatedResponse: { success, data: Project[], pagination }
+        // r.data.data es Project[]
+        const projects = r?.data?.data;
         console.log('[DEBUG] Selected projects count:', projects?.length);
         return Array.isArray(projects) ? projects : [];
       } catch (err) {
