@@ -81,10 +81,22 @@ export default function QuotationDetailPage() {
     enabled:  !!id,
   });
 
-  const { data: projects, isLoading: projectsLoading } = useQuery({
+  const { data: projects, isLoading: projectsLoading, error: projectsError } = useQuery({
     queryKey: ['projects-list'],
-    queryFn:  () => projectsApi.list({ limit: 1000 }),
-    select:   (r: any) => r.data || [],
+    queryFn:  async () => {
+      try {
+        const result = await projectsApi.list({ limit: 1000 });
+        console.log('[DEBUG] Projects loaded:', result);
+        return result;
+      } catch (err) {
+        console.error('[DEBUG] Projects error:', err);
+        throw err;
+      }
+    },
+    select:   (r: any) => {
+      console.log('[DEBUG] Projects select:', r?.data);
+      return r?.data || [];
+    },
     staleTime: 0,
     gcTime: 0,
   });
@@ -258,6 +270,9 @@ export default function QuotationDetailPage() {
           <p className="text-xs text-gray-500">Se migrarán automáticamente todos los gastos vinculados al nuevo proyecto.</p>
           {projectsLoading && (
             <p className="text-xs text-amber-600 mb-2">Cargando proyectos...</p>
+          )}
+          {projectsError && (
+            <p className="text-xs text-red-600 mb-2">Error al cargar proyectos: {String(projectsError)}</p>
           )}
           <select className="input-field" value={newProjectId}
             onChange={(e) => setNewProjectId(e.target.value)}>
