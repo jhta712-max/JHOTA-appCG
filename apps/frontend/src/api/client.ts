@@ -2,11 +2,23 @@ import axios from 'axios';
 
 const getApiUrl = () => {
   if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    // En producción, inferir la URL del backend desde el hostname
-    const hostname = window.location.hostname;
-    return `https://${hostname.replace('appCG', 'backend')}/api/v1`;
+
+  if (typeof window !== 'undefined') {
+    const { hostname, protocol } = window.location;
+
+    // En Render: servingmi-appCG.onrender.com → servingmi-backend.onrender.com
+    if (hostname.includes('onrender.com')) {
+      const backendUrl = `${protocol}//${hostname.replace('appCG', 'backend')}/api/v1`;
+      console.log('[API] Render backend URL:', backendUrl);
+      return backendUrl;
+    }
+
+    // Localhost: usa proxy
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return '/api/v1';
+    }
   }
+
   return '/api/v1';
 };
 
