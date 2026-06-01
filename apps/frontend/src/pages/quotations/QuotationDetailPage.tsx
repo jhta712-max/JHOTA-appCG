@@ -47,6 +47,7 @@ export default function QuotationDetailPage() {
   const qc       = useQueryClient();
   const user     = useAuthStore((s) => s.user);
   const isAdmin  = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const isAdminOnly = user?.role?.name === 'admin';
 
   // UI state
   const [showStatusForm,     setShowStatusForm]     = useState(false);
@@ -238,11 +239,13 @@ export default function QuotationDetailPage() {
               className="text-xs text-primary-600 hover:text-primary-700 font-medium underline">
               Cambiar estado
             </button>
-            <button onClick={() => setShowProjectForm(s => !s)}
-              className="text-xs text-primary-600 hover:text-primary-700 font-medium underline">
-              Cambiar proyecto
-            </button>
           </>
+        )}
+        {isAdminOnly && !isCancelled && !isPaid && (
+          <button onClick={() => setShowProjectForm(s => !s)}
+            className="text-xs text-primary-600 hover:text-primary-700 font-medium underline">
+            Cambiar proyecto
+          </button>
         )}
       </div>
 

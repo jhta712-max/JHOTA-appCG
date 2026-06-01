@@ -85,9 +85,9 @@ router.patch('/:id/status',
   ctrl.updateStatus,
 );
 
-// PATCH /api/v1/quotations/:id/project — solo admin y supervisor (migra todos los datos)
+// PATCH /api/v1/quotations/:id/project — solo admin (migra todos los datos)
 router.patch('/:id/project',
-  authorize('admin', 'supervisor'),
+  authorize('admin'),
   validate(changeProjectSchema),
   ctrl.changeProject,
 );
