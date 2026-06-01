@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { quotationsApi, projectsApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
+import type { Project } from '../../types';
 import {
   QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS,
   QUOTATION_LINK_LABELS, PAYMENT_METHOD_LABELS_Q,
@@ -256,7 +257,7 @@ export default function QuotationDetailPage() {
           <select className="input-field" value={newProjectId}
             onChange={(e) => setNewProjectId(e.target.value)}>
             <option value="">Seleccionar nuevo proyecto...</option>
-            {projects?.filter(p => p.id !== quotation.projectId && p.status === 'ACTIVE').map(p => (
+            {projects?.filter((p: Project) => p.id !== quotation.projectId && p.status === 'ACTIVE').map((p: Project) => (
               <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
             ))}
           </select>
