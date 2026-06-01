@@ -83,7 +83,7 @@ export default function QuotationDetailPage() {
   const { data: projects } = useQuery({
     queryKey: ['projects-list'],
     queryFn:  () => projectsApi.list({ limit: 1000 }),
-    select:   (r) => r.data.data,
+    select:   (r: any) => r.data?.data || [],
   });
 
   // Mutations
