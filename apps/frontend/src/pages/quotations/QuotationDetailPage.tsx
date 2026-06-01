@@ -81,10 +81,12 @@ export default function QuotationDetailPage() {
     enabled:  !!id,
   });
 
-  const { data: projects } = useQuery({
+  const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ['projects-list'],
     queryFn:  () => projectsApi.list({ limit: 1000 }),
     select:   (r: any) => r.data || [],
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Mutations
@@ -254,12 +256,18 @@ export default function QuotationDetailPage() {
         <div className="card p-4 space-y-3 border-2 border-amber-200">
           <h3 className="font-semibold text-gray-800 text-sm">Cambiar proyecto</h3>
           <p className="text-xs text-gray-500">Se migrarán automáticamente todos los gastos vinculados al nuevo proyecto.</p>
+          {projectsLoading && (
+            <p className="text-xs text-amber-600 mb-2">Cargando proyectos...</p>
+          )}
           <select className="input-field" value={newProjectId}
             onChange={(e) => setNewProjectId(e.target.value)}>
             <option value="">Seleccionar nuevo proyecto...</option>
-            {projects?.filter((p: Project) => p.id !== quotation.projectId && p.status === 'ACTIVE').map((p: Project) => (
-              <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
-            ))}
+            {projects
+              ?.filter((p: Project) => p.id !== quotation.projectId)
+              .filter((p: Project) => p.status === 'ACTIVE')
+              .map((p: Project) => (
+                <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
+              ))}
           </select>
           {projectErr && <p className="text-xs text-red-500">{projectErr}</p>}
           <div className="flex gap-2">
