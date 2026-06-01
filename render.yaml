@@ -28,9 +28,6 @@ services:
     dockerfilePath: ./Dockerfile
 
     envVars:
-      - key: PORT
-        value: "3001"
-
       - key: NODE_ENV
         value: production
 
