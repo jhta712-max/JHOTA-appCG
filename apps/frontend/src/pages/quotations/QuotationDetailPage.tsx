@@ -86,19 +86,28 @@ export default function QuotationDetailPage() {
     queryFn:  async () => {
       try {
         const result = await projectsApi.list();
-        console.log('[DEBUG] Projects loaded:', result);
+        console.log('[DEBUG] Full API response:', result);
+        console.log('[DEBUG] Response data structure:', result?.data);
         return result;
-      } catch (err) {
+      } catch (err: any) {
         console.error('[DEBUG] Projects error:', err);
+        console.error('[DEBUG] Error details:', err?.response?.data || err?.message);
         throw err;
       }
     },
     select:   (r: any) => {
-      console.log('[DEBUG] Projects select:', r?.data);
-      return r?.data || [];
+      try {
+        const projects = r?.data;
+        console.log('[DEBUG] Selected projects count:', projects?.length);
+        return Array.isArray(projects) ? projects : [];
+      } catch (err) {
+        console.error('[DEBUG] Error in select:', err);
+        return [];
+      }
     },
     staleTime: 0,
     gcTime: 0,
+    retry: false,
   });
 
   // Mutations
