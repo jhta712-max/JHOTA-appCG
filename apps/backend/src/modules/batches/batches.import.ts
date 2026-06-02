@@ -250,12 +250,15 @@ export const importBatchesFromCsv = async (
         }
 
         // Verificar si el gasto ya existe (usando transacción para evitar duplicados)
+        // Un gasto es duplicado solo si tiene TODOS estos campos iguales: item, descripción, monto Y fecha
+        const parsedExpenseDate = parseDate(sanitized.fecha);
         const existingExpense = await prisma.expense.findFirst({
           where: {
             projectId: project.id,
             batchItemId: item.id,
             description: sanitized.descripcion,
             amount: new Prisma.Decimal(amount),
+            expenseDate: parsedExpenseDate,
           },
         });
 
