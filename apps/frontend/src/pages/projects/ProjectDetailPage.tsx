@@ -2,13 +2,15 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, FolderOpen, MapPin, User,
-  Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight,
+  Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight, Upload,
 } from 'lucide-react';
+import { useState } from 'react';
 import { projectsApi, expensesApi, quotationsApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import { PAYMENT_METHOD_LABELS, PROJECT_STATUS_LABELS } from '../../types';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
+import BatchImportModal from '../../components/BatchImportModal';
 
 function fmt(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
@@ -24,6 +26,7 @@ export default function ProjectDetailPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const canEdit = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const { data: summaryData, isLoading } = useQuery({
     queryKey: ['project-summary', id],
@@ -81,6 +84,13 @@ export default function ProjectDetailPage() {
         <div className="flex items-center gap-2 shrink-0">
           {canEdit && (
             <>
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="btn-secondary text-sm"
+                title="Importar gastos desde CSV"
+              >
+                <Upload className="w-4 h-4" /> Importar CSV
+              </button>
               <Link to={`/projects/${id}/financial`}
                 className="btn-secondary text-sm">
                 <BarChart2 className="w-4 h-4" /> Análisis financiero
@@ -307,6 +317,18 @@ export default function ProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Import Modal */}
+      <BatchImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        projectCode={project.code}
+        onSuccess={() => {
+          setShowImportModal(false);
+          // Recargar los datos del proyecto
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

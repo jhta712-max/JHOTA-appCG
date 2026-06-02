@@ -14,6 +14,7 @@ import ProjectsPage       from './pages/projects/ProjectsPage';
 import ProjectDetailPage  from './pages/projects/ProjectDetailPage';
 import ProjectFormPage     from './pages/projects/ProjectFormPage';
 import ProjectFinancialPage from './pages/projects/ProjectFinancialPage';
+import ImportBatchesPage   from './pages/projects/ImportBatchesPage';
 import ExpensesPage       from './pages/expenses/ExpensesPage';
 import NewExpensePage     from './pages/expenses/NewExpensePage';
 import ExpenseDetailPage  from './pages/expenses/ExpenseDetailPage';
@@ -89,6 +90,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 {/* Proyectos */}
                 <Route path="projects"             element={<ProjectsPage />} />
                 <Route path="projects/new"         element={<ProjectFormPage />} />
+                <Route path="projects/import"      element={<ImportBatchesPage />} />
                 <Route path="projects/:id"              element={<ProjectDetailPage />} />
                 <Route path="projects/:id/edit"         element={<ProjectFormPage />} />
                 <Route path="projects/:id/financial"    element={<ProjectFinancialPage />} />
