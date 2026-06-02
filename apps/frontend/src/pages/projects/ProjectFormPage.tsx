@@ -193,8 +193,8 @@ export default function ProjectFormPage() {
       setNewError('Todos los campos son requeridos');
       return;
     }
-    if (Number(newForm.amount) <= 0) {
-      setNewError('El monto debe ser mayor a 0');
+    if (Number(newForm.amount) < 0) {
+      setNewError('El monto no puede ser negativo');
       return;
     }
     setSavingNew(true);
