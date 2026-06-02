@@ -30,8 +30,8 @@ export default function BatchImportModal({ isOpen, onClose, projectCode, onSucce
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
-  const { token } = useAuthStore((s) => ({
-    token: s.token,
+  const { accessToken } = useAuthStore((s) => ({
+    accessToken: s.accessToken,
   }));
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,7 +50,7 @@ export default function BatchImportModal({ isOpen, onClose, projectCode, onSucce
       return;
     }
 
-    if (!token) {
+    if (!accessToken) {
       alert('No autenticado');
       return;
     }
@@ -64,7 +64,7 @@ export default function BatchImportModal({ isOpen, onClose, projectCode, onSucce
       const response = await fetch(`${apiUrl}/batches/import`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: formData,
       });
