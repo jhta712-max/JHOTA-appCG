@@ -10,8 +10,8 @@ COPY prisma ./prisma/
 COPY tsconfig.json ./
 COPY src ./src
 
-# Instalar dependencias (incluyendo csv-parse)
-RUN npm ci --omit=dev
+# Instalar dependencias (incluyendo dev para compilar TypeScript)
+RUN npm ci
 
 # Generar cliente Prisma y compilar TypeScript
 RUN npx prisma generate
