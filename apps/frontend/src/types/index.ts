@@ -18,6 +18,7 @@ export interface Project {
   endDate?: string;
   status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
   estimatedBudget: number;
+  batchesEnabled?: boolean;
   notes?: string;
   createdBy: { id: string; name: string };
   _count?: { expenses: number };
@@ -51,6 +52,29 @@ export interface Attachment {
   createdAt: string;
 }
 
+export interface BatchItem {
+  id: string;
+  code: string;
+  description: string;
+  provincia: string;
+  sector: string;
+  budget: number;
+  status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  expenses?: Expense[];
+  createdAt: string;
+}
+
+export interface Batch {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  totalBudget: number;
+  status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  items?: BatchItem[];
+  createdAt: string;
+}
+
 export interface Expense {
   id: string;
   expenseDate: string;
@@ -60,6 +84,8 @@ export interface Expense {
   hasFiscalDoc: boolean;
   status: 'ACTIVE' | 'VOIDED';
   notes?: string;
+  batchItemId?: string;
+  batchItem?: BatchItem;
   project: { id: string; code: string; name: string };
   projectId: string;
   category: { id: number; name: string; icon?: string };

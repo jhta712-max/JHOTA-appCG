@@ -22,6 +22,7 @@ export const updateProjectSchema = createProjectSchema
   .partial()
   .extend({
     status: z.enum(['ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED']).optional(),
+    batchesEnabled: z.boolean().optional(),
   });
 
 export const projectQuerySchema = z.object({
