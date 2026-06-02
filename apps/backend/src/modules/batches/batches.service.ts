@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { AppError } from '../../lib/errors';
+import { AppError } from '../../middlewares/errorHandler';
 
 const prisma = new PrismaClient();
 
@@ -8,15 +8,15 @@ export const batchesService = {
 
   async createBatch(projectId: string, data: { code: string; name: string; description?: string; totalBudget?: number }) {
     const project = await prisma.project.findUnique({ where: { id: projectId } });
-    if (!project) throw new AppError('Proyecto no encontrado', 404);
+    if (!project) throw new AppError(404, 'Proyecto no encontrado');
     if (!project.batchesEnabled) {
-      throw new AppError('Los lotes no están habilitados en este proyecto', 400);
+      throw new AppError(400, 'Los lotes no están habilitados en este proyecto');
     }
 
     const existingBatch = await prisma.batch.findUnique({
       where: { projectId_code: { projectId, code: data.code } },
     });
-    if (existingBatch) throw new AppError('Ya existe un lote con este código', 400);
+    if (existingBatch) throw new AppError(400, 'Ya existe un lote con este código');
 
     return prisma.batch.create({
       data: {
@@ -32,7 +32,7 @@ export const batchesService = {
 
   async getBatchesByProject(projectId: string) {
     const project = await prisma.project.findUnique({ where: { id: projectId } });
-    if (!project) throw new AppError('Proyecto no encontrado', 404);
+    if (!project) throw new AppError(404, 'Proyecto no encontrado');
 
     return prisma.batch.findMany({
       where: { projectId },
@@ -59,13 +59,13 @@ export const batchesService = {
       },
     });
 
-    if (!batch) throw new AppError('Lote no encontrado', 404);
+    if (!batch) throw new AppError(404, 'Lote no encontrado');
     return batch;
   },
 
   async updateBatch(batchId: string, data: { name?: string; description?: string; totalBudget?: number; status?: string }) {
     const batch = await prisma.batch.findUnique({ where: { id: batchId } });
-    if (!batch) throw new AppError('Lote no encontrado', 404);
+    if (!batch) throw new AppError(404, 'Lote no encontrado');
 
     return prisma.batch.update({
       where: { id: batchId },
@@ -85,12 +85,11 @@ export const batchesService = {
       include: { items: { include: { expenses: true } } },
     });
 
-    if (!batch) throw new AppError('Lote no encontrado', 404);
+    if (!batch) throw new AppError(404, 'Lote no encontrado');
 
-    // Verificar si hay gastos vinculados
     const hasExpenses = batch.items.some((item) => item.expenses.length > 0);
     if (hasExpenses) {
-      throw new AppError('No se puede eliminar un lote con gastos vinculados', 400);
+      throw new AppError(400, 'No se puede eliminar un lote con gastos vinculados');
     }
 
     return prisma.batch.delete({ where: { id: batchId } });
@@ -107,15 +106,15 @@ export const batchesService = {
       include: { project: true },
     });
 
-    if (!batch) throw new AppError('Lote no encontrado', 404);
+    if (!batch) throw new AppError(404, 'Lote no encontrado');
     if (!batch.project.batchesEnabled) {
-      throw new AppError('Los lotes no están habilitados en el proyecto', 400);
+      throw new AppError(400, 'Los lotes no están habilitados en el proyecto');
     }
 
     const existingItem = await prisma.batchItem.findUnique({
       where: { batchId_code: { batchId, code: data.code } },
     });
-    if (existingItem) throw new AppError('Ya existe un item con este código en el lote', 400);
+    if (existingItem) throw new AppError(400, 'Ya existe un item con este código en el lote');
 
     return prisma.batchItem.create({
       data: {
@@ -131,7 +130,7 @@ export const batchesService = {
 
   async getBatchItemsByBatch(batchId: string) {
     const batch = await prisma.batch.findUnique({ where: { id: batchId } });
-    if (!batch) throw new AppError('Lote no encontrado', 404);
+    if (!batch) throw new AppError(404, 'Lote no encontrado');
 
     return prisma.batchItem.findMany({
       where: { batchId },
@@ -160,7 +159,7 @@ export const batchesService = {
       },
     });
 
-    if (!item) throw new AppError('Item del lote no encontrado', 404);
+    if (!item) throw new AppError(404, 'Item del lote no encontrado');
     return item;
   },
 
@@ -169,7 +168,7 @@ export const batchesService = {
     data: { description?: string; provincia?: string; sector?: string; budget?: number; status?: string }
   ) {
     const item = await prisma.batchItem.findUnique({ where: { id: itemId } });
-    if (!item) throw new AppError('Item del lote no encontrado', 404);
+    if (!item) throw new AppError(404, 'Item del lote no encontrado');
 
     return prisma.batchItem.update({
       where: { id: itemId },
@@ -189,11 +188,10 @@ export const batchesService = {
       include: { expenses: true },
     });
 
-    if (!item) throw new AppError('Item del lote no encontrado', 404);
+    if (!item) throw new AppError(404, 'Item del lote no encontrado');
 
-    // Verificar si hay gastos vinculados
     if (item.expenses.length > 0) {
-      throw new AppError('No se puede eliminar un item con gastos vinculados', 400);
+      throw new AppError(400, 'No se puede eliminar un item con gastos vinculados');
     }
 
     return prisma.batchItem.delete({ where: { id: itemId } });
@@ -203,7 +201,7 @@ export const batchesService = {
 
   async enableBatches(projectId: string) {
     const project = await prisma.project.findUnique({ where: { id: projectId } });
-    if (!project) throw new AppError('Proyecto no encontrado', 404);
+    if (!project) throw new AppError(404, 'Proyecto no encontrado');
 
     return prisma.project.update({
       where: { id: projectId },
@@ -217,18 +215,17 @@ export const batchesService = {
       include: { batches: { include: { items: true } } },
     });
 
-    if (!project) throw new AppError('Proyecto no encontrado', 404);
+    if (!project) throw new AppError(404, 'Proyecto no encontrado');
     if (!project.batchesEnabled) {
-      throw new AppError('Los lotes ya están deshabilitados', 400);
+      throw new AppError(400, 'Los lotes ya están deshabilitados');
     }
 
-    // Validación: no permitir deshabilitar si hay lotes con items
     if (project.batches.length > 0) {
       const hasItems = project.batches.some((batch) => batch.items.length > 0);
       if (hasItems) {
         throw new AppError(
-          'No se puede deshabilitar los lotes si existen lotes con items. Primero elimine los lotes.',
-          400
+          400,
+          'No se puede deshabilitar los lotes si existen lotes con items. Primero elimine los lotes.'
         );
       }
     }

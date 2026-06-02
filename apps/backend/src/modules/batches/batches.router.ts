@@ -1,52 +1,37 @@
 import { Router } from 'express';
-import { batchesController } from './batches.controller';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate } from '../../middlewares/authenticate';
+import { validate } from '../../middlewares/validate';
+import {
+  createBatchSchema,
+  updateBatchSchema,
+  createBatchItemSchema,
+  updateBatchItemSchema,
+} from './batches.schema';
+import * as ctrl from './batches.controller';
 
 const router = Router();
 
-// Aplicar autenticación a todas las rutas
 router.use(authenticate);
 
 // ============ BATCHES ROUTES ============
 
-// Crear un lote en un proyecto
-router.post('/projects/:projectId/batches', batchesController.createBatch);
-
-// Obtener todos los lotes de un proyecto
-router.get('/projects/:projectId/batches', batchesController.getBatchesByProject);
-
-// Obtener un lote específico
-router.get('/batches/:batchId', batchesController.getBatchById);
-
-// Actualizar un lote
-router.patch('/batches/:batchId', batchesController.updateBatch);
-
-// Eliminar un lote
-router.delete('/batches/:batchId', batchesController.deleteBatch);
+router.post('/projects/:projectId/batches', validate(createBatchSchema), ctrl.createBatch);
+router.get('/projects/:projectId/batches', ctrl.getBatchesByProject);
+router.get('/batches/:batchId', ctrl.getBatchById);
+router.patch('/batches/:batchId', validate(updateBatchSchema), ctrl.updateBatch);
+router.delete('/batches/:batchId', ctrl.deleteBatch);
 
 // ============ BATCH ITEMS ROUTES ============
 
-// Crear un item en un lote
-router.post('/batches/:batchId/items', batchesController.createBatchItem);
-
-// Obtener todos los items de un lote
-router.get('/batches/:batchId/items', batchesController.getBatchItemsByBatch);
-
-// Obtener un item específico
-router.get('/batch-items/:itemId', batchesController.getBatchItemById);
-
-// Actualizar un item
-router.patch('/batch-items/:itemId', batchesController.updateBatchItem);
-
-// Eliminar un item
-router.delete('/batch-items/:itemId', batchesController.deleteBatchItem);
+router.post('/batches/:batchId/items', validate(createBatchItemSchema), ctrl.createBatchItem);
+router.get('/batches/:batchId/items', ctrl.getBatchItemsByBatch);
+router.get('/batch-items/:itemId', ctrl.getBatchItemById);
+router.patch('/batch-items/:itemId', validate(updateBatchItemSchema), ctrl.updateBatchItem);
+router.delete('/batch-items/:itemId', ctrl.deleteBatchItem);
 
 // ============ PROJECT BATCHES TOGGLE ============
 
-// Habilitar lotes en un proyecto
-router.post('/projects/:projectId/batches/enable', batchesController.enableBatches);
-
-// Deshabilitar lotes en un proyecto
-router.post('/projects/:projectId/batches/disable', batchesController.disableBatches);
+router.post('/projects/:projectId/batches/enable', ctrl.enableBatches);
+router.post('/projects/:projectId/batches/disable', ctrl.disableBatches);
 
 export default router;
