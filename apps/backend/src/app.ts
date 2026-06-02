@@ -103,6 +103,7 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
     environment: env.NODE_ENV,
     uptime: Math.round(process.uptime()),
+    version: '1.0.0-batch-import',
   });
 });
 
