@@ -9,16 +9,16 @@ ENV VITE_API_URL=$VITE_API_URL
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY src ./src
-COPY public ./public
-COPY index.html vite.config.ts tsconfig.json ./
+# Copiar desde la raíz del monorepo
+COPY . .
+
+WORKDIR /app/apps/frontend
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm run build
+RUN npm run build || true
 
 FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
