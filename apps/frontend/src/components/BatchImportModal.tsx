@@ -77,7 +77,7 @@ export default function BatchImportModal({ isOpen, onClose, projectCode, onSucce
       } else {
         setResult({
           success: false,
-          error: data.message || 'Error en la importación',
+          error: data.error || data.message || 'Error en la importación',
         });
       }
     } catch (error) {
