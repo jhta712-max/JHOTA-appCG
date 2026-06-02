@@ -33,6 +33,7 @@ const CATEGORY_COLORS: Record<OfficeExpenseCategory, string> = {
   CLEANING_SUPPLIES: 'bg-blue-100 text-blue-700',
   CONSUMABLES:       'bg-amber-100 text-amber-700',
   OFFICE_SERVICES:   'bg-purple-100 text-purple-700',
+  BIDDING:           'bg-orange-100 text-orange-700',
   OTHER:             'bg-gray-100 text-gray-700',
 };
 
