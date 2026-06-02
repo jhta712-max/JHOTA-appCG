@@ -342,10 +342,16 @@ export default function PaymentOrdersPage() {
   };
 
   // ── Order modal helpers ───────────────────────────────────────
+  const normalizeOrderType = (type: any): OrderType => {
+    if (type === 'GENERAL') return 'SERVICIO';
+    if (['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type)) return type;
+    return 'SERVICIO';
+  };
+
   const openOrderModal = (o?: PaymentOrder) => {
     setEditingOrder(o ?? null);
     setOrderForm(o
-      ? { orderType: o.orderType, payingCompany: o.payingCompany, beneficiaryId: o.beneficiaryId,
+      ? { orderType: normalizeOrderType(o.orderType), payingCompany: o.payingCompany, beneficiaryId: o.beneficiaryId,
           projectId: o.projectId, amount: String(o.amount), currency: o.currency,
           concept: o.concept, notes: o.notes ?? '', payrollId: o.payrollId ?? '' }
       : EMPTY_ORDER
@@ -667,7 +673,7 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              {/* Generar gasto retroactivo — solo para GENERAL y MATERIALS, no PAYROLL */}
+              {/* Generar gasto retroactivo — solo para SERVICIO y MATERIALS, no PAYROLL */}
               {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && viewingOrder.orderType !== 'PAYROLL' && (
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                   <p className="text-xs text-amber-600 flex items-center gap-1">
@@ -1263,13 +1269,14 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function TypeBadge({ type }: { type: OrderType }) {
+function TypeBadge({ type }: { type: any }) {
+  const normalizedType: OrderType = (type === 'GENERAL' || !['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type)) ? 'SERVICIO' : type;
   const cfg: Record<OrderType, { label: string; cls: string }> = {
     SERVICIO:  { label: 'Servicio',   cls: 'bg-purple-100 text-purple-700' },
     PAYROLL:   { label: 'Nómina',     cls: 'bg-blue-100 text-blue-700' },
     MATERIALS: { label: 'Materiales', cls: 'bg-amber-100 text-amber-700' },
   };
-  const c = cfg[type] ?? cfg.SERVICIO;
+  const c = cfg[normalizedType] ?? cfg.SERVICIO;
   return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${c.cls}`}>{c.label}</span>;
 }
 
