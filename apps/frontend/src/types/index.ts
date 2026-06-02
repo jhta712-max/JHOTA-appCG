@@ -19,6 +19,7 @@ export interface Project {
   status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
   estimatedBudget: number;
   notes?: string;
+  batchesEnabled?: boolean;
   createdBy: { id: string; name: string };
   _count?: { expenses: number };
   createdAt: string;
@@ -100,6 +101,12 @@ export interface ProjectSummary {
     totalAmount: number;
     expenseCount: number;
   }>;
+  byItem?: Array<{
+    itemId: string;
+    itemCode: string;
+    totalAmount: number;
+    count: number;
+  }>;
 }
 
 export interface PaginatedResponse<T> {
@@ -179,7 +186,7 @@ export interface Beneficiary {
 export interface PaymentOrder {
   id:            string;
   number:        number;
-  orderType:     'GENERAL' | 'PAYROLL' | 'MATERIALS';
+  orderType:     'SERVICIO' | 'PAYROLL' | 'MATERIALS';
   payingCompany: string;
   beneficiaryId: string;
   beneficiary:   Beneficiary;
