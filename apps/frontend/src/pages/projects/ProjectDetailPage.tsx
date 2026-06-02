@@ -126,7 +126,8 @@ export default function ProjectDetailPage() {
                     {summaryData?.byItem ? (
                       summaryData.byItem.map((item: any) => (
                         <div key={item.itemId} className="text-sm">
-                          <p className="font-medium text-gray-800">{item.itemCode}: {item.count} registros</p>
+                          <p className="font-medium text-gray-800">{item.itemCode}: {fmt(item.totalAmount)}</p>
+                          <p className="text-xs text-gray-400">{item.count} registros</p>
                         </div>
                       ))
                     ) : (
