@@ -742,6 +742,7 @@ enum OfficeExpenseCategory {
   CLEANING_SUPPLIES
   CONSUMABLES
   OFFICE_SERVICES
+  BIDDING
   OTHER
 
   @@map("office_expense_category")
