@@ -235,7 +235,7 @@ export const importBatchesFromCsv = async (
         }
 
         const sanitized = validation.data!;
-        const item = itemsMap.get(sanitized.item_code);
+        const item = itemsMap.get(sanitized.item_code!);
 
         if (!item) {
           stats.errorRecords.push(`Fila ${rowIndex + 1}: Item ${sanitized.item_code} no encontrado`);
@@ -243,7 +243,7 @@ export const importBatchesFromCsv = async (
         }
 
         // Parsear monto (permite negativos para notas de crédito)
-        const amount = parseFloat(sanitized.monto);
+        const amount = parseFloat(sanitized.monto!);
         if (isNaN(amount) || amount === 0) {
           stats.errorRecords.push(`Fila ${rowIndex + 1}: Monto inválido: ${sanitized.monto}`);
           continue;
@@ -251,12 +251,12 @@ export const importBatchesFromCsv = async (
 
         // Verificar si el gasto ya existe (usando transacción para evitar duplicados)
         // Un gasto es duplicado solo si tiene TODOS estos campos iguales: item, descripción, monto Y fecha
-        const parsedExpenseDate = parseDate(sanitized.fecha);
+        const parsedExpenseDate = parseDate(sanitized.fecha || '');
         const existingExpense = await prisma.expense.findFirst({
           where: {
             projectId: project.id,
             batchItemId: item.id,
-            description: sanitized.descripcion,
+            description: sanitized.descripcion!,
             amount: new Prisma.Decimal(amount),
             expenseDate: parsedExpenseDate,
           },
@@ -268,28 +268,29 @@ export const importBatchesFromCsv = async (
         }
 
         // Obtener o crear categoría
-        let category = categoryCache.get(sanitized.categoria);
+        const categoryName = sanitized.categoria!;
+        let category = categoryCache.get(categoryName);
         if (!category) {
           category = await prisma.expenseCategory.findUnique({
-            where: { name: sanitized.categoria },
+            where: { name: categoryName },
           });
 
           if (!category) {
             category = await prisma.expenseCategory.create({
-              data: { name: sanitized.categoria },
+              data: { name: categoryName },
             }).catch(err => {
               // Si falla por duplicado concurrente, buscar de nuevo
               return prisma.expenseCategory.findUnique({
-                where: { name: sanitized.categoria },
+                where: { name: categoryName },
               });
             });
           }
 
-          categoryCache.set(sanitized.categoria, category);
+          categoryCache.set(categoryName, category);
         }
 
         if (!category) {
-          stats.errorRecords.push(`Fila ${rowIndex + 1}: No se pudo crear/obtener categoría ${sanitized.categoria}`);
+          stats.errorRecords.push(`Fila ${rowIndex + 1}: No se pudo crear/obtener categoría ${categoryName}`);
           continue;
         }
 
@@ -301,10 +302,10 @@ export const importBatchesFromCsv = async (
             categoryId: category.id,
             userId: project.createdById,
             amount: new Prisma.Decimal(amount),
-            description: sanitized.descripcion,
-            expenseDate: parseDate(sanitized.fecha),
+            description: sanitized.descripcion!,
+            expenseDate: parseDate(sanitized.fecha || ''),
             paymentMethod: 'CASH',
-            notes: sanitized.notas_originales,
+            notes: sanitized.notas_originales || '',
           },
         }).catch(err => {
           // Si falla por duplicado concurrente, contar como saltado
