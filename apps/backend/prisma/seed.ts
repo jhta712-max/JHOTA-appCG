@@ -80,6 +80,7 @@ async function main() {
     { name: 'Transporte',   description: 'Fletes, envíos y traslados', icon: 'truck' },
     { name: 'Combustible',  description: 'Gasolina, gasoil y lubricantes', icon: 'fuel' },
     { name: 'Dietas',       description: 'Alimentación y viáticos del personal', icon: 'utensils' },
+    { name: 'Licitacion',   description: 'Gastos generados en la realización de licitaciones', icon: 'file-text' },
     { name: 'Otros',        description: 'Gastos varios no clasificados', icon: 'more-horizontal' },
   ];
 
