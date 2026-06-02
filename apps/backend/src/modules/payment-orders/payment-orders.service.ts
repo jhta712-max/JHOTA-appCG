@@ -136,7 +136,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
   return prisma.paymentOrder.create({
     data: {
       number,
-      orderType:     data.orderType ?? 'GENERAL',
+      orderType:     data.orderType ?? 'SERVICIO',
       payingCompany: data.payingCompany,
       beneficiaryId: data.beneficiaryId,
       projectId:     data.projectId,
@@ -259,9 +259,9 @@ export async function markAsPaid(id: string, userId: string) {
 
     // 2. Las órdenes tipo PAYROLL NO crean gasto individual —
     //    el gasto consolidado lo genera la nómina al aprobarse.
-    //    Las de tipo GENERAL y MATERIALS sí crean su gasto.
+    //    Las de tipo SERVICIO y MATERIALS sí crean su gasto.
     if (!po.expenseId && po.orderType !== 'PAYROLL') {
-      const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : 'Servicios';
+      const categoryName = po.orderType === 'MATERIALS' ? 'MATERIALES' : 'SERVICIO';
       const category = await tx.expenseCategory.upsert({
         where:  { name: categoryName },
         update: { isActive: true },
@@ -302,8 +302,8 @@ export async function generateExpenseForOrder(id: string, userId: string) {
   if (po.orderType === 'PAYROLL') throw new AppError(400, 'Las órdenes de nómina no generan gasto individual — el gasto lo registra la nómina al aprobarse', 'PAYROLL_NO_EXPENSE');
 
   const categoryName =
-    po.orderType === 'PAYROLL'   ? 'Mano de obra' :
-    po.orderType === 'MATERIALS' ? 'Materiales'   : 'Servicios';
+    po.orderType === 'PAYROLL'   ? 'MANO DE OBRA' :
+    po.orderType === 'MATERIALS' ? 'MATERIALES'   : 'SERVICIO';
 
   const category = await prisma.expenseCategory.upsert({
     where:  { name: categoryName },

@@ -676,7 +676,7 @@ model Beneficiary {
 model PaymentOrder {
   id            String   @id @default(uuid()) @db.Uuid
   number        Int                                               // Autoincremental por aplicación
-  orderType     String   @default("GENERAL") @map("order_type") @db.VarChar(20) // GENERAL | PAYROLL | MATERIALS
+  orderType     String   @default("SERVICIO") @map("order_type") @db.VarChar(20) // SERVICIO | PAYROLL | MATERIALS
   payingCompany String   @map("paying_company") @db.VarChar(200)
   beneficiaryId String   @map("beneficiary_id") @db.Uuid
   projectId     String   @map("project_id") @db.Uuid

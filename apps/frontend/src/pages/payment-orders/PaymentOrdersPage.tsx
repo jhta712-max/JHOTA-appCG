@@ -12,7 +12,7 @@ import type { Beneficiary, PaymentOrder } from '../../types';
 
 // ── Tipos locales ─────────────────────────────────────────────
 type Tab       = 'orders' | 'beneficiaries';
-type OrderType = 'GENERAL' | 'PAYROLL' | 'MATERIALS';
+type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
 type ModalView = 'form' | 'success';
 
 type BeneForm = { name: string; bank: string; accountType: string; accountNumber: string; cedula: string; phone: string };
@@ -24,7 +24,7 @@ type OrderForm = {
   notes: string; payrollId: string;
 };
 const EMPTY_ORDER: OrderForm = {
-  orderType: 'GENERAL', payingCompany: '', beneficiaryId: '', projectId: '',
+  orderType: 'SERVICIO', payingCompany: '', beneficiaryId: '', projectId: '',
   amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '',
 };
 
@@ -32,7 +32,7 @@ const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'
 const CURRENCIES    = ['RD$', 'US$', '€'];
 
 const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
-  GENERAL:   { label: 'General',    icon: <FileText className="w-4 h-4" />,      color: 'border-gray-300 bg-gray-50',     desc: 'Pago libre sin vínculo' },
+  SERVICIO:  { label: 'Servicio',   icon: <FileText className="w-4 h-4" />,      color: 'border-purple-300 bg-purple-50',  desc: 'Pago por servicios' },
   PAYROLL:   { label: 'Nómina',     icon: <Wallet className="w-4 h-4" />,        color: 'border-blue-400 bg-blue-50',     desc: 'Pago de mano de obra' },
   MATERIALS: { label: 'Materiales', icon: <ShoppingCart className="w-4 h-4" />,  color: 'border-amber-400 bg-amber-50',   desc: 'Compra de insumos por transferencia' },
 };
@@ -505,7 +505,7 @@ export default function PaymentOrdersPage() {
               </button>
             ))}
             <div className="w-px bg-gray-200 mx-1 self-stretch" />
-            {(['', 'GENERAL', 'PAYROLL', 'MATERIALS'] as const).map((t) => (
+            {(['', 'SERVICIO', 'PAYROLL', 'MATERIALS'] as const).map((t) => (
               <button key={t} onClick={() => setFilterType(t)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                 {t === '' ? 'Todos tipos' : ORDER_TYPE_CFG[t as OrderType].label}
@@ -1265,11 +1265,11 @@ function StatusBadge({ status }: { status: string }) {
 
 function TypeBadge({ type }: { type: OrderType }) {
   const cfg: Record<OrderType, { label: string; cls: string }> = {
-    GENERAL:   { label: 'General',    cls: 'bg-gray-100 text-gray-600' },
+    SERVICIO:  { label: 'Servicio',   cls: 'bg-purple-100 text-purple-700' },
     PAYROLL:   { label: 'Nómina',     cls: 'bg-blue-100 text-blue-700' },
     MATERIALS: { label: 'Materiales', cls: 'bg-amber-100 text-amber-700' },
   };
-  const c = cfg[type] ?? cfg.GENERAL;
+  const c = cfg[type] ?? cfg.SERVICIO;
   return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${c.cls}`}>{c.label}</span>;
 }
 
