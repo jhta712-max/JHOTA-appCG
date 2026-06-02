@@ -7,10 +7,8 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Copiar archivos de la raíz del monorepo
+# Copiar archivos de este directorio (apps/backend) que Render proporciona
 COPY . .
-
-WORKDIR /app/apps/backend
 
 # Instalar dependencias
 RUN pnpm install --frozen-lockfile
