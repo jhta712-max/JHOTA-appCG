@@ -71,9 +71,12 @@ export default function BatchImportModal({ isOpen, onClose, projectCode, onSucce
 
       const data: ImportResult = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.success) {
         setResult(data);
-        onSuccess?.(data);
+        // Notificar éxito pero mantener el modal abierto para que vea los resultados
+        setTimeout(() => {
+          onSuccess?.(data);
+        }, 2000);
       } else {
         setResult({
           success: false,
