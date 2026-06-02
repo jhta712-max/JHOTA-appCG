@@ -34,6 +34,7 @@ import OfficeExpensesPage  from './pages/office-expenses/OfficeExpensesPage';
 import QuotationsPage    from './pages/quotations/QuotationsPage';
 import QuotationFormPage from './pages/quotations/QuotationFormPage';
 import QuotationDetailPage from './pages/quotations/QuotationDetailPage';
+import ImportBatchesPage from './pages/projects/ImportBatchesPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -85,6 +86,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 {/* Proyectos */}
                 <Route path="projects"             element={<ProjectsPage />} />
                 <Route path="projects/new"         element={<ProjectFormPage />} />
+                <Route path="projects/import-batches"   element={<ImportBatchesPage />} />
                 <Route path="projects/:id"              element={<ProjectDetailPage />} />
                 <Route path="projects/:id/edit"         element={<ProjectFormPage />} />
                 <Route path="projects/:id/financial"    element={<ProjectFinancialPage />} />

@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, FolderOpen, MapPin, User,
-  Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight,
+  Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight, Upload,
 } from 'lucide-react';
 import { projectsApi, expensesApi, quotationsApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
@@ -81,6 +81,10 @@ export default function ProjectDetailPage() {
         <div className="flex items-center gap-2 shrink-0">
           {canEdit && (
             <>
+              <Link to={`/projects/import-batches`}
+                className="btn-secondary text-sm">
+                <Upload className="w-4 h-4" /> Importar
+              </Link>
               <Link to={`/projects/${id}/financial`}
                 className="btn-secondary text-sm">
                 <BarChart2 className="w-4 h-4" /> Análisis financiero
