@@ -119,7 +119,24 @@ export default function ProjectDetailPage() {
             </div>
             <div className="flex items-start gap-2">
               <Receipt className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-              <div><p className="text-xs text-gray-400">Gastos</p><p className="font-medium text-gray-800">{summary.expenseCount} registros</p></div>
+              <div>
+                <p className="text-xs text-gray-400">Gastos</p>
+                {projectData.batchesEnabled ? (
+                  <div className="space-y-1 mt-1">
+                    {summaryData?.byItem ? (
+                      summaryData.byItem.map((item: any) => (
+                        <div key={item.itemId} className="text-sm">
+                          <p className="font-medium text-gray-800">{item.itemCode}: {item.count} registros</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="font-medium text-gray-800">{summary.expenseCount} registros</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="font-medium text-gray-800">{summary.expenseCount} registros</p>
+                )}
+              </div>
             </div>
           </div>
           {projectData.notes && (

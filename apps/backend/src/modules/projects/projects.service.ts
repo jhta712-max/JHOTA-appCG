@@ -76,7 +76,7 @@ export async function getProjectSummary(id: string, requestingUser?: { userId: s
   });
   if (!project) throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
 
-  const [expenseStats, byCategory] = await Promise.all([
+  const [expenseStats, byCategory, byItem] = await Promise.all([
     prisma.expense.aggregate({
       where:   { projectId: id, status: 'ACTIVE' },
       _sum:    { amount: true },
@@ -88,6 +88,12 @@ export async function getProjectSummary(id: string, requestingUser?: { userId: s
       _sum:    { amount: true },
       _count:  { id: true },
     }),
+    project.batchesEnabled ? prisma.expense.groupBy({
+      by:      ['batchItemId'],
+      where:   { projectId: id, status: 'ACTIVE', batchItemId: { not: null } },
+      _sum:    { amount: true },
+      _count:  { id: true },
+    }) : Promise.resolve([]),
   ]);
 
   const categoryIds = byCategory.map((c) => c.categoryId);
@@ -95,6 +101,12 @@ export async function getProjectSummary(id: string, requestingUser?: { userId: s
     where: { id: { in: categoryIds } },
     select: { id: true, name: true, icon: true },
   });
+
+  const itemIds = byItem.map((i) => i.batchItemId).filter(Boolean) as string[];
+  const items = itemIds.length > 0 ? await prisma.batchItem.findMany({
+    where: { id: { in: itemIds } },
+    select: { id: true, code: true },
+  }) : [];
 
   const addendumTotal   = project.addendums.reduce((sum, a) => sum + Number(a.amount), 0);
   const totalBudget     = Number(project.estimatedBudget) + addendumTotal;
@@ -133,6 +145,15 @@ export async function getProjectSummary(id: string, requestingUser?: { userId: s
         expenseCount: bc._count.id,
       };
     }),
+    byItem: project.batchesEnabled ? byItem.map((bi) => {
+      const item = items.find((i) => i.id === bi.batchItemId);
+      return {
+        itemId:       bi.batchItemId,
+        itemCode:     item?.code || 'Unknown',
+        totalAmount:  Number(bi._sum.amount ?? 0),
+        count:        bi._count.id,
+      };
+    }).sort((a, b) => a.itemCode.localeCompare(b.itemCode)) : [],
   };
 }
 
