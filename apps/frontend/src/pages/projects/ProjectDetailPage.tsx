@@ -321,13 +321,12 @@ export default function ProjectDetailPage() {
       {/* Import Modal */}
       <BatchImportModal
         isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        projectCode={project.code}
-        onSuccess={() => {
+        onClose={() => {
           setShowImportModal(false);
-          // Recargar los datos del proyecto
+          // Recargar los datos después de cerrar
           window.location.reload();
         }}
+        projectCode={project.code}
       />
     </div>
   );
