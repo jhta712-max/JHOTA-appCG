@@ -36,9 +36,9 @@ const validateAndSanitizeRecord = (record: CsvRow, rowIndex: number): { valid: b
   if (!record.provincia?.trim()) errors.push(`provincia vacío`);
   if (!record.sector?.trim()) errors.push(`sector vacío`);
 
-  // Validar monto
+  // Validar monto (permite negativos para notas de crédito)
   const monto = parseFloat(record.monto || '0');
-  if (isNaN(monto) || monto <= 0) {
+  if (isNaN(monto) || monto === 0) {
     errors.push(`monto inválido: "${record.monto}"`);
   }
 
@@ -242,9 +242,9 @@ export const importBatchesFromCsv = async (
           continue;
         }
 
-        // Parsear monto
+        // Parsear monto (permite negativos para notas de crédito)
         const amount = parseFloat(sanitized.monto);
-        if (isNaN(amount) || amount < 0) {
+        if (isNaN(amount) || amount === 0) {
           stats.errorRecords.push(`Fila ${rowIndex + 1}: Monto inválido: ${sanitized.monto}`);
           continue;
         }
