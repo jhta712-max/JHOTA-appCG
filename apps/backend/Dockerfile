@@ -5,13 +5,13 @@ RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Copiar archivos de dependencias y prisma
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 COPY tsconfig.json ./
 COPY src ./src
 
-# Instalar dependencias (incluyendo dev para compilar TypeScript)
-RUN npm ci
+# Instalar dependencias
+RUN npm install
 
 # Generar cliente Prisma y compilar TypeScript
 RUN npx prisma generate
