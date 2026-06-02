@@ -23,6 +23,7 @@ import beneficiariesRouter   from './modules/beneficiaries/beneficiaries.router'
 import paymentOrdersRouter   from './modules/payment-orders/payment-orders.router';
 import officeExpensesRouter  from './modules/office-expenses/office-expenses.router';
 import backupRouter          from './modules/backup/backup.router';
+import batchesRouter         from './modules/batches/batches.router';
 
 const app = express();
 
@@ -109,6 +110,7 @@ app.use('/api/v1/cards',          apiLimiter,  cardsRouter);
 app.use('/api/v1/beneficiaries',   apiLimiter,  beneficiariesRouter);
 app.use('/api/v1/payment-orders',  apiLimiter,  paymentOrdersRouter);
 app.use('/api/v1/office-expenses', apiLimiter,  officeExpensesRouter);
+app.use('/api/v1/batches',         apiLimiter,  batchesRouter);
 app.use('/api/v1/backup',          apiLimiter,  backupRouter);
 app.use('/api/v1/monitoring', apiLimiter,  monitoringRouter);
 
