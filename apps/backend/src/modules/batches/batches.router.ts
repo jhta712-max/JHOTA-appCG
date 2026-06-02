@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { authenticate } from '../../middlewares/authenticate';
 import { validate } from '../../middlewares/validate';
 import {
@@ -8,6 +9,9 @@ import {
   updateBatchItemSchema,
 } from './batches.schema';
 import * as ctrl from './batches.controller';
+import { importBatchesFromCsv } from './batches.import';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -33,5 +37,9 @@ router.delete('/batch-items/:itemId', ctrl.deleteBatchItem);
 
 router.post('/projects/:projectId/batches/enable', ctrl.enableBatches);
 router.post('/projects/:projectId/batches/disable', ctrl.disableBatches);
+
+// ============ IMPORT BATCHES FROM CSV ============
+
+router.post('/import', upload.single('file'), importBatchesFromCsv);
 
 export default router;
