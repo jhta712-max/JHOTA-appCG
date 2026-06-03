@@ -124,7 +124,16 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="label">Contraseña</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="label">Contraseña</label>
+                <button
+                  type="button"
+                  onClick={() => navigate('/forgot-password')}
+                  className="text-xs text-blue-600 hover:text-blue-700"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <div className="relative">
                 <input
                   type={showPwd ? 'text' : 'password'}
