@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from './errorHandler';
+import { logger } from '../utils/logger';
 
 /**
  * Middleware de autorización por roles.
@@ -14,10 +15,8 @@ export function authorize(...allowedRoles: string[]) {
       return next(new AppError(401, 'No autenticado', 'UNAUTHORIZED'));
     }
 
-    // Log para debugging
-    console.log(`[AUTH] Usuario: ${req.user.email}, Rol: ${req.user.role}, Requerido: ${allowedRoles.join(', ')}`);
-
     if (!allowedRoles.includes(req.user.role)) {
+      logger.debug(`Authorization denied for ${req.user.email} (role: ${req.user.role}, required: ${allowedRoles.join(', ')})`);
       return next(
         new AppError(
           403,

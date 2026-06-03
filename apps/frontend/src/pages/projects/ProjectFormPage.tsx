@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { projectsApi, usersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
+import { ErrorAlert } from '../../components/ErrorAlert';
 import type { Addendum } from '../../types';
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -153,10 +154,7 @@ export default function ProjectFormPage() {
   }, [existing, reset]);
 
   const mutation = useMutation({
-    mutationFn: (data: any) => {
-      console.log('[ProjectForm] Enviando datos:', data);
-      return isEdit ? projectsApi.update(id!, data) : projectsApi.create(data);
-    },
+    mutationFn: (data: any) => isEdit ? projectsApi.update(id!, data) : projectsApi.create(data),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['projects'] });
       navigate(`/projects/${res.data.data.id}`);
@@ -292,30 +290,7 @@ export default function ProjectFormPage() {
         </div>
       </div>
 
-      {mutation.isError && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <div className="text-sm">
-            <p className="font-semibold">{(mutation.error as any)?.response?.data?.error ?? 'Error al guardar'}</p>
-            {(mutation.error as any)?.response?.status === 401 && (
-              <p className="text-xs text-red-600 mt-1">Tu sesión ha expirado. Por favor, inicia sesión nuevamente.</p>
-            )}
-            {(mutation.error as any)?.response?.status === 403 && (
-              <p className="text-xs text-red-600 mt-1">No tienes permisos para crear proyectos. Se requiere rol de Admin o Supervisor.</p>
-            )}
-            {(mutation.error as any)?.response?.data?.details && (
-              <div className="text-xs text-red-600 mt-2">
-                <p className="font-semibold">Errores de validación:</p>
-                <ul className="list-disc list-inside">
-                  {Object.entries((mutation.error as any).response.data.details).map(([field, errors]: any) => (
-                    <li key={field}><strong>{field}:</strong> {Array.isArray(errors) ? errors[0] : errors}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {mutation.isError && <ErrorAlert error={mutation.error as any} />}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* ── Información básica ─────────────────────────────── */}
