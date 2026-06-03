@@ -4,6 +4,7 @@
 
 @layer base {
   * { box-sizing: border-box; }
+  html, body, #root { overflow-x: hidden; }
   body { @apply text-gray-900 antialiased; }
   input, select, textarea {
     @apply text-base; /* evita zoom en iOS al hacer focus */

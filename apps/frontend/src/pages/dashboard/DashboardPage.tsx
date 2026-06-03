@@ -99,7 +99,7 @@ export default function DashboardPage() {
         </div>
         <div className="card p-4">
           <p className="text-xs text-gray-500 font-medium">Presupuesto total</p>
-          <p className="text-lg font-bold text-gray-900 mt-1">{fmt(totalBudget)}</p>
+          <p className="text-sm font-bold text-gray-900 mt-1 truncate">{fmt(totalBudget)}</p>
           <p className="text-xs text-gray-400 mt-0.5">todos los proyectos</p>
         </div>
       </div>

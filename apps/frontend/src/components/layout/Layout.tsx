@@ -52,7 +52,7 @@ export default function Layout() {
   const visibleItems = navItems.filter((i) => !i.adminOnly || isAdmin);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
 
       {/* ── Sidebar desktop ──────────────────────────────── */}
       <aside className="hidden md:flex flex-col w-60 fixed inset-y-0 left-0 z-30"
@@ -173,7 +173,7 @@ export default function Layout() {
       </aside>
 
       {/* ── Contenido principal ───────────────────────────── */}
-      <div className="flex-1 flex flex-col md:ml-60 min-h-screen">
+      <div className="flex-1 flex flex-col md:ml-60 min-h-screen min-w-0">
         {/* Header móvil */}
         <header className="md:hidden sticky top-0 z-20 border-b border-gray-200 px-4 py-3 flex items-center gap-3"
                 style={{ background: '#1C1C1C' }}>
