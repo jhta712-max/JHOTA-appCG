@@ -14,6 +14,9 @@ export function authorize(...allowedRoles: string[]) {
       return next(new AppError(401, 'No autenticado', 'UNAUTHORIZED'));
     }
 
+    // Log para debugging
+    console.log(`[AUTH] Usuario: ${req.user.email}, Rol: ${req.user.role}, Requerido: ${allowedRoles.join(', ')}`);
+
     if (!allowedRoles.includes(req.user.role)) {
       return next(
         new AppError(

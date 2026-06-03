@@ -33,18 +33,28 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
+    // Log para debugging
+    console.log(`[API Error] Status: ${error.response?.status}, URL: ${original?.url}, Message: ${error.response?.data?.error}`);
+
     // Si no es 401, o ya reintentamos, o es la propia llamada al refresh → logout
     if (
       error.response?.status !== 401 ||
       original._retry ||
       original.url?.includes('/auth/refresh')
     ) {
-      if (error.response?.status === 401) forceLogout();
+      if (error.response?.status === 401) {
+        console.log('[AUTH] Token inválido o expirado, forzando logout');
+        forceLogout();
+      }
       return Promise.reject(error);
     }
 
     const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) { forceLogout(); return Promise.reject(error); }
+    if (!refreshToken) {
+      console.log('[AUTH] No hay refresh token, forzando logout');
+      forceLogout();
+      return Promise.reject(error);
+    }
 
     // Si ya hay un refresh en curso, encolar esta petición
     if (isRefreshing) {
@@ -75,6 +85,7 @@ api.interceptors.response.use(
       return api(original);
     } catch (refreshErr) {
       processPending(refreshErr);
+      console.log('[AUTH] Error al refrescar token, forzando logout');
       forceLogout();
       return Promise.reject(refreshErr);
     } finally {
