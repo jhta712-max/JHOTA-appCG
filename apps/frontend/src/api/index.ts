@@ -461,6 +461,24 @@ export const officeExpensesApi = {
     api.delete<{ success: boolean; data: OfficeExpense }>(`/office-expenses/${id}`),
 };
 
+// ── Suplidores ────────────────────────────────────────────────
+import type { Supplier, SupplierHistory } from '../types';
+
+export const suppliersApi = {
+  list:         (params?: { search?: string; onlyActive?: boolean }) =>
+    api.get<{ success: boolean; data: Supplier[] }>('/suppliers', { params }),
+  getById:      (id: string) =>
+    api.get<{ success: boolean; data: Supplier }>(`/suppliers/${id}`),
+  getHistory:   (id: string) =>
+    api.get<{ success: boolean; data: SupplierHistory }>(`/suppliers/${id}/history`),
+  create:       (data: unknown) =>
+    api.post<{ success: boolean; data: Supplier }>('/suppliers', data),
+  update:       (id: string, data: unknown) =>
+    api.put<{ success: boolean; data: Supplier }>(`/suppliers/${id}`, data),
+  toggleActive: (id: string) =>
+    api.patch<{ success: boolean; data: Supplier }>(`/suppliers/${id}/toggle`),
+};
+
 // ── Monitoreo ─────────────────────────────────────────────────
 export const monitoringApi = {
   dashboard: () =>

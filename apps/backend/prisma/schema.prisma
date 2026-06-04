@@ -67,6 +67,7 @@ model User {
   paymentOrdersCreated    PaymentOrder[]         @relation("PaymentOrderCreatedBy")
   paymentOrdersPaid       PaymentOrder[]         @relation("PaymentOrderPaidBy")
   officeExpenses          OfficeExpense[]        @relation("OfficeExpenseCreatedBy")
+  suppliersCreated        Supplier[]             @relation("SupplierCreatedBy")
 
   @@index([email])
   @@index([roleId])
@@ -668,6 +669,30 @@ model Beneficiary {
   @@index([name])
   @@index([isActive])
   @@map("beneficiaries")
+}
+
+// ============================================================
+// DIRECTORIO DE SUPLIDORES
+// ============================================================
+model Supplier {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(200)
+  rnc         String?  @unique @db.VarChar(11)
+  phone       String?  @db.VarChar(20)
+  email       String?  @db.VarChar(150)
+  address     String?  @db.Text
+  notes       String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdById String   @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  createdBy User @relation("SupplierCreatedBy", fields: [createdById], references: [id])
+
+  @@index([name])
+  @@index([rnc])
+  @@index([isActive])
+  @@map("suppliers")
 }
 
 // ============================================================

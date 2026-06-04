@@ -215,3 +215,52 @@ export const PROJECT_STATUS_LABELS: Record<string, string> = {
   COMPLETED: 'Completado',
   CANCELLED: 'Cancelado',
 };
+
+// ── Suplidores ─────────────────────────────────────────────────
+export interface Supplier {
+  id:        string;
+  name:      string;
+  rnc?:      string | null;
+  phone?:    string | null;
+  email?:    string | null;
+  address?:  string | null;
+  notes?:    string | null;
+  isActive:  boolean;
+  createdBy: { id: string; name: string };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupplierHistory {
+  supplier: Supplier;
+  stats: {
+    totalQuoted:    number;
+    totalPaid:      number;
+    totalFiscal:    number;
+    quotationCount: number;
+    voucherCount:   number;
+    projectCount:   number;
+  };
+  quotations: Array<{
+    id:            string;
+    number:        number;
+    quotationDate: string;
+    total:         number;
+    currency:      string;
+    status:        string;
+    project:       { id: string; code: string; name: string };
+    payments:      Array<{ amount: number }>;
+  }>;
+  fiscalVouchers: Array<{
+    id:        string;
+    ncf:       string;
+    createdAt: string;
+    expense: {
+      id:          string;
+      amount:      number;
+      expenseDate: string;
+      description: string;
+      project:     { id: string; code: string; name: string };
+    };
+  }>;
+}

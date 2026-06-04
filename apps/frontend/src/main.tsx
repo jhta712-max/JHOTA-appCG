@@ -37,7 +37,9 @@ import OfficeExpensesPage  from './pages/office-expenses/OfficeExpensesPage';
 import QuotationsPage    from './pages/quotations/QuotationsPage';
 import QuotationFormPage from './pages/quotations/QuotationFormPage';
 import QuotationDetailPage from './pages/quotations/QuotationDetailPage';
-import ImportBatchesPage from './pages/projects/ImportBatchesPage';
+import ImportBatchesPage   from './pages/projects/ImportBatchesPage';
+import SuppliersPage       from './pages/suppliers/SuppliersPage';
+import SupplierDetailPage  from './pages/suppliers/SupplierDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -117,6 +119,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Route path="quotations/new"       element={<QuotationFormPage />} />
                 <Route path="quotations/:id"       element={<QuotationDetailPage />} />
                 <Route path="quotations/:id/edit"  element={<QuotationFormPage />} />
+
+                {/* Suplidores */}
+                <Route path="suppliers"            element={<SuppliersPage />} />
+                <Route path="suppliers/:id"        element={<SupplierDetailPage />} />
 
                 {/* Administración */}
                 <Route path="users"                element={<UsersPage />} />

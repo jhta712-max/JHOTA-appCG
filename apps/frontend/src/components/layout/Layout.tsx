@@ -3,7 +3,7 @@ import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Receipt, Users,
   Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity, FileText, CreditCard, Clock,
-  Eye, ChevronDown,
+  Eye, ChevronDown, Building2,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
@@ -23,6 +23,7 @@ const navItems: NavItem[] = [
   { to: '/reports',         icon: BarChart3,       label: 'Reportes',        roles: ['admin', 'supervisor', 'financiero'] },
   { to: '/payrolls',        icon: Wallet,          label: 'Nóminas',         roles: ['admin', 'supervisor', 'operator', 'auxiliar'] },
   { to: '/quotations',      icon: FileText,        label: 'Cotizaciones',    roles: ['admin', 'supervisor', 'operator', 'financiero'] },
+  { to: '/suppliers',       icon: Building2,       label: 'Suplidores',      roles: ['admin', 'supervisor', 'operator', 'financiero'] },
   { to: '/pending-orders',  icon: Clock,           label: 'Pagos Pendientes', roles: ['admin', 'supervisor', 'auxiliar'] },
   { to: '/export',          icon: Download,        label: 'Exportar Excel',  roles: ['admin', 'supervisor', 'financiero'] },
   { to: '/office-expenses', icon: Receipt,         label: 'Gtos. Oficina',   roles: ['admin', 'supervisor', 'financiero'] },
