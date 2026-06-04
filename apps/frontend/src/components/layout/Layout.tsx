@@ -20,7 +20,7 @@ const navItems: NavItem[] = [
   { to: '/projects',        icon: FolderOpen,      label: 'Proyectos',       roles: ['admin', 'supervisor', 'operator', 'financiero'] },
   { to: '/expenses',        icon: Receipt,         label: 'Gastos',          roles: ['admin', 'supervisor', 'operator', 'financiero'] },
   { to: '/reports',         icon: BarChart3,       label: 'Reportes',        roles: ['admin', 'supervisor', 'financiero'] },
-  { to: '/payrolls',        icon: Wallet,          label: 'Nóminas',         roles: ['admin', 'supervisor', 'operator'] },
+  { to: '/payrolls',        icon: Wallet,          label: 'Nóminas',         roles: ['admin', 'supervisor', 'operator', 'auxiliar'] },
   { to: '/quotations',      icon: FileText,        label: 'Cotizaciones',    roles: ['admin', 'supervisor', 'operator', 'financiero'] },
   { to: '/pending-orders',  icon: Clock,           label: 'Pagos Pendientes', roles: ['admin', 'supervisor', 'auxiliar'] },
   { to: '/export',          icon: Download,        label: 'Exportar Excel',  roles: ['admin', 'supervisor', 'financiero'] },

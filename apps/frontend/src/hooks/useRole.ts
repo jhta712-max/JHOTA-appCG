@@ -15,7 +15,7 @@ export function useRole() {
     // Capacidades específicas
     canCreateExpense:    ['admin', 'supervisor', 'operator'].includes(role),
     canCreateProject:    ['admin', 'supervisor'].includes(role),
-    canCreatePayroll:    ['admin', 'supervisor', 'operator'].includes(role),
+    canCreatePayroll:    ['admin', 'supervisor', 'operator', 'auxiliar'].includes(role),
     canApprovePayroll:   ['admin', 'supervisor'].includes(role),
     canCreateQuotation:  ['admin', 'supervisor', 'operator'].includes(role),
     canManageOrders:     ['admin', 'supervisor'].includes(role),
@@ -23,7 +23,7 @@ export function useRole() {
     canViewReports:      ['admin', 'supervisor', 'financiero'].includes(role),
     canViewFinancials:   ['admin', 'supervisor', 'financiero'].includes(role),
     canManageUsers:      role === 'admin',
-    canViewPayrolls:     ['admin', 'supervisor', 'operator'].includes(role),
+    canViewPayrolls:     ['admin', 'supervisor', 'operator', 'auxiliar'].includes(role),
     canViewProjects:     ['admin', 'supervisor', 'operator', 'financiero'].includes(role),
     canViewExpenses:     ['admin', 'supervisor', 'operator', 'financiero'].includes(role),
     canViewQuotations:   ['admin', 'supervisor', 'operator', 'financiero'].includes(role),
