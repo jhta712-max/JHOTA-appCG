@@ -53,7 +53,7 @@ function AppIcon({ className = 'w-8 h-8' }: { className?: string }) {
 }
 
 // ── Componente selector de vista de rol ──────────────────────────
-function RoleViewSwitcher({ compact = false }: { compact?: boolean }) {
+function RoleViewSwitcher({ compact = false, dropUp = false }: { compact?: boolean; dropUp?: boolean }) {
   const { user, viewAsRole, setViewAsRole } = useAuthStore();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -90,7 +90,7 @@ function RoleViewSwitcher({ compact = false }: { compact?: boolean }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 bottom-full mb-1 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
+        <div className={clsx('absolute right-0 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50', dropUp ? 'bottom-full mb-1' : 'top-full mt-1')}>
           <p className="px-3 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">
             Ver interfaz como
           </p>
@@ -174,7 +174,7 @@ export default function Layout() {
           {/* Selector de vista — solo admin */}
           {userRole === 'admin' && (
             <div className="px-2">
-              <RoleViewSwitcher />
+              <RoleViewSwitcher dropUp />
             </div>
           )}
           <div className="flex items-center gap-3 px-2 py-2 rounded-lg">
@@ -246,7 +246,7 @@ export default function Layout() {
         <div className="border-t border-white/10 p-3 shrink-0">
           {userRole === 'admin' && (
             <div className="mb-2">
-              <RoleViewSwitcher />
+              <RoleViewSwitcher dropUp />
             </div>
           )}
           <div className="flex items-center gap-3 mb-2">
