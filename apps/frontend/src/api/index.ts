@@ -491,6 +491,10 @@ export const notificationsApi = {
     api.patch<{ success: boolean }>(`/notifications/${id}/read`),
   markAllRead: () =>
     api.patch<{ success: boolean }>('/notifications/read-all'),
+  runChecks:   () =>
+    api.post<{ success: boolean; message: string }>('/notifications/run-checks'),
+  testWhatsApp: () =>
+    api.post<{ success: boolean; message: string }>('/notifications/test-whatsapp'),
 };
 
 // ── Contactos de notificación externos ───────────────────────

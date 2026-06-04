@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import {
   Bell, Plus, Edit, Trash2, X, CheckCircle, AlertCircle,
-  Phone, Mail, User,
+  Phone, Mail, User, Send, RefreshCw,
 } from 'lucide-react';
-import { notificationContactsApi } from '../../api';
+import { notificationContactsApi, notificationsApi } from '../../api';
 import type { NotificationContact } from '../../types';
 
 type ContactForm = { name: string; phone?: string; email?: string };
@@ -63,6 +63,18 @@ export default function NotificationContactsPage() {
     onError: (err: any) => setApiError(err.response?.data?.error ?? 'Error al eliminar'),
   });
 
+  const testWhatsAppMutation = useMutation({
+    mutationFn: () => notificationsApi.testWhatsApp(),
+    onSuccess: (r) => setApiOk(r.data.message),
+    onError: (err: any) => setApiError(err.response?.data?.error ?? 'Error al enviar prueba'),
+  });
+
+  const runChecksMutation = useMutation({
+    mutationFn: () => notificationsApi.runChecks(),
+    onSuccess: (r) => setApiOk(r.data.message),
+    onError: (err: any) => setApiError(err.response?.data?.error ?? 'Error al ejecutar revisión'),
+  });
+
   function openCreate() {
     setEditing(null);
     setApiError('');
@@ -107,9 +119,31 @@ export default function NotificationContactsPage() {
             Personas externas que reciben alertas por WhatsApp y/o email
           </p>
         </div>
-        <button onClick={openCreate} className="btn-primary text-sm">
-          <Plus className="w-4 h-4" /> Agregar contacto
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => testWhatsAppMutation.mutate()}
+            disabled={testWhatsAppMutation.isPending}
+            title="Enviar WhatsApp de prueba a todos los destinatarios configurados"
+            className="btn-secondary text-sm">
+            {testWhatsAppMutation.isPending
+              ? <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              : <Send className="w-4 h-4" />}
+            Probar WhatsApp
+          </button>
+          <button
+            onClick={() => runChecksMutation.mutate()}
+            disabled={runChecksMutation.isPending}
+            title="Ejecutar revisión de alertas ahora (presupuesto, órdenes, nóminas)"
+            className="btn-secondary text-sm">
+            {runChecksMutation.isPending
+              ? <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              : <RefreshCw className="w-4 h-4" />}
+            Ejecutar alertas
+          </button>
+          <button onClick={openCreate} className="btn-primary text-sm">
+            <Plus className="w-4 h-4" /> Agregar contacto
+          </button>
+        </div>
       </div>
 
       {/* Feedback */}
