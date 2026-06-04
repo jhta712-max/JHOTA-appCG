@@ -262,7 +262,7 @@ export async function markAsPaid(id: string, userId: string) {
     //    el gasto consolidado lo genera la nómina al aprobarse.
     //    Las de tipo SERVICIO y MATERIALS sí crean su gasto.
     if (!po.expenseId && po.orderType !== 'PAYROLL') {
-      const categoryName = po.orderType === 'MATERIALS' ? 'MATERIALES' : 'SERVICIO';
+      const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : 'Servicios';
       const category = await tx.expenseCategory.upsert({
         where:  { name: categoryName },
         update: { isActive: true },
@@ -303,8 +303,7 @@ export async function generateExpenseForOrder(id: string, userId: string) {
   if (po.orderType === 'PAYROLL') throw new AppError(400, 'Las órdenes de nómina no generan gasto individual — el gasto lo registra la nómina al aprobarse', 'PAYROLL_NO_EXPENSE');
 
   const categoryName =
-    po.orderType === 'PAYROLL'   ? 'MANO DE OBRA' :
-    po.orderType === 'MATERIALS' ? 'MATERIALES'   : 'SERVICIO';
+    po.orderType === 'MATERIALS' ? 'Materiales' : 'Servicios';
 
   const category = await prisma.expenseCategory.upsert({
     where:  { name: categoryName },
