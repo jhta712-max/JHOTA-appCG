@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Plus, Trash2, Wallet, AlertTriangle, X } from 'lucide-react';
 import { payrollApi, projectsApi, type Payroll } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 
 interface LineItem {
   id?:          string;
@@ -28,8 +28,7 @@ export default function PayrollFormPage() {
   const isEdit   = Boolean(id);
   const navigate = useNavigate();
   const qc       = useQueryClient();
-  const user     = useAuthStore((s) => s.user);
-  const isAdmin  = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { canCreatePayroll, canApprovePayroll } = useRole();
 
   // ── Todos los hooks ANTES de cualquier return condicional ───
   const [projectId,   setProjectId]   = useState('');
@@ -101,7 +100,7 @@ export default function PayrollFormPage() {
   }, [existingData]);
 
   // ── Guard de acceso — DESPUÉS de todos los hooks ────────────
-  if (!isAdmin) {
+  if (!canCreatePayroll) {
     navigate('/payrolls');
     return null;
   }

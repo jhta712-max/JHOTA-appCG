@@ -37,10 +37,39 @@ async function main() {
       update: {},
       create: {
         name: 'operator',
-        description: 'Operador — registra gastos desde campo',
+        description: 'Operador — ingeniero de campo, registra gastos y nóminas',
         permissions: {
           projects: { view: true },
           expenses: { create: true, edit_own: true, view: true },
+          payrolls: { create: true, view: true },
+          quotations: { create: true, view: true },
+        },
+      },
+    }),
+    prisma.role.upsert({
+      where: { name: 'auxiliar' },
+      update: {},
+      create: {
+        name: 'auxiliar',
+        description: 'Auxiliar administrativo — procesa órdenes de pago pendientes',
+        permissions: {
+          paymentOrders: { view: true, markPaid: true },
+          beneficiaries: { view: true },
+        },
+      },
+    }),
+    prisma.role.upsert({
+      where: { name: 'financiero' },
+      update: {},
+      create: {
+        name: 'financiero',
+        description: 'Gerente financiero — visibilidad de dashboard, gastos y reportes',
+        permissions: {
+          projects: { view: true },
+          expenses: { view: true },
+          reports: { view: true, export: true },
+          quotations: { view: true },
+          officeExpenses: { view: true },
         },
       },
     }),

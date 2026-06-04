@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { FolderOpen, Plus, Search, ArrowRight } from 'lucide-react';
 import { projectsApi } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import clsx from 'clsx';
 
 const STATUS_BADGE: Record<string, string> = {
@@ -21,8 +21,7 @@ function formatCurrency(n: number) {
 }
 
 export default function ProjectsPage() {
-  const user    = useAuthStore((s) => s.user);
-  const isAdmin = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { canCreateProject } = useRole();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
 
@@ -41,7 +40,7 @@ export default function ProjectsPage() {
           <h1 className="text-xl font-bold text-gray-900">Proyectos</h1>
           <p className="text-sm text-gray-500">{data?.pagination?.total ?? 0} proyectos registrados</p>
         </div>
-        {isAdmin && (
+        {canCreateProject && (
           <Link to="/projects/new" className="btn-primary text-sm">
             <Plus className="w-4 h-4" /> Nuevo
           </Link>
@@ -75,7 +74,7 @@ export default function ProjectsPage() {
         <div className="card p-12 text-center">
           <FolderOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500 font-medium">No hay proyectos</p>
-          {isAdmin && <Link to="/projects/new" className="btn-primary mt-4 inline-flex">Crear primer proyecto</Link>}
+          {canCreateProject && <Link to="/projects/new" className="btn-primary mt-4 inline-flex">Crear primer proyecto</Link>}
         </div>
       ) : (
         <div className="space-y-3">

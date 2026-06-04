@@ -6,7 +6,7 @@ import {
   Download, Plus, X, Save, Wallet, AlertTriangle, Receipt, FileText, ArrowRight,
 } from 'lucide-react';
 import { payrollApi, type Payroll, type PayrollLine } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import api from '../../api/client';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -40,8 +40,7 @@ export default function PayrollDetailPage() {
   const { id }    = useParams<{ id: string }>();
   const navigate  = useNavigate();
   const qc        = useQueryClient();
-  const user      = useAuthStore((s) => s.user);
-  const isAdmin   = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { canCreatePayroll, canApprovePayroll } = useRole();
 
   const [voidModal, setVoidModal]       = useState(false);
   const [voidReason, setVoidReason]     = useState('');
@@ -313,29 +312,35 @@ export default function PayrollDetailPage() {
       )}
 
       {/* Action buttons */}
-      {isAdmin && (
+      {(canCreatePayroll || canApprovePayroll) && (
         <div className="flex flex-wrap gap-2">
           {isDraft && (
             <>
-              <Link to={`/payrolls/${id}/edit`}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700">
-                <Pencil className="w-4 h-4" /> Editar
-              </Link>
-              <button
-                onClick={() => { setActionError(''); approveMut.mutate(); }}
-                disabled={approveMut.isPending || (payroll.lines?.length ?? 0) === 0}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
-                <CheckCircle className="w-4 h-4" />
-                {approveMut.isPending ? 'Aprobando…' : 'Aprobar'}
-              </button>
-              <button
-                onClick={() => { if (window.confirm('¿Eliminar esta nómina borrador?')) deleteMut.mutate(); }}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-red-200 rounded-lg text-red-600 hover:bg-red-50">
-                <Trash2 className="w-4 h-4" /> Eliminar
-              </button>
+              {canCreatePayroll && (
+                <Link to={`/payrolls/${id}/edit`}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700">
+                  <Pencil className="w-4 h-4" /> Editar
+                </Link>
+              )}
+              {canApprovePayroll && (
+                <button
+                  onClick={() => { setActionError(''); approveMut.mutate(); }}
+                  disabled={approveMut.isPending || (payroll.lines?.length ?? 0) === 0}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+                  <CheckCircle className="w-4 h-4" />
+                  {approveMut.isPending ? 'Aprobando…' : 'Aprobar'}
+                </button>
+              )}
+              {canApprovePayroll && (
+                <button
+                  onClick={() => { if (window.confirm('¿Eliminar esta nómina borrador?')) deleteMut.mutate(); }}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-red-200 rounded-lg text-red-600 hover:bg-red-50">
+                  <Trash2 className="w-4 h-4" /> Eliminar
+                </button>
+              )}
             </>
           )}
-          {isApproved && (
+          {isApproved && canApprovePayroll && (
             <>
               <button
                 onClick={() => { setActionError(''); setPayModal(true); }}
@@ -355,7 +360,7 @@ export default function PayrollDetailPage() {
               </button>
             </>
           )}
-          {isPaid && !isVoided && (
+          {isPaid && !isVoided && canApprovePayroll && (
             <button onClick={() => setVoidModal(true)}
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-red-200 rounded-lg text-red-600 hover:bg-red-50">
               <Ban className="w-4 h-4" /> Anular
@@ -386,7 +391,7 @@ export default function PayrollDetailPage() {
             <Wallet className="w-4 h-4" style={{ color: '#F5C218' }} />
             Líneas de nómina ({payroll.lines?.length ?? 0})
           </h2>
-          {isDraft && (
+          {isDraft && canCreatePayroll && (
             <div className="flex gap-2">
               <button
                 onClick={() => {

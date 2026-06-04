@@ -6,7 +6,7 @@ import {
   CheckCircle, Clock, Ban, DollarSign, Filter,
 } from 'lucide-react';
 import { payrollApi, projectsApi, type Payroll } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: 'Borrador', APPROVED: 'Aprobada', PAID: 'Pagada', VOIDED: 'Anulada',
@@ -35,8 +35,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function PayrollsPage() {
-  const user    = useAuthStore((s) => s.user);
-  const isAdmin = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { canCreatePayroll } = useRole();
 
   const [page, setPage]           = useState(1);
   const [search, setSearch]       = useState('');
@@ -90,7 +89,7 @@ export default function PayrollsPage() {
             {total} nómina{total !== 1 ? 's' : ''} registrada{total !== 1 ? 's' : ''}
           </p>
         </div>
-        {isAdmin && (
+        {canCreatePayroll && (
           <Link
             to="/payrolls/new"
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-900 transition-colors hover:opacity-90"
@@ -177,7 +176,7 @@ export default function PayrollsPage() {
           <div className="text-center py-12 text-gray-400">
             <Wallet className="w-8 h-8 mx-auto mb-2 opacity-30" />
             <p className="text-sm">No hay nóminas registradas</p>
-            {isAdmin && (
+            {canCreatePayroll && (
               <Link to="/payrolls/new" className="mt-3 inline-flex items-center gap-1 text-sm font-medium" style={{ color: '#F5C218' }}>
                 <Plus className="w-4 h-4" /> Crear primera nómina
               </Link>

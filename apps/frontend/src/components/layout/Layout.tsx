@@ -8,21 +8,28 @@ import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
 import clsx from 'clsx';
 
-const navItems = [
-  { to: '/',           icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/projects',   icon: FolderOpen,      label: 'Proyectos' },
-  { to: '/expenses',   icon: Receipt,         label: 'Gastos' },
-  { to: '/reports',    icon: BarChart3,        label: 'Reportes' },
-  { to: '/payrolls',    icon: Wallet,    label: 'Nóminas' },
-  { to: '/quotations', icon: FileText, label: 'Cotizaciones' },
-  { to: '/export',      icon: Download,  label: 'Exportar Excel', adminOnly: true },
-  { to: '/users',       icon: Users,     label: 'Usuarios',       adminOnly: true },
-  { to: '/categories',  icon: Tag,        label: 'Categorías',     adminOnly: true },
-  { to: '/pending-orders',   icon: Clock,      label: 'Pagos Pendientes' },
-  { to: '/payment-orders',  icon: FileText,   label: 'Órd. de Pago',    adminOnly: true },
-  { to: '/office-expenses', icon: Receipt,    label: 'Gtos. Oficina',   adminOnly: true },
-  { to: '/cards',           icon: CreditCard, label: 'Tarjetas',        adminOnly: true },
-  { to: '/monitoring',  icon: Activity,   label: 'Monitoreo',      adminOnly: true },
+type NavItem = {
+  to: string;
+  icon: React.ElementType;
+  label: string;
+  roles?: string[]; // undefined = todos los roles
+};
+
+const navItems: NavItem[] = [
+  { to: '/',                icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/projects',        icon: FolderOpen,      label: 'Proyectos',       roles: ['admin', 'supervisor', 'operator', 'financiero'] },
+  { to: '/expenses',        icon: Receipt,         label: 'Gastos',          roles: ['admin', 'supervisor', 'operator', 'financiero'] },
+  { to: '/reports',         icon: BarChart3,       label: 'Reportes',        roles: ['admin', 'supervisor', 'financiero'] },
+  { to: '/payrolls',        icon: Wallet,          label: 'Nóminas',         roles: ['admin', 'supervisor', 'operator'] },
+  { to: '/quotations',      icon: FileText,        label: 'Cotizaciones',    roles: ['admin', 'supervisor', 'operator', 'financiero'] },
+  { to: '/pending-orders',  icon: Clock,           label: 'Pagos Pendientes', roles: ['admin', 'supervisor', 'auxiliar'] },
+  { to: '/export',          icon: Download,        label: 'Exportar Excel',  roles: ['admin', 'supervisor', 'financiero'] },
+  { to: '/office-expenses', icon: Receipt,         label: 'Gtos. Oficina',   roles: ['admin', 'supervisor', 'financiero'] },
+  { to: '/payment-orders',  icon: FileText,        label: 'Órd. de Pago',   roles: ['admin', 'supervisor'] },
+  { to: '/users',           icon: Users,           label: 'Usuarios',        roles: ['admin'] },
+  { to: '/categories',      icon: Tag,             label: 'Categorías',      roles: ['admin'] },
+  { to: '/cards',           icon: CreditCard,      label: 'Tarjetas',        roles: ['admin'] },
+  { to: '/monitoring',      icon: Activity,        label: 'Monitoreo',       roles: ['admin'] },
 ];
 
 // Ícono SVG de la aplicación
@@ -42,7 +49,7 @@ export default function Layout() {
   const navigate  = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const isAdmin = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const userRole = user?.role?.name ?? '';
 
   const handleLogout = async () => {
     try { if (refreshToken) await authApi.logout(refreshToken); } catch { /* ignore */ }
@@ -50,7 +57,7 @@ export default function Layout() {
     navigate('/login');
   };
 
-  const visibleItems = navItems.filter((i) => !i.adminOnly || isAdmin);
+  const visibleItems = navItems.filter((i) => !i.roles || i.roles.includes(userRole));
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
