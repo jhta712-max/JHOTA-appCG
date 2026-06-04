@@ -9,6 +9,7 @@ import {
   type QuotationStatus,
 } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
+import { useRole } from '../../hooks/useRole';
 
 function fmt(n: number, currency = 'DOP') {
   return new Intl.NumberFormat('es-DO', {
@@ -29,6 +30,7 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
 ];
 
 export default function QuotationsPage() {
+  const { canCreateQuotation } = useRole();
   const [search,    setSearch]    = useState('');
   const [projectId, setProjectId] = useState('');
   const [status,    setStatus]    = useState('');
@@ -66,9 +68,11 @@ export default function QuotationsPage() {
           <h1 className="text-xl font-bold text-gray-900">Cotizaciones</h1>
           <p className="text-sm text-gray-500">{pagination?.total ?? 0} cotizaciones registradas</p>
         </div>
-        <Link to="/quotations/new" className="btn-primary text-sm">
-          <Plus className="w-4 h-4" /> Nueva
-        </Link>
+        {canCreateQuotation && (
+          <Link to="/quotations/new" className="btn-primary text-sm">
+            <Plus className="w-4 h-4" /> Nueva
+          </Link>
+        )}
       </div>
 
       {/* Filtros */}
@@ -128,9 +132,11 @@ export default function QuotationsPage() {
           <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500 font-medium">No hay cotizaciones registradas</p>
           <p className="text-sm text-gray-400 mt-1">Crea la primera cotización para comenzar</p>
-          <Link to="/quotations/new" className="btn-primary mt-4 inline-flex">
-            <Plus className="w-4 h-4" /> Nueva cotización
-          </Link>
+          {canCreateQuotation && (
+            <Link to="/quotations/new" className="btn-primary mt-4 inline-flex">
+              <Plus className="w-4 h-4" /> Nueva cotización
+            </Link>
+          )}
         </div>
       ) : (
         <>

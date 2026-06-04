@@ -7,7 +7,7 @@ import {
   Plus, CheckCircle, X, Loader2, ExternalLink, Receipt,
 } from 'lucide-react';
 import { quotationsApi } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import {
   QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS,
   QUOTATION_LINK_LABELS, PAYMENT_METHOD_LABELS_Q,
@@ -44,8 +44,7 @@ export default function QuotationDetailPage() {
   const { id }   = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc       = useQueryClient();
-  const user     = useAuthStore((s) => s.user);
-  const isAdmin  = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { isSupervisor: isAdmin } = useRole();
 
   // UI state
   const [showStatusForm,  setShowStatusForm]  = useState(false);

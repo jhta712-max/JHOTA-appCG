@@ -7,7 +7,7 @@ import {
   Paperclip, Trash2, ExternalLink,
 } from 'lucide-react';
 import { expensesApi, quotationsApi } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import { PAYMENT_METHOD_LABELS } from '../../types';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
@@ -20,15 +20,13 @@ export default function ExpenseDetailPage() {
   const { id }     = useParams<{ id: string }>();
   const navigate   = useNavigate();
   const qc         = useQueryClient();
-  const user       = useAuthStore((s) => s.user);
+  const { isAdmin, isSupervisor, isOperator } = useRole();
   const [showVoid, setShowVoid] = useState(false);
   const [voidReason, setVoidReason] = useState('');
   const [voidError, setVoidError] = useState('');
 
-  const canEdit    = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
-  const canVoid    = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
-  const isAdmin    = user?.role?.name === 'admin';
-  const isOperator = user?.role?.name === 'operator';
+  const canEdit = isSupervisor;
+  const canVoid = isSupervisor;
 
   const { data: expense, isLoading, error } = useQuery({
     queryKey: ['expense', id],

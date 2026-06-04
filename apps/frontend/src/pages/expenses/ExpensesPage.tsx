@@ -6,6 +6,7 @@ import { expensesApi, projectsApi } from '../../api';
 import { PAYMENT_METHOD_LABELS } from '../../types';
 import { fmtDate } from '../../utils/date';
 import api from '../../api/client';
+import { useRole } from '../../hooks/useRole';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
@@ -25,6 +26,7 @@ function parseCSV(text: string) {
 
 export default function ExpensesPage() {
   const qc = useQueryClient();
+  const { canCreateExpense } = useRole();
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [search,   setSearch]   = useState('');
   const [status,   setStatus]   = useState('ACTIVE');
@@ -94,15 +96,17 @@ export default function ExpensesPage() {
           <h1 className="text-xl font-bold text-gray-900">Gastos</h1>
           <p className="text-sm text-gray-500">{pagination?.total ?? 0} gastos registrados</p>
         </div>
-        <div className="flex gap-2">
-          <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleFileChange} />
-          <button onClick={() => fileRef.current?.click()} className="btn-secondary text-sm">
-            <Upload className="w-4 h-4" /> Importar CSV
-          </button>
-          <Link to="/expenses/new" className="btn-primary text-sm">
-            <Plus className="w-4 h-4" /> Nuevo
-          </Link>
-        </div>
+        {canCreateExpense && (
+          <div className="flex gap-2">
+            <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleFileChange} />
+            <button onClick={() => fileRef.current?.click()} className="btn-secondary text-sm">
+              <Upload className="w-4 h-4" /> Importar CSV
+            </button>
+            <Link to="/expenses/new" className="btn-primary text-sm">
+              <Plus className="w-4 h-4" /> Nuevo
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Tabs por proyecto */}
@@ -172,7 +176,7 @@ export default function ExpensesPage() {
         <div className="card p-12 text-center">
           <Receipt className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500 font-medium">No hay gastos registrados</p>
-          <Link to="/expenses/new" className="btn-primary mt-4 inline-flex">Registrar primer gasto</Link>
+          {canCreateExpense && <Link to="/expenses/new" className="btn-primary mt-4 inline-flex">Registrar primer gasto</Link>}
         </div>
       ) : (
         <>

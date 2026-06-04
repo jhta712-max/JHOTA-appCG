@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { projectsApi, expensesApi, quotationsApi, paymentOrdersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
 
@@ -19,6 +20,7 @@ const OPEN_STATUSES = new Set(['PENDING', 'APPROVED', 'ADVANCE_PAID', 'IN_PROGRE
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
+  const { canCreateExpense, canViewFinancials, isAuxiliar, isFinanciero, canViewReports } = useRole();
 
   const { data: projectsData } = useQuery({
     queryKey: ['projects', 'dashboard-all'],
@@ -82,9 +84,16 @@ export default function DashboardPage() {
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">Aquí está el resumen de hoy</p>
         </div>
-        <Link to="/expenses/new" className="btn-primary text-sm hidden sm:flex">
-          <Plus className="w-4 h-4" /> Nuevo gasto
-        </Link>
+        {canCreateExpense && (
+          <Link to="/expenses/new" className="btn-primary text-sm hidden sm:flex">
+            <Plus className="w-4 h-4" /> Nuevo gasto
+          </Link>
+        )}
+        {canViewReports && !canCreateExpense && (
+          <Link to="/reports" className="btn-secondary text-sm hidden sm:flex">
+            <TrendingUp className="w-4 h-4" /> Ver reportes
+          </Link>
+        )}
       </div>
 
       {/* Stats globales */}
@@ -140,7 +149,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── TARJETAS POR PROYECTO ─────────────────────────────── */}
-      <div>
+      {!isAuxiliar && <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
             <FolderOpen className="w-4 h-4 text-blue-500" />
@@ -204,7 +213,7 @@ export default function DashboardPage() {
             })}
           </div>
         )}
-      </div>
+      </div>}
 
       {/* Órdenes de pago pendientes */}
       {pendingOrders.length > 0 && (
@@ -238,7 +247,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6">
+      {!isAuxiliar && <div className="grid md:grid-cols-2 gap-6">
 
         {/* Gastos recientes */}
         <div className="card">
@@ -304,20 +313,22 @@ export default function DashboardPage() {
           </div>
         </div>
 
-      </div>
+      </div>}
 
-      {/* Botón móvil */}
-      <Link to="/expenses/new" className="btn-primary w-full sm:hidden py-4 text-base">
-        <Plus className="w-5 h-5" /> Registrar nuevo gasto
-      </Link>
+      {canCreateExpense && (
+        <Link to="/expenses/new" className="btn-primary w-full sm:hidden py-4 text-base">
+          <Plus className="w-5 h-5" /> Registrar nuevo gasto
+        </Link>
+      )}
 
-      {/* Aviso fiscal */}
-      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
-        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-800">
-          <strong>Recuerda:</strong> Todo gasto con comprobante fiscal debe incluir NCF y RNC del suplidor para cumplimiento con la DGII.
-        </p>
-      </div>
+      {canCreateExpense && (
+        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            <strong>Recuerda:</strong> Todo gasto con comprobante fiscal debe incluir NCF y RNC del suplidor para cumplimiento con la DGII.
+          </p>
+        </div>
+      )}
 
     </div>
   );

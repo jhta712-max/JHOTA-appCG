@@ -10,6 +10,7 @@ import {
   type OfficeExpense, type OfficeExpenseCategory,
 } from '../../api';
 import { fmtDate } from '../../utils/date';
+import { useRole } from '../../hooks/useRole';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -57,6 +58,7 @@ const emptyForm = () => ({
 
 export default function OfficeExpensesPage() {
   const qc = useQueryClient();
+  const { isSupervisor } = useRole();
 
   const [showForm,    setShowForm]    = useState(false);
   const [editingId,   setEditingId]   = useState<string | null>(null);
@@ -195,9 +197,11 @@ export default function OfficeExpensesPage() {
             Insumos de limpieza, material gastable y servicios generales de oficina
           </p>
         </div>
-        <button onClick={openCreate} className="btn-primary text-sm">
-          <Plus className="w-4 h-4" /> Nuevo gasto
-        </button>
+        {isSupervisor && (
+          <button onClick={openCreate} className="btn-primary text-sm">
+            <Plus className="w-4 h-4" /> Nuevo gasto
+          </button>
+        )}
       </div>
 
       {/* Stats */}
@@ -266,9 +270,11 @@ export default function OfficeExpensesPage() {
         <div className="card p-12 text-center">
           <Sparkles className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500 font-medium">No hay gastos de oficina registrados</p>
-          <button onClick={openCreate} className="btn-primary mt-4 inline-flex">
-            Registrar primer gasto
-          </button>
+          {isSupervisor && (
+            <button onClick={openCreate} className="btn-primary mt-4 inline-flex">
+              Registrar primer gasto
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-2">
@@ -527,7 +533,7 @@ export default function OfficeExpensesPage() {
                 </div>
               )}
 
-              <div className="flex gap-3 pt-2 border-t border-gray-100">
+              {isSupervisor && <div className="flex gap-3 pt-2 border-t border-gray-100">
                 <button
                   onClick={() => openEdit(viewingExp)}
                   className="flex-1 btn-secondary text-sm"
@@ -546,7 +552,7 @@ export default function OfficeExpensesPage() {
                   <Trash2 className="w-3.5 h-3.5" />
                   {voidMut.isPending ? 'Eliminando...' : 'Eliminar'}
                 </button>
-              </div>
+              </div>}
             </div>
           </div>
         </div>

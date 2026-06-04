@@ -7,6 +7,7 @@ import {
   Sparkles, Loader2, TriangleAlert, X, Info, FileText, Upload, CreditCard,
 } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi, ocrApi, cardsApi, type OcrResult } from '../../api';
+import { useRole } from '../../hooks/useRole';
 
 type FV = { ncf: string; supplierRnc: string; supplierName: string; itbisAmount: number };
 type FormData = {
@@ -46,6 +47,11 @@ const CATEGORY_NAME_MAP: Record<string, string> = {
 export default function NewExpensePage() {
   const navigate  = useNavigate();
   const location  = useLocation();
+  const { canCreateExpense } = useRole();
+
+  useEffect(() => {
+    if (!canCreateExpense) navigate('/dashboard', { replace: true });
+  }, [canCreateExpense, navigate]);
   const fileRef       = useRef<HTMLInputElement>(null);
   const cameraRef     = useRef<HTMLInputElement>(null);
 

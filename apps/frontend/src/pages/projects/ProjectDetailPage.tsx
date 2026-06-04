@@ -5,7 +5,7 @@ import {
   Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight, Upload,
 } from 'lucide-react';
 import { projectsApi, expensesApi, quotationsApi } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import { PAYMENT_METHOD_LABELS, PROJECT_STATUS_LABELS } from '../../types';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
@@ -22,8 +22,7 @@ const STATUS_BADGE: Record<string, string> = {
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
-  const canEdit = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { isSupervisor: canEdit } = useRole();
 
   const { data: summaryData, isLoading } = useQuery({
     queryKey: ['project-summary', id],
