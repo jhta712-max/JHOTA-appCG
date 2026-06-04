@@ -1,11 +1,17 @@
 import { useAuthStore } from '../stores/authStore';
 
 export function useRole() {
-  const user = useAuthStore((s) => s.user);
-  const role = user?.role?.name ?? '';
+  const user       = useAuthStore((s) => s.user);
+  const viewAsRole = useAuthStore((s) => s.viewAsRole);
+
+  const realRole = user?.role?.name ?? '';
+  // Admin can preview any role; all others always use their real role
+  const role = (realRole === 'admin' && viewAsRole) ? viewAsRole : realRole;
 
   return {
     role,
+    realRole,
+    isPreviewingRole: realRole === 'admin' && !!viewAsRole,
     // Niveles acumulativos
     isAdmin:        role === 'admin',
     isSupervisor:   ['admin', 'supervisor'].includes(role),
