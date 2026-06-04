@@ -45,6 +45,7 @@ model User {
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
   role          Role               @relation(fields: [roleId], references: [id])
+  notifications Notification[]
   projects      Project[]          @relation("ProjectCreatedBy")
   expenses      Expense[]          @relation("ExpenseRegisteredBy")
   voidedExpenses Expense[]         @relation("ExpenseVoidedBy")
@@ -839,4 +840,26 @@ model BatchItem {
   @@unique([batchId, code])
   @@index([batchId])
   @@map("batch_items")
+}
+
+// ============================================================
+// NOTIFICACIONES IN-APP
+// ============================================================
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  type      String   @db.VarChar(50)    // BUDGET_80 | BUDGET_90 | PENDING_ORDERS | PAYROLL_UNPAID
+  title     String   @db.VarChar(200)
+  message   String   @db.Text
+  link      String?  @db.VarChar(500)
+  isRead    Boolean  @default(false) @map("is_read")
+  entityId  String?  @map("entity_id") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([type, entityId])
+  @@map("notifications")
 }

@@ -8,6 +8,7 @@ import {
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
 import clsx from 'clsx';
+import NotificationBell from '../NotificationBell';
 
 type NavItem = {
   to: string;
@@ -191,6 +192,7 @@ export default function Layout() {
                 {isPreviewing ? `Admin · viendo como ${viewAsRole}` : userRole}
               </p>
             </div>
+            <NotificationBell />
             <button onClick={handleLogout}
               className="text-gray-500 hover:text-red-400 transition-colors" title="Cerrar sesión">
               <LogOut className="w-4 h-4" />
@@ -283,7 +285,8 @@ export default function Layout() {
             <AppIcon className="w-6 h-7 shrink-0" />
             <span className="font-bold text-white text-sm tracking-wide">Sistema de Gastos</span>
           </div>
-          {/* Selector de rol — móvil */}
+          {/* Notificaciones + selector de rol — móvil */}
+          <NotificationBell />
           <RoleViewSwitcher compact />
         </header>
 

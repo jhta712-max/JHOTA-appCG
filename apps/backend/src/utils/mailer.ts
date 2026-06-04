@@ -297,3 +297,214 @@ export async function sendQuotationExpiringEmail(opts: {
     html:    baseTemplate(content),
   });
 }
+
+// ─── Email: Alerta de presupuesto ─────────────────────────────────────────────
+
+export async function sendBudgetAlertEmail(opts: {
+  toEmail:    string;
+  toName:     string;
+  projectCode: string;
+  projectName: string;
+  projectId:  string;
+  pct:        number;  // 80 or 90
+  spent:      number;
+  budget:     number;
+  appUrl:     string;
+}) {
+  const fmtDOP = (n: number) =>
+    new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
+
+  const level   = opts.pct >= 90 ? 'error' : 'warn';
+  const emoji   = opts.pct >= 90 ? '🔴' : '🟡';
+  const remaining = opts.budget - opts.spent;
+
+  const content = `
+    <h2 style="color:#1F2937;font-size:20px;font-weight:700;margin:0 0 8px 0;">
+      ${emoji} Alerta de presupuesto — ${opts.pct}% consumido
+    </h2>
+    <p style="color:#6B7280;font-size:14px;margin:0 0 20px 0;">
+      Hola, <strong style="color:#1F2937;">${opts.toName}</strong>.
+      El proyecto <strong style="color:#1F2937;">${opts.projectCode}</strong> ha consumido el
+      <strong style="color:${level === 'error' ? '#DC2626' : '#D97706'};">${opts.pct}%</strong> de su presupuesto.
+    </p>
+
+    <table cellpadding="0" cellspacing="0" width="100%"
+           style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;margin-bottom:24px;">
+      <tr>
+        <td style="padding:16px 20px;">
+          <p style="margin:0 0 8px;font-size:15px;font-weight:700;color:#1F2937;">${opts.projectName}</p>
+          <p style="margin:0 0 4px;font-size:13px;color:#6B7280;">
+            Presupuesto total: <strong style="color:#1F2937;">${fmtDOP(opts.budget)}</strong>
+          </p>
+          <p style="margin:0 0 4px;font-size:13px;color:#6B7280;">
+            Gastado hasta hoy: <strong style="color:${level === 'error' ? '#DC2626' : '#D97706'};">${fmtDOP(opts.spent)}</strong>
+          </p>
+          <p style="margin:0;font-size:13px;color:#6B7280;">
+            Disponible: <strong style="color:#059669;">${fmtDOP(remaining)}</strong>
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 16px 0;">
+      <tr>
+        <td style="background:#2563EB;border-radius:8px;">
+          <a href="${opts.appUrl}/projects/${opts.projectId}/financial"
+             style="display:inline-block;padding:12px 28px;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">
+            Ver estado financiero del proyecto
+          </a>
+        </td>
+      </tr>
+    </table>`;
+
+  await getTransporter().sendMail({
+    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
+    to:      opts.toEmail,
+    subject: `${emoji} Proyecto ${opts.projectCode} al ${opts.pct}% del presupuesto - Control de Gastos`,
+    html:    baseTemplate(content),
+  });
+}
+
+// ─── Email: Órdenes de pago pendientes ────────────────────────────────────────
+
+export async function sendPendingOrdersEmail(opts: {
+  toEmail: string;
+  toName:  string;
+  orders:  Array<{
+    id:        string;
+    number:    number;
+    concept:   string;
+    amount:    number;
+    currency:  string;
+    daysAgo:   number;
+    projectCode: string;
+  }>;
+  appUrl: string;
+}) {
+  const fmtDOP = (n: number) =>
+    new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
+
+  const rows = opts.orders.map((o, i) => `
+    <tr style="background:${i % 2 ? '#F9FAFB' : '#fff'}">
+      <td style="padding:10px 14px;font-size:13px;color:#1F2937;font-family:monospace">OP-${String(o.number).padStart(4,'0')}</td>
+      <td style="padding:10px 14px;font-size:13px;color:#374151">${o.concept.slice(0,50)}${o.concept.length > 50 ? '...' : ''}</td>
+      <td style="padding:10px 14px;font-size:13px;color:#374151">${o.projectCode}</td>
+      <td style="padding:10px 14px;font-size:13px;font-weight:700;color:#1F2937;text-align:right">${fmtDOP(o.amount)}</td>
+      <td style="padding:10px 14px;font-size:12px;text-align:center">
+        <span style="background:#FEF3C7;color:#D97706;padding:2px 8px;border-radius:999px;font-weight:600">${o.daysAgo} días</span>
+      </td>
+    </tr>`).join('');
+
+  const count = opts.orders.length;
+  const content = `
+    <h2 style="color:#1F2937;font-size:20px;font-weight:700;margin:0 0 8px 0;">
+      ⏳ Órdenes de pago pendientes
+    </h2>
+    <p style="color:#6B7280;font-size:14px;margin:0 0 20px 0;">
+      Hola, <strong style="color:#1F2937;">${opts.toName}</strong>.
+      Tienes <strong>${count}</strong> orden${count !== 1 ? 'es' : ''} de pago con más de 5 días sin ser pagada${count !== 1 ? 's' : ''}.
+    </p>
+
+    <table cellpadding="0" cellspacing="0" width="100%"
+           style="border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;margin-bottom:24px;">
+      <thead>
+        <tr style="background:#F3F4F6">
+          <th style="padding:9px 14px;text-align:left;font-size:11px;color:#6B7280;font-weight:700;border-bottom:1px solid #E5E7EB">No.</th>
+          <th style="padding:9px 14px;text-align:left;font-size:11px;color:#6B7280;font-weight:700;border-bottom:1px solid #E5E7EB">Concepto</th>
+          <th style="padding:9px 14px;text-align:left;font-size:11px;color:#6B7280;font-weight:700;border-bottom:1px solid #E5E7EB">Proyecto</th>
+          <th style="padding:9px 14px;text-align:right;font-size:11px;color:#6B7280;font-weight:700;border-bottom:1px solid #E5E7EB">Monto</th>
+          <th style="padding:9px 14px;text-align:center;font-size:11px;color:#6B7280;font-weight:700;border-bottom:1px solid #E5E7EB">Antigüedad</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 16px 0;">
+      <tr>
+        <td style="background:#2563EB;border-radius:8px;">
+          <a href="${opts.appUrl}/payment-orders"
+             style="display:inline-block;padding:12px 28px;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">
+            Ver órdenes de pago
+          </a>
+        </td>
+      </tr>
+    </table>`;
+
+  await getTransporter().sendMail({
+    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
+    to:      opts.toEmail,
+    subject: `⏳ ${count} orden${count !== 1 ? 'es' : ''} de pago pendiente${count !== 1 ? 's' : ''} - Control de Gastos`,
+    html:    baseTemplate(content),
+  });
+}
+
+// ─── Email: Nóminas aprobadas sin pagar ──────────────────────────────────────
+
+export async function sendApprovedPayrollsEmail(opts: {
+  toEmail:  string;
+  toName:   string;
+  payrolls: Array<{
+    id:          string;
+    projectCode: string;
+    projectName: string;
+    number:      number;
+    totalAmount: number;
+    approvedAt:  Date;
+    daysAgo:     number;
+  }>;
+  appUrl: string;
+}) {
+  const fmtDOP = (n: number) =>
+    new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
+
+  const rows = opts.payrolls.map((p, i) => `
+    <tr style="background:${i % 2 ? '#F9FAFB' : '#fff'}">
+      <td style="padding:10px 14px;font-size:13px;color:#1F2937;font-family:monospace">NOM-${String(p.number).padStart(3,'0')}</td>
+      <td style="padding:10px 14px;font-size:13px;color:#374151">${p.projectCode} — ${p.projectName}</td>
+      <td style="padding:10px 14px;font-size:13px;font-weight:700;color:#1F2937;text-align:right">${fmtDOP(p.totalAmount)}</td>
+      <td style="padding:10px 14px;font-size:12px;text-align:center">
+        <span style="background:#FEE2E2;color:#DC2626;padding:2px 8px;border-radius:999px;font-weight:600">${p.daysAgo} días</span>
+      </td>
+    </tr>`).join('');
+
+  const count = opts.payrolls.length;
+  const content = `
+    <h2 style="color:#1F2937;font-size:20px;font-weight:700;margin:0 0 8px 0;">
+      🧾 Nóminas aprobadas sin pagar
+    </h2>
+    <p style="color:#6B7280;font-size:14px;margin:0 0 20px 0;">
+      Hola, <strong style="color:#1F2937;">${opts.toName}</strong>.
+      Tienes <strong>${count}</strong> nómina${count !== 1 ? 's' : ''} aprobada${count !== 1 ? 's' : ''} con más de 3 días sin ser pagada${count !== 1 ? 's' : ''}.
+    </p>
+
+    <table cellpadding="0" cellspacing="0" width="100%"
+           style="border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;margin-bottom:24px;">
+      <thead>
+        <tr style="background:#F3F4F6">
+          <th style="padding:9px 14px;text-align:left;font-size:11px;color:#6B7280;font-weight:700;border-bottom:1px solid #E5E7EB">No.</th>
+          <th style="padding:9px 14px;text-align:left;font-size:11px;color:#6B7280;font-weight:700;border-bottom:1px solid #E5E7EB">Proyecto</th>
+          <th style="padding:9px 14px;text-align:right;font-size:11px;color:#6B7280;font-weight:700;border-bottom:1px solid #E5E7EB">Total</th>
+          <th style="padding:9px 14px;text-align:center;font-size:11px;color:#6B7280;font-weight:700;border-bottom:1px solid #E5E7EB">Antigüedad</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 16px 0;">
+      <tr>
+        <td style="background:#2563EB;border-radius:8px;">
+          <a href="${opts.appUrl}/payrolls"
+             style="display:inline-block;padding:12px 28px;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">
+            Ver nóminas
+          </a>
+        </td>
+      </tr>
+    </table>`;
+
+  await getTransporter().sendMail({
+    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
+    to:      opts.toEmail,
+    subject: `🧾 ${count} nómina${count !== 1 ? 's' : ''} aprobada${count !== 1 ? 's' : ''} sin pagar - Control de Gastos`,
+    html:    baseTemplate(content),
+  });
+}

@@ -4,6 +4,7 @@ import prisma from './config/database';
 import app from './app';
 import { startAllMonitoringJobs } from './jobs/healthMonitor';
 import { startQuotationNotificationJob } from './jobs/quotationNotifications';
+import { startBusinessNotificationJob }  from './jobs/businessNotifications';
 import { forceFlush } from './middlewares/requestLogger';
 
 async function start() {
@@ -24,6 +25,8 @@ async function start() {
 
     // Notificaciones de cotizaciones — activo siempre que EMAIL esté configurado
     startQuotationNotificationJob();
+    // Alertas de negocio: presupuesto, órdenes pendientes, nóminas sin pagar
+    startBusinessNotificationJob();
 
     const shutdown = async (signal: string) => {
       logger.info(`Señal ${signal} recibida. Cerrando servidor...`);

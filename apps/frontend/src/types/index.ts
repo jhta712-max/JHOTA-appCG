@@ -264,3 +264,15 @@ export interface SupplierHistory {
     };
   }>;
 }
+
+// ── Notificaciones in-app ───────────────────────────────────────
+export interface AppNotification {
+  id:        string;
+  type:      string;
+  title:     string;
+  message:   string;
+  link?:     string | null;
+  entityId?: string | null;
+  isRead:    boolean;
+  createdAt: string;
+}

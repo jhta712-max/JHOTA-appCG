@@ -479,6 +479,20 @@ export const suppliersApi = {
     api.patch<{ success: boolean; data: Supplier }>(`/suppliers/${id}/toggle`),
 };
 
+// ── Notificaciones in-app ─────────────────────────────────────
+import type { AppNotification } from '../types';
+
+export const notificationsApi = {
+  list:        () =>
+    api.get<{ success: boolean; data: AppNotification[] }>('/notifications'),
+  unreadCount: () =>
+    api.get<{ success: boolean; data: { count: number } }>('/notifications/unread-count'),
+  markRead:    (id: string) =>
+    api.patch<{ success: boolean }>(`/notifications/${id}/read`),
+  markAllRead: () =>
+    api.patch<{ success: boolean }>('/notifications/read-all'),
+};
+
 // ── Monitoreo ─────────────────────────────────────────────────
 export const monitoringApi = {
   dashboard: () =>
