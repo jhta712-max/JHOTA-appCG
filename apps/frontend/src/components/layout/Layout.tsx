@@ -221,7 +221,7 @@ export default function Layout() {
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {visibleItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
@@ -243,16 +243,16 @@ export default function Layout() {
           ))}
         </nav>
 
-        <div className="border-t border-white/10 p-4">
+        <div className="border-t border-white/10 p-3 shrink-0">
           {userRole === 'admin' && (
-            <div className="mb-3">
+            <div className="mb-2">
               <RoleViewSwitcher />
             </div>
           )}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center"
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                  style={{ background: '#F5C218' }}>
-              <span className="text-gray-900 font-bold">{user?.name?.charAt(0).toUpperCase()}</span>
+              <span className="text-gray-900 font-bold text-sm">{user?.name?.charAt(0).toUpperCase()}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">{user?.name}</p>
