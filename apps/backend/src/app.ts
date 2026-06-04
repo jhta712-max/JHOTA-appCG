@@ -30,6 +30,10 @@ import notificationContactsRouter  from './modules/notification-contacts/notific
 
 const app = express();
 
+// Render (y otros proxies) añaden X-Forwarded-For.
+// Sin esto, express-rate-limit lanza ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
+app.set('trust proxy', 1);
+
 // ----------------------------------------------------------------
 // Seguridad: headers HTTP
 // ----------------------------------------------------------------
