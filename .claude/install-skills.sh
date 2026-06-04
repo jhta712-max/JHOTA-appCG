@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# .claude/install-skills.sh - Script para actualizar skills
-
 set -e
 
 SKILLS_DIR=".claude/skills"
@@ -13,7 +11,6 @@ TEMP_DIR=$(mktemp -d)
 git clone --depth 1 "$MATTPOCOCK_REPO" "$TEMP_DIR" 2>/dev/null || \
 git clone "$MATTPOCOCK_REPO" "$TEMP_DIR"
 
-# Skills a instalar
 SKILLS_TO_INSTALL=(
     "productivity/grill-me"
 )
