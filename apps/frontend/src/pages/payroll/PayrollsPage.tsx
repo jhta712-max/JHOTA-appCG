@@ -227,12 +227,19 @@ export default function PayrollsPage() {
                         <StatusBadge status={p.status} />
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Link
-                          to={`/payrolls/${p.id}`}
-                          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          Ver detalle
-                        </Link>
+                        <div className="flex items-center gap-2 justify-end">
+                          {p.status === 'APPROVED' && (
+                            <span className="text-xs text-blue-600 font-medium hidden sm:inline">
+                              → Crear orden de pago
+                            </span>
+                          )}
+                          <Link
+                            to={`/payrolls/${p.id}`}
+                            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            Ver detalle
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}

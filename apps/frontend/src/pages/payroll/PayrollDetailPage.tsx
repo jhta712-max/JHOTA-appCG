@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle, DollarSign, Ban,
-  Download, Plus, X, Save, Wallet, AlertTriangle, Receipt, FileText,
+  Download, Plus, X, Save, Wallet, AlertTriangle, Receipt, FileText, ArrowRight,
 } from 'lucide-react';
 import { payrollApi, type Payroll, type PayrollLine } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
@@ -273,6 +273,35 @@ export default function PayrollDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Guía de flujo */}
+      {isDraft && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
+          <div>
+            <span className="font-semibold">Nómina en borrador.</span>
+            {' '}Flujo: <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">Agregar líneas</span>
+            {' '}<ArrowRight className="inline w-3 h-3" />{' '}
+            <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">Aprobar</span>
+            {' '}<ArrowRight className="inline w-3 h-3" />{' '}
+            <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">Crear orden de pago</span>
+          </div>
+        </div>
+      )}
+      {isApproved && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-blue-500 shrink-0" />
+            <span><span className="font-semibold">Nómina aprobada.</span> El siguiente paso es crear una Orden de Pago de tipo <strong>Nómina</strong> y vincularla.</span>
+          </div>
+          <Link
+            to="/payment-orders"
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap"
+          >
+            Ir a Órdenes de Pago <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+      )}
 
       {/* Action error */}
       {actionError && (
