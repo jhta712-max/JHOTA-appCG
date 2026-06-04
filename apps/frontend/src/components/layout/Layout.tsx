@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Receipt, Users,
-  Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity, FileText, CreditCard,
+  Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity, FileText, CreditCard, Clock,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
@@ -18,6 +18,7 @@ const navItems = [
   { to: '/export',      icon: Download,  label: 'Exportar Excel', adminOnly: true },
   { to: '/users',       icon: Users,     label: 'Usuarios',       adminOnly: true },
   { to: '/categories',  icon: Tag,        label: 'Categorías',     adminOnly: true },
+  { to: '/pending-orders',   icon: Clock,      label: 'Pagos Pendientes' },
   { to: '/payment-orders',  icon: FileText,   label: 'Órd. de Pago',    adminOnly: true },
   { to: '/office-expenses', icon: Receipt,    label: 'Gtos. Oficina',   adminOnly: true },
   { to: '/cards',           icon: CreditCard, label: 'Tarjetas',        adminOnly: true },

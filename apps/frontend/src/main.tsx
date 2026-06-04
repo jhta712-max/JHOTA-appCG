@@ -32,6 +32,7 @@ import PayrollFormPage   from './pages/payroll/PayrollFormPage';
 import MonitoringPage    from './pages/admin/MonitoringPage';
 import CardsPage           from './pages/admin/CardsPage';
 import PaymentOrdersPage   from './pages/payment-orders/PaymentOrdersPage';
+import PendingOrdersPage   from './pages/payment-orders/PendingOrdersPage';
 import OfficeExpensesPage  from './pages/office-expenses/OfficeExpensesPage';
 import QuotationsPage    from './pages/quotations/QuotationsPage';
 import QuotationFormPage from './pages/quotations/QuotationFormPage';
@@ -122,6 +123,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Route path="categories"           element={<CategoriesPage />} />
                 <Route path="cards"                element={<CardsPage />} />
                 <Route path="payment-orders"      element={<PaymentOrdersPage />} />
+                <Route path="pending-orders"      element={<PendingOrdersPage />} />
                 <Route path="office-expenses"     element={<OfficeExpensesPage />} />
                 <Route path="monitoring"           element={<MonitoringPage />} />
               </Route>
