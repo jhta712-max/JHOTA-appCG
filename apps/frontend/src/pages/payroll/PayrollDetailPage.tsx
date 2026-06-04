@@ -277,23 +277,19 @@ export default function PayrollDetailPage() {
           </div>
         )}
 
-        {/* Órdenes de pago vinculadas */}
-        {payroll.paymentOrders && payroll.paymentOrders.length > 0 && (
+        {/* Orden de pago vinculada */}
+        {payroll.paymentOrder && (
           <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1.5">
-              <Link2 className="w-3.5 h-3.5" /> Órdenes de pago vinculadas
+            <p className="text-xs font-semibold text-indigo-700 mb-1.5 flex items-center gap-1.5">
+              <Link2 className="w-3.5 h-3.5" /> Orden de pago vinculada
             </p>
-            <div className="space-y-1">
-              {payroll.paymentOrders.map((o) => (
-                <Link key={o.id} to={`/payment-orders/${o.id}`}
-                  className="flex items-center justify-between text-sm text-gray-700 hover:text-indigo-700 py-1">
-                  <span className="truncate">{o.concept}</span>
-                  <span className="ml-3 shrink-0 font-semibold">
-                    RD$ {Number(o.amount).toLocaleString('es-DO')}
-                  </span>
-                </Link>
-              ))}
-            </div>
+            <Link to={`/payment-orders/${payroll.paymentOrder.id}`}
+              className="flex items-center justify-between text-sm text-gray-700 hover:text-indigo-700 py-1">
+              <span className="truncate">{payroll.paymentOrder.concept}</span>
+              <span className="ml-3 shrink-0 font-semibold">
+                RD$ {Number(payroll.paymentOrder.amount).toLocaleString('es-DO')}
+              </span>
+            </Link>
           </div>
         )}
 

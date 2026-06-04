@@ -29,7 +29,7 @@ const PAYROLL_INCLUDE = {
   expense: {
     select: { id: true, amount: true, expenseDate: true, description: true },
   },
-  paymentOrders: {
+  paymentOrder: {
     select: { id: true, concept: true, amount: true, status: true, orderType: true, createdAt: true },
   },
 } as const;

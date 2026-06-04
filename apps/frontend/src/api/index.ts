@@ -157,7 +157,7 @@ export interface Payroll {
   voidedBy?:   { id: string; name: string } | null;
   lines?:         PayrollLine[];
   expense?:       { id: string; amount: number; expenseDate: string; description: string } | null;
-  paymentOrders?: { id: string; concept: string; amount: number; status: string; orderType: string; createdAt: string }[];
+  paymentOrder?:  { id: string; concept: string; amount: number; status: string; orderType: string; createdAt: string } | null;
   _count?:        { lines: number };
 }
 
