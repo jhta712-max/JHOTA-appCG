@@ -4,6 +4,10 @@ import {
   FolderOpen, Receipt, Plus, ArrowRight,
   AlertCircle, FileText, Clock, ChevronRight, TrendingUp, Wallet,
 } from 'lucide-react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Cell,
+} from 'recharts';
 import { projectsApi, expensesApi, quotationsApi, paymentOrdersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import { useRole } from '../../hooks/useRole';
@@ -38,6 +42,13 @@ export default function DashboardPage() {
     queryKey: ['quotations', 'dashboard'],
     queryFn:  () => quotationsApi.list({ limit: 50, orderBy: 'quotationDate', order: 'desc' }),
     select:   (r) => r.data,
+  });
+
+  const { data: statsData } = useQuery({
+    queryKey: ['expenses', 'stats'],
+    queryFn:  () => expensesApi.getStats(),
+    select:   (r) => r.data.data,
+    enabled:  canViewFinancials,
   });
 
   const { data: pendingOrders = [] } = useQuery({
@@ -130,6 +141,74 @@ export default function DashboardPage() {
           </p>
         </Link>
       </div>
+
+      {/* ── Gráficas ─────────────────────────────────────────── */}
+      {canViewFinancials && statsData && (
+        <div className="grid md:grid-cols-2 gap-5">
+
+          {/* Gastos por mes */}
+          <div className="card p-5">
+            <h2 className="font-semibold text-gray-900 text-sm mb-4 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-amber-500" />
+              Gastos por mes
+            </h2>
+            {statsData.byMonth.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-10">Sin datos</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={statsData.byMonth} barSize={28} margin={{ top: 0, right: 4, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: '#9ca3af' }}
+                    axisLine={false} tickLine={false} width={52}
+                    tickFormatter={(v) => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : v}
+                  />
+                  <Tooltip
+                    cursor={{ fill: '#fef3c7' }}
+                    formatter={(v) => [fmt(Number(v)), 'Total']}
+                    contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
+                  />
+                  <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                    {statsData.byMonth.map((_, i) => (
+                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#F5C218' : '#fde68a'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Gastos por categoría */}
+          <div className="card p-5">
+            <h2 className="font-semibold text-gray-900 text-sm mb-4 flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-blue-500" />
+              Gastos por categoría
+            </h2>
+            {statsData.byCategory.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-10">Sin datos</p>
+            ) : (
+              <div className="space-y-2.5">
+                {statsData.byCategory.map((cat, i) => {
+                  const colors = ['#F5C218','#fbbf24','#f59e0b','#d97706','#b45309','#92400e','#78350f'];
+                  return (
+                    <div key={i}>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="font-medium text-gray-700 truncate max-w-[60%]">{cat.name}</span>
+                        <span className="text-gray-500 shrink-0 ml-2">{cat.pct}% · {fmt(cat.total)}</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${cat.pct}%`, background: colors[i] }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+        </div>
+      )}
 
       {/* Alerta cotizaciones próximas a vencer */}
       {expiring.length > 0 && (

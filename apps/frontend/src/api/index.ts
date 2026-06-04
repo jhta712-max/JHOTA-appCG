@@ -63,6 +63,8 @@ export const expensesApi = {
     api.post(`/expenses/${id}/void`, { reason }),
   hardDelete: (id: string) =>
     api.delete(`/expenses/${id}`),
+  getStats: () =>
+    api.get<{ success: boolean; data: { byMonth: { month: string; total: number; count: number }[]; byCategory: { name: string; total: number; count: number; pct: number }[] } }>('/expenses/stats'),
   uploadAttachment: (id: string, file: File) => {
     const form = new FormData();
     form.append('file', file);

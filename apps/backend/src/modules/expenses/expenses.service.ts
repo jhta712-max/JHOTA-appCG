@@ -294,3 +294,53 @@ export async function bulkImportExpenses(rows: BulkExpenseRow[], userId: string)
   const err = results.filter((r) => r.status === 'error').length;
   return { ok, err, results };
 }
+
+// ── Dashboard stats ──────────────────────────────────────────────────────────
+
+export async function getDashboardStats() {
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+  sixMonthsAgo.setDate(1);
+  sixMonthsAgo.setHours(0, 0, 0, 0);
+
+  const [monthlyRaw, categoryRaw] = await Promise.all([
+    prisma.$queryRaw<Array<{ month_label: string; month_date: Date; total: string; count: bigint }>>`
+      SELECT
+        TO_CHAR(expense_date, 'Mon YYYY') AS month_label,
+        DATE_TRUNC('month', expense_date)  AS month_date,
+        SUM(amount)::text                  AS total,
+        COUNT(*)                           AS count
+      FROM expenses
+      WHERE status = 'ACTIVE' AND expense_date >= ${sixMonthsAgo}
+      GROUP BY month_date, TO_CHAR(expense_date, 'Mon YYYY')
+      ORDER BY month_date
+    `,
+    prisma.expense.groupBy({
+      by:      ['categoryId'],
+      where:   { status: 'ACTIVE' },
+      _sum:    { amount: true },
+      _count:  { _all: true },
+      orderBy: { _sum: { amount: 'desc' } },
+      take:    7,
+    }),
+  ]);
+
+  const catIds    = categoryRaw.map((c) => c.categoryId);
+  const cats      = await prisma.expenseCategory.findMany({ where: { id: { in: catIds } }, select: { id: true, name: true } });
+  const catMap    = Object.fromEntries(cats.map((c) => [c.id, c.name]));
+  const grandTotal = categoryRaw.reduce((s, c) => s + Number(c._sum.amount ?? 0), 0);
+
+  return {
+    byMonth: monthlyRaw.map((m) => ({
+      month: m.month_label,
+      total: Number(m.total),
+      count: Number(m.count),
+    })),
+    byCategory: categoryRaw.map((c) => ({
+      name:  catMap[c.categoryId] ?? 'Sin categoría',
+      total: Number(c._sum.amount ?? 0),
+      count: c._count._all,
+      pct:   grandTotal > 0 ? Math.round((Number(c._sum.amount ?? 0) / grandTotal) * 100) : 0,
+    })),
+  };
+}

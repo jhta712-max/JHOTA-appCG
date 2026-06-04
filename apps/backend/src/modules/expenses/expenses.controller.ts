@@ -59,3 +59,10 @@ export async function bulkImport(req: Request, res: Response, next: NextFunction
     res.json({ success: true, data: result });
   } catch (err) { next(err); }
 }
+
+export async function getStats(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.getDashboardStats();
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
