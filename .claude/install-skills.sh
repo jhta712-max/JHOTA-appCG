@@ -1,54 +1,30 @@
 #!/bin/bash
 
-# setup.sh - Configura el proyecto completo incluyendo Claude skills
+# .claude/install-skills.sh - Script para actualizar skills
 
-set -e  # Detener si hay error
+set -e
 
-echo "🔧 Configurando proyecto..."
-echo ""
+SKILLS_DIR=".claude/skills"
+MATTPOCOCK_REPO="https://github.com/mattpocock/skills.git"
 
-# Crear directorio de skills si no existe
-mkdir -p .claude/skills
+echo "📥 Actualizando skills de Matt Pocock..."
 
-# Variables
 TEMP_DIR=$(mktemp -d)
-REPO_URL="https://github.com/mattpocock/skills.git"
+git clone --depth 1 "$MATTPOCOCK_REPO" "$TEMP_DIR" 2>/dev/null || \
+git clone "$MATTPOCOCK_REPO" "$TEMP_DIR"
 
-echo "📥 Descargando skills de Matt Pocock..."
-git clone --depth 1 "$REPO_URL" "$TEMP_DIR" 2>/dev/null || {
-    echo "⚠️  git clone con --depth falló, intentando sin esa opción..."
-    git clone "$REPO_URL" "$TEMP_DIR"
-}
-
-echo "📦 Instalando skills..."
-
-# Lista de skills a instalar (puedes modificar esto)
+# Skills a instalar
 SKILLS_TO_INSTALL=(
     "productivity/grill-me"
 )
 
-# Copiar cada skill
 for skill in "${SKILLS_TO_INSTALL[@]}"; do
     SKILL_NAME=$(basename "$skill")
-    SKILL_SOURCE="$TEMP_DIR/skills/$skill"
-    SKILL_DEST=".claude/skills/$SKILL_NAME"
-
-    if [ -d "$SKILL_SOURCE" ]; then
-        echo "  ✅ Instalando: $SKILL_NAME"
-        cp -r "$SKILL_SOURCE" "$SKILL_DEST"
-    else
-        echo "  ⚠️  No encontrado: $skill"
-    fi
+    echo "📦 Actualizando $SKILL_NAME..."
+    rm -rf "$SKILLS_DIR/$SKILL_NAME"
+    cp -r "$TEMP_DIR/skills/$skill" "$SKILLS_DIR/$SKILL_NAME"
 done
 
-# Limpiar descarga temporal
 rm -rf "$TEMP_DIR"
 
-echo ""
-echo "✅ ¡Setup completado!"
-echo ""
-echo "📍 Skills disponibles en: .claude/skills/"
-echo "🔄 En Claude Code, ejecuta: /skills"
-echo ""
-echo "💡 Para actualizar skills en el futuro, ejecuta:"
-echo "   bash .claude/install-skills.sh"
+echo "✅ Skills actualizados"
