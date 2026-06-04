@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   FolderOpen, Receipt, Plus, ArrowRight,
-  AlertCircle, FileText, Clock, ChevronRight, TrendingUp,
+  AlertCircle, FileText, Clock, ChevronRight, TrendingUp, Wallet,
 } from 'lucide-react';
-import { projectsApi, expensesApi, quotationsApi } from '../../api';
+import { projectsApi, expensesApi, quotationsApi, paymentOrdersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
@@ -38,6 +38,12 @@ export default function DashboardPage() {
     select:   (r) => r.data,
   });
 
+  const { data: pendingOrders = [] } = useQuery({
+    queryKey: ['payment-orders', 'dashboard-pending'],
+    queryFn:  () => paymentOrdersApi.list({ status: 'PENDING', limit: 6 }),
+    select:   (r) => (r.data as any).data,
+  });
+
   const projects         = projectsData?.data ?? [];
   const expenses         = expensesData?.data ?? [];
   const allQuotations    = quotationsData?.data ?? [];
@@ -61,8 +67,9 @@ export default function DashboardPage() {
   };
 
   // Stats globales
-  const totalBudget   = projects.reduce((s, p) => s + Number(p.estimatedBudget ?? 0), 0);
-  const totalExpended = projects.reduce((s, p) => s + Number((p as any).totalExpenses ?? 0), 0);
+  const totalBudget        = projects.reduce((s, p) => s + Number(p.estimatedBudget ?? 0), 0);
+  const totalExpended      = projects.reduce((s, p) => s + Number((p as any).totalExpenses ?? 0), 0);
+  const totalPendingAmount = pendingOrders.reduce((s: number, o: any) => s + Number(o.amount), 0);
 
   return (
     <div className="space-y-6">
@@ -81,7 +88,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats globales */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <div className="card p-4">
           <p className="text-xs text-gray-500 font-medium">Proyectos activos</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{projects.length}</p>
@@ -102,6 +109,17 @@ export default function DashboardPage() {
           <p className="text-sm font-bold text-gray-900 mt-1 truncate">{fmt(totalBudget)}</p>
           <p className="text-xs text-gray-400 mt-0.5">todos los proyectos</p>
         </div>
+        <Link to="/pending-orders" className="card p-4 hover:border-amber-300 hover:shadow-sm transition-all group col-span-2 md:col-span-1">
+          <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
+            <Clock className="w-3 h-3 text-amber-500" /> Pagos pendientes
+          </p>
+          <p className={`text-2xl font-bold mt-1 ${pendingOrders.length > 0 ? 'text-amber-600' : 'text-gray-900'}`}>
+            {pendingOrders.length}
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5 truncate">
+            {totalPendingAmount > 0 ? fmt(totalPendingAmount) : 'ninguno pendiente'}
+          </p>
+        </Link>
       </div>
 
       {/* Alerta cotizaciones próximas a vencer */}
@@ -187,6 +205,38 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Órdenes de pago pendientes */}
+      {pendingOrders.length > 0 && (
+        <div className="card">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-amber-500" /> Órdenes de pago pendientes
+            </h2>
+            <Link to="/pending-orders" className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
+              Ver todas <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {pendingOrders.map((o: any) => (
+              <div key={o.id} className="flex items-center justify-between px-5 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 truncate">{o.beneficiary?.name}</p>
+                  <p className="text-xs text-gray-400">
+                    {o.project?.code} · {o.concept}
+                  </p>
+                </div>
+                <div className="text-right ml-3 shrink-0">
+                  <p className="text-sm font-semibold text-gray-900">{fmt(Number(o.amount))}</p>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                    Pendiente
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
 
