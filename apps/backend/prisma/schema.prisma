@@ -49,8 +49,10 @@ model User {
   notifications         Notification[]
   notificationContacts  NotificationContact[]  @relation("ContactCreatedBy")
   projects              Project[]              @relation("ProjectCreatedBy")
-  expenses      Expense[]          @relation("ExpenseRegisteredBy")
-  voidedExpenses Expense[]         @relation("ExpenseVoidedBy")
+  expenses         Expense[]          @relation("ExpenseRegisteredBy")
+  voidedExpenses   Expense[]          @relation("ExpenseVoidedBy")
+  approvedExpenses Expense[]          @relation("ExpenseApprovedBy")
+  rejectedExpenses Expense[]          @relation("ExpenseRejectedBy")
   attachments   Attachment[]
   auditLogs     AuditLog[]
   refreshTokens RefreshToken[]
@@ -242,10 +244,15 @@ model Expense {
   foreignCurrency String?       @map("foreign_currency") @db.VarChar(10)  // USD, EUR, etc.
   exchangeRate    Decimal?      @map("exchange_rate")    @db.Decimal(10, 4) // 1 USD = X DOP
   notes           String?       @db.Text
-  status        ExpenseStatus @default(ACTIVE)
+  status        ExpenseStatus @default(PENDING_APPROVAL)
   voidedAt      DateTime?     @map("voided_at")
   voidedById    String?       @map("voided_by") @db.Uuid
   voidReason    String?       @map("void_reason") @db.Text
+  rejectionReason String?     @map("rejection_reason") @db.Text
+  approvedById  String?       @map("approved_by_id") @db.Uuid
+  approvedAt    DateTime?     @map("approved_at")
+  rejectedById  String?       @map("rejected_by_id") @db.Uuid
+  rejectedAt    DateTime?     @map("rejected_at")
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
 
@@ -254,6 +261,8 @@ model Expense {
   companyCard  CompanyCard?     @relation(fields: [companyCardId], references: [id])
   registeredBy User             @relation("ExpenseRegisteredBy", fields: [userId], references: [id])
   voidedBy     User?            @relation("ExpenseVoidedBy", fields: [voidedById], references: [id])
+  approvedBy   User?            @relation("ExpenseApprovedBy", fields: [approvedById], references: [id])
+  rejectedBy   User?            @relation("ExpenseRejectedBy", fields: [rejectedById], references: [id])
   batchItemId  String?          @map("batch_item_id") @db.Uuid
   batchItem    BatchItem?       @relation(fields: [batchItemId], references: [id], onDelete: SetNull)
   fiscalVoucher FiscalVoucher?
@@ -284,8 +293,10 @@ enum PaymentMethod {
 }
 
 enum ExpenseStatus {
+  PENDING_APPROVAL
   ACTIVE
   VOIDED
+  REJECTED
 
   @@map("expense_status")
 }

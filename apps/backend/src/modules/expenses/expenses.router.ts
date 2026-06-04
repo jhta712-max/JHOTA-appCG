@@ -19,6 +19,8 @@ router.get('/:id',           ctrl.getOne);
 router.post('/',             validate(createExpenseSchema), ctrl.create);
 router.put('/:id',           validate(updateExpenseSchema), ctrl.update);
 router.post('/:id/void',     authorize('admin', 'supervisor'), validate(voidExpenseSchema), ctrl.voidExpense);
+router.post('/:id/approve',  authorize('admin', 'financiero'), ctrl.approve);
+router.post('/:id/reject',   authorize('admin', 'financiero'), ctrl.reject);
 router.delete('/:id',        authorize('admin'), ctrl.hardDelete);
 
 export default router;

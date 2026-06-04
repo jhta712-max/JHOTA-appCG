@@ -66,3 +66,22 @@ export async function getStats(req: Request, res: Response, next: NextFunction) 
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }
+
+export async function approve(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.approveExpense(req.params.id, req.user!.userId);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function reject(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { reason } = req.body;
+    if (!reason?.trim()) {
+      res.status(400).json({ success: false, error: 'El motivo de rechazo es requerido' });
+      return;
+    }
+    const data = await service.rejectExpense(req.params.id, req.user!.userId, reason.trim());
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}

@@ -60,7 +60,7 @@ export interface Expense {
   description: string;
   paymentMethod: 'CASH' | 'TRANSFER' | 'CARD' | 'CHECK' | 'OTHER';
   hasFiscalDoc: boolean;
-  status: 'ACTIVE' | 'VOIDED';
+  status: 'PENDING_APPROVAL' | 'ACTIVE' | 'VOIDED' | 'REJECTED';
   notes?: string;
   project: { id: string; code: string; name: string };
   projectId: string;
@@ -73,6 +73,11 @@ export interface Expense {
   createdAt: string;
   voidedAt?: string;
   voidReason?: string;
+  rejectionReason?: string | null;
+  approvedBy?: { id: string; name: string } | null;
+  approvedAt?: string | null;
+  rejectedBy?: { id: string; name: string } | null;
+  rejectedAt?: string | null;
 }
 
 export interface Addendum {

@@ -72,6 +72,10 @@ export const expensesApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  approve: (id: string) =>
+    api.post<{ success: boolean; data: Expense }>(`/expenses/${id}/approve`),
+  reject:  (id: string, reason: string) =>
+    api.post<{ success: boolean; data: Expense }>(`/expenses/${id}/reject`, { reason }),
 };
 
 // ── Categorías ────────────────────────────────────────────────

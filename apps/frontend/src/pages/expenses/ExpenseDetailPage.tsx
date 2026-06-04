@@ -4,10 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Edit, Receipt, Calendar, User, MapPin,
   CreditCard, FileText, AlertCircle, CheckCircle, XCircle,
-  Paperclip, Trash2, ExternalLink,
+  Paperclip, Trash2, ExternalLink, Clock, ThumbsUp, ThumbsDown,
 } from 'lucide-react';
 import { expensesApi, quotationsApi } from '../../api';
 import { useRole } from '../../hooks/useRole';
+import { useAuthStore } from '../../stores/authStore';
 import { PAYMENT_METHOD_LABELS } from '../../types';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
@@ -20,12 +21,15 @@ export default function ExpenseDetailPage() {
   const { id }     = useParams<{ id: string }>();
   const navigate   = useNavigate();
   const qc         = useQueryClient();
-  const { isAdmin, isSupervisor, isOperator } = useRole();
-  const [showVoid, setShowVoid] = useState(false);
-  const [voidReason, setVoidReason] = useState('');
-  const [voidError, setVoidError] = useState('');
+  const { isAdmin, isSupervisor, isOperator, canApproveExpense } = useRole();
+  const currentUserId = useAuthStore((s) => s.user?.id);
+  const [showVoid,       setShowVoid]       = useState(false);
+  const [voidReason,     setVoidReason]     = useState('');
+  const [voidError,      setVoidError]      = useState('');
+  const [showReject,     setShowReject]     = useState(false);
+  const [rejectReason,   setRejectReason]   = useState('');
+  const [rejectError,    setRejectError]    = useState('');
 
-  const canEdit = isSupervisor;
   const canVoid = isSupervisor;
 
   const { data: expense, isLoading, error } = useQuery({
@@ -61,9 +65,28 @@ export default function ExpenseDetailPage() {
       qc.invalidateQueries({ queryKey: ['project-summary'] });
       setShowVoid(false);
     },
-    onError: (err: any) => {
-      setVoidError(err.response?.data?.error || 'Error al anular el gasto');
+    onError: (err: any) => setVoidError(err.response?.data?.error || 'Error al anular el gasto'),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: () => expensesApi.approve(id!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['expense', id] });
+      qc.invalidateQueries({ queryKey: ['expenses'] });
+      qc.invalidateQueries({ queryKey: ['project-summary'] });
     },
+    onError: (err: any) => alert(err.response?.data?.error || 'Error al aprobar'),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: () => expensesApi.reject(id!, rejectReason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['expense', id] });
+      qc.invalidateQueries({ queryKey: ['expenses'] });
+      setShowReject(false);
+      setRejectReason('');
+    },
+    onError: (err: any) => setRejectError(err.response?.data?.error || 'Error al rechazar'),
   });
 
   if (isLoading) return <div className="text-center py-20 text-gray-400">Cargando gasto...</div>;
@@ -75,13 +98,17 @@ export default function ExpenseDetailPage() {
     </div>
   );
 
-  const isVoided   = expense.status === 'VOIDED';
-  const isEditable = !isVoided && (
-    canEdit ||
-    (isOperator && (() => {
-      const created = new Date(expense.createdAt);
-      return (Date.now() - created.getTime()) < 24 * 60 * 60 * 1000;
-    })())
+  const isVoided          = expense.status === 'VOIDED';
+  const isPending         = expense.status === 'PENDING_APPROVAL';
+  const isRejected        = expense.status === 'REJECTED';
+  const isActive          = expense.status === 'ACTIVE';
+  const isOwnExpense      = expense.registeredBy?.id === currentUserId;
+  const within24h         = (Date.now() - new Date(expense.createdAt).getTime()) < 24 * 60 * 60 * 1000;
+
+  const canEdit = (
+    (isSupervisor && isActive) ||                                    // supervisor edita activos
+    (isOwnExpense && isPending && (isSupervisor || (isOperator && within24h))) ||  // dueño edita pendientes
+    (isOwnExpense && isRejected && (isSupervisor || isOperator))     // dueño edita rechazados (siempre)
   );
 
   return (
@@ -95,16 +122,16 @@ export default function ExpenseDetailPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold text-gray-900 truncate">{expense.description}</h1>
-            {isVoided
-              ? <span className="badge-voided">Anulado</span>
-              : <span className="badge-active">Activo</span>
-            }
+            {isVoided   && <span className="badge-voided">Anulado</span>}
+            {isActive   && <span className="badge-active">Activo</span>}
+            {isPending  && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1"><Clock className="w-3 h-3" />Pendiente aprobación</span>}
+            {isRejected && <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium flex items-center gap-1"><XCircle className="w-3 h-3" />Rechazado</span>}
           </div>
           <p className="text-sm text-gray-500 mt-0.5">
             {expense.project?.code} — {expense.category?.name}
           </p>
         </div>
-        {isEditable && (
+        {canEdit && (
           <Link to={`/expenses/${id}/edit`} className="btn-secondary text-sm shrink-0">
             <Edit className="w-4 h-4" /> Editar
           </Link>
@@ -276,6 +303,95 @@ export default function ExpenseDetailPage() {
               </a>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Panel de aprobación — visible para financiero/admin cuando el gasto está pendiente */}
+      {isPending && canApproveExpense && (
+        <div className="card p-5 border-2 border-amber-200 space-y-4">
+          <h3 className="font-semibold text-amber-800 flex items-center gap-2">
+            <Clock className="w-4 h-4" /> Gasto pendiente de aprobación
+          </h3>
+          <p className="text-sm text-gray-600">
+            Registrado por <strong>{expense.registeredBy?.name}</strong> el {fmtDate(expense.createdAt)}.
+            Revisa los detalles y aprueba o rechaza este gasto.
+          </p>
+
+          {!showReject ? (
+            <div className="flex gap-3">
+              <button
+                onClick={() => approveMutation.mutate()}
+                disabled={approveMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-sm font-medium
+                           transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                {approveMutation.isPending
+                  ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  : <ThumbsUp className="w-4 h-4" />}
+                Aprobar gasto
+              </button>
+              <button
+                onClick={() => setShowReject(true)}
+                className="flex-1 py-2.5 rounded-xl border-2 border-red-200 text-red-600 text-sm font-medium
+                           hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
+                <ThumbsDown className="w-4 h-4" /> Rechazar
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="label">Motivo de rechazo *</label>
+                <textarea rows={2} className="input-field resize-none"
+                  placeholder="Explica por qué se rechaza este gasto..."
+                  value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} />
+              </div>
+              {rejectError && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{rejectError}</p>}
+              <div className="flex gap-3">
+                <button onClick={() => { setShowReject(false); setRejectReason(''); setRejectError(''); }}
+                  className="btn-secondary flex-1">Cancelar</button>
+                <button
+                  onClick={() => {
+                    if (!rejectReason.trim()) { setRejectError('El motivo es requerido'); return; }
+                    setRejectError('');
+                    rejectMutation.mutate();
+                  }}
+                  disabled={rejectMutation.isPending}
+                  className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium
+                             transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                  {rejectMutation.isPending
+                    ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    : <XCircle className="w-4 h-4" />}
+                  Confirmar rechazo
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Motivo de rechazo — visible para el creador */}
+      {isRejected && expense.rejectionReason && (
+        <div className="card p-4 bg-red-50 border border-red-200 space-y-1">
+          <div className="flex items-center gap-2 text-red-700 font-medium text-sm">
+            <XCircle className="w-4 h-4" /> Gasto rechazado
+          </div>
+          {expense.rejectedAt && <p className="text-xs text-red-400">{fmtDate(expense.rejectedAt)} · por {expense.rejectedBy?.name}</p>}
+          <p className="text-sm text-red-600 mt-1">Motivo: {expense.rejectionReason}</p>
+          {(isOwnExpense && (isSupervisor || isOperator)) && (
+            <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
+              <Edit className="w-3 h-3" /> Puedes editar este gasto y volver a enviarlo para aprobación.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Aprobado por */}
+      {isActive && expense.approvedBy && (
+        <div className="card p-4 bg-green-50 border border-green-100 flex items-center gap-3">
+          <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+          <p className="text-sm text-green-700">
+            Aprobado por <strong>{expense.approvedBy.name}</strong>
+            {expense.approvedAt && <> el {fmtDate(expense.approvedAt)}</>}
+          </p>
         </div>
       )}
 

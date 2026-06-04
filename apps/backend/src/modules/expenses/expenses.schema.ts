@@ -91,7 +91,7 @@ export const expenseQuerySchema = z.object({
   projectId:     z.string().uuid().optional(),
   categoryId:    z.coerce.number().int().positive().optional(),
   userId:        z.string().uuid().optional(),
-  status:        z.enum(['ACTIVE', 'VOIDED']).optional(),
+  status:        z.enum(['PENDING_APPROVAL', 'ACTIVE', 'VOIDED', 'REJECTED']).optional(),
   paymentMethod: z.enum(['CASH', 'TRANSFER', 'CARD', 'CHECK', 'OTHER']).optional(),
   hasFiscalDoc:  z.coerce.boolean().optional(),
   dateFrom:      z.string().date().optional(),

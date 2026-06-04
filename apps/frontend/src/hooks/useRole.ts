@@ -35,5 +35,6 @@ export function useRole() {
     canViewQuotations:   ['admin', 'supervisor', 'operator', 'financiero'].includes(role),
     canManageSuppliers:  ['admin', 'supervisor'].includes(role),
     canViewSuppliers:    ['admin', 'supervisor', 'operator', 'financiero'].includes(role),
+    canApproveExpense:   ['admin', 'financiero'].includes(role),
   };
 }

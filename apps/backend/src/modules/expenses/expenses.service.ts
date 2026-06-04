@@ -2,6 +2,7 @@ import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
+import { createNotification } from '../notifications/notifications.service';
 import type { CreateExpenseInput, UpdateExpenseInput, VoidExpenseInput, ExpenseQuery } from './expenses.schema';
 
 const EXPENSE_INCLUDE = {
@@ -9,9 +10,14 @@ const EXPENSE_INCLUDE = {
   category:     { select: { id: true, name: true, icon: true } },
   registeredBy: { select: { id: true, name: true } },
   companyCard:  { select: { id: true, holderName: true, lastFour: true, cardType: true, bank: true } },
+  approvedBy:   { select: { id: true, name: true } },
+  rejectedBy:   { select: { id: true, name: true } },
   fiscalVoucher: true,
   attachments:  { select: { id: true, fileName: true, mimeType: true, isPrimary: true, createdAt: true } },
 } as const;
+
+// Roles que requieren aprobación al crear gastos
+const ROLES_NEED_APPROVAL = new Set(['operator', 'supervisor']);
 
 // ---------------------------------------------------------------
 // Listar con filtros
@@ -92,7 +98,10 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
   const category = await prisma.expenseCategory.findUnique({ where: { id: data.categoryId } });
   if (!category || !category.isActive) throw new AppError(404, 'Categoría no encontrada o inactiva', 'NOT_FOUND');
 
-  return prisma.expense.create({
+  const needsApproval = ROLES_NEED_APPROVAL.has(userRole ?? '');
+  const status = needsApproval ? 'PENDING_APPROVAL' : 'ACTIVE';
+
+  const expense = await prisma.expense.create({
     data: {
       projectId:     data.projectId,
       categoryId:    data.categoryId,
@@ -104,10 +113,10 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
       companyCardId:   data.companyCardId   ?? null,
       hasFiscalDoc:    data.hasFiscalDoc,
       notes:           data.notes,
+      status,
       foreignAmount:   (data as any).foreignAmount   ?? null,
       foreignCurrency: (data as any).foreignCurrency ?? null,
       exchangeRate:    (data as any).exchangeRate    ?? null,
-      // Crear comprobante fiscal si aplica
       ...(data.hasFiscalDoc && data.fiscalVoucher && {
         fiscalVoucher: {
           create: {
@@ -123,6 +132,22 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
     },
     include: EXPENSE_INCLUDE,
   });
+
+  // Notificar a financiero y admin si el gasto requiere aprobación
+  if (needsApproval) {
+    const approvers = await prisma.user.findMany({
+      where: { isActive: true, role: { name: { in: ['admin', 'financiero'] } } },
+      select: { id: true },
+    });
+    const title   = 'Gasto pendiente de aprobación';
+    const message = `${expense.registeredBy.name} registró un gasto de RD $${Number(expense.amount).toLocaleString('es-DO')} en ${expense.project.name}.`;
+    const link    = `/expenses/${expense.id}`;
+    for (const u of approvers) {
+      await createNotification({ userId: u.id, type: 'EXPENSE_PENDING', title, message, link, entityId: expense.id });
+    }
+  }
+
+  return expense;
 }
 
 // ---------------------------------------------------------------
@@ -134,12 +159,22 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
   if (expense.status === 'VOIDED') {
     throw new AppError(400, 'No se puede editar un gasto anulado', 'EXPENSE_VOIDED');
   }
+  if (expense.status === 'ACTIVE' && !['admin', 'supervisor'].includes(userRole)) {
+    throw new AppError(403, 'No puedes editar un gasto ya aprobado', 'FORBIDDEN');
+  }
 
-  // Operadores solo pueden editar sus propios gastos dentro de 24 horas
-  if (userRole === 'operator') {
+  // Operadores y supervisores pueden editar sus propios gastos rechazados o pendientes
+  if (['operator', 'supervisor'].includes(userRole)) {
     if (expense.userId !== userId) {
       throw new AppError(403, 'Solo puedes editar tus propios gastos', 'FORBIDDEN');
     }
+    if (expense.status === 'ACTIVE') {
+      throw new AppError(403, 'No puedes editar un gasto ya aprobado', 'FORBIDDEN');
+    }
+  }
+
+  // Operadores: ventana de 24h solo para gastos PENDING (no para REJECTED, que siempre pueden corregir)
+  if (userRole === 'operator' && expense.status === 'PENDING_APPROVAL') {
     const hoursSince = (Date.now() - expense.createdAt.getTime()) / (1000 * 60 * 60);
     if (hoursSince > 24) {
       throw new AppError(403, 'Solo puedes editar gastos dentro de las primeras 24 horas', 'EDIT_WINDOW_EXPIRED');
@@ -170,15 +205,71 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
 
   const { fiscalVoucher, ...expenseData } = data as any;
 
+  // Si el gasto estaba REJECTED y se edita, vuelve a PENDING_APPROVAL
+  const statusReset = expense.status === 'REJECTED'
+    ? { status: 'PENDING_APPROVAL', rejectionReason: null, rejectedById: null, rejectedAt: null }
+    : {};
+
   return prisma.expense.update({
     where: { id },
     data: {
       ...expenseData,
       expenseDate: data.expenseDate ? new Date(data.expenseDate) : undefined,
       ...fiscalVoucherOp,
+      ...statusReset,
     },
     include: EXPENSE_INCLUDE,
   });
+}
+
+// ---------------------------------------------------------------
+// Aprobar gasto
+// ---------------------------------------------------------------
+export async function approveExpense(id: string, approverId: string) {
+  const expense = await getExpenseById(id);
+  if (expense.status !== 'PENDING_APPROVAL') {
+    throw new AppError(400, 'Solo se pueden aprobar gastos pendientes', 'INVALID_STATUS');
+  }
+  const updated = await prisma.expense.update({
+    where: { id },
+    data:  { status: 'ACTIVE', approvedById: approverId, approvedAt: new Date() },
+    include: EXPENSE_INCLUDE,
+  });
+  // Notificar al creador
+  await createNotification({
+    userId:   expense.userId,
+    type:     'EXPENSE_APPROVED',
+    title:    'Gasto aprobado',
+    message:  `Tu gasto de RD $${Number(expense.amount).toLocaleString('es-DO')} fue aprobado.`,
+    link:     `/expenses/${id}`,
+    entityId: id,
+  });
+  return updated;
+}
+
+// ---------------------------------------------------------------
+// Rechazar gasto
+// ---------------------------------------------------------------
+export async function rejectExpense(id: string, rejectorId: string, reason: string) {
+  const expense = await getExpenseById(id);
+  if (expense.status !== 'PENDING_APPROVAL') {
+    throw new AppError(400, 'Solo se pueden rechazar gastos pendientes', 'INVALID_STATUS');
+  }
+  const updated = await prisma.expense.update({
+    where: { id },
+    data:  { status: 'REJECTED', rejectedById: rejectorId, rejectedAt: new Date(), rejectionReason: reason },
+    include: EXPENSE_INCLUDE,
+  });
+  // Notificar al creador
+  await createNotification({
+    userId:   expense.userId,
+    type:     'EXPENSE_REJECTED',
+    title:    'Gasto rechazado',
+    message:  `Tu gasto de RD $${Number(expense.amount).toLocaleString('es-DO')} fue rechazado. Motivo: ${reason}`,
+    link:     `/expenses/${id}`,
+    entityId: id,
+  });
+  return updated;
 }
 
 // ---------------------------------------------------------------
