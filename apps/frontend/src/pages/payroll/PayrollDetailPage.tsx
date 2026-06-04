@@ -3,9 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle, DollarSign, Ban,
-  Download, Plus, X, Save, Wallet, AlertTriangle, Receipt, FileText, ArrowRight,
+  Download, Plus, X, Save, Wallet, AlertTriangle, Receipt, FileText, ArrowRight, Link2,
 } from 'lucide-react';
-import { payrollApi, type Payroll, type PayrollLine } from '../../api';
+import { payrollApi, paymentOrdersApi, type Payroll, type PayrollLine } from '../../api';
 import { useRole } from '../../hooks/useRole';
 import api from '../../api/client';
 
@@ -60,6 +60,8 @@ export default function PayrollDetailPage() {
   const [actionError, setActionError]   = useState('');
   const [paymentLineId, setPaymentLineId] = useState<string | null>(null);
   const [paymentForm, setPaymentForm]     = useState({ paymentBank: '', paymentReference: '', paidAt: '' });
+  const [linkModal,  setLinkModal]  = useState(false);
+  const [linkOrderId, setLinkOrderId] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['payroll', id],
@@ -86,6 +88,19 @@ export default function PayrollDetailPage() {
     mutationFn: (lineId: string) => payrollApi.recordLinePayment(id!, lineId, paymentForm),
     onSuccess: () => { invalidate(); setPaymentLineId(null); setPaymentForm({ paymentBank: '', paymentReference: '', paidAt: '' }); },
     onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al registrar comprobante'),
+  });
+  const linkOrderMut = useMutation({
+    mutationFn: (orderId: string) => paymentOrdersApi.linkPayroll(orderId, id!),
+    onSuccess: () => { invalidate(); setLinkModal(false); setLinkOrderId(''); },
+    onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al vincular orden de pago'),
+  });
+
+  // Órdenes de pago disponibles para vincular (tipo PAYROLL, sin nómina asignada)
+  const { data: availableOrders } = useQuery({
+    queryKey: ['payment-orders', 'available-link', payroll?.projectId],
+    queryFn:  () => paymentOrdersApi.list({ orderType: 'PAYROLL', projectId: payroll!.projectId, limit: 50 }),
+    select:   (r) => (r.data.data as any[]).filter((o) => !o.payroll),
+    enabled:  !!payroll && linkModal,
   });
 
   if (isLoading) return <div className="text-center py-16 text-gray-400 text-sm">Cargando nómina…</div>;
@@ -262,6 +277,26 @@ export default function PayrollDetailPage() {
           </div>
         )}
 
+        {/* Órdenes de pago vinculadas */}
+        {payroll.paymentOrders && payroll.paymentOrders.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <p className="text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1.5">
+              <Link2 className="w-3.5 h-3.5" /> Órdenes de pago vinculadas
+            </p>
+            <div className="space-y-1">
+              {payroll.paymentOrders.map((o) => (
+                <Link key={o.id} to={`/payment-orders/${o.id}`}
+                  className="flex items-center justify-between text-sm text-gray-700 hover:text-indigo-700 py-1">
+                  <span className="truncate">{o.concept}</span>
+                  <span className="ml-3 shrink-0 font-semibold">
+                    RD$ {Number(o.amount).toLocaleString('es-DO')}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {payroll.expense && (
           <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2 text-sm text-gray-500">
             <Receipt className="w-4 h-4 text-green-500" />
@@ -279,26 +314,22 @@ export default function PayrollDetailPage() {
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
           <div>
             <span className="font-semibold">Nómina en borrador.</span>
-            {' '}Flujo: <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">Agregar líneas</span>
+            {' '}Flujo: <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">Vincular orden de pago</span>
+            {' '}<ArrowRight className="inline w-3 h-3" />{' '}
+            <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">Importar líneas</span>
             {' '}<ArrowRight className="inline w-3 h-3" />{' '}
             <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">Aprobar</span>
             {' '}<ArrowRight className="inline w-3 h-3" />{' '}
-            <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">Crear orden de pago</span>
+            <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">Exportar</span>
           </div>
         </div>
       )}
       {isApproved && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800 flex items-center justify-between gap-3">
+        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-800 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-blue-500 shrink-0" />
-            <span><span className="font-semibold">Nómina aprobada.</span> El siguiente paso es crear una Orden de Pago de tipo <strong>Nómina</strong> y vincularla.</span>
+            <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+            <span><span className="font-semibold">Nómina aprobada.</span> Puedes exportarla en Excel o Word.</span>
           </div>
-          <Link
-            to="/payment-orders"
-            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap"
-          >
-            Ir a Órdenes de Pago <ArrowRight className="w-3 h-3" />
-          </Link>
         </div>
       )}
 
@@ -329,6 +360,13 @@ export default function PayrollDetailPage() {
                   className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
                   <CheckCircle className="w-4 h-4" />
                   {approveMut.isPending ? 'Aprobando…' : 'Aprobar'}
+                </button>
+              )}
+              {canCreatePayroll && (
+                <button
+                  onClick={() => { setActionError(''); setLinkModal(true); }}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-indigo-200 rounded-lg text-indigo-700 hover:bg-indigo-50">
+                  <Link2 className="w-4 h-4" /> Vincular orden de pago
                 </button>
               )}
               {canApprovePayroll && (
@@ -810,6 +848,60 @@ export default function PayrollDetailPage() {
               </button>
               <button
                 onClick={() => setPayModal(false)}
+                className="px-4 py-2 rounded-lg text-sm border border-gray-200 hover:bg-gray-50">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal vincular orden de pago */}
+      {linkModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-xl">
+            <h3 className="font-bold text-gray-900 text-lg mb-1 flex items-center gap-2">
+              <Link2 className="w-5 h-5 text-indigo-600" /> Vincular Orden de Pago
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Selecciona la orden de pago de tipo Nómina que corresponde a esta nómina.
+            </p>
+            {(availableOrders ?? []).length === 0 ? (
+              <div className="text-center py-6 text-gray-400 text-sm">
+                No hay órdenes de pago de tipo Nómina pendientes de vincular en este proyecto.
+              </div>
+            ) : (
+              <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
+                {(availableOrders ?? []).map((o: any) => (
+                  <label key={o.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      linkOrderId === o.id ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 hover:border-indigo-200'
+                    }`}>
+                    <input type="radio" name="linkOrder" value={o.id}
+                      checked={linkOrderId === o.id}
+                      onChange={() => setLinkOrderId(o.id)}
+                      className="accent-indigo-600"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{o.concept}</p>
+                      <p className="text-xs text-gray-400">{o.beneficiary?.name ?? o.payingCompany}</p>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-700 shrink-0">
+                      RD$ {Number(o.amount).toLocaleString('es-DO')}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => linkOrderMut.mutate(linkOrderId)}
+                disabled={!linkOrderId || linkOrderMut.isPending}
+                className="flex-1 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
+                {linkOrderMut.isPending ? 'Vinculando…' : 'Vincular'}
+              </button>
+              <button
+                onClick={() => { setLinkModal(false); setLinkOrderId(''); }}
                 className="px-4 py-2 rounded-lg text-sm border border-gray-200 hover:bg-gray-50">
                 Cancelar
               </button>

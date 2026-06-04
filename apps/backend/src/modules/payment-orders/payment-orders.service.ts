@@ -225,7 +225,7 @@ export async function linkPayroll(id: string, payrollId: string) {
 
   const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
   if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
-  if (payroll.status !== 'APPROVED') throw new AppError(400, 'Solo se puede vincular una nómina aprobada. Aprueba la nómina primero.', 'PAYROLL_NOT_APPROVED');
+  if (['PAID', 'VOIDED'].includes(payroll.status)) throw new AppError(400, 'No se puede vincular una nómina pagada o anulada', 'PAYROLL_INVALID_STATUS');
   if (payroll.projectId !== po.projectId) throw new AppError(400, 'La nómina no pertenece al mismo proyecto', 'PROJECT_MISMATCH');
 
   return prisma.paymentOrder.update({
