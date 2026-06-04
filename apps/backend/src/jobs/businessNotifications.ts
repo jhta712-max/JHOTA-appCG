@@ -11,11 +11,50 @@ import {
 
 const APP_URL = process.env.FRONTEND_URL ?? 'https://gastos-proyectos.onrender.com';
 
-// ─── WhatsApp helper (Twilio, graceful no-op if not configured) ───────────────
+// ─── WhatsApp recipients: users with opt-in + external contacts ──────────────
+
+async function getWhatsAppRecipients(): Promise<string[]> {
+  const numbers: string[] = [];
+
+  // 1. Users with whatsappOptIn and a phone number
+  const optedInUsers = await prisma.user.findMany({
+    where: { isActive: true, whatsappOptIn: true, phone: { not: null } },
+    select: { phone: true },
+  });
+  for (const u of optedInUsers) {
+    if (u.phone) numbers.push(normalizeWhatsApp(u.phone));
+  }
+
+  // 2. Active external contacts with a phone
+  const contacts = await prisma.notificationContact.findMany({
+    where: { isActive: true, phone: { not: null } },
+    select: { phone: true },
+  });
+  for (const c of contacts) {
+    if (c.phone) numbers.push(normalizeWhatsApp(c.phone));
+  }
+
+  // Also include fallback env var if no DB recipients (backwards compatibility)
+  if (numbers.length === 0 && env.NOTIFY_WHATSAPP_TO) {
+    env.NOTIFY_WHATSAPP_TO.split(',').map((s) => s.trim()).filter(Boolean).forEach((n) => numbers.push(n));
+  }
+
+  return [...new Set(numbers)]; // deduplicate
+}
+
+function normalizeWhatsApp(phone: string): string {
+  const clean = phone.replace(/[\s\-().]/g, '');
+  const withPlus = clean.startsWith('+') ? clean : `+${clean}`;
+  return withPlus.startsWith('whatsapp:') ? withPlus : `whatsapp:${withPlus}`;
+}
+
+// ─── WhatsApp sender (Twilio, graceful no-op if not configured) ──────────────
 
 async function sendWhatsApp(message: string): Promise<void> {
-  if (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN || !env.NOTIFY_WHATSAPP_TO) return;
-  const recipients = env.NOTIFY_WHATSAPP_TO.split(',').map((s) => s.trim()).filter(Boolean);
+  if (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN) return;
+  const recipients = await getWhatsAppRecipients();
+  if (recipients.length === 0) return;
+
   for (const to of recipients) {
     try {
       const body = new URLSearchParams({ From: env.TWILIO_WHATSAPP_FROM, To: to, Body: message });
@@ -40,7 +79,28 @@ async function sendWhatsApp(message: string): Promise<void> {
   }
 }
 
-// ─── Admin/Supervisor recipients ─────────────────────────────────────────────
+// ─── Email recipients: admin/supervisor + external contacts with email ────────
+
+async function getAllEmailRecipients() {
+  const [users, contacts] = await Promise.all([
+    prisma.user.findMany({
+      where: { isActive: true, role: { name: { in: ['admin', 'supervisor'] } } },
+      select: { id: true, name: true, email: true },
+    }),
+    prisma.notificationContact.findMany({
+      where: { isActive: true, email: { not: null } },
+      select: { name: true, email: true },
+    }),
+  ]);
+
+  const emailRecipients: { name: string; email: string }[] = [
+    ...users,
+    ...contacts.filter((c) => c.email).map((c) => ({ name: c.name, email: c.email! })),
+  ];
+  return { userRecipients: users, emailRecipients };
+}
+
+// ─── Admin/Supervisor for in-app notifications ────────────────────────────────
 
 async function getAdminSupervisorUsers() {
   return prisma.user.findMany({
@@ -60,7 +120,7 @@ async function checkBudgetThresholds() {
     },
   });
 
-  const recipients = await getAdminSupervisorUsers();
+  const { userRecipients, emailRecipients } = await getAllEmailRecipients();
   let alertCount = 0;
 
   for (const project of projects) {
@@ -80,14 +140,14 @@ async function checkBudgetThresholds() {
       const message = `El proyecto "${project.name}" ha consumido RD ${(spent / 1000).toFixed(0)}K de RD ${(budget / 1000).toFixed(0)}K (${Math.round(pct)}%).`;
       const link    = `/projects/${project.id}/financial`;
 
-      for (const user of recipients) {
+      for (const user of userRecipients) {
         await createNotification({ userId: user.id, type, title, message, link, entityId });
       }
 
       if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD) {
-        for (const user of recipients) {
+        for (const rec of emailRecipients) {
           await sendBudgetAlertEmail({
-            toEmail: user.email, toName: user.name,
+            toEmail: rec.email, toName: rec.name,
             projectCode: project.code, projectName: project.name, projectId: project.id,
             pct: Math.round(pct), spent, budget, appUrl: APP_URL,
           }).catch((err) => logger.error('[BusinessNotifications] Email error:', err));
@@ -131,12 +191,12 @@ async function checkPendingOrders() {
     return;
   }
 
-  const recipients = await getAdminSupervisorUsers();
+  const { userRecipients, emailRecipients } = await getAllEmailRecipients();
   const title   = `${orders.length} orden${orders.length !== 1 ? 'es' : ''} de pago pendiente${orders.length !== 1 ? 's' : ''}`;
   const message = `Hay ${orders.length} orden${orders.length !== 1 ? 'es' : ''} de pago sin pagar con más de 5 días de antigüedad.`;
   const link    = '/payment-orders';
 
-  for (const user of recipients) {
+  for (const user of userRecipients) {
     await createNotification({ userId: user.id, type: 'PENDING_ORDERS', title, message, link, entityId: 'global' });
   }
 
@@ -151,9 +211,9 @@ async function checkPendingOrders() {
   }));
 
   if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD) {
-    for (const user of recipients) {
+    for (const rec of emailRecipients) {
       await sendPendingOrdersEmail({
-        toEmail: user.email, toName: user.name, orders: orderItems, appUrl: APP_URL,
+        toEmail: rec.email, toName: rec.name, orders: orderItems, appUrl: APP_URL,
       }).catch((err) => logger.error('[BusinessNotifications] Email error:', err));
     }
   }
@@ -192,12 +252,12 @@ async function checkApprovedPayrolls() {
     return;
   }
 
-  const recipients = await getAdminSupervisorUsers();
+  const { userRecipients, emailRecipients } = await getAllEmailRecipients();
   const title   = `${payrolls.length} nómina${payrolls.length !== 1 ? 's' : ''} aprobada${payrolls.length !== 1 ? 's' : ''} sin pagar`;
   const message = `Hay ${payrolls.length} nómina${payrolls.length !== 1 ? 's' : ''} aprobada${payrolls.length !== 1 ? 's' : ''} con más de 3 días sin ser pagada${payrolls.length !== 1 ? 's' : ''}.`;
   const link    = '/payrolls';
 
-  for (const user of recipients) {
+  for (const user of userRecipients) {
     await createNotification({ userId: user.id, type: 'PAYROLL_UNPAID', title, message, link, entityId: 'global' });
   }
 
@@ -212,9 +272,9 @@ async function checkApprovedPayrolls() {
   }));
 
   if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD) {
-    for (const user of recipients) {
+    for (const rec of emailRecipients) {
       await sendApprovedPayrollsEmail({
-        toEmail: user.email, toName: user.name, payrolls: payrollItems, appUrl: APP_URL,
+        toEmail: rec.email, toName: rec.name, payrolls: payrollItems, appUrl: APP_URL,
       }).catch((err) => logger.error('[BusinessNotifications] Email error:', err));
     }
   }

@@ -5,7 +5,7 @@ import type { CreateUserInput, UpdateUserInput, ChangePasswordInput } from './us
 
 const USER_SELECT = {
   id: true, name: true, email: true, phone: true,
-  avatarUrl: true, isActive: true, lastLogin: true,
+  avatarUrl: true, isActive: true, whatsappOptIn: true, lastLogin: true,
   createdAt: true, updatedAt: true,
   role: { select: { id: true, name: true, description: true } },
 } as const;

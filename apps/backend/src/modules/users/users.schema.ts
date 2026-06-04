@@ -12,10 +12,11 @@ export const createUserSchema = z.object({
 });
 
 export const updateUserSchema = z.object({
-  name:     z.string().min(2).max(100).optional(),
-  phone:    z.string().max(20).optional(),
-  roleId:   z.coerce.number().int().positive().optional(),
-  isActive: z.boolean().optional(),
+  name:           z.string().min(2).max(100).optional(),
+  phone:          z.string().max(20).optional(),
+  roleId:         z.coerce.number().int().positive().optional(),
+  isActive:       z.boolean().optional(),
+  whatsappOptIn:  z.boolean().optional(),
 });
 
 export const changePasswordSchema = z.object({

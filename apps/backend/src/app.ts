@@ -25,7 +25,8 @@ import officeExpensesRouter  from './modules/office-expenses/office-expenses.rou
 import backupRouter          from './modules/backup/backup.router';
 import batchesRouter         from './modules/batches/batches.router';
 import suppliersRouter       from './modules/suppliers/suppliers.router';
-import notificationsRouter   from './modules/notifications/notifications.router';
+import notificationsRouter         from './modules/notifications/notifications.router';
+import notificationContactsRouter  from './modules/notification-contacts/notification-contacts.router';
 
 const app = express();
 
@@ -115,7 +116,8 @@ app.use('/api/v1/office-expenses', apiLimiter,  officeExpensesRouter);
 app.use('/api/v1/batches',         apiLimiter,  batchesRouter);
 app.use('/api/v1/backup',          apiLimiter,  backupRouter);
 app.use('/api/v1/suppliers',       apiLimiter,  suppliersRouter);
-app.use('/api/v1/notifications',   apiLimiter,  notificationsRouter);
+app.use('/api/v1/notifications',          apiLimiter,  notificationsRouter);
+app.use('/api/v1/notification-contacts',  apiLimiter,  notificationContactsRouter);
 app.use('/api/v1/monitoring', apiLimiter,  monitoringRouter);
 
 // ----------------------------------------------------------------

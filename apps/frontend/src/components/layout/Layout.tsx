@@ -3,7 +3,7 @@ import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Receipt, Users,
   Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity, FileText, CreditCard, Clock,
-  Eye, ChevronDown, Building2,
+  Eye, ChevronDown, Building2, Bell,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
@@ -29,10 +29,11 @@ const navItems: NavItem[] = [
   { to: '/export',          icon: Download,        label: 'Exportar Excel',  roles: ['admin', 'supervisor', 'financiero'] },
   { to: '/office-expenses', icon: Receipt,         label: 'Gtos. Oficina',   roles: ['admin', 'supervisor', 'financiero'] },
   { to: '/payment-orders',  icon: FileText,        label: 'Órd. de Pago',   roles: ['admin', 'supervisor'] },
-  { to: '/users',           icon: Users,           label: 'Usuarios',        roles: ['admin'] },
-  { to: '/categories',      icon: Tag,             label: 'Categorías',      roles: ['admin'] },
-  { to: '/cards',           icon: CreditCard,      label: 'Tarjetas',        roles: ['admin'] },
-  { to: '/monitoring',      icon: Activity,        label: 'Monitoreo',       roles: ['admin'] },
+  { to: '/users',                   icon: Users,       label: 'Usuarios',        roles: ['admin'] },
+  { to: '/notification-contacts',   icon: Bell,        label: 'Contactos Notif.',roles: ['admin'] },
+  { to: '/categories',              icon: Tag,         label: 'Categorías',      roles: ['admin'] },
+  { to: '/cards',                   icon: CreditCard,  label: 'Tarjetas',        roles: ['admin'] },
+  { to: '/monitoring',              icon: Activity,    label: 'Monitoreo',       roles: ['admin'] },
 ];
 
 const ROLE_OPTIONS = [

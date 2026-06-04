@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import {
   Users, UserPlus, Edit, X, CheckCircle, AlertCircle,
-  ShieldCheck, Copy, Clock, Mail, Trash2,
+  ShieldCheck, Copy, Clock, Mail, Trash2, MessageCircle,
 } from 'lucide-react';
 import { usersApi } from '../../api';
 import api from '../../api/client';
@@ -99,6 +99,13 @@ export default function UsersPage() {
   const toggleMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       usersApi.update(id, { isActive }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+    onError:   (err: any) => setApiError(err.response?.data?.error || 'Error'),
+  });
+
+  const whatsappToggle = useMutation({
+    mutationFn: ({ id, whatsappOptIn }: { id: string; whatsappOptIn: boolean }) =>
+      usersApi.update(id, { whatsappOptIn }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
     onError:   (err: any) => setApiError(err.response?.data?.error || 'Error'),
   });
@@ -221,6 +228,12 @@ export default function UsersPage() {
 
               {isAdmin && u.id !== self?.id && (
                 <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    title={u.whatsappOptIn ? 'WhatsApp activo — click para desactivar' : 'Activar notificaciones WhatsApp'}
+                    onClick={() => whatsappToggle.mutate({ id: u.id, whatsappOptIn: !u.whatsappOptIn })}
+                    className={`p-1.5 rounded-lg transition-colors ${u.whatsappOptIn ? 'text-green-600 bg-green-50 hover:bg-green-100' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`}>
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
                   <button onClick={() => toggleMutation.mutate({ id: u.id, isActive: !u.isActive })}
                     className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-colors
                       ${u.isActive ? 'border-gray-200 text-gray-500 hover:bg-gray-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}>

@@ -5,6 +5,7 @@ export interface User {
   phone?: string;
   role: { name: string; description: string };
   isActive: boolean;
+  whatsappOptIn?: boolean;
   lastLogin?: string;
 }
 
@@ -275,4 +276,16 @@ export interface AppNotification {
   entityId?: string | null;
   isRead:    boolean;
   createdAt: string;
+}
+
+// ── Contactos de notificación externos ─────────────────────────
+export interface NotificationContact {
+  id:        string;
+  name:      string;
+  phone?:    string | null;
+  email?:    string | null;
+  isActive:  boolean;
+  createdBy: { id: string; name: string };
+  createdAt: string;
+  updatedAt: string;
 }

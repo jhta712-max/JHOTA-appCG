@@ -40,13 +40,15 @@ model User {
   phone      String?   @db.VarChar(20)
   avatarUrl  String?   @map("avatar_url") @db.VarChar(500)
   isActive   Boolean   @default(true) @map("is_active")
+  whatsappOptIn Boolean @default(false) @map("whatsapp_opt_in")
   lastLogin  DateTime? @map("last_login")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
-  role          Role               @relation(fields: [roleId], references: [id])
-  notifications Notification[]
-  projects      Project[]          @relation("ProjectCreatedBy")
+  role                  Role                   @relation(fields: [roleId], references: [id])
+  notifications         Notification[]
+  notificationContacts  NotificationContact[]  @relation("ContactCreatedBy")
+  projects              Project[]              @relation("ProjectCreatedBy")
   expenses      Expense[]          @relation("ExpenseRegisteredBy")
   voidedExpenses Expense[]         @relation("ExpenseVoidedBy")
   attachments   Attachment[]
@@ -862,4 +864,23 @@ model Notification {
   @@index([userId, createdAt])
   @@index([type, entityId])
   @@map("notifications")
+}
+
+// ============================================================
+// CONTACTOS DE NOTIFICACIÓN (externos, no requieren cuenta)
+// ============================================================
+model NotificationContact {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(100)
+  phone       String?  @db.VarChar(30)    // formato +18091234567
+  email       String?  @db.VarChar(150)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdById String   @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  createdBy User @relation("ContactCreatedBy", fields: [createdById], references: [id])
+
+  @@index([isActive])
+  @@map("notification_contacts")
 }

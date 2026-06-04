@@ -480,7 +480,7 @@ export const suppliersApi = {
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────
-import type { AppNotification } from '../types';
+import type { AppNotification, NotificationContact } from '../types';
 
 export const notificationsApi = {
   list:        () =>
@@ -491,6 +491,18 @@ export const notificationsApi = {
     api.patch<{ success: boolean }>(`/notifications/${id}/read`),
   markAllRead: () =>
     api.patch<{ success: boolean }>('/notifications/read-all'),
+};
+
+// ── Contactos de notificación externos ───────────────────────
+export const notificationContactsApi = {
+  list:   () =>
+    api.get<{ success: boolean; data: NotificationContact[] }>('/notification-contacts'),
+  create: (data: { name: string; phone?: string | null; email?: string | null }) =>
+    api.post<{ success: boolean; data: NotificationContact }>('/notification-contacts', data),
+  update: (id: string, data: { name?: string; phone?: string | null; email?: string | null; isActive?: boolean }) =>
+    api.put<{ success: boolean; data: NotificationContact }>(`/notification-contacts/${id}`, data),
+  remove: (id: string) =>
+    api.delete(`/notification-contacts/${id}`),
 };
 
 // ── Monitoreo ─────────────────────────────────────────────────
