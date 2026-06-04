@@ -77,10 +77,10 @@ export default function PayrollDetailPage() {
   const approveMut    = useMutation({ mutationFn: () => payrollApi.approve(id!),               onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al aprobar') });
   const payMut        = useMutation({ mutationFn: (d: unknown) => payrollApi.pay(id!, d),      onSuccess: () => { invalidate(); setPayModal(false); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al marcar pagada') });
   const voidMut       = useMutation({ mutationFn: () => payrollApi.void(id!, voidReason),      onSuccess: () => { invalidate(); setVoidModal(false); setVoidReason(''); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al anular') });
-  const deleteMut     = useMutation({ mutationFn: () => payrollApi.delete(id!),                onSuccess: () => navigate('/payrolls') });
+  const deleteMut     = useMutation({ mutationFn: () => payrollApi.delete(id!),                onSuccess: () => navigate('/payrolls'), onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al eliminar nómina') });
   const addLineMut    = useMutation({ mutationFn: (d: unknown) => payrollApi.addLine(id!, d),  onSuccess: () => { invalidate(); setAddingLine(false); setLineForm(emptyLine); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al agregar línea') });
   const updateLineMut = useMutation({ mutationFn: ({ lineId, d }: { lineId: string; d: unknown }) => payrollApi.updateLine(id!, lineId, d), onSuccess: () => { invalidate(); setEditLineId(null); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al actualizar línea') });
-  const deleteLineMut   = useMutation({ mutationFn: (lineId: string) => payrollApi.deleteLine(id!, lineId), onSuccess: invalidate });
+  const deleteLineMut   = useMutation({ mutationFn: (lineId: string) => payrollApi.deleteLine(id!, lineId), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al eliminar línea') });
   const revertDraftMut    = useMutation({ mutationFn: () => payrollApi.revertToDraft(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al revertir') });
   const importOrdersMut   = useMutation({ mutationFn: () => payrollApi.importFromOrders(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al importar') });
   const recordPaymentMut  = useMutation({

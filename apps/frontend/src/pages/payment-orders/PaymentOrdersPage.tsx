@@ -1094,11 +1094,14 @@ export default function PaymentOrdersPage() {
       {/* ── MODAL: VINCULAR NÓMINA ─────────────────────────── */}
       {linkPayrollModal && viewingOrder && (
         <Modal title="📋 Vincular nómina a esta orden" onClose={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}>
-          {projectPayrolls.length === 0 ? (
-            <p className="text-gray-400 text-sm py-4 text-center">No hay nóminas registradas para este proyecto.</p>
+          {projectPayrolls.filter((p: any) => p.status === 'APPROVED').length === 0 ? (
+            <div className="text-center py-4 text-gray-400">
+              <p className="text-sm">No hay nóminas aprobadas para este proyecto.</p>
+              <p className="text-xs mt-1">Solo se pueden vincular nóminas con estado <strong>Aprobada</strong>.</p>
+            </div>
           ) : (
             <div className="space-y-2 max-h-72 overflow-y-auto">
-              {projectPayrolls.map((p: any) => (
+              {projectPayrolls.filter((p: any) => p.status === 'APPROVED').map((p: any) => (
                 <label key={p.id}
                   className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${selectedPayrollId === p.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
                   <input type="radio" name="payroll-select" checked={selectedPayrollId === p.id}
