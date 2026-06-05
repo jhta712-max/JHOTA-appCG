@@ -556,15 +556,15 @@ export const contratosAjustadosApi = {
 // ── Suscripciones de Servicios ────────────────────────────────
 export const serviceSubscriptionsApi = {
   overview:  () =>
-    api.get<{ success: boolean; data: import('../types').SubscriptionsOverview }>('/api/v1/monitoring/subscriptions'),
+    api.get<{ success: boolean; data: import('../types').SubscriptionsOverview }>('/monitoring/subscriptions'),
   list:      () =>
-    api.get<{ success: boolean; data: import('../types').ServiceSubscription[] }>('/api/v1/service-subscriptions'),
+    api.get<{ success: boolean; data: import('../types').ServiceSubscription[] }>('/service-subscriptions'),
   create:    (d: unknown) =>
-    api.post<{ success: boolean; data: import('../types').ServiceSubscription }>('/api/v1/service-subscriptions', d),
+    api.post<{ success: boolean; data: import('../types').ServiceSubscription }>('/service-subscriptions', d),
   update:    (id: string, d: unknown) =>
-    api.put<{ success: boolean; data: import('../types').ServiceSubscription }>(`/api/v1/service-subscriptions/${id}`, d),
+    api.put<{ success: boolean; data: import('../types').ServiceSubscription }>(`/service-subscriptions/${id}`, d),
   remove:    (id: string) =>
-    api.delete(`/api/v1/service-subscriptions/${id}`),
+    api.delete(`/service-subscriptions/${id}`),
   exportCsv: () =>
-    api.get('/api/v1/service-subscriptions/export/csv', { responseType: 'blob' }),
+    api.get('/service-subscriptions/export/csv', { responseType: 'blob' }),
 };
