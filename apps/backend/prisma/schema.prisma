@@ -17,7 +17,7 @@ datasource db {
 // ============================================================
 model Role {
   id          Int      @id @default(autoincrement())
-  name        String   @unique @db.VarChar(50)   // 'admin' | 'supervisor' | 'operator'
+  name        String   @unique @db.VarChar(50) // 'admin' | 'supervisor' | 'operator'
   description String?  @db.Text
   permissions Json     @default("{}")
   createdAt   DateTime @default(now()) @map("created_at")
@@ -32,48 +32,48 @@ model Role {
 // USUARIOS
 // ============================================================
 model User {
-  id         String    @id @default(uuid()) @db.Uuid
-  roleId     Int       @map("role_id")
-  name       String    @db.VarChar(100)
-  email      String    @unique @db.VarChar(150)
-  password   String    @db.VarChar(255)
-  phone      String?   @db.VarChar(20)
-  avatarUrl  String?   @map("avatar_url") @db.VarChar(500)
-  isActive   Boolean   @default(true) @map("is_active")
-  whatsappOptIn Boolean @default(false) @map("whatsapp_opt_in")
-  lastLogin  DateTime? @map("last_login")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  id            String    @id @default(uuid()) @db.Uuid
+  roleId        Int       @map("role_id")
+  name          String    @db.VarChar(100)
+  email         String    @unique @db.VarChar(150)
+  password      String    @db.VarChar(255)
+  phone         String?   @db.VarChar(20)
+  avatarUrl     String?   @map("avatar_url") @db.VarChar(500)
+  isActive      Boolean   @default(true) @map("is_active")
+  whatsappOptIn Boolean   @default(false) @map("whatsapp_opt_in")
+  lastLogin     DateTime? @map("last_login")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  role                  Role                   @relation(fields: [roleId], references: [id])
-  notifications         Notification[]
-  notificationContacts  NotificationContact[]  @relation("ContactCreatedBy")
-  projects              Project[]              @relation("ProjectCreatedBy")
-  expenses         Expense[]          @relation("ExpenseRegisteredBy")
-  voidedExpenses   Expense[]          @relation("ExpenseVoidedBy")
-  approvedExpenses Expense[]          @relation("ExpenseApprovedBy")
-  rejectedExpenses Expense[]          @relation("ExpenseRejectedBy")
-  attachments   Attachment[]
-  auditLogs     AuditLog[]
-  refreshTokens RefreshToken[]
-  invitationsSent Invitation[]     @relation("InvitedBy")
-  addendums           ProjectAddendum[]   @relation("AddendumCreatedBy")
-  cubicaciones        ProjectCubicacion[] @relation("CubicacionCreatedBy")
-  projectAssignments  ProjectAssignment[] @relation("AssignedToProject")
-  assignmentsMade     ProjectAssignment[] @relation("AssignedByUser")
-  payrollsCreated     Payroll[]           @relation("PayrollCreatedBy")
-  payrollsApproved    Payroll[]           @relation("PayrollApprovedBy")
-  payrollsVoided      Payroll[]           @relation("PayrollVoidedBy")
-  quotationsCreated       Quotation[]            @relation("QuotationCreatedBy")
-  quotationPayments       QuotationPayment[]     @relation("QuotationPaymentCreatedBy")
-  quotationLinks          QuotationExpenseLink[] @relation("QuotationLinkCreatedBy")
-  quotationAttachments    QuotationAttachment[]
-  paymentOrdersCreated    PaymentOrder[]         @relation("PaymentOrderCreatedBy")
-  paymentOrdersPaid       PaymentOrder[]         @relation("PaymentOrderPaidBy")
-  officeExpenses          OfficeExpense[]        @relation("OfficeExpenseCreatedBy")
-  suppliersCreated        Supplier[]             @relation("SupplierCreatedBy")
-  contratosAjustadosCreated ContratoAjustado[] @relation("ContratoAjustadoCreatedBy")
-  contratosAjustadosUpdated ContratoAjustado[] @relation("ContratoAjustadoUpdatedBy")
+  role                      Role                   @relation(fields: [roleId], references: [id])
+  notifications             Notification[]
+  notificationContacts      NotificationContact[]  @relation("ContactCreatedBy")
+  projects                  Project[]              @relation("ProjectCreatedBy")
+  expenses                  Expense[]              @relation("ExpenseRegisteredBy")
+  voidedExpenses            Expense[]              @relation("ExpenseVoidedBy")
+  approvedExpenses          Expense[]              @relation("ExpenseApprovedBy")
+  rejectedExpenses          Expense[]              @relation("ExpenseRejectedBy")
+  attachments               Attachment[]
+  auditLogs                 AuditLog[]
+  refreshTokens             RefreshToken[]
+  invitationsSent           Invitation[]           @relation("InvitedBy")
+  addendums                 ProjectAddendum[]      @relation("AddendumCreatedBy")
+  cubicaciones              ProjectCubicacion[]    @relation("CubicacionCreatedBy")
+  projectAssignments        ProjectAssignment[]    @relation("AssignedToProject")
+  assignmentsMade           ProjectAssignment[]    @relation("AssignedByUser")
+  payrollsCreated           Payroll[]              @relation("PayrollCreatedBy")
+  payrollsApproved          Payroll[]              @relation("PayrollApprovedBy")
+  payrollsVoided            Payroll[]              @relation("PayrollVoidedBy")
+  quotationsCreated         Quotation[]            @relation("QuotationCreatedBy")
+  quotationPayments         QuotationPayment[]     @relation("QuotationPaymentCreatedBy")
+  quotationLinks            QuotationExpenseLink[] @relation("QuotationLinkCreatedBy")
+  quotationAttachments      QuotationAttachment[]
+  paymentOrdersCreated      PaymentOrder[]         @relation("PaymentOrderCreatedBy")
+  paymentOrdersPaid         PaymentOrder[]         @relation("PaymentOrderPaidBy")
+  officeExpenses            OfficeExpense[]        @relation("OfficeExpenseCreatedBy")
+  suppliersCreated          Supplier[]             @relation("SupplierCreatedBy")
+  contratosAjustadosCreated ContratoAjustado[]     @relation("ContratoAjustadoCreatedBy")
+  contratosAjustadosUpdated ContratoAjustado[]     @relation("ContratoAjustadoUpdatedBy")
 
   @@index([email])
   @@index([roleId])
@@ -85,7 +85,7 @@ model User {
 // ============================================================
 model Project {
   id              String        @id @default(uuid()) @db.Uuid
-  code            String        @unique @db.VarChar(30)  // ej. PROJ-2026-001
+  code            String        @unique @db.VarChar(30) // ej. PROJ-2026-001
   name            String        @db.VarChar(200)
   client          String?       @db.VarChar(200)
   location        String?       @db.VarChar(300)
@@ -98,17 +98,17 @@ model Project {
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  createdBy     User                 @relation("ProjectCreatedBy", fields: [createdById], references: [id])
-  expenses      Expense[]
-  addendums     ProjectAddendum[]
-  cubicaciones  ProjectCubicacion[]
-  assignments   ProjectAssignment[]
-  payrolls      Payroll[]
-  quotations    Quotation[]
-  paymentOrders PaymentOrder[]
-  batches       Batch[]
-  contratosAjustados ContratoAjustado[] @relation("ProjectContratosAjustados")
-  batchesEnabled Boolean             @default(false) @map("batches_enabled")
+  createdBy          User                @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  expenses           Expense[]
+  addendums          ProjectAddendum[]
+  cubicaciones       ProjectCubicacion[]
+  assignments        ProjectAssignment[]
+  payrolls           Payroll[]
+  quotations         Quotation[]
+  paymentOrders      PaymentOrder[]
+  batches            Batch[]
+  contratosAjustados ContratoAjustado[]  @relation("ProjectContratosAjustados")
+  batchesEnabled     Boolean             @default(false) @map("batches_enabled")
 
   @@index([code])
   @@index([status])
@@ -122,8 +122,8 @@ model Project {
 model ProjectAssignment {
   id           String   @id @default(uuid()) @db.Uuid
   projectId    String   @map("project_id") @db.Uuid
-  userId       String   @map("user_id") @db.Uuid        // operador asignado
-  assignedById String   @map("assigned_by") @db.Uuid   // quien asignó
+  userId       String   @map("user_id") @db.Uuid // operador asignado
+  assignedById String   @map("assigned_by") @db.Uuid // quien asignó
   createdAt    DateTime @default(now()) @map("created_at")
 
   project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -142,7 +142,7 @@ model ProjectAssignment {
 model ProjectAddendum {
   id          String   @id @default(uuid()) @db.Uuid
   projectId   String   @map("project_id") @db.Uuid
-  number      Int      // Adenda #1, #2, #3... — autoincremental por proyecto
+  number      Int // Adenda #1, #2, #3... — autoincremental por proyecto
   amount      Decimal  @db.Decimal(15, 2)
   description String   @db.Text
   date        DateTime @db.Date
@@ -164,9 +164,9 @@ model ProjectAddendum {
 model ProjectCubicacion {
   id          String   @id @default(uuid()) @db.Uuid
   projectId   String   @map("project_id") @db.Uuid
-  number      Int      // Cubicación #1, #2, #3... — autoincremental por proyecto
+  number      Int // Cubicación #1, #2, #3... — autoincremental por proyecto
   amount      Decimal  @db.Decimal(15, 2)
-  progressPct Decimal  @default(0) @map("progress_pct") @db.Decimal(5, 2)  // % avance físico
+  progressPct Decimal  @default(0) @map("progress_pct") @db.Decimal(5, 2) // % avance físico
   description String   @db.Text
   date        DateTime @db.Date
   createdById String   @map("created_by") @db.Uuid
@@ -194,14 +194,14 @@ enum ProjectStatus {
 // TARJETAS CORPORATIVAS
 // ============================================================
 model CompanyCard {
-  id          Int       @id @default(autoincrement())
-  holderName  String    @map("holder_name") @db.VarChar(150)  // Nombre del tarjetahabiente
-  lastFour    String    @map("last_four") @db.VarChar(4)       // Últimos 4 dígitos
-  cardType    String    @map("card_type") @db.VarChar(30)      // VISA | MASTERCARD | AMEX | OTHER
-  bank        String    @db.VarChar(100)                        // Banco emisor
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id         Int      @id @default(autoincrement())
+  holderName String   @map("holder_name") @db.VarChar(150) // Nombre del tarjetahabiente
+  lastFour   String   @map("last_four") @db.VarChar(4) // Últimos 4 dígitos
+  cardType   String   @map("card_type") @db.VarChar(30) // VISA | MASTERCARD | AMEX | OTHER
+  bank       String   @db.VarChar(100) // Banco emisor
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   expenses       Expense[]
   officeExpenses OfficeExpense[]
@@ -218,7 +218,7 @@ model ExpenseCategory {
   description String?  @db.Text
   icon        String?  @db.VarChar(50)
   isActive    Boolean  @default(true) @map("is_active")
-  isSystem    Boolean  @default(false) @map("is_system")  // Las 8 categorías base no se eliminan
+  isSystem    Boolean  @default(false) @map("is_system") // Las 8 categorías base no se eliminan
   createdAt   DateTime @default(now()) @map("created_at")
 
   expenses   Expense[]
@@ -231,50 +231,50 @@ model ExpenseCategory {
 // GASTOS
 // ============================================================
 model Expense {
-  id            String        @id @default(uuid()) @db.Uuid
-  projectId     String        @map("project_id") @db.Uuid
-  categoryId    Int           @map("category_id")
-  userId        String        @map("user_id") @db.Uuid
-  expenseDate   DateTime      @map("expense_date") @db.Date
-  amount        Decimal       @db.Decimal(15, 2)
-  description   String        @db.Text
-  paymentMethod PaymentMethod @map("payment_method")
-  companyCardId Int?          @map("company_card_id")          // Requerido si paymentMethod = CARD
+  id              String        @id @default(uuid()) @db.Uuid
+  projectId       String        @map("project_id") @db.Uuid
+  categoryId      Int           @map("category_id")
+  userId          String        @map("user_id") @db.Uuid
+  expenseDate     DateTime      @map("expense_date") @db.Date
+  amount          Decimal       @db.Decimal(15, 2)
+  description     String        @db.Text
+  paymentMethod   PaymentMethod @map("payment_method")
+  companyCardId   Int?          @map("company_card_id") // Requerido si paymentMethod = CARD
   hasFiscalDoc    Boolean       @default(false) @map("has_fiscal_doc")
   // Moneda extranjera (opcional)
-  foreignAmount   Decimal?      @map("foreign_amount")   @db.Decimal(15, 2)
-  foreignCurrency String?       @map("foreign_currency") @db.VarChar(10)  // USD, EUR, etc.
-  exchangeRate    Decimal?      @map("exchange_rate")    @db.Decimal(10, 4) // 1 USD = X DOP
+  foreignAmount   Decimal?      @map("foreign_amount") @db.Decimal(15, 2)
+  foreignCurrency String?       @map("foreign_currency") @db.VarChar(10) // USD, EUR, etc.
+  exchangeRate    Decimal?      @map("exchange_rate") @db.Decimal(10, 4) // 1 USD = X DOP
   notes           String?       @db.Text
-  status        ExpenseStatus @default(PENDING_APPROVAL)
-  voidedAt      DateTime?     @map("voided_at")
-  voidedById    String?       @map("voided_by") @db.Uuid
-  voidReason    String?       @map("void_reason") @db.Text
-  rejectionReason String?     @map("rejection_reason") @db.Text
-  approvedById  String?       @map("approved_by_id") @db.Uuid
-  approvedAt    DateTime?     @map("approved_at")
-  rejectedById  String?       @map("rejected_by_id") @db.Uuid
-  rejectedAt    DateTime?     @map("rejected_at")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+  status          ExpenseStatus @default(PENDING_APPROVAL)
+  voidedAt        DateTime?     @map("voided_at")
+  voidedById      String?       @map("voided_by") @db.Uuid
+  voidReason      String?       @map("void_reason") @db.Text
+  rejectionReason String?       @map("rejection_reason") @db.Text
+  approvedById    String?       @map("approved_by_id") @db.Uuid
+  approvedAt      DateTime?     @map("approved_at")
+  rejectedById    String?       @map("rejected_by_id") @db.Uuid
+  rejectedAt      DateTime?     @map("rejected_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  project      Project          @relation(fields: [projectId], references: [id])
-  category     ExpenseCategory  @relation(fields: [categoryId], references: [id])
-  companyCard  CompanyCard?     @relation(fields: [companyCardId], references: [id])
-  registeredBy User             @relation("ExpenseRegisteredBy", fields: [userId], references: [id])
-  voidedBy     User?            @relation("ExpenseVoidedBy", fields: [voidedById], references: [id])
-  approvedBy   User?            @relation("ExpenseApprovedBy", fields: [approvedById], references: [id])
-  rejectedBy   User?            @relation("ExpenseRejectedBy", fields: [rejectedById], references: [id])
-  batchItemId  String?          @map("batch_item_id") @db.Uuid
-  batchItem    BatchItem?       @relation(fields: [batchItemId], references: [id], onDelete: SetNull)
-  contratoAjustadoId String?          @map("contrato_ajustado_id") @db.Uuid
-  contratoAjustado   ContratoAjustado? @relation("ExpenseContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
-  fiscalVoucher FiscalVoucher?
-  attachments  Attachment[]
-  payrollLine    PayrollLine?          @relation("PayrollLineExpense")
-  quotationPayment QuotationPayment?  @relation("QuotationPaymentExpense")
-  quotationLink    QuotationExpenseLink? @relation("QuotationExpenseLink")
-  paymentOrder   PaymentOrder?         @relation("PaymentOrderExpense")
+  project            Project               @relation(fields: [projectId], references: [id])
+  category           ExpenseCategory       @relation(fields: [categoryId], references: [id])
+  companyCard        CompanyCard?          @relation(fields: [companyCardId], references: [id])
+  registeredBy       User                  @relation("ExpenseRegisteredBy", fields: [userId], references: [id])
+  voidedBy           User?                 @relation("ExpenseVoidedBy", fields: [voidedById], references: [id])
+  approvedBy         User?                 @relation("ExpenseApprovedBy", fields: [approvedById], references: [id])
+  rejectedBy         User?                 @relation("ExpenseRejectedBy", fields: [rejectedById], references: [id])
+  batchItemId        String?               @map("batch_item_id") @db.Uuid
+  batchItem          BatchItem?            @relation(fields: [batchItemId], references: [id], onDelete: SetNull)
+  contratoAjustadoId String?               @map("contrato_ajustado_id") @db.Uuid
+  contratoAjustado   ContratoAjustado?     @relation("ExpenseContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
+  fiscalVoucher      FiscalVoucher?
+  attachments        Attachment[]
+  payrollLine        PayrollLine?          @relation("PayrollLineExpense")
+  quotationPayment   QuotationPayment?     @relation("QuotationPaymentExpense")
+  quotationLink      QuotationExpenseLink? @relation("QuotationExpenseLink")
+  paymentOrder       PaymentOrder?         @relation("PaymentOrderExpense")
 
   @@index([projectId])
   @@index([expenseDate])
@@ -314,15 +314,15 @@ enum ExpenseStatus {
 // e-NCF electrónico: E    + 12 dígitos  = 13 chars  ej. E310000000001
 // ============================================================
 model FiscalVoucher {
-  id            String   @id @default(uuid()) @db.Uuid
-  expenseId     String   @unique @map("expense_id") @db.Uuid
-  ncf           String   @db.VarChar(13)  // 11 chars NCF | 13 chars e-NCF
-  ncfType       String   @map("ncf_type") @db.VarChar(3)   // 'B01' o 'E31'
-  isElectronic  Boolean  @default(false) @map("is_electronic")
-  supplierRnc   String   @map("supplier_rnc") @db.VarChar(11)
-  supplierName  String   @map("supplier_name") @db.VarChar(200)
-  itbisAmount   Decimal  @default(0) @map("itbis_amount") @db.Decimal(15, 2)
-  createdAt     DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid()) @db.Uuid
+  expenseId    String   @unique @map("expense_id") @db.Uuid
+  ncf          String   @db.VarChar(13) // 11 chars NCF | 13 chars e-NCF
+  ncfType      String   @map("ncf_type") @db.VarChar(3) // 'B01' o 'E31'
+  isElectronic Boolean  @default(false) @map("is_electronic")
+  supplierRnc  String   @map("supplier_rnc") @db.VarChar(11)
+  supplierName String   @map("supplier_name") @db.VarChar(200)
+  itbisAmount  Decimal  @default(0) @map("itbis_amount") @db.Decimal(15, 2)
+  createdAt    DateTime @default(now()) @map("created_at")
 
   expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
 
@@ -335,15 +335,15 @@ model FiscalVoucher {
 // ADJUNTOS (fotos de facturas, documentos)
 // ============================================================
 model Attachment {
-  id          String   @id @default(uuid()) @db.Uuid
-  expenseId   String   @map("expense_id") @db.Uuid
-  uploadedById String  @map("uploaded_by") @db.Uuid
-  fileName    String   @map("file_name") @db.VarChar(255)
-  filePath    String   @map("file_path") @db.VarChar(500)
-  fileSize    Int      @map("file_size")
-  mimeType    String   @map("mime_type") @db.VarChar(100)
-  isPrimary   Boolean  @default(false) @map("is_primary")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid()) @db.Uuid
+  expenseId    String   @map("expense_id") @db.Uuid
+  uploadedById String   @map("uploaded_by") @db.Uuid
+  fileName     String   @map("file_name") @db.VarChar(255)
+  filePath     String   @map("file_path") @db.VarChar(500)
+  fileSize     Int      @map("file_size")
+  mimeType     String   @map("mime_type") @db.VarChar(100)
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   expense    Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
   uploadedBy User    @relation(fields: [uploadedById], references: [id])
@@ -356,16 +356,16 @@ model Attachment {
 // LOG DE AUDITORÍA
 // ============================================================
 model AuditLog {
-  id        BigInt   @id @default(autoincrement())
-  userId    String?  @map("user_id") @db.Uuid
-  tableName String   @map("table_name") @db.VarChar(50)
-  recordId  String   @map("record_id") @db.VarChar(100)
+  id        BigInt      @id @default(autoincrement())
+  userId    String?     @map("user_id") @db.Uuid
+  tableName String      @map("table_name") @db.VarChar(50)
+  recordId  String      @map("record_id") @db.VarChar(100)
   action    AuditAction
-  oldData   Json?    @map("old_data")
-  newData   Json?    @map("new_data")
-  ipAddress String?  @map("ip_address") @db.VarChar(45)
-  userAgent String?  @map("user_agent") @db.VarChar(500)
-  createdAt DateTime @default(now()) @map("created_at")
+  oldData   Json?       @map("old_data")
+  newData   Json?       @map("new_data")
+  ipAddress String?     @map("ip_address") @db.VarChar(45)
+  userAgent String?     @map("user_agent") @db.VarChar(500)
+  createdAt DateTime    @default(now()) @map("created_at")
 
   user User? @relation(fields: [userId], references: [id])
 
@@ -408,36 +408,36 @@ model Invitation {
 // NÓMINAS POR PROYECTO
 // ============================================================
 model Payroll {
-  id           String        @id @default(uuid()) @db.Uuid
-  projectId    String        @map("project_id") @db.Uuid
-  number       Int           // NOM-001, NOM-002 — autoincremental por proyecto
-  periodStart  DateTime      @map("period_start") @db.Date
-  periodEnd    DateTime      @map("period_end") @db.Date
-  type         PayrollType   @default(LABOR)
-  status       PayrollStatus @default(DRAFT)
-  description  String        @db.Text
-  totalAmount  Decimal       @default(0) @map("total_amount") @db.Decimal(15, 2)
-  notes        String?       @db.Text
-  createdById  String        @map("created_by") @db.Uuid
-  approvedById String?       @map("approved_by") @db.Uuid
-  approvedAt   DateTime?     @map("approved_at")
-  paidAt            DateTime? @map("paid_at")
-  paymentMethod     String?   @map("payment_method")     @db.VarChar(20)  // CASH | TRANSFER
-  paymentDate       DateTime? @map("payment_date")       @db.Date
-  paymentBank       String?   @map("payment_bank")       @db.VarChar(100) // transferencia
-  paymentReference  String?   @map("payment_reference")  @db.VarChar(100) // transferencia
-  receiptNumber     String?   @map("receipt_number")     @db.VarChar(50)  // efectivo
-  receivedBy        String?   @map("received_by")        @db.VarChar(100) // efectivo
-  voidedAt          DateTime? @map("voided_at")
-  voidedById   String?       @map("voided_by") @db.Uuid
-  voidReason   String?       @map("void_reason") @db.Text
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
+  id               String        @id @default(uuid()) @db.Uuid
+  projectId        String        @map("project_id") @db.Uuid
+  number           Int // NOM-001, NOM-002 — autoincremental por proyecto
+  periodStart      DateTime      @map("period_start") @db.Date
+  periodEnd        DateTime      @map("period_end") @db.Date
+  type             PayrollType   @default(LABOR)
+  status           PayrollStatus @default(DRAFT)
+  description      String        @db.Text
+  totalAmount      Decimal       @default(0) @map("total_amount") @db.Decimal(15, 2)
+  notes            String?       @db.Text
+  createdById      String        @map("created_by") @db.Uuid
+  approvedById     String?       @map("approved_by") @db.Uuid
+  approvedAt       DateTime?     @map("approved_at")
+  paidAt           DateTime?     @map("paid_at")
+  paymentMethod    String?       @map("payment_method") @db.VarChar(20) // CASH | TRANSFER
+  paymentDate      DateTime?     @map("payment_date") @db.Date
+  paymentBank      String?       @map("payment_bank") @db.VarChar(100) // transferencia
+  paymentReference String?       @map("payment_reference") @db.VarChar(100) // transferencia
+  receiptNumber    String?       @map("receipt_number") @db.VarChar(50) // efectivo
+  receivedBy       String?       @map("received_by") @db.VarChar(100) // efectivo
+  voidedAt         DateTime?     @map("voided_at")
+  voidedById       String?       @map("voided_by") @db.Uuid
+  voidReason       String?       @map("void_reason") @db.Text
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
 
-  project    Project          @relation(fields: [projectId], references: [id])
-  createdBy  User             @relation("PayrollCreatedBy", fields: [createdById], references: [id])
-  approvedBy User?            @relation("PayrollApprovedBy", fields: [approvedById], references: [id])
-  voidedBy   User?            @relation("PayrollVoidedBy", fields: [voidedById], references: [id])
+  project      Project       @relation(fields: [projectId], references: [id])
+  createdBy    User          @relation("PayrollCreatedBy", fields: [createdById], references: [id])
+  approvedBy   User?         @relation("PayrollApprovedBy", fields: [approvedById], references: [id])
+  voidedBy     User?         @relation("PayrollVoidedBy", fields: [voidedById], references: [id])
   paymentOrder PaymentOrder?
   lines        PayrollLine[]
 
@@ -449,30 +449,30 @@ model Payroll {
 }
 
 model PayrollLine {
-  id          String   @id @default(uuid()) @db.Uuid
-  payrollId   String   @map("payroll_id") @db.Uuid
-  lineNumber  Int      @map("line_number")
-  description String   @db.VarChar(300)
-  quantity    Decimal  @db.Decimal(10, 3)
-  unit        String   @db.VarChar(30)        // Hrs, Días, Glb, m², etc.
-  unitPrice   Decimal  @map("unit_price") @db.Decimal(15, 2)
-  subtotal    Decimal  @db.Decimal(15, 2)     // quantity * unitPrice (computed, stored)
-  notes        String?  @db.VarChar(300)
-  supplierName String?  @map("supplier_name") @db.VarChar(200) // Nombre del suplidor / trabajador
-  bankName          String?   @map("bank_name")          @db.VarChar(100) // Banco receptor del beneficiario
-  bankAccount       String?   @map("bank_account")        @db.VarChar(100) // Cuenta del beneficiario
+  id                 String    @id @default(uuid()) @db.Uuid
+  payrollId          String    @map("payroll_id") @db.Uuid
+  lineNumber         Int       @map("line_number")
+  description        String    @db.VarChar(300)
+  quantity           Decimal   @db.Decimal(10, 3)
+  unit               String    @db.VarChar(30) // Hrs, Días, Glb, m², etc.
+  unitPrice          Decimal   @map("unit_price") @db.Decimal(15, 2)
+  subtotal           Decimal   @db.Decimal(15, 2) // quantity * unitPrice (computed, stored)
+  notes              String?   @db.VarChar(300)
+  supplierName       String?   @map("supplier_name") @db.VarChar(200) // Nombre del suplidor / trabajador
+  bankName           String?   @map("bank_name") @db.VarChar(100) // Banco receptor del beneficiario
+  bankAccount        String?   @map("bank_account") @db.VarChar(100) // Cuenta del beneficiario
   // Comprobante de pago individual
-  paymentBank       String?   @map("payment_bank")        @db.VarChar(100) // Banco desde donde se transfirió
-  paymentReference  String?   @map("payment_reference")   @db.VarChar(100) // No. de transacción / comprobante
-  paidAt            DateTime? @map("paid_at")                               // Fecha de la transferencia
+  paymentBank        String?   @map("payment_bank") @db.VarChar(100) // Banco desde donde se transfirió
+  paymentReference   String?   @map("payment_reference") @db.VarChar(100) // No. de transacción / comprobante
+  paidAt             DateTime? @map("paid_at") // Fecha de la transferencia
   contratoAjustadoId String?   @map("contrato_ajustado_id") @db.Uuid
-  expenseId    String? @unique @map("expense_id") @db.Uuid
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  expenseId          String?   @unique @map("expense_id") @db.Uuid
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  payroll Payroll @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+  payroll          Payroll           @relation(fields: [payrollId], references: [id], onDelete: Cascade)
   contratoAjustado ContratoAjustado? @relation("PayrollLineContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
-  expense Expense? @relation("PayrollLineExpense", fields: [expenseId], references: [id], onDelete: SetNull)
+  expense          Expense?          @relation("PayrollLineExpense", fields: [expenseId], references: [id], onDelete: SetNull)
 
   @@unique([payrollId, lineNumber])
   @@index([payrollId])
@@ -491,8 +491,8 @@ enum PayrollStatus {
 }
 
 enum PayrollType {
-  LABOR    // Mano de obra
-  SERVICE  // Servicios contratados
+  LABOR // Mano de obra
+  SERVICE // Servicios contratados
 
   @@map("payroll_type")
 }
@@ -502,17 +502,17 @@ enum PayrollType {
 // ============================================================
 model SystemLog {
   id         String   @id @default(uuid()) @db.Uuid
-  level      String   @db.VarChar(10)    // error | warn | info
-  category   String   @db.VarChar(50)    // api | database | auth | cron | system
+  level      String   @db.VarChar(10) // error | warn | info
+  category   String   @db.VarChar(50) // api | database | auth | cron | system
   message    String   @db.Text
-  details    Json?                        // stack trace, request body, etc.
-  userId     String?  @map("user_id")    @db.Uuid
+  details    Json? // stack trace, request body, etc.
+  userId     String?  @map("user_id") @db.Uuid
   endpoint   String?  @db.VarChar(200)
   method     String?  @db.VarChar(10)
   statusCode Int?     @map("status_code")
-  duration   Int?                         // ms
+  duration   Int? // ms
   ipAddress  String?  @map("ip_address") @db.VarChar(50)
-  createdAt  DateTime @default(now())    @map("created_at")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([level])
   @@index([category])
@@ -521,14 +521,14 @@ model SystemLog {
 }
 
 model HealthCheckResult {
-  id           String   @id @default(uuid()) @db.Uuid
-  status       String   @db.VarChar(20)   // healthy | degraded | unhealthy
-  dbOk         Boolean  @map("db_ok")
-  memoryUsedPct Float   @map("memory_used_pct")
-  uptimeSeconds Float   @map("uptime_seconds")
-  responseTime Int      @map("response_time") // ms
-  details      Json?
-  createdAt    DateTime @default(now()) @map("created_at")
+  id            String   @id @default(uuid()) @db.Uuid
+  status        String   @db.VarChar(20) // healthy | degraded | unhealthy
+  dbOk          Boolean  @map("db_ok")
+  memoryUsedPct Float    @map("memory_used_pct")
+  uptimeSeconds Float    @map("uptime_seconds")
+  responseTime  Int      @map("response_time") // ms
+  details       Json?
+  createdAt     DateTime @default(now()) @map("created_at")
 
   @@index([status])
   @@index([createdAt])
@@ -557,68 +557,68 @@ model RefreshToken {
 // ============================================================
 
 enum QuotationStatus {
-  PENDING           // Cotización recibida, pendiente de aprobación
-  APPROVED          // Aprobada para proceder
-  ADVANCE_PAID      // Al menos un anticipo pagado
-  IN_PROGRESS       // En ejecución / fabricación
-  PARTIAL_INVOICED  // Factura parcial recibida
-  INVOICED          // Factura completa recibida
-  PAID              // Pagada completamente
-  CANCELLED         // Cancelada
+  PENDING // Cotización recibida, pendiente de aprobación
+  APPROVED // Aprobada para proceder
+  ADVANCE_PAID // Al menos un anticipo pagado
+  IN_PROGRESS // En ejecución / fabricación
+  PARTIAL_INVOICED // Factura parcial recibida
+  INVOICED // Factura completa recibida
+  PAID // Pagada completamente
+  CANCELLED // Cancelada
 
   @@map("quotation_status")
 }
 
 enum QuotationLinkType {
-  ADVANCE          // Anticipo (pago previo a factura)
-  PARTIAL_INVOICE  // Factura parcial
-  FINAL_INVOICE    // Factura final
-  COMPLEMENTARY    // Gasto complementario relacionado
+  ADVANCE // Anticipo (pago previo a factura)
+  PARTIAL_INVOICE // Factura parcial
+  FINAL_INVOICE // Factura final
+  COMPLEMENTARY // Gasto complementario relacionado
 
   @@map("quotation_link_type")
 }
 
 model Quotation {
-  id              String          @id @default(uuid()) @db.Uuid
-  projectId       String          @map("project_id") @db.Uuid
-  number          Int             // COTI-001 por proyecto — autoincremental
-  categoryId      Int?            @map("category_id")
+  id         String @id @default(uuid()) @db.Uuid
+  projectId  String @map("project_id") @db.Uuid
+  number     Int // COTI-001 por proyecto — autoincremental
+  categoryId Int?   @map("category_id")
 
   // Datos del suplidor
-  supplierName    String          @map("supplier_name") @db.VarChar(200)
-  supplierRnc     String?         @map("supplier_rnc") @db.VarChar(11)
+  supplierName String  @map("supplier_name") @db.VarChar(200)
+  supplierRnc  String? @map("supplier_rnc") @db.VarChar(11)
 
   // Datos del documento
-  quotationNumber String?         @map("quotation_number") @db.VarChar(50)
-  quotationDate   DateTime        @map("quotation_date") @db.Date
-  validUntil      DateTime?       @map("valid_until") @db.Date
+  quotationNumber String?   @map("quotation_number") @db.VarChar(50)
+  quotationDate   DateTime  @map("quotation_date") @db.Date
+  validUntil      DateTime? @map("valid_until") @db.Date
 
   // Montos
-  currency        String          @default("DOP") @db.VarChar(3)
-  subtotal        Decimal         @db.Decimal(15, 2)
-  itbisAmount     Decimal         @default(0) @map("itbis_amount") @db.Decimal(15, 2)
-  total           Decimal         @db.Decimal(15, 2)
+  currency    String  @default("DOP") @db.VarChar(3)
+  subtotal    Decimal @db.Decimal(15, 2)
+  itbisAmount Decimal @default(0) @map("itbis_amount") @db.Decimal(15, 2)
+  total       Decimal @db.Decimal(15, 2)
 
   // Condiciones comerciales
-  description     String          @db.Text
-  paymentTerms    String?         @map("payment_terms") @db.Text
-  advancePct      Decimal?        @map("advance_pct") @db.Decimal(5, 2)
-  deliveryDays    Int?            @map("delivery_days")
-  observations    String?         @db.Text
+  description  String   @db.Text
+  paymentTerms String?  @map("payment_terms") @db.Text
+  advancePct   Decimal? @map("advance_pct") @db.Decimal(5, 2)
+  deliveryDays Int?     @map("delivery_days")
+  observations String?  @db.Text
 
   // Estado y trazabilidad
-  status          QuotationStatus @default(PENDING)
-  notes           String?         @db.Text
-  createdById     String          @map("created_by") @db.Uuid
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
+  status      QuotationStatus @default(PENDING)
+  notes       String?         @db.Text
+  createdById String          @map("created_by") @db.Uuid
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
 
-  project         Project              @relation(fields: [projectId], references: [id])
-  category        ExpenseCategory?     @relation(fields: [categoryId], references: [id])
-  createdBy       User                 @relation("QuotationCreatedBy", fields: [createdById], references: [id])
-  payments        QuotationPayment[]
-  expenseLinks    QuotationExpenseLink[]
-  attachments     QuotationAttachment[]
+  project      Project                @relation(fields: [projectId], references: [id])
+  category     ExpenseCategory?       @relation(fields: [categoryId], references: [id])
+  createdBy    User                   @relation("QuotationCreatedBy", fields: [createdById], references: [id])
+  payments     QuotationPayment[]
+  expenseLinks QuotationExpenseLink[]
+  attachments  QuotationAttachment[]
 
   @@unique([projectId, number])
   @@index([projectId])
@@ -642,9 +642,9 @@ model QuotationPayment {
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
 
-  quotation     Quotation     @relation(fields: [quotationId], references: [id], onDelete: Cascade)
-  expense       Expense?      @relation("QuotationPaymentExpense", fields: [expenseId], references: [id])
-  createdBy     User          @relation("QuotationPaymentCreatedBy", fields: [createdById], references: [id])
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  expense   Expense?  @relation("QuotationPaymentExpense", fields: [expenseId], references: [id])
+  createdBy User      @relation("QuotationPaymentCreatedBy", fields: [createdById], references: [id])
 
   @@unique([quotationId, sequence])
   @@index([quotationId])
@@ -654,17 +654,17 @@ model QuotationPayment {
 
 // Vínculo de conciliación: cotización <-> gasto/factura final
 model QuotationExpenseLink {
-  id            String            @id @default(uuid()) @db.Uuid
-  quotationId   String            @map("quotation_id") @db.Uuid
-  expenseId     String            @unique @map("expense_id") @db.Uuid
-  linkType      QuotationLinkType
-  notes         String?           @db.Text
-  createdById   String            @map("created_by") @db.Uuid
-  createdAt     DateTime          @default(now()) @map("created_at")
+  id          String            @id @default(uuid()) @db.Uuid
+  quotationId String            @map("quotation_id") @db.Uuid
+  expenseId   String            @unique @map("expense_id") @db.Uuid
+  linkType    QuotationLinkType
+  notes       String?           @db.Text
+  createdById String            @map("created_by") @db.Uuid
+  createdAt   DateTime          @default(now()) @map("created_at")
 
-  quotation     Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
-  expense       Expense   @relation("QuotationExpenseLink", fields: [expenseId], references: [id])
-  createdBy     User      @relation("QuotationLinkCreatedBy", fields: [createdById], references: [id])
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  expense   Expense   @relation("QuotationExpenseLink", fields: [expenseId], references: [id])
+  createdBy User      @relation("QuotationLinkCreatedBy", fields: [createdById], references: [id])
 
   @@index([quotationId])
   @@map("quotation_expense_links")
@@ -684,15 +684,15 @@ model Supplier {
   notes         String?  @db.Text
   // Datos bancarios (opcionales — solo si recibe pagos directos)
   bank          String?  @db.VarChar(100)
-  accountType   String?  @map("account_type") @db.VarChar(30)  // Cuenta de Ahorros | Cuenta Corriente | Cuenta Nómina
+  accountType   String?  @map("account_type") @db.VarChar(30) // Cuenta de Ahorros | Cuenta Corriente | Cuenta Nómina
   accountNumber String?  @map("account_number") @db.VarChar(50)
   isActive      Boolean  @default(true) @map("is_active")
   createdById   String   @map("created_by") @db.Uuid
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  createdBy          User              @relation("SupplierCreatedBy", fields: [createdById], references: [id])
-  officeExpenses     OfficeExpense[]   @relation("OfficeExpenseSupplier")
+  createdBy          User               @relation("SupplierCreatedBy", fields: [createdById], references: [id])
+  officeExpenses     OfficeExpense[]    @relation("OfficeExpenseSupplier")
   contratosAjustados ContratoAjustado[] @relation("SupplierContratosAjustados")
   paymentOrders      PaymentOrder[]
 
@@ -706,33 +706,33 @@ model Supplier {
 // ÓRDENES DE PAGO
 // ============================================================
 model PaymentOrder {
-  id            String   @id @default(uuid()) @db.Uuid
-  number        Int                                               // Autoincremental por aplicación
-  orderType     String   @default("SERVICIO") @map("order_type") @db.VarChar(20) // SERVICIO | PAYROLL | MATERIALS
-  payingCompany String   @map("paying_company") @db.VarChar(200)
-  supplierId    String   @map("supplier_id") @db.Uuid
-  projectId     String   @map("project_id") @db.Uuid
-  amount        Decimal  @db.Decimal(15, 2)
-  currency      String   @default("RD$") @db.VarChar(10)
-  concept       String   @db.Text
-  status        String   @default("PENDING") @db.VarChar(20)    // PENDING | PAID | VOIDED
-  generatedText String?  @map("generated_text") @db.Text
-  notes         String?  @db.VarChar(500)
+  id            String    @id @default(uuid()) @db.Uuid
+  number        Int // Autoincremental por aplicación
+  orderType     String    @default("SERVICIO") @map("order_type") @db.VarChar(20) // SERVICIO | PAYROLL | MATERIALS
+  payingCompany String    @map("paying_company") @db.VarChar(200)
+  supplierId    String    @map("supplier_id") @db.Uuid
+  projectId     String    @map("project_id") @db.Uuid
+  amount        Decimal   @db.Decimal(15, 2)
+  currency      String    @default("RD$") @db.VarChar(10)
+  concept       String    @db.Text
+  status        String    @default("PENDING") @db.VarChar(20) // PENDING | PAID | VOIDED
+  generatedText String?   @map("generated_text") @db.Text
+  notes         String?   @db.VarChar(500)
   paidAt        DateTime? @map("paid_at")
-  paidById      String?  @map("paid_by_id") @db.Uuid
+  paidById      String?   @map("paid_by_id") @db.Uuid
   // Vínculos opcionales
-  payrollId     String?  @unique @map("payroll_id") @db.Uuid    // Si es orden de nómina
-  expenseId     String?  @unique @map("expense_id") @db.Uuid    // Si es orden de materiales (vinculado después)
-  createdById   String   @map("created_by_id") @db.Uuid
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  payrollId     String?   @unique @map("payroll_id") @db.Uuid // Si es orden de nómina
+  expenseId     String?   @unique @map("expense_id") @db.Uuid // Si es orden de materiales (vinculado después)
+  createdById   String    @map("created_by_id") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  supplier  Supplier    @relation(fields: [supplierId], references: [id])
-  project   Project     @relation(fields: [projectId], references: [id])
-  createdBy User        @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
-  paidBy    User?       @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
-  payroll   Payroll?    @relation(fields: [payrollId], references: [id])
-  expense   Expense?    @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
+  supplier  Supplier @relation(fields: [supplierId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id])
+  createdBy User     @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
+  paidBy    User?    @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
+  payroll   Payroll? @relation(fields: [payrollId], references: [id])
+  expense   Expense? @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
 
   @@index([status])
   @@index([projectId])
@@ -745,26 +745,26 @@ model PaymentOrder {
 // GASTOS DE OFICINA (independiente de proyectos)
 // ============================================================
 model OfficeExpense {
-  id            String              @id @default(uuid()) @db.Uuid
+  id            String                @id @default(uuid()) @db.Uuid
   category      OfficeExpenseCategory
-  description   String              @db.VarChar(500)
-  amount        Decimal             @db.Decimal(12, 2)
-  expenseDate   DateTime            @map("expense_date") @db.Date
-  paymentMethod PaymentMethod       @map("payment_method")
-  companyCardId Int?                @map("company_card_id")
-  supplierId    String?             @map("supplier_id") @db.Uuid
-  hasFiscalDoc  Boolean             @default(false) @map("has_fiscal_doc")
-  fiscalDocNum  String?             @map("fiscal_doc_num") @db.VarChar(50)
-  notes         String?             @db.Text
-  receiptUrl    String?             @map("receipt_url") @db.VarChar(500)
-  status        OfficeExpenseStatus @default(ACTIVE)
-  createdById   String              @map("created_by") @db.Uuid
-  createdAt     DateTime            @default(now()) @map("created_at")
-  updatedAt     DateTime            @updatedAt @map("updated_at")
+  description   String                @db.VarChar(500)
+  amount        Decimal               @db.Decimal(12, 2)
+  expenseDate   DateTime              @map("expense_date") @db.Date
+  paymentMethod PaymentMethod         @map("payment_method")
+  companyCardId Int?                  @map("company_card_id")
+  supplierId    String?               @map("supplier_id") @db.Uuid
+  hasFiscalDoc  Boolean               @default(false) @map("has_fiscal_doc")
+  fiscalDocNum  String?               @map("fiscal_doc_num") @db.VarChar(50)
+  notes         String?               @db.Text
+  receiptUrl    String?               @map("receipt_url") @db.VarChar(500)
+  status        OfficeExpenseStatus   @default(ACTIVE)
+  createdById   String                @map("created_by") @db.Uuid
+  createdAt     DateTime              @default(now()) @map("created_at")
+  updatedAt     DateTime              @updatedAt @map("updated_at")
 
-  createdBy     User                @relation("OfficeExpenseCreatedBy", fields: [createdById], references: [id])
-  companyCard   CompanyCard?        @relation(fields: [companyCardId], references: [id])
-  supplier      Supplier?           @relation("OfficeExpenseSupplier", fields: [supplierId], references: [id])
+  createdBy   User         @relation("OfficeExpenseCreatedBy", fields: [createdById], references: [id])
+  companyCard CompanyCard? @relation(fields: [companyCardId], references: [id])
+  supplier    Supplier?    @relation("OfficeExpenseSupplier", fields: [supplierId], references: [id])
 
   @@index([category])
   @@index([expenseDate])
@@ -792,18 +792,18 @@ enum OfficeExpenseStatus {
 
 // Adjuntos de cotizaciones (separado de Attachment para no tocar estructura existente)
 model QuotationAttachment {
-  id           String    @id @default(uuid()) @db.Uuid
-  quotationId  String    @map("quotation_id") @db.Uuid
-  uploadedById String    @map("uploaded_by") @db.Uuid
-  fileName     String    @map("file_name") @db.VarChar(255)
-  filePath     String    @map("file_path") @db.VarChar(500)
-  fileSize     Int       @map("file_size")
-  mimeType     String    @map("mime_type") @db.VarChar(100)
-  isPrimary    Boolean   @default(false) @map("is_primary")
-  createdAt    DateTime  @default(now()) @map("created_at")
+  id           String   @id @default(uuid()) @db.Uuid
+  quotationId  String   @map("quotation_id") @db.Uuid
+  uploadedById String   @map("uploaded_by") @db.Uuid
+  fileName     String   @map("file_name") @db.VarChar(255)
+  filePath     String   @map("file_path") @db.VarChar(500)
+  fileSize     Int      @map("file_size")
+  mimeType     String   @map("mime_type") @db.VarChar(100)
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  createdAt    DateTime @default(now()) @map("created_at")
 
-  quotation    Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
-  uploadedBy   User      @relation(fields: [uploadedById], references: [id])
+  quotation  Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  uploadedBy User      @relation(fields: [uploadedById], references: [id])
 
   @@index([quotationId])
   @@map("quotation_attachments")
@@ -813,18 +813,18 @@ model QuotationAttachment {
 // LOTES/LICITACIONES (para agrupar gastos por licitación)
 // ============================================================
 model Batch {
-  id          String      @id @default(uuid()) @db.Uuid
-  projectId   String      @map("project_id") @db.Uuid
-  code        String      @db.VarChar(50)
-  name        String      @db.VarChar(200)
-  description String?     @db.Text
-  totalBudget Decimal     @default(0) @map("total_budget") @db.Decimal(15, 2)
-  status      String      @default("ACTIVE") @db.VarChar(20)
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  code        String   @db.VarChar(50)
+  name        String   @db.VarChar(200)
+  description String?  @db.Text
+  totalBudget Decimal  @default(0) @map("total_budget") @db.Decimal(15, 2)
+  status      String   @default("ACTIVE") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  items       BatchItem[]
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items   BatchItem[]
 
   @@unique([projectId, code])
   @@index([projectId])
@@ -832,19 +832,19 @@ model Batch {
 }
 
 model BatchItem {
-  id          String      @id @default(uuid()) @db.Uuid
-  batchId     String      @map("batch_id") @db.Uuid
-  code        String      @db.VarChar(50)
-  description String      @db.Text
-  provincia   String      @db.VarChar(100)
-  sector      String      @db.VarChar(200)
-  budget      Decimal     @default(0) @db.Decimal(15, 2)
-  status      String      @default("ACTIVE") @db.VarChar(20)
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
+  id          String   @id @default(uuid()) @db.Uuid
+  batchId     String   @map("batch_id") @db.Uuid
+  code        String   @db.VarChar(50)
+  description String   @db.Text
+  provincia   String   @db.VarChar(100)
+  sector      String   @db.VarChar(200)
+  budget      Decimal  @default(0) @db.Decimal(15, 2)
+  status      String   @default("ACTIVE") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  batch       Batch       @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  expenses    Expense[]
+  batch    Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  expenses Expense[]
 
   @@unique([batchId, code])
   @@index([batchId])
@@ -857,7 +857,7 @@ model BatchItem {
 model Notification {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
-  type      String   @db.VarChar(50)    // BUDGET_80 | BUDGET_90 | PENDING_ORDERS | PAYROLL_UNPAID
+  type      String   @db.VarChar(50) // BUDGET_80 | BUDGET_90 | PENDING_ORDERS | PAYROLL_UNPAID
   title     String   @db.VarChar(200)
   message   String   @db.Text
   link      String?  @db.VarChar(500)
@@ -879,7 +879,7 @@ model Notification {
 model NotificationContact {
   id          String   @id @default(uuid()) @db.Uuid
   name        String   @db.VarChar(100)
-  phone       String?  @db.VarChar(30)    // formato +18091234567
+  phone       String?  @db.VarChar(30) // formato +18091234567
   email       String?  @db.VarChar(150)
   isActive    Boolean  @default(true) @map("is_active")
   createdById String   @map("created_by") @db.Uuid
@@ -896,26 +896,26 @@ model NotificationContact {
 // CONTRATOS AJUSTADOS (mano de obra por monto pactado)
 // ============================================================
 model ContratoAjustado {
-  id                 String                  @id @default(uuid()) @db.Uuid
-  projectId          String                  @map("project_id") @db.Uuid
-  supplierId         String                  @map("supplier_id") @db.Uuid
-  descripcionTrabajo String                  @map("descripcion_trabajo") @db.Text
-  montoContratado    Decimal                 @map("monto_contratado") @db.Decimal(15, 2)
-  fechaContrato      DateTime                @map("fecha_contrato") @db.Date
-  estado             ContratoAjustadoEstado  @default(ACTIVO)
-  observaciones      String?                 @db.Text
-  createdById        String                  @map("created_by") @db.Uuid
-  updatedById        String?                 @map("updated_by") @db.Uuid
-  createdAt          DateTime                @default(now()) @map("created_at")
-  updatedAt          DateTime                @updatedAt @map("updated_at")
+  id                 String                 @id @default(uuid()) @db.Uuid
+  projectId          String                 @map("project_id") @db.Uuid
+  supplierId         String                 @map("supplier_id") @db.Uuid
+  descripcionTrabajo String                 @map("descripcion_trabajo") @db.Text
+  montoContratado    Decimal                @map("monto_contratado") @db.Decimal(15, 2)
+  fechaContrato      DateTime               @map("fecha_contrato") @db.Date
+  estado             ContratoAjustadoEstado @default(ACTIVO)
+  observaciones      String?                @db.Text
+  createdById        String                 @map("created_by") @db.Uuid
+  updatedById        String?                @map("updated_by") @db.Uuid
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime               @updatedAt @map("updated_at")
 
-  project    Project   @relation("ProjectContratosAjustados", fields: [projectId], references: [id])
-  supplier   Supplier  @relation("SupplierContratosAjustados", fields: [supplierId], references: [id])
-  createdBy  User      @relation("ContratoAjustadoCreatedBy", fields: [createdById], references: [id])
-  updatedBy  User?     @relation("ContratoAjustadoUpdatedBy", fields: [updatedById], references: [id])
-  pagos      ContratoAjustadoPago[]
-  expenses   Expense[] @relation("ExpenseContratoAjustado")
-  payrollLines PayrollLine[] @relation("PayrollLineContratoAjustado")
+  project      Project                @relation("ProjectContratosAjustados", fields: [projectId], references: [id])
+  supplier     Supplier               @relation("SupplierContratosAjustados", fields: [supplierId], references: [id])
+  createdBy    User                   @relation("ContratoAjustadoCreatedBy", fields: [createdById], references: [id])
+  updatedBy    User?                  @relation("ContratoAjustadoUpdatedBy", fields: [updatedById], references: [id])
+  pagos        ContratoAjustadoPago[]
+  expenses     Expense[]              @relation("ExpenseContratoAjustado")
+  payrollLines PayrollLine[]          @relation("PayrollLineContratoAjustado")
 
   @@index([projectId])
   @@index([supplierId])
@@ -924,15 +924,15 @@ model ContratoAjustado {
 }
 
 model ContratoAjustadoPago {
-  id                 String           @id @default(uuid()) @db.Uuid
-  contratoAjustadoId String           @map("contrato_ajustado_id") @db.Uuid
-  ordenPagoId        String?          @map("orden_pago_id") @db.Uuid
-  nominaId           String?          @map("nomina_id") @db.Uuid
-  gastoId            String?          @map("gasto_id") @db.Uuid
-  monto              Decimal          @db.Decimal(15, 2)
-  fecha              DateTime         @db.Date
-  creadoPorId        String           @map("creado_por") @db.Uuid
-  createdAt          DateTime         @default(now()) @map("created_at")
+  id                 String   @id @default(uuid()) @db.Uuid
+  contratoAjustadoId String   @map("contrato_ajustado_id") @db.Uuid
+  ordenPagoId        String?  @map("orden_pago_id") @db.Uuid
+  nominaId           String?  @map("nomina_id") @db.Uuid
+  gastoId            String?  @map("gasto_id") @db.Uuid
+  monto              Decimal  @db.Decimal(15, 2)
+  fecha              DateTime @db.Date
+  creadoPorId        String   @map("creado_por") @db.Uuid
+  createdAt          DateTime @default(now()) @map("created_at")
 
   contratoAjustado ContratoAjustado @relation(fields: [contratoAjustadoId], references: [id], onDelete: Cascade)
 
@@ -957,7 +957,7 @@ model ServiceSubscription {
   name          String
   provider      String
   description   String?
-  monthlyCost   Decimal  @db.Decimal(10,2) @map("monthly_cost")
+  monthlyCost   Decimal  @map("monthly_cost") @db.Decimal(10, 2)
   currency      String   @default("USD")
   billingDay    Int      @map("billing_day")
   paymentMethod String?  @map("payment_method")
