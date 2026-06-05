@@ -36,16 +36,14 @@ const navItems: NavItem[] = [
 function AppIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
     <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <defs>
-        <clipPath id="si-oct">
-          <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130"/>
-        </clipPath>
-      </defs>
+      {/* Yellow hexagon border */}
       <polygon points="256,14 466,135 466,377 256,498 46,377 46,135" fill="#F5C218"/>
+      {/* Dark hexagon body */}
       <polygon points="256,26 455,141 455,371 256,486 57,371 57,141" fill="#1C1C1C"/>
-      <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130" fill="#F5C218"/>
-      <polygon points="26,276 486,107 486,155 26,324" fill="#1C1C1C" clipPath="url(#si-oct)"/>
-      <polygon points="26,357 486,188 486,236 26,405" fill="#1C1C1C" clipPath="url(#si-oct)"/>
+      {/* Three yellow horizontal stripes */}
+      <rect x="280" y="120" width="120" height="50" fill="#F5C218" rx="8"/>
+      <rect x="280" y="231" width="120" height="50" fill="#F5C218" rx="8"/>
+      <rect x="280" y="342" width="120" height="50" fill="#F5C218" rx="8"/>
     </svg>
   );
 }
