@@ -265,7 +265,7 @@ function SubscriptionsTab() {
   const allSubs   = overview?.all      ?? [];
   const upcoming  = overview?.upcoming  ?? [];
   const activeSubs = allSubs.filter(s => s.isActive);
-  const totalMonthly = activeSubs.reduce((sum, s) => sum + s.monthlyCost, 0);
+  const totalMonthly = activeSubs.reduce((sum, s) => sum + Number(s.monthlyCost), 0);
 
   if (isLoading) {
     return (
@@ -341,7 +341,7 @@ function SubscriptionsTab() {
                   </div>
                 </div>
                 <span className="text-sm font-semibold text-gray-700">
-                  ${item.monthlyCost.toFixed(2)} {item.currency}
+                  ${Number(item.monthlyCost).toFixed(2)} {item.currency}
                 </span>
               </div>
             ))}
@@ -422,7 +422,7 @@ function SubscriptionsTab() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right font-semibold text-gray-900">
-                        ${item.monthlyCost.toFixed(2)}
+                        ${Number(item.monthlyCost).toFixed(2)}
                         <span className="text-xs text-gray-400 ml-1">{item.currency}</span>
                       </td>
                       <td className="px-4 py-3 text-center text-gray-600">
@@ -739,15 +739,13 @@ export default function MonitoringPage() {
     }
   }
 
-  // Protección: admin y supervisor
-  if (!isSupervisorOrAdmin) return <Navigate to="/" replace />;
-
   const { data: dashData, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey:  ['monitoring-dashboard'],
     queryFn:   () => monitoringApi.dashboard().then(r => r.data.data),
     refetchInterval: 60_000,
     staleTime:       30_000,
     retry: 1,
+    enabled: isSupervisorOrAdmin,
   });
 
   const { data: logsData } = useQuery({
@@ -761,6 +759,9 @@ export default function MonitoringPage() {
     staleTime: 15_000,
     enabled: !!dashData,
   });
+
+  // Protección: admin y supervisor (DESPUÉS de todos los hooks)
+  if (!isSupervisorOrAdmin) return <Navigate to="/" replace />;
 
   // Tab navigation
   const tabs: { id: TabId; label: string; icon: any }[] = [
