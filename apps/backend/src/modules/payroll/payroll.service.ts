@@ -320,19 +320,29 @@ export async function approvePayroll(id: string, approvedById: string) {
   if (!category) throw new AppError(500, 'No hay categorías de gasto configuradas', 'NO_CATEGORY');
 
   const updated = await prisma.$transaction(async (tx) => {
-    const expense = await tx.expense.create({
-      data: {
-        projectId:    payroll.projectId,
-        categoryId:   category!.id,
-        userId:       approvedById,
-        expenseDate:  payroll.periodEnd,
-        amount:       payroll.totalAmount,
-        description:  `Nómina NOM-${String(payroll.number).padStart(3, '0')} — ${payroll.description}`,
-        paymentMethod: 'TRANSFER',
-        hasFiscalDoc:  false,
-        notes: `Generado automáticamente al aprobar nómina. Período: ${payroll.periodStart.toISOString().slice(0, 10)} al ${payroll.periodEnd.toISOString().slice(0, 10)}`,
-      },
-    });
+    // Create individual expense for each payroll line
+    for (const line of payroll.lines) {
+      const lineAmount = parseFloat((Number(line.quantity) * Number(line.unitPrice)).toFixed(2));
+      const expense = await tx.expense.create({
+        data: {
+          projectId:    payroll.projectId,
+          categoryId:   category!.id,
+          userId:       approvedById,
+          expenseDate:  payroll.periodEnd,
+          amount:       lineAmount,
+          description:  `NOM-${String(payroll.number).padStart(3, '0')} — ${line.supplierName || 'Sin suplidor'}: ${line.description}`,
+          paymentMethod: 'TRANSFER',
+          hasFiscalDoc:  false,
+          notes: `Línea ${line.lineNumber} de nómina. Generado automáticamente al aprobar nómina.`,
+        },
+      });
+
+      // Link expense to payroll line
+      await tx.payrollLine.update({
+        where: { id: line.id },
+        data: { expenseId: expense.id },
+      });
+    }
 
     return tx.payroll.update({
       where: { id },
@@ -340,7 +350,6 @@ export async function approvePayroll(id: string, approvedById: string) {
         status:      'APPROVED',
         approvedById,
         approvedAt:  new Date(),
-        expenseId:   expense.id,
       },
       include: PAYROLL_INCLUDE,
     });
@@ -373,14 +382,20 @@ export async function markPayrollPaid(id: string, data: MarkPaidInput) {
 
 // ─── VOID ─────────────────────────────────────────────────────
 export async function voidPayroll(id: string, voidedById: string, data: VoidPayrollInput) {
-  const payroll = await prisma.payroll.findUnique({ where: { id } });
+  const payroll = await prisma.payroll.findUnique({ where: { id }, include: { lines: true } });
   if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
   if (payroll.status === 'VOIDED') throw new AppError(400, 'La nómina ya está anulada', 'INVALID_STATUS');
 
   return prisma.$transaction(async (tx) => {
-    if (payroll.expenseId) {
-      await tx.expense.update({
-        where: { id: payroll.expenseId },
+    // Collect all expense IDs from all payroll lines
+    const expenseIds = payroll.lines
+      .map((line) => (line as any).expenseId)
+      .filter((id): id is string => id !== null && id !== undefined);
+
+    // Void all line expenses in bulk
+    if (expenseIds.length > 0) {
+      await tx.expense.updateMany({
+        where: { id: { in: expenseIds } },
         data: {
           status:     'VOIDED',
           voidedAt:   new Date(),
@@ -389,6 +404,7 @@ export async function voidPayroll(id: string, voidedById: string, data: VoidPayr
         },
       });
     }
+
     return tx.payroll.update({
       where: { id },
       data: {
