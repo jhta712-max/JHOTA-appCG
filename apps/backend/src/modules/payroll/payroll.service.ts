@@ -34,9 +34,6 @@ const PAYROLL_INCLUDE = {
       },
     },
   },
-  expense: {
-    select: { id: true, amount: true, expenseDate: true, description: true },
-  },
   paymentOrder: {
     select: { id: true, concept: true, amount: true, status: true, orderType: true, createdAt: true },
   },
