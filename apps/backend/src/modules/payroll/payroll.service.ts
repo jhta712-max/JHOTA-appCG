@@ -408,7 +408,7 @@ export async function importLinesFromOrders(payrollId: string) {
   // Buscar todas las órdenes de pago vinculadas a esta nómina
   const orders = await prisma.paymentOrder.findMany({
     where:   { payrollId },
-    include: { beneficiary: true },
+    include: { supplier: true },
   });
 
   if (orders.length === 0) throw new AppError(400, 'No hay órdenes de pago vinculadas a esta nómina', 'NO_ORDERS');
@@ -427,14 +427,14 @@ export async function importLinesFromOrders(payrollId: string) {
       data: {
         payrollId,
         lineNumber:   lineNum++,
-        supplierName: order.beneficiary?.name ?? order.payingCompany,
+        supplierName: order.supplier?.name ?? order.payingCompany,
         description:  order.concept,
         quantity:     1,
         unit:         'PA',
         unitPrice:    amount,
         subtotal:     amount,
-        bankName:     order.beneficiary?.bank ?? '',
-        bankAccount:  order.beneficiary?.accountNumber ?? '',
+        bankName:     order.supplier?.bank ?? '',
+        bankAccount:  order.supplier?.accountNumber ?? '',
       },
     });
     created.push(line);

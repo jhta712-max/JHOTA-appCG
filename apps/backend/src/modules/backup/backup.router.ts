@@ -18,7 +18,7 @@ async function generateBackup() {
   const [
     roles, users, projects, projectAssignments, projectAddendums, projectCubicaciones,
     expenseCategories, expenses, fiscalVouchers, attachments, companyCards, auditLogs,
-    invitations, payrolls, payrollLines, beneficiaries, paymentOrders,
+    invitations, payrolls, payrollLines, paymentOrders, suppliers,
     quotations, quotationPayments, quotationExpenseLinks, quotationAttachments,
     officeExpenses,
   ] = await Promise.all([
@@ -37,8 +37,8 @@ async function generateBackup() {
     safe(() => prisma.invitation.findMany()),
     safe(() => prisma.payroll.findMany()),
     safe(() => prisma.payrollLine.findMany()),
-    safe(() => prisma.beneficiary.findMany()),
     safe(() => prisma.paymentOrder.findMany()),
+    safe(() => prisma.supplier.findMany()),
     safe(() => prisma.quotation.findMany()),
     safe(() => prisma.quotationPayment.findMany()),
     safe(() => prisma.quotationExpenseLink.findMany()),
@@ -49,7 +49,7 @@ async function generateBackup() {
   const tables = {
     roles, users, projects, projectAssignments, projectAddendums, projectCubicaciones,
     expenseCategories, expenses, fiscalVouchers, attachments, companyCards, auditLogs,
-    invitations, payrolls, payrollLines, beneficiaries, paymentOrders,
+    invitations, payrolls, payrollLines, paymentOrders, suppliers,
     quotations, quotationPayments, quotationExpenseLinks, quotationAttachments, officeExpenses,
   };
 
