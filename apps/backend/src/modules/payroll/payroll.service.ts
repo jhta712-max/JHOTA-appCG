@@ -25,6 +25,14 @@ const PAYROLL_INCLUDE = {
   voidedBy:   { select: { id: true, name: true } },
   lines: {
     orderBy: { lineNumber: 'asc' as const },
+    include: {
+      contratoAjustado: {
+        select: { id: true, descripcionTrabajo: true, montoContratado: true },
+      },
+      expense: {
+        select: { id: true, amount: true, expenseDate: true, description: true, status: true },
+      },
+    },
   },
   expense: {
     select: { id: true, amount: true, expenseDate: true, description: true },
@@ -256,6 +264,27 @@ export async function deleteLine(payrollId: string, lineId: string) {
     const allLines = await tx.payrollLine.findMany({ where: { payrollId } });
     const newTotal = allLines.reduce((s, l) => s + Number(l.subtotal), 0);
     await tx.payroll.update({ where: { id: payrollId }, data: { totalAmount: newTotal } });
+  });
+
+  return getPayrollById(payrollId);
+}
+
+// ─── UPDATE LINE CONTRATO AJUSTADO ─────────────────────────────
+export async function updateLineContratoAjustado(payrollId: string, lineId: string, contratoAjustadoId: string | null) {
+  const payroll = await prisma.payroll.findUnique({ where: { id: payrollId } });
+  if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
+
+  const line = await prisma.payrollLine.findFirst({ where: { id: lineId, payrollId } });
+  if (!line) throw new AppError(404, 'Línea no encontrada', 'NOT_FOUND');
+
+  if (contratoAjustadoId) {
+    const contrato = await prisma.contratoAjustado.findUnique({ where: { id: contratoAjustadoId } });
+    if (!contrato) throw new AppError(404, 'Contrato ajustado no encontrado', 'NOT_FOUND');
+  }
+
+  await prisma.payrollLine.update({
+    where: { id: lineId },
+    data: { contratoAjustadoId },
   });
 
   return getPayrollById(payrollId);

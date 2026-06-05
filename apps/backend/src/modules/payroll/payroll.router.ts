@@ -28,6 +28,7 @@ router.delete('/:id', authorize('admin', 'supervisor'), ctrl.remove);
 router.post('/:id/lines',             validate(upsertLineSchema), ctrl.addLine);
 router.put('/:id/lines/:lineId',      validate(upsertLineSchema), ctrl.updateLine);
 router.delete('/:id/lines/:lineId',          ctrl.deleteLine);
+router.patch('/:id/lines/:lineId/contrato-ajustado',   ctrl.updateLineContratoAjustado);
 router.patch('/:id/lines/:lineId/payment',   ctrl.recordLinePayment);
 
 // ── Workflow actions (admin / supervisor only) ─────────────────

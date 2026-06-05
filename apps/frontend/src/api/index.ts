@@ -127,6 +127,20 @@ export interface PayrollLine {
   paymentBank:       string | null;
   paymentReference:  string | null;
   paidAt:            string | null;
+  contratoAjustadoId: string | null;
+  contratoAjustado?: {
+    id: string;
+    descripcionTrabajo: string;
+    montoContratado: number;
+  } | null;
+  expenseId?: string | null;
+  expense?: {
+    id: string;
+    amount: number;
+    expenseDate: string;
+    description: string;
+    status: string;
+  } | null;
   createdAt:         string;
   updatedAt:         string;
 }
@@ -192,6 +206,8 @@ export const payrollApi = {
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/import-from-orders`),
   recordLinePayment: (id: string, lineId: string, data: { paymentBank?: string; paymentReference?: string; paidAt?: string }) =>
     api.patch<{ success: boolean; data: PayrollLine }>(`/payrolls/${id}/lines/${lineId}/payment`, data),
+  updateLineContratoAjustado: (id: string, lineId: string, contratoAjustadoId: string | null) =>
+    api.patch<{ success: boolean; data: Payroll }>(`/payrolls/${id}/lines/${lineId}/contrato-ajustado`, { contratoAjustadoId }),
   approve: (id: string) =>
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/approve`),
   pay:     (id: string, data: unknown) =>
