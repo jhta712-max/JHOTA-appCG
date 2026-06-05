@@ -79,68 +79,6 @@ function normalizeAccountType(raw: string): 'Cuenta de Ahorros' | 'Cuenta Corrie
   return 'Cuenta de Ahorros'; // cubre: ahorro, ahorros, cuenta de ahorros, etc.
 }
 
-function downloadBeneTemplate() {
-  const csv = [
-    'nombre,banco,tipoCuenta,numeroCuenta,cedula_rnc,telefono',
-    // Persona fisica con cedula
-    'Juan Perez,Banco Popular,Cuenta de Ahorros,000-000000-0,001-0000000-0,809-000-0000',
-    // Empresa con RNC (9 digitos, formato XXX-XXXXX-X)
-    'Ferreteria ABC SRL,BHD Leon,Cuenta Corriente,001-111111-1,1-31-91767-4,',
-    // Tambien se aceptan variantes cortas en tipoCuenta:
-    'Pedro Diaz,Banreservas,Ahorro,9606780159,,809-111-2222',
-    'Corporacion XYZ,Banco Santa Cruz,Corriente,0710016620,1-05-04879-5,',
-  ].join('\n');
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = 'plantilla-beneficiarios.csv'; a.click();
-  URL.revokeObjectURL(url);
-}
-
-function parseCSVText(text: string): BeneForm[] {
-  const lines = text.replace(/\r/g, '').split('\n').map((l) => l.trim()).filter(Boolean);
-  if (lines.length < 2) return [];
-  // Eliminar BOM si existe (UTF-8 BOM = EF BB BF o el caracter ﻿)
-  const headerLine = lines[0].replace(/^﻿/, '');
-  // Normalizar encabezados: minusculas, quitar tildes manualmente, solo letras y _
-  const stripAccents = (s: string) => s
-    .replace(/a/g, 'a').replace(/e/g, 'e').replace(/i/g, 'i')
-    .replace(/o/g, 'o').replace(/u/g, 'u').replace(/n/g, 'n');
-  const headers = headerLine
-    .split(',')
-    .map((h) => stripAccents(h.trim().toLowerCase()).replace(/[^a-z_]/g, ''));
-  const idx = (name: string) => {
-    // Busca coincidencia exacta o parcial
-    const exact = headers.indexOf(name);
-    if (exact !== -1) return exact;
-    return headers.findIndex((h) => h.includes(name));
-  };
-
-  return lines.slice(1).map((line) => {
-    // Parseo de campos respetando comillas
-    const vals: string[] = [];
-    let cur = ''; let inQ = false;
-    for (const ch of line + ',') {
-      if (ch === '"') { inQ = !inQ; }
-      else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
-      else { cur += ch; }
-    }
-    const g = (name: string, fallback = '') => vals[idx(name)]?.trim() || fallback;
-
-    // Buscar cedula/RNC por varios nombres de columna posibles
-    const cedulaRaw = g('cedula_rnc') || g('cedula') || g('rnc') || '';
-
-    return {
-      name:          g('nombre'),
-      bank:          g('banco'),
-      accountType:   normalizeAccountType(g('tipocuenta', '')),
-      accountNumber: g('numerocuenta'),
-      cedula:        cedulaRaw,
-      phone:         g('telefono'),
-      supplierId:    '',
-    };
-  }).filter((r) => r.name.trim() && r.bank.trim() && r.accountNumber.trim());
-}
 
 // -- WhatsApp share --
 // isMobile: true en Android/iPhone -> usa Web Share API nativa (emoji intactos)
@@ -626,7 +564,7 @@ export default function PaymentOrdersPage() {
             )}
           </div>
         </div>
-      )}
+
       {/* Modal: Nueva orden de pago */}
       {orderModal && (
         <Modal title={editingOrder ? 'Editar orden' : 'Nueva orden de pago'} onClose={closeOrderModal} wide>
@@ -937,6 +875,64 @@ export default function PaymentOrdersPage() {
       )}
 
 
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const cfg = STATUS_CFG[status as keyof typeof STATUS_CFG] ?? STATUS_CFG.PENDING;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.cls}`}>
+      {cfg.icon} {cfg.label}
+    </span>
+  );
+}
+
+function TypeBadge({ type }: { type: any }) {
+  const normalizedType: OrderType = (type === 'GENERAL' || !['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type)) ? 'SERVICIO' : type;
+  const cfg: Record<OrderType, { label: string; cls: string }> = {
+    SERVICIO:  { label: 'Servicio',   cls: 'bg-purple-100 text-purple-700' },
+    PAYROLL:   { label: 'Nomina',     cls: 'bg-blue-100 text-blue-700' },
+    MATERIALS: { label: 'Materiales', cls: 'bg-amber-100 text-amber-700' },
+  };
+  const c = cfg[normalizedType] ?? cfg.SERVICIO;
+  return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${c.cls}`}>{c.label}</span>;
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="mb-4"><label className="label">{label}</label>{children}</div>;
+}
+
+function AlertBox({ msg }: { msg: string }) {
+  return (
+    <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+      <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+      <p className="text-sm text-red-600">{msg}</p>
+    </div>
+  );
+}
+
+function Modal({ title, onClose, wide = false, children }: { title: string; onClose: () => void; wide?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div className={`bg-white rounded-2xl shadow-xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} p-6 max-h-[90vh] overflow-y-auto`}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-gray-900 text-base">{title}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ModalFooter({ onCancel, onSave, saving, label }: { onCancel: () => void; onSave: () => void; saving: boolean; label: string }) {
+  return (
+    <div className="flex gap-3 mt-2 justify-end">
+      <button onClick={onCancel} className="btn-secondary">Cancelar</button>
+      <button onClick={onSave} disabled={saving} className="btn-primary">
+        {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</> : <><CheckCircle className="w-4 h-4" /> {label}</>}
+      </button>
     </div>
   );
 }
