@@ -139,15 +139,17 @@ function ContratoFormModal({
 
   const mutation = useMutation({
     mutationFn: () => {
-      const payload = {
+      const payload: any = {
         projectId: form.projectId,
         supplierId: form.supplierId,
         descripcionTrabajo: form.descripcionTrabajo,
         montoContratado: parseFloat(form.montoContratado),
         fechaContrato: form.fechaContrato,
-        observaciones: form.observaciones || null,
         ...(editing ? { estado: form.estado } : {}),
       };
+      if (form.observaciones?.trim()) {
+        payload.observaciones = form.observaciones;
+      }
       return editing
         ? contratosAjustadosApi.update(editing.id, payload)
         : contratosAjustadosApi.create(payload);

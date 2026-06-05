@@ -6,7 +6,7 @@ export const createContratoSchema = z.object({
   descripcionTrabajo: z.string().min(3).max(2000),
   montoContratado:    z.coerce.number().positive(),
   fechaContrato:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  observaciones:      z.string().max(2000).optional(),
+  observaciones:      z.string().max(2000).nullable().optional(),
 });
 
 export const updateContratoSchema = createContratoSchema.partial().extend({
