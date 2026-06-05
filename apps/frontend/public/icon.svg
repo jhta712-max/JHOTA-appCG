@@ -1,24 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- White background (iOS clips to rounded rect automatically) -->
+  <defs>
+    <!--
+      Clip to the octagon (beveled rectangle) that forms the hexagonal
+      ServingMI isotipo. All four corners are beveled at 45°.
+    -->
+    <clipPath id="hex">
+      <polygon points="146,76 366,76 406,116 406,396 366,436 146,436 106,396 106,116"/>
+    </clipPath>
+  </defs>
+
+  <!-- White icon background (iOS rounds corners automatically) -->
   <rect width="512" height="512" fill="#ffffff"/>
 
+  <!-- Solid yellow octagon — the full body of the mark -->
+  <polygon
+    points="146,76 366,76 406,116 406,396 366,436 146,436 106,396 106,116"
+    fill="#F5C218"/>
+
   <!--
-    ServingMI logo mark: two diagonal yellow parallelograms forming the S.
-    Upper stroke — wide on the right, left side has a bevel cut (upper-left of the S).
-    Lower stroke — mirrors the upper, with bevel cut on lower-right.
-    Both strokes share the same diagonal slope (~10.6°).
-    Gap between strokes is 34px on both sides (parallel).
+    Two white diagonal parallelograms cut through the octagon at ~22°,
+    creating three yellow bands (top, middle, bottom) — the S-shape.
+    Each parallelogram extends well beyond the octagon; clipPath trims them.
+    Slope: Δy/Δx = 0.407 (≈ 22° from horizontal, upper-left → lower-right).
   -->
 
-  <!-- Upper S stroke -->
+  <!-- White cut 1  (upper white band) -->
   <polygon
-    points="180,77 410,77 410,185 96,245 96,143"
-    fill="#F5C218"
-  />
+    points="-100,39  612,329  612,376  -100,86"
+    fill="#ffffff"
+    clip-path="url(#hex)"/>
 
-  <!-- Lower S stroke -->
+  <!-- White cut 2  (lower white band) -->
   <polygon
-    points="96,279 416,219 416,323 344,435 96,435"
-    fill="#F5C218"
-  />
+    points="-100,140  612,430  612,477  -100,187"
+    fill="#ffffff"
+    clip-path="url(#hex)"/>
 </svg>
