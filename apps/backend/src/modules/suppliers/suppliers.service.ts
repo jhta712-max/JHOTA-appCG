@@ -13,7 +13,10 @@ export async function listSuppliers(search?: string, onlyActive = false) {
   }
   return prisma.supplier.findMany({
     where,
-    include: { createdBy: { select: { id: true, name: true } } },
+    include: {
+      createdBy:     { select: { id: true, name: true } },
+      _count:        { select: { beneficiaries: true } },
+    },
     orderBy: { name: 'asc' },
   });
 }
@@ -21,7 +24,14 @@ export async function listSuppliers(search?: string, onlyActive = false) {
 export async function getSupplierById(id: string) {
   const supplier = await prisma.supplier.findUnique({
     where: { id },
-    include: { createdBy: { select: { id: true, name: true } } },
+    include: {
+      createdBy:     { select: { id: true, name: true } },
+      _count:        { select: { beneficiaries: true } },
+      beneficiaries: {
+        select: { id: true, name: true, bank: true, accountType: true, accountNumber: true, isActive: true },
+        take: 5,
+      },
+    },
   });
   if (!supplier) throw new AppError(404, 'Suplidor no encontrado', 'SUPPLIER_NOT_FOUND');
   return supplier;

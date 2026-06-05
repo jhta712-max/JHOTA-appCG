@@ -6,7 +6,7 @@ import {
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
   Upload, Download, MessageCircle,
 } from 'lucide-react';
-import { beneficiariesApi, paymentOrdersApi, projectsApi, payrollApi } from '../../api';
+import { beneficiariesApi, paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import type { Beneficiary, PaymentOrder } from '../../types';
 
@@ -15,8 +15,8 @@ type Tab       = 'orders' | 'beneficiaries';
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
 type ModalView = 'form' | 'success';
 
-type BeneForm = { name: string; bank: string; accountType: string; accountNumber: string; cedula: string; phone: string };
-const EMPTY_BENE: BeneForm = { name: '', bank: '', accountType: 'Cuenta de Ahorros', accountNumber: '', cedula: '', phone: '' };
+type BeneForm = { name: string; bank: string; accountType: string; accountNumber: string; cedula: string; phone: string; supplierId: string };
+const EMPTY_BENE: BeneForm = { name: '', bank: '', accountType: 'Cuenta de Ahorros', accountNumber: '', cedula: '', phone: '', supplierId: '' };
 
 type OrderForm = {
   orderType: OrderType; payingCompany: string; beneficiaryId: string;
@@ -141,6 +141,7 @@ function parseCSVText(text: string): BeneForm[] {
       accountNumber: g('numerocuenta'),
       cedula:        cedulaRaw,
       phone:         g('telefono'),
+      supplierId:    '',
     };
   }).filter((r) => r.name.trim() && r.bank.trim() && r.accountNumber.trim());
 }
@@ -230,6 +231,13 @@ export default function PaymentOrdersPage() {
     queryKey: ['projects', 'active'],
     queryFn:  () => projectsApi.list({ status: 'ACTIVE', limit: 100 }),
     select:   (r) => r.data.data,
+  });
+
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ['suppliers', 'active-list'],
+    queryFn:  () => suppliersApi.list({ onlyActive: true }),
+    select:   (r) => r.data.data,
+    enabled:  beneModal,
   });
 
   const linkingOrderProjectId = viewingOrder?.projectId ?? '';
@@ -328,7 +336,15 @@ export default function PaymentOrdersPage() {
   // ── Bene modal helpers ────────────────────────────────────────
   const openBeneModal = (b?: Beneficiary) => {
     setEditingBene(b ?? null);
-    setBeneForm(b ? { name: b.name, bank: b.bank, accountType: b.accountType, accountNumber: b.accountNumber, cedula: b.cedula ?? '', phone: b.phone ?? '' } : EMPTY_BENE);
+    setBeneForm(b ? {
+      name:          b.name,
+      bank:          b.bank,
+      accountType:   b.accountType,
+      accountNumber: b.accountNumber,
+      cedula:        b.cedula ?? '',
+      phone:         b.phone  ?? '',
+      supplierId:    b.supplierId ?? '',
+    } : EMPTY_BENE);
     setFormErr(''); setBeneModal(true);
   };
   const closeBeneModal = () => { setBeneModal(false); setEditingBene(null); setBeneForm(EMPTY_BENE); setFormErr(''); };
@@ -336,7 +352,12 @@ export default function PaymentOrdersPage() {
     if (!beneForm.name.trim())         return setFormErr('El nombre es requerido');
     if (!beneForm.bank.trim())          return setFormErr('El banco es requerido');
     if (!beneForm.accountNumber.trim()) return setFormErr('El número de cuenta es requerido');
-    const payload = { ...beneForm, cedula: beneForm.cedula || undefined, phone: beneForm.phone || undefined };
+    const payload = {
+      ...beneForm,
+      cedula:     beneForm.cedula     || undefined,
+      phone:      beneForm.phone      || undefined,
+      supplierId: beneForm.supplierId || undefined,
+    };
     if (editingBene) updateBeneMut.mutate({ id: editingBene.id, d: payload });
     else             createBeneMut.mutate(payload);
   };
@@ -779,7 +800,14 @@ export default function PaymentOrdersPage() {
                 {beneficiaries.map((b) => (
                   <tr key={b.id} className={`hover:bg-gray-50 transition-colors ${!b.isActive ? 'opacity-50' : ''}`}>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900">{b.name}</p>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <p className="font-medium text-gray-900">{b.name}</p>
+                        {b.supplier && (
+                          <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium">
+                            {b.supplier.name}
+                          </span>
+                        )}
+                      </div>
                       {b.cedula && <p className="text-xs text-gray-400">Cédula: {b.cedula}</p>}
                     </td>
                     <td className="px-4 py-3 text-gray-600">{b.bank}</td>
@@ -815,6 +843,34 @@ export default function PaymentOrdersPage() {
       {beneModal && (
         <Modal title={editingBene ? '✏️ Editar beneficiario' : '➕ Nuevo beneficiario'} onClose={closeBeneModal}>
           {formErr && <AlertBox msg={formErr} />}
+
+          {/* Suplidor vinculado — opcional, pre-llena nombre y teléfono */}
+          <div className="mb-4">
+            <label className="label">Suplidor vinculado <span className="text-gray-400 font-normal text-xs">(opcional)</span></label>
+            <select
+              className="input-field"
+              value={beneForm.supplierId}
+              onChange={(e) => {
+                const sid = e.target.value;
+                const sup = suppliers.find((s) => s.id === sid);
+                setBeneForm((f) => ({
+                  ...f,
+                  supplierId: sid,
+                  name:  sup ? sup.name  : f.name,
+                  phone: sup && sup.phone && !f.phone ? sup.phone : f.phone,
+                }));
+              }}
+            >
+              <option value="">— Sin suplidor vinculado —</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}{s.rnc ? ` · ${s.rnc}` : ''}</option>
+              ))}
+            </select>
+            {beneForm.supplierId && (
+              <p className="text-xs text-blue-600 mt-1">Pre-llena nombre y teléfono desde el suplidor seleccionado</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <Field label="Nombre / Empresa *"><input className="input-field" placeholder="Juan Pérez o ABC SRL" value={beneForm.name} onChange={(e) => setBeneForm((f) => ({ ...f, name: e.target.value }))} /></Field>
             <Field label="Banco *"><input className="input-field" placeholder="Banco Popular" value={beneForm.bank} onChange={(e) => setBeneForm((f) => ({ ...f, bank: e.target.value }))} /></Field>

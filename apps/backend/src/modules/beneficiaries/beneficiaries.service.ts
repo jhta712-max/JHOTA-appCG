@@ -4,6 +4,7 @@ import type { CreateBeneficiaryInput, UpdateBeneficiaryInput } from './beneficia
 
 const INCLUDE = {
   createdBy: { select: { id: true, name: true } },
+  supplier:  { select: { id: true, name: true, rnc: true } },
 } as const;
 
 export async function getBeneficiaries(onlyActive = true) {

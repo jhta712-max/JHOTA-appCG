@@ -184,6 +184,8 @@ export interface Beneficiary {
   cedula?:       string | null;
   phone?:        string | null;
   isActive:      boolean;
+  supplierId?:   string | null;
+  supplier?:     { id: string; name: string; rnc?: string | null } | null;
   createdBy:     { id: string; name: string };
   createdAt:     string;
 }

@@ -9,11 +9,15 @@ export const createBeneficiarySchema = z.object({
   accountNumber: z.string().min(4).max(50),
   cedula:        z.string().max(20).optional(),
   phone:         z.string().max(20).optional(),
+  supplierId:    z.string().uuid().optional().nullable(),
 });
 
 export const updateBeneficiarySchema = createBeneficiarySchema
   .partial()
-  .extend({ isActive: z.boolean().optional() });
+  .extend({
+    isActive:   z.boolean().optional(),
+    supplierId: z.string().uuid().optional().nullable(),
+  });
 
 export type CreateBeneficiaryInput = z.infer<typeof createBeneficiarySchema>;
 export type UpdateBeneficiaryInput = z.infer<typeof updateBeneficiarySchema>;

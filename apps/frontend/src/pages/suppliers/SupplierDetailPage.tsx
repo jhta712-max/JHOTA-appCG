@@ -4,12 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Building2, ArrowLeft, Phone, Mail, MapPin, Hash, FileText,
   Receipt, BarChart3, CheckCircle, AlertCircle, X, Pencil,
-  ToggleLeft, ToggleRight, StickyNote, Sparkles,
+  ToggleLeft, ToggleRight, StickyNote, Sparkles, CreditCard,
 } from 'lucide-react';
-import { suppliersApi } from '../../api';
+import { suppliersApi, beneficiariesApi } from '../../api';
 import { useRole }       from '../../hooks/useRole';
 import { fmtDate }       from '../../utils/date';
-import type { Supplier } from '../../types';
+import type { Supplier, Beneficiary } from '../../types';
 
 // ── Formato moneda ─────────────────────────────────────────────
 function fmtDOP(amount: number) {
@@ -70,7 +70,7 @@ export default function SupplierDetailPage() {
   const qc      = useQueryClient();
   const role    = useRole();
 
-  const [activeTab, setActiveTab]   = useState<'quotations' | 'vouchers' | 'office'>('quotations');
+  const [activeTab, setActiveTab]   = useState<'quotations' | 'vouchers' | 'office' | 'beneficiaries'>('quotations');
   const [editModal,  setEditModal]  = useState(false);
   const [form,       setForm]       = useState<SupplierForm>({
     name: '', rnc: '', phone: '', email: '', address: '', notes: '',
@@ -88,6 +88,16 @@ export default function SupplierDetailPage() {
 
   const supplier = histData?.supplier;
   const stats    = histData?.stats;
+
+  // ── Beneficiaries linked to this supplier ────────────────────
+  const { data: linkedBenes = [] } = useQuery({
+    queryKey: ['beneficiaries', 'by-supplier', id],
+    queryFn:  async () => {
+      const res = await beneficiariesApi.list(false);
+      return (res.data.data as Beneficiary[]).filter((b) => b.supplierId === id);
+    },
+    enabled: !!id,
+  });
 
   // ── Mutations ────────────────────────────────────────────────
   const updateMutation = useMutation({
@@ -321,6 +331,16 @@ export default function SupplierDetailPage() {
           >
             Gastos de oficina ({officeExpenses.length})
           </button>
+          <button
+            onClick={() => setActiveTab('beneficiaries')}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'beneficiaries'
+                ? 'border-amber-400 text-amber-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Cuentas bancarias ({linkedBenes.length})
+          </button>
         </nav>
       </div>
 
@@ -462,6 +482,62 @@ export default function SupplierDetailPage() {
                           ({ CASH: 'Efectivo', TRANSFER: 'Transf.', CARD: 'Tarjeta', CHECK: 'Cheque', OTHER: 'Otro' })[oe.paymentMethod] ?? oe.paymentMethod
                         }</td>
                         <td className="px-4 py-3 text-right font-medium text-gray-800">{fmtDOP(Number(oe.amount))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {activeTab === 'beneficiaries' && (
+        <>
+          {linkedBenes.length === 0 ? (
+            <div className="card p-10 text-center">
+              <div className="flex justify-center mb-3">
+                <CreditCard className="w-10 h-10 text-gray-200" />
+              </div>
+              <p className="text-gray-500 text-sm max-w-sm mx-auto">
+                No hay cuentas bancarias registradas
+              </p>
+              <p className="text-gray-400 text-xs mt-1">
+                Agregar desde Ord. de Pago &rarr; Beneficiarios
+              </p>
+            </div>
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nombre / Empresa</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Banco</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Cuenta</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {linkedBenes.map((b) => (
+                      <tr key={b.id} className={`hover:bg-gray-50 transition-colors ${!b.isActive ? 'opacity-50' : ''}`}>
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-gray-900">{b.name}</p>
+                          {b.cedula && <p className="text-xs text-gray-400">Cédula: {b.cedula}</p>}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">{b.bank}</td>
+                        <td className="px-4 py-3">
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-700">
+                            {b.accountType.replace('Cuenta ', '')}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-gray-700 text-xs">{b.accountNumber}</td>
+                        <td className="px-4 py-3">
+                          {b.isActive
+                            ? <span className="flex items-center gap-1 text-green-600 text-xs"><CheckCircle className="w-3.5 h-3.5" /> Activo</span>
+                            : <span className="text-xs text-gray-400">Inactivo</span>}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

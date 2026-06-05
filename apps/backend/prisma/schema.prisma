@@ -679,15 +679,18 @@ model Beneficiary {
   cedula        String?  @db.VarChar(20)
   phone         String?  @db.VarChar(20)
   isActive      Boolean  @default(true) @map("is_active")
+  supplierId    String?  @map("supplier_id") @db.Uuid
   createdById   String   @map("created_by_id") @db.Uuid
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   createdBy     User           @relation("BeneficiaryCreatedBy", fields: [createdById], references: [id])
+  supplier      Supplier?      @relation("BeneficiarySupplier", fields: [supplierId], references: [id], onDelete: SetNull)
   paymentOrders PaymentOrder[]
 
   @@index([name])
   @@index([isActive])
+  @@index([supplierId])
   @@map("beneficiaries")
 }
 
@@ -710,6 +713,7 @@ model Supplier {
   createdBy      User            @relation("SupplierCreatedBy", fields: [createdById], references: [id])
   officeExpenses OfficeExpense[] @relation("OfficeExpenseSupplier")
   contratosAjustados ContratoAjustado[] @relation("SupplierContratosAjustados")
+  beneficiaries  Beneficiary[]   @relation("BeneficiarySupplier")
 
   @@index([name])
   @@index([rnc])
