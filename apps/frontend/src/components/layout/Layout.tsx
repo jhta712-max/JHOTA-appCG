@@ -35,11 +35,17 @@ const navItems: NavItem[] = [
 // Ícono SVG de la aplicación
 function AppIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <path d="M20 1L39 11.5V36.5L20 47L1 36.5V11.5Z" fill="#1C1C1C" stroke="#F5C218" strokeWidth="1.5"/>
-      <line x1="6"  y1="34" x2="22" y2="14" stroke="#F5C218" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="13" y1="38" x2="34" y2="14" stroke="#F5C218" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="18" y1="34" x2="34" y2="18" stroke="#F5C218" strokeWidth="5" strokeLinecap="round"/>
+    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <defs>
+        <clipPath id="si-oct">
+          <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130"/>
+        </clipPath>
+      </defs>
+      <polygon points="256,14 466,135 466,377 256,498 46,377 46,135" fill="#F5C218"/>
+      <polygon points="256,26 455,141 455,371 256,486 57,371 57,141" fill="#1C1C1C"/>
+      <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130" fill="#F5C218"/>
+      <polygon points="26,276 486,107 486,155 26,324" fill="#1C1C1C" clipPath="url(#si-oct)"/>
+      <polygon points="26,357 486,188 486,236 26,405" fill="#1C1C1C" clipPath="url(#si-oct)"/>
     </svg>
   );
 }

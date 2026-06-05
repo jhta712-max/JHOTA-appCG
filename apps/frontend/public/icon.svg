@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <clipPath id="oct">
+      <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130"/>
+    </clipPath>
+  </defs>
+  <!-- White background for maskable PWA icon -->
+  <rect width="512" height="512" fill="#ffffff"/>
+  <!-- Outer yellow ring (border) -->
+  <polygon points="256,14 466,135 466,377 256,498 46,377 46,135" fill="#F5C218"/>
+  <!-- Dark hexagon body -->
+  <polygon points="256,26 455,141 455,371 256,486 57,371 57,141" fill="#1C1C1C"/>
+  <!-- ServingMI yellow octagon (isotipo) -->
+  <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130" fill="#F5C218"/>
+  <!-- Dark diagonal cuts through the octagon -->
+  <polygon points="26,276 486,107 486,155 26,324" fill="#1C1C1C" clip-path="url(#oct)"/>
+  <polygon points="26,357 486,188 486,236 26,405" fill="#1C1C1C" clip-path="url(#oct)"/>
+</svg>
