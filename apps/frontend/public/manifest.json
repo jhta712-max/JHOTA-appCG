@@ -1,0 +1,18 @@
+{
+  "name": "SERVINGMI — Control de Gastos",
+  "short_name": "SERVINGMI",
+  "description": "Sistema de control de gastos, proyectos y nóminas — Servicios Ingenieriles & Mineros",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#F5C218",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

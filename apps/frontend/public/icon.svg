@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- White background (iOS clips to rounded rect automatically) -->
+  <rect width="512" height="512" fill="#ffffff"/>
+
+  <!--
+    ServingMI logo mark: two diagonal yellow parallelograms forming the S.
+    Upper stroke — wide on the right, left side has a bevel cut (upper-left of the S).
+    Lower stroke — mirrors the upper, with bevel cut on lower-right.
+    Both strokes share the same diagonal slope (~10.6°).
+    Gap between strokes is 34px on both sides (parallel).
+  -->
+
+  <!-- Upper S stroke -->
+  <polygon
+    points="180,77 410,77 410,185 96,245 96,143"
+    fill="#F5C218"
+  />
+
+  <!-- Lower S stroke -->
+  <polygon
+    points="96,279 416,219 416,323 344,435 96,435"
+    fill="#F5C218"
+  />
+</svg>
