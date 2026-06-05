@@ -359,6 +359,20 @@ export async function approvePayroll(id: string, approvedById: string) {
         where: { id: line.id },
         data: { expenseId: expense.id },
       });
+
+      // If line is linked to a contrato ajustado, create payment record
+      if ((line as any).contratoAjustadoId) {
+        await tx.contratoAjustadoPago.create({
+          data: {
+            contratoAjustadoId: (line as any).contratoAjustadoId,
+            nominaId: payroll.id,
+            gastoId: expense.id,
+            monto: lineAmount,
+            fecha: payroll.periodEnd,
+            creadoPorId: approvedById,
+          },
+        });
+      }
     }
 
     return tx.payroll.update({
