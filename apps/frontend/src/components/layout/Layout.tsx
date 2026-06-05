@@ -35,7 +35,7 @@ const navItems: NavItem[] = [
 // Ícono de la aplicación
 function AppIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
-    <img src="/icon.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }}/>
+    <img src="/logo.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }}/>
   );
 }
 

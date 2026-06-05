@@ -7,7 +7,7 @@ import api from '../../api/client';
 type FormData = { name: string; email: string; password: string; confirm: string };
 
 function AppLogo({ className = 'w-12 h-14' }: { className?: string }) {
-  return <img src="/icon.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }}/>;
+  return <img src="/logo.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }}/>;
 }
 
 export default function SetupPage() {
