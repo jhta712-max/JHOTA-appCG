@@ -309,7 +309,7 @@ export default function DashboardPage() {
             {pendingOrders.map((o: any) => (
               <div key={o.id} className="flex items-center justify-between px-5 py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">{o.beneficiary?.name}</p>
+                  <p className="text-sm font-medium text-gray-900 truncate">{o.supplier?.name}</p>
                   <p className="text-xs text-gray-400">
                     {o.project?.code} · {o.concept}
                   </p>

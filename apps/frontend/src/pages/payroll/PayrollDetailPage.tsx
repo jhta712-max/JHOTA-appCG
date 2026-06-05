@@ -880,7 +880,7 @@ export default function PayrollDetailPage() {
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{o.concept}</p>
-                      <p className="text-xs text-gray-400">{o.beneficiary?.name ?? o.payingCompany}</p>
+                      <p className="text-xs text-gray-400">{o.supplier?.name ?? o.payingCompany}</p>
                     </div>
                     <span className="text-sm font-semibold text-gray-700 shrink-0">
                       RD$ {Number(o.amount).toLocaleString('es-DO')}

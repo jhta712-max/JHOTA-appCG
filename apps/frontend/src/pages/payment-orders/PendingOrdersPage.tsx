@@ -195,8 +195,8 @@ export default function PendingOrdersPage() {
                         <p className="text-xs text-gray-700 font-medium leading-tight max-w-[140px] truncate">{o.project.name}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900">{o.beneficiary.name}</p>
-                        <p className="text-xs text-gray-400">{o.beneficiary.bank}</p>
+                        <p className="font-medium text-gray-900">{o.supplier.name}</p>
+                        <p className="text-xs text-gray-400">{o.supplier.bank}</p>
                       </td>
                       <td className="px-4 py-3">
                         <p className="text-gray-700 max-w-[180px] truncate" title={o.concept}>{o.concept}</p>
@@ -236,7 +236,7 @@ export default function PendingOrdersPage() {
             </div>
             <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-1 text-sm">
               <p className="text-xs text-gray-400 font-mono mb-2">OP-{String(confirmOrder.number).padStart(3, '0')}</p>
-              <p><span className="text-gray-500">Beneficiario:</span> <span className="font-semibold text-gray-900">{confirmOrder.beneficiary.name}</span></p>
+              <p><span className="text-gray-500">Suplidor:</span> <span className="font-semibold text-gray-900">{confirmOrder.supplier.name}</span></p>
               <p><span className="text-gray-500">Proyecto:</span> <span className="font-medium text-gray-700">{confirmOrder.project.code} — {confirmOrder.project.name}</span></p>
               <p><span className="text-gray-500">Concepto:</span> <span className="text-gray-700">{confirmOrder.concept}</span></p>
               <p className="pt-1 text-base font-bold text-green-700">{fmtMonto(confirmOrder.amount, confirmOrder.currency)}</p>
