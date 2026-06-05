@@ -528,3 +528,25 @@ export const monitoringApi = {
   aiAnalyze: () =>
     api.post<{ success: boolean; data: AiAnalysisResult }>('/monitoring/ai-analyze'),
 };
+
+// ── Contratos Ajustados ───────────────────────────────────────
+export const contratosAjustadosApi = {
+  list:     (params?: Record<string, unknown>) =>
+    api.get<any>('/contratos-ajustados', { params }),
+  getById:  (id: string) =>
+    api.get<{ success: boolean; data: any }>(`/contratos-ajustados/${id}`),
+  create:   (data: unknown) =>
+    api.post<{ success: boolean; data: any }>('/contratos-ajustados', data),
+  update:   (id: string, data: unknown) =>
+    api.put<{ success: boolean; data: any }>(`/contratos-ajustados/${id}`, data),
+  remove:   (id: string) =>
+    api.delete(`/contratos-ajustados/${id}`),
+  resumen:  () =>
+    api.get<{ success: boolean; data: any }>('/contratos-ajustados/resumen'),
+  availableExpenses: (id: string) =>
+    api.get<{ success: boolean; data: any[] }>(`/contratos-ajustados/${id}/available-expenses`),
+  linkExpense:   (id: string, expenseId: string) =>
+    api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/link-expense`, { expenseId }),
+  unlinkExpense: (id: string, expenseId: string) =>
+    api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/unlink-expense`, { expenseId }),
+};

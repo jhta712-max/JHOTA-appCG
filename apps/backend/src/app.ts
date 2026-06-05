@@ -27,6 +27,7 @@ import batchesRouter         from './modules/batches/batches.router';
 import suppliersRouter       from './modules/suppliers/suppliers.router';
 import notificationsRouter         from './modules/notifications/notifications.router';
 import notificationContactsRouter  from './modules/notification-contacts/notification-contacts.router';
+import contratosAjustadosRouter  from './modules/contratos-ajustados/contratos-ajustados.router';
 
 const app = express();
 
@@ -122,6 +123,7 @@ app.use('/api/v1/backup',          apiLimiter,  backupRouter);
 app.use('/api/v1/suppliers',       apiLimiter,  suppliersRouter);
 app.use('/api/v1/notifications',          apiLimiter,  notificationsRouter);
 app.use('/api/v1/notification-contacts',  apiLimiter,  notificationContactsRouter);
+app.use('/api/v1/contratos-ajustados',   apiLimiter,  contratosAjustadosRouter);
 app.use('/api/v1/monitoring', apiLimiter,  monitoringRouter);
 
 // ----------------------------------------------------------------

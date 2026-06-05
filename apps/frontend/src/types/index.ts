@@ -284,6 +284,44 @@ export interface SupplierHistory {
   }>;
 }
 
+// ── Contratos Ajustados ──────────────────────────────────────
+export interface ContratoAjustado {
+  id:                 string;
+  projectId:          string;
+  project:            { id: string; code: string; name: string };
+  supplierId:         string;
+  supplier:           { id: string; name: string; rnc: string | null };
+  descripcionTrabajo: string;
+  montoContratado:    number;
+  fechaContrato:      string;
+  estado:             'ACTIVO' | 'COMPLETADO' | 'CANCELADO';
+  observaciones:      string | null;
+  createdBy:          { id: string; name: string };
+  updatedBy:          { id: string; name: string } | null;
+  createdAt:          string;
+  updatedAt:          string;
+  // Calculated
+  pagadoAcumulado:    number;
+  balancePendiente:   number;
+  porcentajeEjecutado: number;
+  sobregirado:        boolean;
+  expenses: Array<{
+    id: string; amount: number; expenseDate: string;
+    description: string; status: string;
+  }>;
+  pagos: Array<{
+    id: string; gastoId: string | null; ordenPagoId: string | null;
+    nominaId: string | null; monto: number; fecha: string;
+  }>;
+}
+
+export interface ContratoResumen {
+  totales:     { contratado: number; pagado: number; pendiente: number };
+  indicadores: { activos: number; completados: number; sobregirados: number };
+  porProyecto: Array<{ project: { id: string; code: string; name: string }; contratado: number; pagado: number; pendiente: number }>;
+  porSuplidor: Array<{ supplier: { id: string; name: string }; contratado: number; pagado: number; pendiente: number }>;
+}
+
 // ── Notificaciones in-app ───────────────────────────────────────
 export interface AppNotification {
   id:        string;

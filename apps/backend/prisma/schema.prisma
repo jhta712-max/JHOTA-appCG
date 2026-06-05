@@ -73,6 +73,8 @@ model User {
   paymentOrdersPaid       PaymentOrder[]         @relation("PaymentOrderPaidBy")
   officeExpenses          OfficeExpense[]        @relation("OfficeExpenseCreatedBy")
   suppliersCreated        Supplier[]             @relation("SupplierCreatedBy")
+  contratosAjustadosCreated ContratoAjustado[] @relation("ContratoAjustadoCreatedBy")
+  contratosAjustadosUpdated ContratoAjustado[] @relation("ContratoAjustadoUpdatedBy")
 
   @@index([email])
   @@index([roleId])
@@ -106,6 +108,7 @@ model Project {
   quotations    Quotation[]
   paymentOrders PaymentOrder[]
   batches       Batch[]
+  contratosAjustados ContratoAjustado[] @relation("ProjectContratosAjustados")
   batchesEnabled Boolean             @default(false) @map("batches_enabled")
 
   @@index([code])
@@ -265,6 +268,8 @@ model Expense {
   rejectedBy   User?            @relation("ExpenseRejectedBy", fields: [rejectedById], references: [id])
   batchItemId  String?          @map("batch_item_id") @db.Uuid
   batchItem    BatchItem?       @relation(fields: [batchItemId], references: [id], onDelete: SetNull)
+  contratoAjustadoId String?          @map("contrato_ajustado_id") @db.Uuid
+  contratoAjustado   ContratoAjustado? @relation("ExpenseContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
   fiscalVoucher FiscalVoucher?
   attachments  Attachment[]
   payroll        Payroll?              @relation("PayrollExpense")
@@ -279,6 +284,7 @@ model Expense {
   @@index([status])
   @@index([companyCardId])
   @@index([batchItemId])
+  @@index([contratoAjustadoId])
   @@map("expenses")
 }
 
@@ -703,6 +709,7 @@ model Supplier {
 
   createdBy      User            @relation("SupplierCreatedBy", fields: [createdById], references: [id])
   officeExpenses OfficeExpense[] @relation("OfficeExpenseSupplier")
+  contratosAjustados ContratoAjustado[] @relation("SupplierContratosAjustados")
 
   @@index([name])
   @@index([rnc])
@@ -898,4 +905,60 @@ model NotificationContact {
 
   @@index([isActive])
   @@map("notification_contacts")
+}
+
+// ============================================================
+// CONTRATOS AJUSTADOS (mano de obra por monto pactado)
+// ============================================================
+model ContratoAjustado {
+  id                 String                  @id @default(uuid()) @db.Uuid
+  projectId          String                  @map("project_id") @db.Uuid
+  supplierId         String                  @map("supplier_id") @db.Uuid
+  descripcionTrabajo String                  @map("descripcion_trabajo") @db.Text
+  montoContratado    Decimal                 @map("monto_contratado") @db.Decimal(15, 2)
+  fechaContrato      DateTime                @map("fecha_contrato") @db.Date
+  estado             ContratoAjustadoEstado  @default(ACTIVO)
+  observaciones      String?                 @db.Text
+  createdById        String                  @map("created_by") @db.Uuid
+  updatedById        String?                 @map("updated_by") @db.Uuid
+  createdAt          DateTime                @default(now()) @map("created_at")
+  updatedAt          DateTime                @updatedAt @map("updated_at")
+
+  project    Project   @relation("ProjectContratosAjustados", fields: [projectId], references: [id])
+  supplier   Supplier  @relation("SupplierContratosAjustados", fields: [supplierId], references: [id])
+  createdBy  User      @relation("ContratoAjustadoCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User?     @relation("ContratoAjustadoUpdatedBy", fields: [updatedById], references: [id])
+  pagos      ContratoAjustadoPago[]
+  expenses   Expense[] @relation("ExpenseContratoAjustado")
+
+  @@index([projectId])
+  @@index([supplierId])
+  @@index([estado])
+  @@map("contratos_ajustados")
+}
+
+model ContratoAjustadoPago {
+  id                 String           @id @default(uuid()) @db.Uuid
+  contratoAjustadoId String           @map("contrato_ajustado_id") @db.Uuid
+  ordenPagoId        String?          @map("orden_pago_id") @db.Uuid
+  nominaId           String?          @map("nomina_id") @db.Uuid
+  gastoId            String?          @map("gasto_id") @db.Uuid
+  monto              Decimal          @db.Decimal(15, 2)
+  fecha              DateTime         @db.Date
+  creadoPorId        String           @map("creado_por") @db.Uuid
+  createdAt          DateTime         @default(now()) @map("created_at")
+
+  contratoAjustado ContratoAjustado @relation(fields: [contratoAjustadoId], references: [id], onDelete: Cascade)
+
+  @@index([contratoAjustadoId])
+  @@index([gastoId])
+  @@map("contrato_ajustado_pagos")
+}
+
+enum ContratoAjustadoEstado {
+  ACTIVO
+  COMPLETADO
+  CANCELADO
+
+  @@map("contrato_ajustado_estado")
 }

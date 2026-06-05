@@ -41,6 +41,7 @@ import ImportBatchesPage   from './pages/projects/ImportBatchesPage';
 import SuppliersPage                from './pages/suppliers/SuppliersPage';
 import SupplierDetailPage           from './pages/suppliers/SupplierDetailPage';
 import NotificationContactsPage     from './pages/admin/NotificationContactsPage';
+import ContratosAjustadosPage       from './pages/contratos-ajustados/ContratosAjustadosPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -124,6 +125,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 {/* Suplidores */}
                 <Route path="suppliers"            element={<SuppliersPage />} />
                 <Route path="suppliers/:id"        element={<SupplierDetailPage />} />
+
+                {/* Contratos Ajustados */}
+                <Route path="contratos-ajustados"  element={<ContratosAjustadosPage />} />
 
                 {/* Administración */}
                 <Route path="users"                       element={<UsersPage />} />
