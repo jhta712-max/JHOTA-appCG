@@ -293,13 +293,12 @@ export default function PayrollDetailPage() {
           </div>
         )}
 
-        {payroll.expense && (
+        {payroll.status === 'APPROVED' && payroll.lines?.some((l: any) => l.expense) && (
           <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2 text-sm text-gray-500">
-            <Receipt className="w-4 h-4 text-green-500" />
-            Gasto vinculado auto-creado:
-            <Link to={`/expenses/${payroll.expense.id}`} className="text-blue-600 hover:underline font-medium">
-              RD$ {Number(payroll.expense.amount).toLocaleString('es-DO')} — ver gasto
-            </Link>
+            <Receipt className="w-4 h-4 text-purple-500" />
+            <span>
+              {payroll.lines.filter((l: any) => l.expense).length} gasto{payroll.lines.filter((l: any) => l.expense).length !== 1 ? 's' : ''} individuales generados al aprobar
+            </span>
           </div>
         )}
       </div>
@@ -459,6 +458,7 @@ export default function PayrollDetailPage() {
                 <th className="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 w-28">Monto a Pagar</th>
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 w-28">Banco</th>
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 w-36">No. Cuenta</th>
+                {isApproved && <th className="px-3 py-2.5 text-left text-xs font-semibold text-purple-700 w-24">Gasto</th>}
                 {(isPaid || isApproved) && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-32">Banco Origen</th>}
                 {(isPaid || isApproved) && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-36">No. Transacción</th>}
                 {(isPaid || isApproved) && <th className="px-3 py-2.5 text-left text-xs font-semibold text-green-700 w-24">Fecha Pago</th>}
@@ -569,6 +569,22 @@ export default function PayrollDetailPage() {
                     <td className="px-3 py-2.5 text-sm text-gray-600">
                       {line.bankAccount || <span className="text-gray-400">—</span>}
                     </td>
+                    {/* Gasto individual — solo en APPROVED */}
+                    {isApproved && (
+                      <td className="px-3 py-2.5">
+                        {(line as any).expense ? (
+                          <Link
+                            to={`/expenses/${(line as any).expense.id}`}
+                            className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 font-medium"
+                          >
+                            <Receipt className="w-3 h-3" />
+                            RD$ {Number((line as any).expense.amount).toLocaleString('es-DO', { minimumFractionDigits: 0 })}
+                          </Link>
+                        ) : (
+                          <span className="text-gray-300 text-xs">—</span>
+                        )}
+                      </td>
+                    )}
                     {/* Columnas de comprobante — solo en PAID */}
                     {(isPaid || isApproved) && (
                       <td className="px-3 py-2.5 text-sm">
@@ -914,7 +930,7 @@ export default function PayrollDetailPage() {
               <Ban className="w-5 h-5 text-red-500" /> Anular nómina
             </h3>
             <p className="text-sm text-gray-500 mb-4">
-              Esta acción anulará la nómina y el gasto vinculado. No se puede deshacer.
+              Esta acción anulará la nómina y todos los gastos individuales generados. No se puede deshacer.
             </p>
             <label className="block text-sm font-medium text-gray-700 mb-1">Razón de anulación *</label>
             <textarea
