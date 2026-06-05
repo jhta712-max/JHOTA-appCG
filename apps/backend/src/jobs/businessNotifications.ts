@@ -8,6 +8,7 @@ import {
   sendPendingOrdersEmail,
   sendApprovedPayrollsEmail,
 } from '../utils/mailer';
+import { getUpcomingPayments } from '../modules/service-subscriptions/service-subscriptions.service';
 
 const APP_URL = process.env.FRONTEND_URL ?? 'https://gastos-proyectos.onrender.com';
 
@@ -288,6 +289,54 @@ async function checkApprovedPayrolls() {
   logger.info(`[BusinessNotifications] Approved payrolls: ${payrolls.length} notified.`);
 }
 
+// ─── Check 4: Upcoming service subscription payments ─────────────────────────
+
+async function checkServicePayments() {
+  const upcoming = await getUpcomingPayments(7);
+
+  if (upcoming.length === 0) {
+    logger.info('[BusinessNotifications] Service payments check: no upcoming payments in 7 days.');
+    return;
+  }
+
+  const adminUsers = await prisma.user.findMany({
+    where: { isActive: true, role: { name: 'admin' } },
+    select: { id: true },
+  });
+
+  let alertCount = 0;
+
+  for (const sub of upcoming) {
+    const alreadySent = await recentNotificationExists('SERVICE_PAYMENT', sub.id, 24);
+    if (alreadySent) continue;
+
+    const daysUntil = sub.daysUntil;
+    const title   = `Pago próximo: ${sub.name}`;
+    const message = `${sub.provider} — $${sub.monthlyCost} ${sub.currency} vence el día ${sub.billingDay} (${daysUntil} día${daysUntil !== 1 ? 's' : ''})`;
+    const link    = '/monitoring';
+
+    for (const user of adminUsers) {
+      await createNotification({
+        userId:   user.id,
+        type:     'SERVICE_PAYMENT',
+        title,
+        message,
+        link,
+        entityId: sub.id,
+      });
+    }
+
+    alertCount++;
+    logger.info(`[BusinessNotifications] Service payment alert: ${sub.name} (${sub.provider}) in ${daysUntil}d`);
+  }
+
+  if (alertCount === 0) {
+    logger.info('[BusinessNotifications] Service payments check: no new alerts (all recently notified).');
+  } else {
+    logger.info(`[BusinessNotifications] Service payments: ${alertCount} alert(s) sent.`);
+  }
+}
+
 // ─── Main runner ──────────────────────────────────────────────────────────────
 
 export async function runBusinessNotifications() {
@@ -296,6 +345,7 @@ export async function runBusinessNotifications() {
     await checkBudgetThresholds();
     await checkPendingOrders();
     await checkApprovedPayrolls();
+    await checkServicePayments();
     logger.info('[BusinessNotifications] Revisión completada.');
   } catch (err) {
     logger.error('[BusinessNotifications] Error general:', err);

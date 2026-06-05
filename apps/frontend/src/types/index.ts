@@ -345,3 +345,31 @@ export interface NotificationContact {
   createdAt: string;
   updatedAt: string;
 }
+
+// ── Suscripciones de servicios ─────────────────────────────────
+export interface ServiceSubscription {
+  id:            string;
+  name:          string;
+  provider:      string;
+  description?:  string;
+  monthlyCost:   number;
+  currency:      string;
+  billingDay:    number;
+  paymentMethod?: string;
+  url?:          string;
+  isActive:      boolean;
+  notes?:        string;
+  createdAt:     string;
+  updatedAt:     string;
+}
+
+export interface UpcomingPayment extends ServiceSubscription {
+  nextPaymentDate: string;
+  daysUntil:       number;
+}
+
+export interface SubscriptionsOverview {
+  all:              ServiceSubscription[];
+  upcoming:         UpcomingPayment[];
+  totalMonthlyCost: number;
+}

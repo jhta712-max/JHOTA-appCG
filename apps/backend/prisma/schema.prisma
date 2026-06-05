@@ -962,3 +962,24 @@ enum ContratoAjustadoEstado {
 
   @@map("contrato_ajustado_estado")
 }
+
+// ============================================================
+// SUSCRIPCIONES DE SERVICIOS (Render, GitHub, Twilio, etc.)
+// ============================================================
+model ServiceSubscription {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  provider      String
+  description   String?
+  monthlyCost   Decimal  @db.Decimal(10,2) @map("monthly_cost")
+  currency      String   @default("USD")
+  billingDay    Int      @map("billing_day")
+  paymentMethod String?  @map("payment_method")
+  url           String?
+  isActive      Boolean  @default(true) @map("is_active")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("service_subscriptions")
+}

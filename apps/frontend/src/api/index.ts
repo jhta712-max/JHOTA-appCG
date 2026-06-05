@@ -527,6 +527,8 @@ export const monitoringApi = {
     api.get<{ success: boolean; data: { status: string; dbOk: boolean; memoryUsedPct: number; responseTime: number; createdAt: string }[] }>('/monitoring/health/history', { params: { hours } }),
   aiAnalyze: () =>
     api.post<{ success: boolean; data: AiAnalysisResult }>('/monitoring/ai-analyze'),
+  subscriptions: () =>
+    api.get('/monitoring/subscriptions'),
 };
 
 // ── Contratos Ajustados ───────────────────────────────────────
@@ -549,4 +551,20 @@ export const contratosAjustadosApi = {
     api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/link-expense`, { expenseId }),
   unlinkExpense: (id: string, expenseId: string) =>
     api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/unlink-expense`, { expenseId }),
+};
+
+// ── Suscripciones de Servicios ────────────────────────────────
+export const serviceSubscriptionsApi = {
+  overview:  () =>
+    api.get<{ success: boolean; data: import('../types').SubscriptionsOverview }>('/api/v1/monitoring/subscriptions'),
+  list:      () =>
+    api.get<{ success: boolean; data: import('../types').ServiceSubscription[] }>('/api/v1/service-subscriptions'),
+  create:    (d: unknown) =>
+    api.post<{ success: boolean; data: import('../types').ServiceSubscription }>('/api/v1/service-subscriptions', d),
+  update:    (id: string, d: unknown) =>
+    api.put<{ success: boolean; data: import('../types').ServiceSubscription }>(`/api/v1/service-subscriptions/${id}`, d),
+  remove:    (id: string) =>
+    api.delete(`/api/v1/service-subscriptions/${id}`),
+  exportCsv: () =>
+    api.get('/api/v1/service-subscriptions/export/csv', { responseType: 'blob' }),
 };

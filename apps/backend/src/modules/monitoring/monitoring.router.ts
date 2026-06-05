@@ -22,6 +22,7 @@ import {
   getHealthHistory,
 } from './monitoring.service';
 import { runAiAnalysis } from './monitoring.ai';
+import { listAll as listSubscriptions, getUpcomingPayments } from '../service-subscriptions/service-subscriptions.service';
 
 const router = Router();
 
@@ -90,6 +91,17 @@ router.post('/ai-analyze', authenticate, authorize('admin', 'supervisor'), async
   try {
     const result = await runAiAnalysis();
     res.json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ── Suscripciones de servicios (admin + supervisor) ───────────
+router.get('/subscriptions', authenticate, authorize('admin', 'supervisor'), async (_req, res) => {
+  try {
+    const [all, upcoming] = await Promise.all([listSubscriptions(), getUpcomingPayments(7)]);
+    const total = all.filter((s) => s.isActive).reduce((sum, s) => sum + Number(s.monthlyCost), 0);
+    res.json({ success: true, data: { all, upcoming, totalMonthlyCost: total } });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
