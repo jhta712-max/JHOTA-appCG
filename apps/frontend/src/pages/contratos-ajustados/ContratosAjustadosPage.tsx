@@ -157,7 +157,17 @@ function ContratoFormModal({
       qc.invalidateQueries({ queryKey: ['contratos-resumen'] });
       onSuccess();
     },
-    onError: (e: any) => setError(e.response?.data?.error ?? 'Error al guardar el contrato'),
+    onError: (e: any) => {
+      const details = e.response?.data?.details;
+      if (details && Object.keys(details).length > 0) {
+        const msgs = Object.entries(details)
+          .map(([field, errors]: any) => `${field}: ${(errors as string[]).join(', ')}`)
+          .join(' | ');
+        setError(msgs);
+      } else {
+        setError(e.response?.data?.error ?? 'Error al guardar el contrato');
+      }
+    },
   });
 
   const set = (k: keyof ContratoForm, v: string) => setForm((p) => ({ ...p, [k]: v }));
