@@ -10,7 +10,7 @@ import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../a
 import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier } from '../../types';
 
-// ── Tipos locales ─────────────────────────────────────────────
+// -- Tipos locales --
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
 type ModalView = 'form' | 'success';
 
@@ -66,7 +66,7 @@ function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-// ── CSV helpers ───────────────────────────────────────────────
+// -- CSV helpers --
 
 /** Normaliza cualquier variante del tipo de cuenta al enum que acepta el backend */
 function normalizeAccountType(raw: string): 'Cuenta de Ahorros' | 'Cuenta Corriente' | 'Cuenta Nómina' {
@@ -142,7 +142,7 @@ function parseCSVText(text: string): BeneForm[] {
   }).filter((r) => r.name.trim() && r.bank.trim() && r.accountNumber.trim());
 }
 
-// ── WhatsApp share ────────────────────────────────────────────
+// -- WhatsApp share --
 // isMobile: true en Android/iPhone → usa Web Share API nativa (emoji intactos)
 // Desktop: WhatsApp Web corrompe emoji via URL → copiamos al portapapeles directo
 const isMobileDevice = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -161,7 +161,7 @@ async function shareWhatsApp(text: string, onCopied?: () => void) {
   }
 }
 
-// ────────────────────────────────────────────────────────────────
+// --
 export default function PaymentOrdersPage() {
   const qc       = useQueryClient();
   const authUser = useAuthStore((s) => s.user);
@@ -190,7 +190,7 @@ export default function PaymentOrdersPage() {
 
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3500); };
 
-  // ── Queries ───────────────────────────────────────────────────
+  // -- Queries --
   const { data: orders = [], isLoading: loadingOrders } = useQuery({
     queryKey: ['payment-orders', filterStatus, filterType],
     queryFn:  () => paymentOrdersApi.list({
@@ -229,7 +229,7 @@ export default function PaymentOrdersPage() {
     enabled:  linkModal && !!linkingOrderProjectId,
   });
 
-  // ── Order mutations ───────────────────────────────────────────
+  // -- Order mutations --
   const createOrderMut = useMutation({
     mutationFn: (d: unknown) => paymentOrdersApi.create(d),
     onSuccess: (res) => {
@@ -239,18 +239,18 @@ export default function PaymentOrdersPage() {
       setSessionOrders((prev) => [...prev, newOrder]);
       setViewingOrder(newOrder);
       setModalView('success');
-      flash('✅ Orden generada');
+      flash(' Orden generada');
     },
     onError: (e: any) => setFormErr(e.response?.data?.error || 'Error al crear'),
   });
   const updateOrderMut = useMutation({
     mutationFn: ({ id, d }: { id: string; d: unknown }) => paymentOrdersApi.update(id, d),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); closeOrderModal(); flash('✅ Orden actualizada'); setViewingOrder(res.data.data); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); closeOrderModal(); flash(' Orden actualizada'); setViewingOrder(res.data.data); },
     onError:   (e: any) => setFormErr(e.response?.data?.error || 'Error'),
   });
   const markPaidMut = useMutation({
     mutationFn: (id: string) => paymentOrdersApi.markAsPaid(id),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('✅ Orden marcada como pagada'); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash(' Orden marcada como pagada'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
   });
   const voidOrderMut = useMutation({
@@ -260,12 +260,12 @@ export default function PaymentOrdersPage() {
   });
   const generateExpenseMut = useMutation({
     mutationFn: (id: string) => paymentOrdersApi.generateExpense(id),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('✅ Gasto generado y vinculado al proyecto'); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash(' Gasto generado y vinculado al proyecto'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error al generar gasto'),
   });
   const linkExpenseMut = useMutation({
     mutationFn: ({ id, expenseId }: { id: string; expenseId: string }) => paymentOrdersApi.linkExpense(id, expenseId),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkModal(false); flash('✅ Gasto vinculado'); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkModal(false); flash(' Gasto vinculado'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
   });
   const unlinkExpenseMut = useMutation({
@@ -275,7 +275,7 @@ export default function PaymentOrdersPage() {
   });
   const linkPayrollMut = useMutation({
     mutationFn: ({ id, payrollId }: { id: string; payrollId: string }) => paymentOrdersApi.linkPayroll(id, payrollId),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkPayrollModal(false); setSelectedPayrollId(''); flash('✅ Nómina vinculada'); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkPayrollModal(false); setSelectedPayrollId(''); flash(' Nómina vinculada'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error al vincular nómina'),
   });
   const unlinkPayrollMut = useMutation({
@@ -285,11 +285,11 @@ export default function PaymentOrdersPage() {
   });
   const hardDeleteOrderMut = useMutation({
     mutationFn: (id: string) => paymentOrdersApi.hardDelete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(null); flash('🗑 Orden eliminada permanentemente'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(null); flash(' Orden eliminada permanentemente'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error al eliminar'),
   });
 
-  // ── Order modal helpers ───────────────────────────────────────
+  // -- Order modal helpers --
   const normalizeOrderType = (type: any): OrderType => {
     if (type === 'GENERAL') return 'SERVICIO';
     if (['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type)) return type;
@@ -321,7 +321,7 @@ export default function PaymentOrdersPage() {
     setLastCreatedOrder(null);
   };
 
-  // "Crear otra" — mantiene empresa y proyecto, resetea el resto
+  // "Crear otra" - mantiene empresa y proyecto, resetea el resto
   const crearOtraOrden = () => {
     setOrderForm((f) => ({ ...EMPTY_ORDER, payingCompany: f.payingCompany, projectId: f.projectId }));
     setFormErr('');
@@ -350,10 +350,10 @@ export default function PaymentOrdersPage() {
     else              createOrderMut.mutate(payload);
   };
 
-  const copyText = (text: string) => { navigator.clipboard.writeText(text).then(() => flash('📋 Texto copiado')); };
+  const copyText = (text: string) => { navigator.clipboard.writeText(text).then(() => flash(' Texto copiado')); };
 
 
-  // ── Render ────────────────────────────────────────────────────
+  // -- Render --
   return (
     <div className="max-w-5xl mx-auto space-y-5">
 
@@ -384,7 +384,7 @@ export default function PaymentOrdersPage() {
             {(['', 'PENDING', 'PAID'] as const).map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === s ? 'bg-primary-500 text-gray-900' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
-                {s === '' ? 'Todas' : s === 'PENDING' ? '🕐 Pendientes' : '✅ Pagadas'}
+                {s === '' ? 'Todas' : s === 'PENDING' ? ' Pendientes' : ' Pagadas'}
               </button>
             ))}
             <div className="w-px bg-gray-200 mx-1 self-stretch" />
@@ -403,7 +403,7 @@ export default function PaymentOrdersPage() {
                   <ClipboardCopy className="w-3.5 h-3.5" /> Copiar todas
                 </button>
                 <button
-                  onClick={() => shareWhatsApp(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
+                  onClick={() => shareWhatsApp(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'), () => flash(' Copiado — pega en WhatsApp Web'))}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                   <MessageCircle className="w-3.5 h-3.5" /> Compartir todas
                 </button>
@@ -466,7 +466,7 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              {/* Vínculo gasto — materiales */}
+              {/* Vínculo gasto - materiales */}
               {viewingOrder.orderType === 'MATERIALS' && (
                 <div className={`rounded-xl p-3 border text-sm ${viewingOrder.expense ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
                   <div className="flex items-center justify-between mb-1">
@@ -512,7 +512,7 @@ export default function PaymentOrdersPage() {
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
                     <button
-                      onClick={() => shareWhatsApp(viewingOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
+                      onClick={() => shareWhatsApp(viewingOrder.generatedText!, () => flash(' Copiado — pega en WhatsApp Web'))}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
@@ -520,11 +520,11 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              {/* Eliminar permanente — admin */}
+              {/* Eliminar permanente - admin */}
               {isAdmin && (
                 <div className="pt-2 border-t border-red-100">
                   <button
-                    onClick={() => { if (confirm('⚠️ ¿ELIMINAR esta orden PERMANENTEMENTE? No se puede deshacer.')) hardDeleteOrderMut.mutate(viewingOrder.id); }}
+                    onClick={() => { if (confirm('️ ¿ELIMINAR esta orden PERMANENTEMENTE? No se puede deshacer.')) hardDeleteOrderMut.mutate(viewingOrder.id); }}
                     disabled={hardDeleteOrderMut.isPending}
                     className="w-full text-xs text-red-700 font-bold border border-red-300 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all">
                     🗑 Eliminar permanentemente (Admin)
@@ -550,7 +550,7 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              {/* Generar gasto retroactivo — solo para SERVICIO y MATERIALS, no PAYROLL */}
+              {/* Generar gasto retroactivo - solo para SERVICIO y MATERIALS, no PAYROLL */}
               {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && viewingOrder.orderType !== 'PAYROLL' && (
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                   <p className="text-xs text-amber-600 flex items-center gap-1">
@@ -613,7 +613,7 @@ export default function PaymentOrdersPage() {
                             className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg" title="Copiar mensaje">
                             <ClipboardCopy className="w-4 h-4" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web')); }}
+                          <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash(' Copiado — pega en WhatsApp Web')); }}
                             className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg" title="Compartir por WhatsApp">
                             <MessageCircle className="w-4 h-4" />
                           </button>
@@ -627,11 +627,11 @@ export default function PaymentOrdersPage() {
           </div>
         </div>
       )}
-      {/* ── MODAL: ORDEN DE PAGO ────────────────────────────── */}
+      {/* Modal: Nueva orden de pago */}
       {orderModal && (
-        <Modal title={editingOrder ? '✏️ Editar orden' : '💳 Nueva orden de pago'} onClose={closeOrderModal} wide>
+        <Modal title={editingOrder ? 'Editar orden' : 'Nueva orden de pago'} onClose={closeOrderModal} wide>
 
-          {/* ── VISTA: ÉXITO (batch mode) ─────────────────── */}
+          {/* Vista: Exito (batch mode) */}
           {modalView === 'success' && lastCreatedOrder && (
             <div className="space-y-5">
               {/* Banner éxito */}
@@ -664,7 +664,7 @@ export default function PaymentOrdersPage() {
                       className="btn-secondary text-sm flex items-center gap-2">
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
-                    <button onClick={() => shareWhatsApp(lastCreatedOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
+                    <button onClick={() => shareWhatsApp(lastCreatedOrder.generatedText!, () => flash(' Copiado — pega en WhatsApp Web'))}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
@@ -684,7 +684,7 @@ export default function PaymentOrdersPage() {
                         <ClipboardCopy className="w-3 h-3" /> Copiar todas
                       </button>
                       <button
-                        onClick={() => shareWhatsApp(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
+                        onClick={() => shareWhatsApp(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'), () => flash(' Copiado — pega en WhatsApp Web'))}
                         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                         <MessageCircle className="w-3 h-3" /> Compartir todas
                       </button>
@@ -701,7 +701,7 @@ export default function PaymentOrdersPage() {
                             className="p-1 text-gray-400 hover:text-primary-600 rounded">
                             <ClipboardCopy className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web'))} title="WhatsApp"
+                          <button onClick={() => shareWhatsApp(o.generatedText ?? '', () => flash(' Copiado — pega en WhatsApp Web'))} title="WhatsApp"
                             className="p-1 text-gray-400 hover:text-green-600 rounded">
                             <MessageCircle className="w-3.5 h-3.5" />
                           </button>
@@ -726,7 +726,7 @@ export default function PaymentOrdersPage() {
             </div>
           )}
 
-          {/* ── VISTA: FORMULARIO ─────────────────────────── */}
+          {/* -- VISTA: FORMULARIO -- */}
           {modalView === 'form' && (
             <>
               {formErr && <AlertBox msg={formErr} />}
@@ -857,9 +857,9 @@ export default function PaymentOrdersPage() {
         </Modal>
       )}
 
-      {/* ── MODAL: VINCULAR GASTO ───────────────────────────── */}
+      {/* -- MODAL: VINCULAR GASTO -- */}
       {linkModal && viewingOrder && (
-        <Modal title="🧾 Vincular gasto de materiales" onClose={() => setLinkModal(false)}>
+        <Modal title=" Vincular gasto de materiales" onClose={() => setLinkModal(false)}>
           <p className="text-sm text-gray-500 mb-4">
             Selecciona el gasto por transferencia registrado en el proyecto <strong>{viewingOrder.project.code}</strong> que corresponde a esta orden.
           </p>
@@ -895,9 +895,9 @@ export default function PaymentOrdersPage() {
         </Modal>
       )}
 
-      {/* ── MODAL: VINCULAR NÓMINA ─────────────────────────── */}
+      {/* -- MODAL: VINCULAR NÓMINA -- */}
       {linkPayrollModal && viewingOrder && (
-        <Modal title="📋 Vincular nómina a esta orden" onClose={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}>
+        <Modal title=" Vincular nómina a esta orden" onClose={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}>
           {projectPayrolls.filter((p: any) => p.status === 'APPROVED').length === 0 ? (
             <div className="text-center py-4 text-gray-400">
               <p className="text-sm">No hay nóminas aprobadas para este proyecto.</p>
