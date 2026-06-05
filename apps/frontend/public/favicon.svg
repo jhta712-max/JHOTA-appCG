@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <clipPath id="h">
-      <polygon points="146,76 366,76 406,116 406,396 366,436 146,436 106,396 106,116"/>
+      <polygon points="188,76 324,76 364,116 364,396 324,436 188,436 148,396 148,116"/>
     </clipPath>
   </defs>
   <rect width="512" height="512" fill="#ffffff"/>
-  <polygon points="146,76 366,76 406,116 406,396 366,436 146,436 106,396 106,116" fill="#F5C218"/>
-  <polygon points="-100,39 612,329 612,376 -100,86"   fill="#ffffff" clip-path="url(#h)"/>
-  <polygon points="-100,140 612,430 612,477 -100,187" fill="#ffffff" clip-path="url(#h)"/>
+  <polygon points="188,76 324,76 364,116 364,396 324,436 188,436 148,396 148,116" fill="#F5C218"/>
+  <polygon points="0,278 512,90 512,144 0,332"   fill="#ffffff" clip-path="url(#h)"/>
+  <polygon points="0,368 512,180 512,234 0,422"  fill="#ffffff" clip-path="url(#h)"/>
 </svg>
