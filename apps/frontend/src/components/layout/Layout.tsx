@@ -32,24 +32,10 @@ const navItems: NavItem[] = [
   { to: '/monitoring',      icon: Activity,        label: 'Monitoreo',       roles: ['admin'] },
 ];
 
-// Ícono SVG de la aplicación
+// Ícono de la aplicación
 function AppIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <defs>
-        <clipPath id="hex-clip">
-          <polygon points="256,14 466,135 466,377 256,498 46,377 46,135"/>
-        </clipPath>
-      </defs>
-      {/* Yellow hexagon border */}
-      <polygon points="256,14 466,135 466,377 256,498 46,377 46,135" fill="#F5C218"/>
-      {/* Dark hexagon body */}
-      <polygon points="256,26 455,141 455,371 256,486 57,371 57,141" fill="#1C1C1C"/>
-      {/* Three yellow diagonal stripes */}
-      <polygon points="80,340 200,120 240,140 120,360" fill="#F5C218" clipPath="url(#hex-clip)"/>
-      <polygon points="180,380 300,160 340,180 220,400" fill="#F5C218" clipPath="url(#hex-clip)"/>
-      <polygon points="280,380 400,160 440,180 320,400" fill="#F5C218" clipPath="url(#hex-clip)"/>
-    </svg>
+    <img src="/icon.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }}/>
   );
 }
 
