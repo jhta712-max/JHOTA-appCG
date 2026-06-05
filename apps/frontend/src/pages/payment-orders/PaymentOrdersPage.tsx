@@ -10,7 +10,7 @@ import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../a
 import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier } from '../../types';
 
-// -- Tipos locales --
+// ── Tipos locales ─────────────────────────────────────────────
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
 type ModalView = 'form' | 'success';
 
@@ -24,12 +24,12 @@ const EMPTY_ORDER: OrderForm = {
   amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '',
 };
 
-const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nomina'];
+const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'];
 const CURRENCIES    = ['RD$', 'US$', '€'];
 
 const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
   SERVICIO:  { label: 'Servicio',   icon: <FileText className="w-4 h-4" />,      color: 'border-purple-300 bg-purple-50',  desc: 'Pago por servicios' },
-  PAYROLL:   { label: 'Nomina',     icon: <Wallet className="w-4 h-4" />,        color: 'border-blue-400 bg-blue-50',     desc: 'Pago de mano de obra' },
+  PAYROLL:   { label: 'Nómina',     icon: <Wallet className="w-4 h-4" />,        color: 'border-blue-400 bg-blue-50',     desc: 'Pago de mano de obra' },
   MATERIALS: { label: 'Materiales', icon: <ShoppingCart className="w-4 h-4" />,  color: 'border-amber-400 bg-amber-50',   desc: 'Compra de insumos por transferencia' },
 };
 
@@ -42,7 +42,7 @@ const STATUS_CFG = {
 const ACCT_BADGE: Record<string, string> = {
   'Cuenta de Ahorros': 'bg-blue-100 text-blue-700',
   'Cuenta Corriente':  'bg-amber-100 text-amber-700',
-  'Cuenta Nomina':     'bg-green-100 text-green-700',
+  'Cuenta Nómina':     'bg-green-100 text-green-700',
 };
 
 const PAYROLL_TYPE_LABEL: Record<string, string> = { LABOR: 'Mano de obra', SERVICE: 'Servicios' };
@@ -51,14 +51,14 @@ function fmtMonto(amount: number | string, currency: string) {
   return `${currency} ${Number(amount).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-// Formatea un string numerico como moneda mientras se escribe: "300000" -> "300,000"
+// Formatea un string numérico como moneda mientras se escribe: "300000" → "300,000"
 function fmtAmountInput(raw: string): string {
   const clean = raw.replace(/[^0-9.]/g, '');
   const parts  = clean.split('.');
   const int    = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return parts.length > 1 ? `${int}.${parts[1].slice(0, 2)}` : int;
 }
-// Extrae el valor numerico de un string formateado: "300,000.00" -> "300000.00"
+// Extrae el valor numérico de un string formateado: "300,000.00" → "300000.00"
 function parseAmountInput(formatted: string): string {
   return formatted.replace(/,/g, '');
 }
@@ -66,23 +66,23 @@ function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-// -- CSV helpers --
+// ── CSV helpers ───────────────────────────────────────────────
 
 /** Normaliza cualquier variante del tipo de cuenta al enum que acepta el backend */
-function normalizeAccountType(raw: string): 'Cuenta de Ahorros' | 'Cuenta Corriente' | 'Cuenta Nomina' {
+function normalizeAccountType(raw: string): 'Cuenta de Ahorros' | 'Cuenta Corriente' | 'Cuenta Nómina' {
   // Quitar tildes manualmente (sin regex Unicode que puede fallar)
   const v = raw.toLowerCase().trim()
-    .replace(/a/g, 'a').replace(/e/g, 'e').replace(/i/g, 'i')
-    .replace(/o/g, 'o').replace(/u/g, 'u').replace(/n/g, 'n');
+    .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+    .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
   if (v.includes('corriente'))           return 'Cuenta Corriente';
-  if (v.includes('nomina'))              return 'Cuenta Nomina';
+  if (v.includes('nomina'))              return 'Cuenta Nómina';
   return 'Cuenta de Ahorros'; // cubre: ahorro, ahorros, cuenta de ahorros, etc.
 }
 
 
-// -- WhatsApp share --
-// isMobile: true en Android/iPhone -> usa Web Share API nativa (emoji intactos)
-// Desktop: WhatsApp Web corrompe emoji via URL -> copiamos al portapapeles directo
+// ── WhatsApp share ────────────────────────────────────────────
+// isMobile: true en Android/iPhone → usa Web Share API nativa (emoji intactos)
+// Desktop: WhatsApp Web corrompe emoji via URL → copiamos al portapapeles directo
 const isMobileDevice = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 async function shareWhatsApp(text: string, onCopied?: () => void) {
@@ -90,7 +90,7 @@ async function shareWhatsApp(text: string, onCopied?: () => void) {
     if (navigator.share) {
       try { await navigator.share({ text }); return; } catch { /* cancelado */ }
     }
-    // Fallback movil sin Web Share API
+    // Fallback móvil sin Web Share API
     window.open(`whatsapp://send?text=${encodeURIComponent(text)}`, '_blank');
   } else {
     // Desktop: copiar al portapapeles (WA Web corrompe emoji en URL)
@@ -99,7 +99,7 @@ async function shareWhatsApp(text: string, onCopied?: () => void) {
   }
 }
 
-// --
+// ────────────────────────────────────────────────────────────────
 export default function PaymentOrdersPage() {
   const qc       = useQueryClient();
   const authUser = useAuthStore((s) => s.user);
@@ -128,7 +128,7 @@ export default function PaymentOrdersPage() {
 
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3500); };
 
-  // -- Queries --
+  // ── Queries ───────────────────────────────────────────────────
   const { data: orders = [], isLoading: loadingOrders } = useQuery({
     queryKey: ['payment-orders', filterStatus, filterType],
     queryFn:  () => paymentOrdersApi.list({
@@ -153,7 +153,7 @@ export default function PaymentOrdersPage() {
 
   const linkingOrderProjectId = viewingOrder?.projectId ?? '';
 
-  // Nominas del proyecto para vincular retroactivamente
+  // Nóminas del proyecto para vincular retroactivamente
   const { data: projectPayrolls = [] } = useQuery({
     queryKey: ['payrolls', 'by-project', linkingOrderProjectId],
     queryFn:  () => payrollApi.list({ projectId: linkingOrderProjectId, limit: 50 }),
@@ -167,7 +167,7 @@ export default function PaymentOrdersPage() {
     enabled:  linkModal && !!linkingOrderProjectId,
   });
 
-  // -- Order mutations --
+  // ── Order mutations ───────────────────────────────────────────
   const createOrderMut = useMutation({
     mutationFn: (d: unknown) => paymentOrdersApi.create(d),
     onSuccess: (res) => {
@@ -177,18 +177,18 @@ export default function PaymentOrdersPage() {
       setSessionOrders((prev) => [...prev, newOrder]);
       setViewingOrder(newOrder);
       setModalView('success');
-      flash(' Orden generada');
+      flash('✅ Orden generada');
     },
     onError: (e: any) => setFormErr(e.response?.data?.error || 'Error al crear'),
   });
   const updateOrderMut = useMutation({
     mutationFn: ({ id, d }: { id: string; d: unknown }) => paymentOrdersApi.update(id, d),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); closeOrderModal(); flash(' Orden actualizada'); setViewingOrder(res.data.data); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); closeOrderModal(); flash('✅ Orden actualizada'); setViewingOrder(res.data.data); },
     onError:   (e: any) => setFormErr(e.response?.data?.error || 'Error'),
   });
   const markPaidMut = useMutation({
     mutationFn: (id: string) => paymentOrdersApi.markAsPaid(id),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash(' Orden marcada como pagada'); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('✅ Orden marcada como pagada'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
   });
   const voidOrderMut = useMutation({
@@ -198,12 +198,12 @@ export default function PaymentOrdersPage() {
   });
   const generateExpenseMut = useMutation({
     mutationFn: (id: string) => paymentOrdersApi.generateExpense(id),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash(' Gasto generado y vinculado al proyecto'); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('✅ Gasto generado y vinculado al proyecto'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error al generar gasto'),
   });
   const linkExpenseMut = useMutation({
     mutationFn: ({ id, expenseId }: { id: string; expenseId: string }) => paymentOrdersApi.linkExpense(id, expenseId),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkModal(false); flash(' Gasto vinculado'); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkModal(false); flash('✅ Gasto vinculado'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
   });
   const unlinkExpenseMut = useMutation({
@@ -213,21 +213,21 @@ export default function PaymentOrdersPage() {
   });
   const linkPayrollMut = useMutation({
     mutationFn: ({ id, payrollId }: { id: string; payrollId: string }) => paymentOrdersApi.linkPayroll(id, payrollId),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkPayrollModal(false); setSelectedPayrollId(''); flash(' Nomina vinculada'); },
-    onError:   (e: any) => flash(e.response?.data?.error || 'Error al vincular nomina'),
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); setLinkPayrollModal(false); setSelectedPayrollId(''); flash('✅ Nómina vinculada'); },
+    onError:   (e: any) => flash(e.response?.data?.error || 'Error al vincular nómina'),
   });
   const unlinkPayrollMut = useMutation({
     mutationFn: (id: string) => paymentOrdersApi.unlinkPayroll(id),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Nomina desvinculada'); },
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Nómina desvinculada'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
   });
   const hardDeleteOrderMut = useMutation({
     mutationFn: (id: string) => paymentOrdersApi.hardDelete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(null); flash(' Orden eliminada permanentemente'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(null); flash('🗑 Orden eliminada permanentemente'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error al eliminar'),
   });
 
-  // -- Order modal helpers --
+  // ── Order modal helpers ───────────────────────────────────────
   const normalizeOrderType = (type: any): OrderType => {
     if (type === 'GENERAL') return 'SERVICIO';
     if (['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type)) return type;
@@ -259,7 +259,7 @@ export default function PaymentOrdersPage() {
     setLastCreatedOrder(null);
   };
 
-  // "Crear otra" - mantiene empresa y proyecto, resetea el resto
+  // "Crear otra" — mantiene empresa y proyecto, resetea el resto
   const crearOtraOrden = () => {
     setOrderForm((f) => ({ ...EMPTY_ORDER, payingCompany: f.payingCompany, projectId: f.projectId }));
     setFormErr('');
@@ -288,10 +288,10 @@ export default function PaymentOrdersPage() {
     else              createOrderMut.mutate(payload);
   };
 
-  const copyText = (text: string) => { navigator.clipboard.writeText(text).then(() => flash(' Texto copiado')); };
+  const copyText = (text: string) => { navigator.clipboard.writeText(text).then(() => flash('📋 Texto copiado')); };
 
 
-  // -- Render --
+  // ── Render ────────────────────────────────────────────────────
   return (
     <div className="max-w-5xl mx-auto space-y-5">
 
@@ -306,9 +306,9 @@ export default function PaymentOrdersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary-600" /> Ordenes de Pago
+            <FileText className="w-5 h-5 text-primary-600" /> Órdenes de Pago
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">Solicitudes de pago via transferencia (Nomina · Materiales · General)</p>
+          <p className="text-sm text-gray-500 mt-0.5">Solicitudes de pago vía transferencia (Nómina · Materiales · General)</p>
         </div>
         <button onClick={() => openOrderModal()} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> Nueva orden
@@ -322,7 +322,7 @@ export default function PaymentOrdersPage() {
             {(['', 'PENDING', 'PAID'] as const).map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === s ? 'bg-primary-500 text-gray-900' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
-                {s === '' ? 'Todas' : s === 'PENDING' ? ' Pendientes' : ' Pagadas'}
+                {s === '' ? 'Todas' : s === 'PENDING' ? '🕐 Pendientes' : '✅ Pagadas'}
               </button>
             ))}
             <div className="w-px bg-gray-200 mx-1 self-stretch" />
@@ -341,7 +341,7 @@ export default function PaymentOrdersPage() {
                   <ClipboardCopy className="w-3.5 h-3.5" /> Copiar todas
                 </button>
                 <button
-                  onClick={() => shareWhatsApp(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'), () => flash(' Copiado - pega en WhatsApp Web'))}
+                  onClick={() => shareWhatsApp(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                   <MessageCircle className="w-3.5 h-3.5" /> Compartir todas
                 </button>
@@ -364,24 +364,24 @@ export default function PaymentOrdersPage() {
                   <p className="text-lg font-bold text-primary-700 mt-1">{fmtMonto(viewingOrder.amount, viewingOrder.currency)}</p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     <span className="font-mono">{viewingOrder.project.code}</span>
-                    {' - '}{viewingOrder.project.name}
+                    {' — '}{viewingOrder.project.name}
                   </p>
                 </div>
                 <button onClick={() => setViewingOrder(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
               </div>
 
-              {/* Vinculo nomina */}
+              {/* Vínculo nómina */}
               {viewingOrder.orderType === 'PAYROLL' && (
                 <div className={`rounded-xl p-3 border text-sm ${viewingOrder.payroll ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Nomina vinculada</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Nómina vinculada</p>
                     {viewingOrder.status !== 'VOIDED' && (
                       viewingOrder.payroll
-                        ? <button onClick={() => { if (confirm('¿Desvincular nomina?')) unlinkPayrollMut.mutate(viewingOrder.id); }}
+                        ? <button onClick={() => { if (confirm('¿Desvincular nómina?')) unlinkPayrollMut.mutate(viewingOrder.id); }}
                             className="text-xs text-red-500 hover:text-red-700 font-semibold">Desvincular</button>
                         : <button onClick={() => setLinkPayrollModal(true)}
                             className="text-xs text-blue-600 hover:text-blue-800 font-semibold border border-blue-300 px-2 py-0.5 rounded-lg">
-                            + Vincular nomina
+                            + Vincular nómina
                           </button>
                     )}
                   </div>
@@ -394,17 +394,17 @@ export default function PaymentOrdersPage() {
                         </span>
                       </p>
                       <p className="text-xs text-blue-600 mt-0.5">
-                        {fmtDate(viewingOrder.payroll.periodStart)} - {fmtDate(viewingOrder.payroll.periodEnd)}
+                        {fmtDate(viewingOrder.payroll.periodStart)} — {fmtDate(viewingOrder.payroll.periodEnd)}
                         &nbsp;·&nbsp; {fmtMonto(viewingOrder.payroll.totalAmount, viewingOrder.currency)}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-xs">Sin nomina vinculada - haz clic en "+ Vincular nomina" para asociar una retroactivamente</p>
+                    <p className="text-gray-400 text-xs">Sin nómina vinculada — haz clic en "+ Vincular nómina" para asociar una retroactivamente</p>
                   )}
                 </div>
               )}
 
-              {/* Vinculo gasto - materiales */}
+              {/* Vínculo gasto — materiales */}
               {viewingOrder.orderType === 'MATERIALS' && (
                 <div className={`rounded-xl p-3 border text-sm ${viewingOrder.expense ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
                   <div className="flex items-center justify-between mb-1">
@@ -433,7 +433,7 @@ export default function PaymentOrdersPage() {
                       </p>
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-xs">Sin gasto vinculado - se vincula cuando se confirme la transferencia</p>
+                    <p className="text-gray-400 text-xs">Sin gasto vinculado — se vincula cuando se confirme la transferencia</p>
                   )}
                 </div>
               )}
@@ -450,7 +450,7 @@ export default function PaymentOrdersPage() {
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
                     <button
-                      onClick={() => shareWhatsApp(viewingOrder.generatedText!, () => flash(' Copiado - pega en WhatsApp Web'))}
+                      onClick={() => shareWhatsApp(viewingOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
@@ -458,11 +458,11 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              {/* Eliminar permanente - admin */}
+              {/* Eliminar permanente — admin */}
               {isAdmin && (
                 <div className="pt-2 border-t border-red-100">
                   <button
-                    onClick={() => { if (confirm('️ ¿ELIMINAR esta orden PERMANENTEMENTE? No se puede deshacer.')) hardDeleteOrderMut.mutate(viewingOrder.id); }}
+                    onClick={() => { if (confirm('⚠️ ¿ELIMINAR esta orden PERMANENTEMENTE? No se puede deshacer.')) hardDeleteOrderMut.mutate(viewingOrder.id); }}
                     disabled={hardDeleteOrderMut.isPending}
                     className="w-full text-xs text-red-700 font-bold border border-red-300 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all">
                     🗑 Eliminar permanentemente (Admin)
@@ -488,7 +488,7 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              {/* Generar gasto retroactivo - solo para SERVICIO y MATERIALS, no PAYROLL */}
+              {/* Generar gasto retroactivo — solo para SERVICIO y MATERIALS, no PAYROLL */}
               {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && viewingOrder.orderType !== 'PAYROLL' && (
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                   <p className="text-xs text-amber-600 flex items-center gap-1">
@@ -506,14 +506,14 @@ export default function PaymentOrdersPage() {
             </div>
           )}
 
-          {/* Lista de ordenes */}
+          {/* Lista de órdenes */}
           <div className="card overflow-hidden">
             {loadingOrders ? (
               <div className="flex items-center justify-center py-12 gap-2 text-gray-400"><Loader2 className="w-5 h-5 animate-spin" /> Cargando...</div>
             ) : orders.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No hay ordenes de pago{filterStatus || filterType ? ' con ese filtro' : ''}.</p>
+                <p className="text-sm">No hay órdenes de pago{filterStatus || filterType ? ' con ese filtro' : ''}.</p>
               </div>
             ) : (
               <table className="w-full text-sm">
@@ -551,7 +551,7 @@ export default function PaymentOrdersPage() {
                             className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg" title="Copiar mensaje">
                             <ClipboardCopy className="w-4 h-4" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash(' Copiado - pega en WhatsApp Web')); }}
+                          <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web')); }}
                             className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg" title="Compartir por WhatsApp">
                             <MessageCircle className="w-4 h-4" />
                           </button>
@@ -565,14 +565,14 @@ export default function PaymentOrdersPage() {
           </div>
         </div>
 
-      {/* Modal: Nueva orden de pago */}
+      {/* ── MODAL: ORDEN DE PAGO ────────────────────────────── */}
       {orderModal && (
-        <Modal title={editingOrder ? 'Editar orden' : 'Nueva orden de pago'} onClose={closeOrderModal} wide>
+        <Modal title={editingOrder ? '✏️ Editar orden' : '💳 Nueva orden de pago'} onClose={closeOrderModal} wide>
 
-          {/* Vista: Exito (batch mode) */}
+          {/* ── VISTA: ÉXITO (batch mode) ─────────────────── */}
           {modalView === 'success' && lastCreatedOrder && (
             <div className="space-y-5">
-              {/* Banner exito */}
+              {/* Banner éxito */}
               <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
                 <div>
@@ -584,7 +584,7 @@ export default function PaymentOrdersPage() {
                   </p>
                   {sessionOrders.length > 1 && (
                     <p className="text-xs text-green-600 mt-1 font-semibold">
-                      {sessionOrders.length} ordenes generadas en esta sesion
+                      {sessionOrders.length} órdenes generadas en esta sesión
                     </p>
                   )}
                 </div>
@@ -602,7 +602,7 @@ export default function PaymentOrdersPage() {
                       className="btn-secondary text-sm flex items-center gap-2">
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
-                    <button onClick={() => shareWhatsApp(lastCreatedOrder.generatedText!, () => flash(' Copiado - pega en WhatsApp Web'))}
+                    <button onClick={() => shareWhatsApp(lastCreatedOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
@@ -610,11 +610,11 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              {/* Resumen de sesion (si hay mas de una) */}
+              {/* Resumen de sesión (si hay más de una) */}
               {sessionOrders.length > 1 && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Ordenes de esta sesion ({sessionOrders.length})</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Órdenes de esta sesión ({sessionOrders.length})</p>
                     <div className="flex gap-1">
                       <button
                         onClick={() => copyText(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'))}
@@ -622,7 +622,7 @@ export default function PaymentOrdersPage() {
                         <ClipboardCopy className="w-3 h-3" /> Copiar todas
                       </button>
                       <button
-                        onClick={() => shareWhatsApp(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'), () => flash(' Copiado - pega en WhatsApp Web'))}
+                        onClick={() => shareWhatsApp(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n─────────────\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
                         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
                         <MessageCircle className="w-3 h-3" /> Compartir todas
                       </button>
@@ -639,7 +639,7 @@ export default function PaymentOrdersPage() {
                             className="p-1 text-gray-400 hover:text-primary-600 rounded">
                             <ClipboardCopy className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => shareWhatsApp(o.generatedText ?? '', () => flash(' Copiado - pega en WhatsApp Web'))} title="WhatsApp"
+                          <button onClick={() => shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web'))} title="WhatsApp"
                             className="p-1 text-gray-400 hover:text-green-600 rounded">
                             <MessageCircle className="w-3.5 h-3.5" />
                           </button>
@@ -664,7 +664,7 @@ export default function PaymentOrdersPage() {
             </div>
           )}
 
-          {/* -- VISTA: FORMULARIO -- */}
+          {/* ── VISTA: FORMULARIO ─────────────────────────── */}
           {modalView === 'form' && (
             <>
               {formErr && <AlertBox msg={formErr} />}
@@ -702,16 +702,16 @@ export default function PaymentOrdersPage() {
                 <Field label="Proyecto *">
                   <select className="input-field" value={orderForm.projectId}
                     onChange={(e) => setOrderForm((f) => ({ ...f, projectId: e.target.value, payrollId: '' }))}>
-                    <option value="">- Selecciona -</option>
-                    {projects.map((p) => <option key={p.id} value={p.id}>{p.code} - {p.name}</option>)}
+                    <option value="">— Selecciona —</option>
+                    {projects.map((p) => <option key={p.id} value={p.id}>{p.code} — {p.name}</option>)}
                   </select>
                 </Field>
               </div>
 
-              {/* Info nomina */}
+              {/* Info nómina */}
               {orderForm.orderType === 'PAYROLL' && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 mb-2">
-                  <strong>👷 Orden de Nomina:</strong> Especifica el monto y concepto del pago de mano de obra o servicios. La orden queda registrada independientemente.
+                  <strong>👷 Orden de Nómina:</strong> Especifica el monto y concepto del pago de mano de obra o servicios. La orden queda registrada independientemente.
                 </div>
               )}
 
@@ -725,7 +725,7 @@ export default function PaymentOrdersPage() {
               <Field label="Suplidor / Beneficiario *">
                 <select className="input-field" value={orderForm.supplierId}
                   onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value })); setSupplierSearch(''); }}>
-                  <option value="">- Selecciona suplidor -</option>
+                  <option value="">— Selecciona suplidor —</option>
                   {activeSuppliers
                     .filter((s) => s.bank && s.accountNumber)
                     .map((s) => (
@@ -736,7 +736,7 @@ export default function PaymentOrdersPage() {
                 </select>
                 {activeSuppliers.filter((s) => !s.bank || !s.accountNumber).length > 0 && (
                   <p className="text-xs text-amber-600 mt-1">
-                    Solo se muestran suplidores con datos bancarios. Actualiza los demas desde Directorio de Suplidores.
+                    Solo se muestran suplidores con datos bancarios. Actualiza los demás desde Directorio de Suplidores.
                   </p>
                 )}
               </Field>
@@ -777,13 +777,13 @@ export default function PaymentOrdersPage() {
                 </Field>
               </div>
 
-              <Field label="Concepto / Descripcion *">
+              <Field label="Concepto / Descripción *">
                 <textarea className="input-field resize-none" rows={2} placeholder="Pago de servicios..."
                   value={orderForm.concept} onChange={(e) => setOrderForm((f) => ({ ...f, concept: e.target.value }))} />
               </Field>
 
               <Field label="Notas (opcional)">
-                <input className="input-field" placeholder="Informacion adicional" value={orderForm.notes}
+                <input className="input-field" placeholder="Información adicional" value={orderForm.notes}
                   onChange={(e) => setOrderForm((f) => ({ ...f, notes: e.target.value }))} />
               </Field>
 
@@ -795,16 +795,16 @@ export default function PaymentOrdersPage() {
         </Modal>
       )}
 
-      {/* -- MODAL: VINCULAR GASTO -- */}
+      {/* ── MODAL: VINCULAR GASTO ───────────────────────────── */}
       {linkModal && viewingOrder && (
-        <Modal title=" Vincular gasto de materiales" onClose={() => setLinkModal(false)}>
+        <Modal title="🧾 Vincular gasto de materiales" onClose={() => setLinkModal(false)}>
           <p className="text-sm text-gray-500 mb-4">
             Selecciona el gasto por transferencia registrado en el proyecto <strong>{viewingOrder.project.code}</strong> que corresponde a esta orden.
           </p>
           {availableExpenses.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <p className="text-sm">No hay gastos por transferencia disponibles en este proyecto.</p>
-              <p className="text-xs mt-1">Registra el gasto primero desde el modulo de Gastos.</p>
+              <p className="text-xs mt-1">Registra el gasto primero desde el módulo de Gastos.</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -833,13 +833,13 @@ export default function PaymentOrdersPage() {
         </Modal>
       )}
 
-      {/* -- MODAL: VINCULAR NOMINA -- */}
+      {/* ── MODAL: VINCULAR NÓMINA ─────────────────────────── */}
       {linkPayrollModal && viewingOrder && (
-        <Modal title=" Vincular nomina a esta orden" onClose={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}>
+        <Modal title="📋 Vincular nómina a esta orden" onClose={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}>
           {projectPayrolls.filter((p: any) => p.status === 'APPROVED').length === 0 ? (
             <div className="text-center py-4 text-gray-400">
-              <p className="text-sm">No hay nominas aprobadas para este proyecto.</p>
-              <p className="text-xs mt-1">Solo se pueden vincular nominas con estado <strong>Aprobada</strong>.</p>
+              <p className="text-sm">No hay nóminas aprobadas para este proyecto.</p>
+              <p className="text-xs mt-1">Solo se pueden vincular nóminas con estado <strong>Aprobada</strong>.</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-72 overflow-y-auto">
@@ -850,15 +850,15 @@ export default function PaymentOrdersPage() {
                     onChange={() => setSelectedPayrollId(p.id)} className="mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-sm">
-                      NOM-{String(p.number).padStart(3, '0')} - {p.description || p.type}
+                      NOM-{String(p.number).padStart(3, '0')} — {p.description || p.type}
                       <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${p.status === 'PAID' ? 'bg-green-100 text-green-700' : p.status === 'APPROVED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
                         {p.status === 'PAID' ? 'Pagada' : p.status === 'APPROVED' ? 'Aprobada' : 'Borrador'}
                       </span>
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      {fmtDate(p.periodStart)} - {fmtDate(p.periodEnd)}
+                      {fmtDate(p.periodStart)} — {fmtDate(p.periodEnd)}
                       &nbsp;·&nbsp; RD$ {Number(p.totalAmount).toLocaleString('es-DO')}
-                      &nbsp;·&nbsp; {p.lines?.length ?? 0} lineas
+                      &nbsp;·&nbsp; {p.lines?.length ?? 0} líneas
                     </p>
                   </div>
                 </label>
@@ -869,7 +869,7 @@ export default function PaymentOrdersPage() {
             onCancel={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}
             onSave={() => { if (!selectedPayrollId) return; linkPayrollMut.mutate({ id: viewingOrder.id, payrollId: selectedPayrollId }); }}
             saving={linkPayrollMut.isPending}
-            label="Vincular nomina"
+            label="Vincular nómina"
           />
         </Modal>
       )}
@@ -879,6 +879,7 @@ export default function PaymentOrdersPage() {
   );
 }
 
+// ── Sub-componentes ─────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CFG[status as keyof typeof STATUS_CFG] ?? STATUS_CFG.PENDING;
   return (
@@ -889,14 +890,13 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function TypeBadge({ type }: { type: any }) {
-  const normalizedType: OrderType = (type === 'GENERAL' || !['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type)) ? 'SERVICIO' : type;
-  const cfg: Record<OrderType, { label: string; cls: string }> = {
-    SERVICIO:  { label: 'Servicio',   cls: 'bg-purple-100 text-purple-700' },
-    PAYROLL:   { label: 'Nomina',     cls: 'bg-blue-100 text-blue-700' },
-    MATERIALS: { label: 'Materiales', cls: 'bg-amber-100 text-amber-700' },
+  const normalized: OrderType = ['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type) ? type : 'SERVICIO';
+  const cls: Record<OrderType, string> = {
+    SERVICIO:  'bg-purple-100 text-purple-700',
+    PAYROLL:   'bg-blue-100 text-blue-700',
+    MATERIALS: 'bg-amber-100 text-amber-700',
   };
-  const c = cfg[normalizedType] ?? cfg.SERVICIO;
-  return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${c.cls}`}>{c.label}</span>;
+  return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${cls[normalized]}`}>{ORDER_TYPE_CFG[normalized].label}</span>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

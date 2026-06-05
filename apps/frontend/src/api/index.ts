@@ -127,6 +127,8 @@ export interface PayrollLine {
   paymentBank:       string | null;
   paymentReference:  string | null;
   paidAt:            string | null;
+  expenseId:         string | null;
+  expense?:          { id: string; amount: number; expenseDate: string; description: string; status: string } | null;
   createdAt:         string;
   updatedAt:         string;
 }
@@ -162,7 +164,6 @@ export interface Payroll {
   approvedBy?: { id: string; name: string } | null;
   voidedBy?:   { id: string; name: string } | null;
   lines?:         PayrollLine[];
-  expense?:       { id: string; amount: number; expenseDate: string; description: string } | null;
   paymentOrder?:  { id: string; concept: string; amount: number; status: string; orderType: string; createdAt: string } | null;
   _count?:        { lines: number };
 }
