@@ -1,41 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <!--
-      Octagon (tall + narrow, 216 × 360 px, centered in 512×512).
-      All four corners beveled 40 px at 45°.
-    -->
-    <clipPath id="hex">
-      <polygon points="188,76 324,76 364,116 364,396 324,436 188,436 148,396 148,116"/>
+    <clipPath id="oct">
+      <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130"/>
     </clipPath>
   </defs>
-
-  <!-- White icon background -->
+  <!-- White background for maskable PWA icon -->
   <rect width="512" height="512" fill="#ffffff"/>
-
-  <!-- Solid yellow octagon -->
-  <polygon
-    points="188,76 324,76 364,116 364,396 324,436 188,436 148,396 148,116"
-    fill="#F5C218"/>
-
-  <!--
-    Two white diagonal bands, direction "/" (lower-left → upper-right).
-    They cut the octagon into three yellow sections:
-      · large top-left band  (≈ 108 px at centre)
-      · thin middle band     (≈  36 px at centre)
-      · large bottom-right band (≈ 108 px at centre)
-    Slope ≈ −0.367 (≈ 20° from horizontal), identical for both cuts.
-    Polygons extend well beyond the octagon; clipPath trims them clean.
-  -->
-
-  <!-- White cut 1 (upper) -->
-  <polygon
-    points="0,278  512,90  512,144  0,332"
-    fill="#ffffff"
-    clip-path="url(#hex)"/>
-
-  <!-- White cut 2 (lower) -->
-  <polygon
-    points="0,368  512,180  512,234  0,422"
-    fill="#ffffff"
-    clip-path="url(#hex)"/>
+  <!-- Outer yellow ring (border) -->
+  <polygon points="256,14 466,135 466,377 256,498 46,377 46,135" fill="#F5C218"/>
+  <!-- Dark hexagon body -->
+  <polygon points="256,26 455,141 455,371 256,486 57,371 57,141" fill="#1C1C1C"/>
+  <!-- ServingMI yellow octagon (isotipo) -->
+  <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130" fill="#F5C218"/>
+  <!-- Dark diagonal cuts through the octagon -->
+  <polygon points="26,276 486,107 486,155 26,324" fill="#1C1C1C" clip-path="url(#oct)"/>
+  <polygon points="26,357 486,188 486,236 26,405" fill="#1C1C1C" clip-path="url(#oct)"/>
 </svg>

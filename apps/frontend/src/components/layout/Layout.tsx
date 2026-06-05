@@ -1,20 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Receipt, Users,
   Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity, FileText, CreditCard, Clock,
-  Eye, ChevronDown, Building2, Bell,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
 import clsx from 'clsx';
-import NotificationBell from '../NotificationBell';
 
 type NavItem = {
   to: string;
   icon: React.ElementType;
   label: string;
-  roles?: string[];
+  roles?: string[]; // undefined = todos los roles
 };
 
 const navItems: NavItem[] = [
@@ -22,111 +20,42 @@ const navItems: NavItem[] = [
   { to: '/projects',        icon: FolderOpen,      label: 'Proyectos',       roles: ['admin', 'supervisor', 'operator', 'financiero'] },
   { to: '/expenses',        icon: Receipt,         label: 'Gastos',          roles: ['admin', 'supervisor', 'operator', 'financiero'] },
   { to: '/reports',         icon: BarChart3,       label: 'Reportes',        roles: ['admin', 'supervisor', 'financiero'] },
-  { to: '/payrolls',        icon: Wallet,          label: 'Nóminas',         roles: ['admin', 'supervisor', 'operator', 'auxiliar'] },
+  { to: '/payrolls',        icon: Wallet,          label: 'Nóminas',         roles: ['admin', 'supervisor', 'operator'] },
   { to: '/quotations',      icon: FileText,        label: 'Cotizaciones',    roles: ['admin', 'supervisor', 'operator', 'financiero'] },
-  { to: '/suppliers',       icon: Building2,       label: 'Suplidores',      roles: ['admin', 'supervisor', 'operator', 'financiero'] },
   { to: '/pending-orders',  icon: Clock,           label: 'Pagos Pendientes', roles: ['admin', 'supervisor', 'auxiliar'] },
   { to: '/export',          icon: Download,        label: 'Exportar Excel',  roles: ['admin', 'supervisor', 'financiero'] },
   { to: '/office-expenses', icon: Receipt,         label: 'Gtos. Oficina',   roles: ['admin', 'supervisor', 'financiero'] },
   { to: '/payment-orders',  icon: FileText,        label: 'Órd. de Pago',   roles: ['admin', 'supervisor'] },
-  { to: '/users',                   icon: Users,       label: 'Usuarios',        roles: ['admin'] },
-  { to: '/notification-contacts',   icon: Bell,        label: 'Contactos Notif.',roles: ['admin'] },
-  { to: '/categories',              icon: Tag,         label: 'Categorías',      roles: ['admin'] },
-  { to: '/cards',                   icon: CreditCard,  label: 'Tarjetas',        roles: ['admin'] },
-  { to: '/monitoring',              icon: Activity,    label: 'Monitoreo',       roles: ['admin'] },
+  { to: '/users',           icon: Users,           label: 'Usuarios',        roles: ['admin'] },
+  { to: '/categories',      icon: Tag,             label: 'Categorías',      roles: ['admin'] },
+  { to: '/cards',           icon: CreditCard,      label: 'Tarjetas',        roles: ['admin'] },
+  { to: '/monitoring',      icon: Activity,        label: 'Monitoreo',       roles: ['admin'] },
 ];
 
-const ROLE_OPTIONS = [
-  { value: '',           label: 'Admin (mi rol)' },
-  { value: 'supervisor', label: 'Supervisor' },
-  { value: 'operator',   label: 'Operador' },
-  { value: 'auxiliar',   label: 'Auxiliar administrativo' },
-  { value: 'financiero', label: 'Financiero' },
-];
-
+// Ícono SVG de la aplicación
 function AppIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <path d="M20 1L39 11.5V36.5L20 47L1 36.5V11.5Z" fill="#1C1C1C" stroke="#F5C218" strokeWidth="1.5"/>
-      <line x1="6"  y1="34" x2="22" y2="14" stroke="#F5C218" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="13" y1="38" x2="34" y2="14" stroke="#F5C218" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="18" y1="34" x2="34" y2="18" stroke="#F5C218" strokeWidth="5" strokeLinecap="round"/>
+    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <defs>
+        <clipPath id="si-oct">
+          <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130"/>
+        </clipPath>
+      </defs>
+      <polygon points="256,14 466,135 466,377 256,498 46,377 46,135" fill="#F5C218"/>
+      <polygon points="256,26 455,141 455,371 256,486 57,371 57,141" fill="#1C1C1C"/>
+      <polygon points="195,94 317,94 353,130 353,382 317,418 195,418 159,382 159,130" fill="#F5C218"/>
+      <polygon points="26,276 486,107 486,155 26,324" fill="#1C1C1C" clipPath="url(#si-oct)"/>
+      <polygon points="26,357 486,188 486,236 26,405" fill="#1C1C1C" clipPath="url(#si-oct)"/>
     </svg>
   );
 }
 
-// ── Componente selector de vista de rol ──────────────────────────
-function RoleViewSwitcher({ compact = false, dropUp = false }: { compact?: boolean; dropUp?: boolean }) {
-  const { user, viewAsRole, setViewAsRole } = useAuthStore();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  if (user?.role?.name !== 'admin') return null;
-
-  const current = ROLE_OPTIONS.find((o) => o.value === (viewAsRole ?? '')) ?? ROLE_OPTIONS[0];
-  const isPreviewing = !!viewAsRole;
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className={clsx(
-          'flex items-center gap-1.5 rounded-lg border text-xs font-medium transition-colors',
-          compact ? 'px-2 py-1.5' : 'px-3 py-2',
-          isPreviewing
-            ? 'bg-amber-100 border-amber-300 text-amber-800 hover:bg-amber-200'
-            : 'bg-white/10 border-white/20 text-gray-300 hover:bg-white/20',
-        )}
-      >
-        <Eye className="w-3.5 h-3.5 shrink-0" />
-        {!compact && <span className="hidden sm:inline">Vista:</span>}
-        <span className="max-w-[100px] truncate">{current.label}</span>
-        <ChevronDown className="w-3 h-3 shrink-0" />
-      </button>
-
-      {open && (
-        <div className={clsx('absolute right-0 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50', dropUp ? 'bottom-full mb-1' : 'top-full mt-1')}>
-          <p className="px-3 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-            Ver interfaz como
-          </p>
-          {ROLE_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => { setViewAsRole(opt.value || null); setOpen(false); }}
-              className={clsx(
-                'w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2',
-                (viewAsRole ?? '') === opt.value
-                  ? 'bg-amber-50 text-amber-800 font-semibold'
-                  : 'text-gray-700 hover:bg-gray-50',
-              )}
-            >
-              {(viewAsRole ?? '') === opt.value && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />}
-              {(viewAsRole ?? '') !== opt.value && <span className="w-1.5 h-1.5 shrink-0" />}
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function Layout() {
-  const { user, viewAsRole, clearAuth, refreshToken } = useAuthStore();
+  const { user, clearAuth, refreshToken } = useAuthStore();
   const navigate  = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const userRole    = user?.role?.name ?? '';
-  const effectiveRole = (userRole === 'admin' && viewAsRole) ? viewAsRole : userRole;
-  const isPreviewing  = userRole === 'admin' && !!viewAsRole;
+  const userRole = user?.role?.name ?? '';
 
   const handleLogout = async () => {
     try { if (refreshToken) await authApi.logout(refreshToken); } catch { /* ignore */ }
@@ -134,7 +63,7 @@ export default function Layout() {
     navigate('/login');
   };
 
-  const visibleItems = navItems.filter((i) => !i.roles || i.roles.includes(effectiveRole));
+  const visibleItems = navItems.filter((i) => !i.roles || i.roles.includes(userRole));
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
@@ -172,14 +101,8 @@ export default function Layout() {
           ))}
         </nav>
 
-        {/* Usuario + selector de rol */}
-        <div className="border-t border-white/10 p-3 space-y-2">
-          {/* Selector de vista — solo admin */}
-          {userRole === 'admin' && (
-            <div className="px-2">
-              <RoleViewSwitcher dropUp />
-            </div>
-          )}
+        {/* Usuario */}
+        <div className="border-t border-white/10 p-3">
           <div className="flex items-center gap-3 px-2 py-2 rounded-lg">
             <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                  style={{ background: '#F5C218' }}>
@@ -189,11 +112,8 @@ export default function Layout() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-              <p className="text-xs text-gray-400 truncate capitalize">
-                {isPreviewing ? `Admin · viendo como ${viewAsRole}` : userRole}
-              </p>
+              <p className="text-xs text-gray-400 truncate capitalize">{user?.role?.name}</p>
             </div>
-            <NotificationBell />
             <button onClick={handleLogout}
               className="text-gray-500 hover:text-red-400 transition-colors" title="Cerrar sesión">
               <LogOut className="w-4 h-4" />
@@ -225,7 +145,7 @@ export default function Layout() {
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-0.5">
           {visibleItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
@@ -247,22 +167,15 @@ export default function Layout() {
           ))}
         </nav>
 
-        <div className="border-t border-white/10 p-3 shrink-0">
-          {userRole === 'admin' && (
-            <div className="mb-2">
-              <RoleViewSwitcher dropUp />
-            </div>
-          )}
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+        <div className="border-t border-white/10 p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center"
                  style={{ background: '#F5C218' }}>
-              <span className="text-gray-900 font-bold text-sm">{user?.name?.charAt(0).toUpperCase()}</span>
+              <span className="text-gray-900 font-bold">{user?.name?.charAt(0).toUpperCase()}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-              <p className="text-xs text-gray-400 capitalize">
-                {isPreviewing ? `Admin · viendo como ${viewAsRole}` : userRole}
-              </p>
+              <p className="text-xs text-gray-400 capitalize">{user?.role?.name}</p>
             </div>
           </div>
           <button onClick={handleLogout}
@@ -275,37 +188,24 @@ export default function Layout() {
 
       {/* ── Contenido principal ───────────────────────────── */}
       <div className="flex-1 flex flex-col md:ml-60 min-h-screen min-w-0">
-
         {/* Header móvil */}
-        <header className="md:hidden sticky top-0 z-20 border-b border-white/10 px-4 py-3 flex items-center gap-3"
+        <header className="md:hidden sticky top-0 z-20 border-b border-gray-200 px-4 py-3 flex items-center gap-3"
                 style={{ background: '#1C1C1C' }}>
           <button onClick={() => setSidebarOpen(true)} className="text-gray-400 hover:text-white p-1">
             <Menu className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-2">
             <AppIcon className="w-6 h-7 shrink-0" />
             <span className="font-bold text-white text-sm tracking-wide">Sistema de Gastos</span>
           </div>
-          {/* Notificaciones + selector de rol — móvil */}
-          <NotificationBell />
-          <RoleViewSwitcher compact />
         </header>
-
-        {/* Banner de vista previa (desktop) */}
-        {isPreviewing && (
-          <div className="hidden md:flex items-center justify-between bg-amber-50 border-b border-amber-200 px-6 py-2">
-            <p className="text-xs text-amber-800 flex items-center gap-2">
-              <Eye className="w-3.5 h-3.5" />
-              Viendo la interfaz como <strong className="capitalize">{viewAsRole}</strong> — los cambios que hagas siguen ejecutándose con tus permisos reales de admin.
-            </p>
-          </div>
-        )}
 
         {/* Página */}
         <main className="flex-1 p-4 md:p-6 max-w-6xl w-full mx-auto">
           <Outlet />
         </main>
 
+        {/* Pie de página — créditos */}
         <footer className="border-t border-gray-100 bg-white py-3 px-6 text-center">
           <p className="text-xs text-gray-400">
             Desarrollado con{' '}
