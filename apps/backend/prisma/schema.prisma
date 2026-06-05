@@ -271,7 +271,6 @@ model Expense {
   contratoAjustado   ContratoAjustado? @relation("ExpenseContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
   fiscalVoucher FiscalVoucher?
   attachments  Attachment[]
-  payroll        Payroll?              @relation("PayrollExpense")
   payrollLine    PayrollLine?          @relation("PayrollLineExpense")
   quotationPayment QuotationPayment?  @relation("QuotationPaymentExpense")
   quotationLink    QuotationExpenseLink? @relation("QuotationExpenseLink")
@@ -432,7 +431,6 @@ model Payroll {
   voidedAt          DateTime? @map("voided_at")
   voidedById   String?       @map("voided_by") @db.Uuid
   voidReason   String?       @map("void_reason") @db.Text
-  expenseId    String?       @unique @map("expense_id") @db.Uuid  // gasto auto-creado al aprobar
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
@@ -440,7 +438,6 @@ model Payroll {
   createdBy  User             @relation("PayrollCreatedBy", fields: [createdById], references: [id])
   approvedBy User?            @relation("PayrollApprovedBy", fields: [approvedById], references: [id])
   voidedBy   User?            @relation("PayrollVoidedBy", fields: [voidedById], references: [id])
-  expense      Expense?       @relation("PayrollExpense", fields: [expenseId], references: [id])
   paymentOrder PaymentOrder?
   lines        PayrollLine[]
 
