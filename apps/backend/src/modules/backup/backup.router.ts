@@ -83,17 +83,27 @@ router.post('/auto', async (req: Request, res: Response) => {
     const backup   = JSON.stringify({ exportedAt: new Date().toISOString(), version: '2.0', counts, tables }, bigIntReplacer);
     const filename = 'backup_servingmi_' + new Date().toISOString().slice(0, 10) + '.json';
     const dest     = env.BACKUP_EMAIL ?? env.GMAIL_USER;
+
+    let emailSent  = false;
+    let emailError = '';
     if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD && dest) {
-      const t = nodemailer.createTransport({ service: 'gmail', auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD } });
-      await t.sendMail({
-        from: '"Backup SERVINGMI" <' + env.GMAIL_USER + '>',
-        to: dest,
-        subject: 'Backup automatico ' + new Date().toISOString().slice(0, 10),
-        text: 'Registros: ' + JSON.stringify(counts),
-        attachments: [{ filename, content: Buffer.from(backup), contentType: 'application/json' }],
-      });
+      try {
+        const t = nodemailer.createTransport({ service: 'gmail', auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD } });
+        await t.sendMail({
+          from: '"Backup SERVINGMI" <' + env.GMAIL_USER + '>',
+          to: dest,
+          subject: 'Backup automatico ' + new Date().toISOString().slice(0, 10),
+          text: 'Registros: ' + JSON.stringify(counts),
+          attachments: [{ filename, content: Buffer.from(backup), contentType: 'application/json' }],
+        });
+        emailSent = true;
+      } catch (mailErr: any) {
+        emailError = mailErr.message;
+        console.error('[BACKUP] Email failed:', mailErr.message);
+      }
     }
-    res.json({ success: true, counts, emailSent: !!dest });
+
+    res.json({ success: true, counts, emailSent, emailError: emailError || undefined });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
