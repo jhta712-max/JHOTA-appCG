@@ -298,6 +298,26 @@ export async function revertToDraft(id: string) {
   });
 }
 
+// ─── REVERT TO APPROVED (PAID → APPROVED) — ADMIN ONLY ────────
+export async function revertToApproved(id: string) {
+  const payroll = await getPayrollById(id);
+  if (payroll.status !== 'PAID') throw new AppError(400, 'Solo se puede revertir a aprobada una nómina pagada', 'INVALID_STATUS');
+  return prisma.payroll.update({
+    where: { id },
+    data: {
+      status: 'APPROVED',
+      paidAt: null,
+      paymentMethod: null,
+      paymentDate: null,
+      paymentBank: null,
+      paymentReference: null,
+      receiptNumber: null,
+      receivedBy: null,
+    },
+    include: PAYROLL_INCLUDE,
+  });
+}
+
 // ─── APPROVE (DRAFT → APPROVED) + auto-create Expense ────────
 export async function approvePayroll(id: string, approvedById: string) {
   const payroll = await prisma.payroll.findUnique({ where: { id }, include: { lines: true, project: true } });

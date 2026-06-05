@@ -78,6 +78,13 @@ export const revertToDraft = async (req: Request, res: Response, next: NextFunct
   } catch (err) { next(err); }
 };
 
+export const revertToApproved = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await svc.revertToApproved(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+};
+
 export const approve = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await svc.approvePayroll(req.params.id, req.user!.userId);

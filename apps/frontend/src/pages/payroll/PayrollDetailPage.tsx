@@ -41,7 +41,7 @@ export default function PayrollDetailPage() {
   const { id }    = useParams<{ id: string }>();
   const navigate  = useNavigate();
   const qc        = useQueryClient();
-  const { canCreatePayroll, canApprovePayroll } = useRole();
+  const { canCreatePayroll, canApprovePayroll, isAdmin } = useRole();
 
   const [voidModal, setVoidModal]       = useState(false);
   const [voidReason, setVoidReason]     = useState('');
@@ -86,6 +86,7 @@ export default function PayrollDetailPage() {
   const updateLineMut = useMutation({ mutationFn: ({ lineId, d }: { lineId: string; d: unknown }) => payrollApi.updateLine(id!, lineId, d), onSuccess: () => { invalidate(); setEditLineId(null); }, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al actualizar línea') });
   const deleteLineMut   = useMutation({ mutationFn: (lineId: string) => payrollApi.deleteLine(id!, lineId), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al eliminar línea') });
   const revertDraftMut    = useMutation({ mutationFn: () => payrollApi.revertToDraft(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al revertir') });
+  const revertApprovedMut = useMutation({ mutationFn: () => payrollApi.revertToApproved(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al revertir') });
   const importOrdersMut   = useMutation({ mutationFn: () => payrollApi.importFromOrders(id!), onSuccess: invalidate, onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al importar') });
   const recordPaymentMut  = useMutation({
     mutationFn: (lineId: string) => payrollApi.recordLinePayment(id!, lineId, paymentForm),
@@ -414,10 +415,20 @@ export default function PayrollDetailPage() {
             </>
           )}
           {isPaid && !isVoided && canApprovePayroll && (
-            <button onClick={() => setVoidModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-red-200 rounded-lg text-red-600 hover:bg-red-50">
-              <Ban className="w-4 h-4" /> Anular
-            </button>
+            <>
+              {isAdmin && (
+                <button
+                  onClick={() => { if (window.confirm('¿Revertir esta nómina pagada a Aprobada? Esto te permitirá asignar contratos ajustados.')) revertApprovedMut.mutate(); }}
+                  disabled={revertApprovedMut.isPending}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-blue-200 rounded-lg text-blue-600 hover:bg-blue-50">
+                  ↩ Revertir a Aprobada
+                </button>
+              )}
+              <button onClick={() => setVoidModal(true)}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-red-200 rounded-lg text-red-600 hover:bg-red-50">
+                <Ban className="w-4 h-4" /> Anular
+              </button>
+            </>
           )}
           {/* Export buttons */}
           {!isVoided && (
