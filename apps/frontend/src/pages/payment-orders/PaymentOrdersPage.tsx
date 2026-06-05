@@ -2,29 +2,25 @@ import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText, Plus, CheckCircle, AlertCircle, Loader2,
-  CreditCard, Pencil, PowerOff, ClipboardCopy, X,
+  Pencil, ClipboardCopy, X,
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
-  Upload, Download, MessageCircle,
+  MessageCircle,
 } from 'lucide-react';
-import { beneficiariesApi, paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../api';
+import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
-import type { Beneficiary, PaymentOrder } from '../../types';
+import type { PaymentOrder, Supplier } from '../../types';
 
 // ── Tipos locales ─────────────────────────────────────────────
-type Tab       = 'orders' | 'beneficiaries';
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
 type ModalView = 'form' | 'success';
 
-type BeneForm = { name: string; bank: string; accountType: string; accountNumber: string; cedula: string; phone: string; supplierId: string };
-const EMPTY_BENE: BeneForm = { name: '', bank: '', accountType: 'Cuenta de Ahorros', accountNumber: '', cedula: '', phone: '', supplierId: '' };
-
 type OrderForm = {
-  orderType: OrderType; payingCompany: string; beneficiaryId: string;
+  orderType: OrderType; payingCompany: string; supplierId: string;
   projectId: string; amount: string; currency: string; concept: string;
   notes: string; payrollId: string;
 };
 const EMPTY_ORDER: OrderForm = {
-  orderType: 'SERVICIO', payingCompany: '', beneficiaryId: '', projectId: '',
+  orderType: 'SERVICIO', payingCompany: '', supplierId: '', projectId: '',
   amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '',
 };
 
@@ -167,41 +163,30 @@ async function shareWhatsApp(text: string, onCopied?: () => void) {
 
 // ────────────────────────────────────────────────────────────────
 export default function PaymentOrdersPage() {
-  const qc      = useQueryClient();
+  const qc       = useQueryClient();
   const authUser = useAuthStore((s) => s.user);
   const isAdmin  = authUser?.role?.name === 'admin';
-  const [tab, setTab]               = useState<Tab>('orders');
   const [viewingOrder, setViewingOrder] = useState<PaymentOrder | null>(null);
-  const [toast, setToast]           = useState('');
+  const [toast,        setToast]        = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterType,   setFilterType]   = useState('');
 
   // Modales
-  const [beneModal,   setBeneModal]   = useState(false);
-  const [orderModal,  setOrderModal]  = useState(false);
-  const [linkModal,   setLinkModal]   = useState(false);
-  const [importModal, setImportModal] = useState(false);
+  const [orderModal,       setOrderModal]       = useState(false);
+  const [linkModal,        setLinkModal]         = useState(false);
+  const [linkPayrollModal, setLinkPayrollModal]  = useState(false);
 
   // Estado del modal de orden (batch mode)
-  const [modalView,         setModalView]         = useState<ModalView>('form');
-  const [lastCreatedOrder,  setLastCreatedOrder]   = useState<PaymentOrder | null>(null);
-  const [sessionOrders,     setSessionOrders]      = useState<PaymentOrder[]>([]);
+  const [modalView,        setModalView]        = useState<ModalView>('form');
+  const [lastCreatedOrder, setLastCreatedOrder] = useState<PaymentOrder | null>(null);
+  const [sessionOrders,    setSessionOrders]    = useState<PaymentOrder[]>([]);
 
-  // Importación CSV
-  const [importRows,     setImportRows]     = useState<BeneForm[]>([]);
-  const [importProgress, setImportProgress] = useState<'idle' | 'importing' | 'done'>('idle');
-  const [importResults,  setImportResults]  = useState({ ok: 0, err: 0 });
-  const [importErrors,   setImportErrors]   = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [editingBene,  setEditingBene]  = useState<Beneficiary | null>(null);
   const [editingOrder, setEditingOrder] = useState<PaymentOrder | null>(null);
-  const [beneForm,  setBeneForm]  = useState<BeneForm>(EMPTY_BENE);
-  const [orderForm, setOrderForm] = useState<OrderForm>(EMPTY_ORDER);
-  const [formErr,   setFormErr]   = useState('');
-  const [selectedExpenseId,  setSelectedExpenseId]  = useState('');
-  const [selectedPayrollId,  setSelectedPayrollId]  = useState('');
-  const [linkPayrollModal,   setLinkPayrollModal]   = useState(false);
+  const [orderForm,    setOrderForm]    = useState<OrderForm>(EMPTY_ORDER);
+  const [formErr,      setFormErr]      = useState('');
+  const [selectedExpenseId, setSelectedExpenseId] = useState('');
+  const [selectedPayrollId, setSelectedPayrollId] = useState('');
+  const [supplierSearch,    setSupplierSearch]    = useState('');
 
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3500); };
 
@@ -215,29 +200,17 @@ export default function PaymentOrdersPage() {
     select: (r) => (r.data as any).data as PaymentOrder[],
   });
 
-  const { data: beneficiaries = [], isLoading: loadingBenes } = useQuery({
-    queryKey: ['beneficiaries', 'all'],
-    queryFn:  () => beneficiariesApi.list(false),
-    select:   (r) => r.data.data,
-  });
-
-  const { data: activeBenes = [] } = useQuery({
-    queryKey: ['beneficiaries', 'active'],
-    queryFn:  () => beneficiariesApi.list(true),
-    select:   (r) => r.data.data,
-  });
-
   const { data: projects = [] } = useQuery({
     queryKey: ['projects', 'active'],
     queryFn:  () => projectsApi.list({ status: 'ACTIVE', limit: 100 }),
     select:   (r) => r.data.data,
   });
 
-  const { data: suppliers = [] } = useQuery({
-    queryKey: ['suppliers', 'active-list'],
+  const { data: activeSuppliers = [] } = useQuery({
+    queryKey: ['suppliers', 'active-with-bank'],
     queryFn:  () => suppliersApi.list({ onlyActive: true }),
-    select:   (r) => r.data.data,
-    enabled:  beneModal,
+    select:   (r) => r.data.data as Supplier[],
+    enabled:  orderModal,
   });
 
   const linkingOrderProjectId = viewingOrder?.projectId ?? '';
@@ -254,23 +227,6 @@ export default function PaymentOrdersPage() {
     queryFn:  () => paymentOrdersApi.availableExpenses(linkingOrderProjectId),
     select:   (r) => r.data.data,
     enabled:  linkModal && !!linkingOrderProjectId,
-  });
-
-  // ── Beneficiary mutations ─────────────────────────────────────
-  const createBeneMut = useMutation({
-    mutationFn: (d: unknown) => beneficiariesApi.create(d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['beneficiaries'] }); closeBeneModal(); flash('✅ Beneficiario guardado'); },
-    onError:   (e: any) => setFormErr(e.response?.data?.error || 'Error al guardar'),
-  });
-  const updateBeneMut = useMutation({
-    mutationFn: ({ id, d }: { id: string; d: unknown }) => beneficiariesApi.update(id, d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['beneficiaries'] }); closeBeneModal(); flash('✅ Beneficiario actualizado'); },
-    onError:   (e: any) => setFormErr(e.response?.data?.error || 'Error'),
-  });
-  const deactivateBeneMut = useMutation({
-    mutationFn: (id: string) => beneficiariesApi.deactivate(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['beneficiaries'] }); flash('🗑 Beneficiario desactivado'); },
-    onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
   });
 
   // ── Order mutations ───────────────────────────────────────────
@@ -333,35 +289,6 @@ export default function PaymentOrdersPage() {
     onError:   (e: any) => flash(e.response?.data?.error || 'Error al eliminar'),
   });
 
-  // ── Bene modal helpers ────────────────────────────────────────
-  const openBeneModal = (b?: Beneficiary) => {
-    setEditingBene(b ?? null);
-    setBeneForm(b ? {
-      name:          b.name,
-      bank:          b.bank,
-      accountType:   b.accountType,
-      accountNumber: b.accountNumber,
-      cedula:        b.cedula ?? '',
-      phone:         b.phone  ?? '',
-      supplierId:    b.supplierId ?? '',
-    } : EMPTY_BENE);
-    setFormErr(''); setBeneModal(true);
-  };
-  const closeBeneModal = () => { setBeneModal(false); setEditingBene(null); setBeneForm(EMPTY_BENE); setFormErr(''); };
-  const saveBene = () => {
-    if (!beneForm.name.trim())         return setFormErr('El nombre es requerido');
-    if (!beneForm.bank.trim())          return setFormErr('El banco es requerido');
-    if (!beneForm.accountNumber.trim()) return setFormErr('El número de cuenta es requerido');
-    const payload = {
-      ...beneForm,
-      cedula:     beneForm.cedula     || undefined,
-      phone:      beneForm.phone      || undefined,
-      supplierId: beneForm.supplierId || undefined,
-    };
-    if (editingBene) updateBeneMut.mutate({ id: editingBene.id, d: payload });
-    else             createBeneMut.mutate(payload);
-  };
-
   // ── Order modal helpers ───────────────────────────────────────
   const normalizeOrderType = (type: any): OrderType => {
     if (type === 'GENERAL') return 'SERVICIO';
@@ -372,7 +299,7 @@ export default function PaymentOrdersPage() {
   const openOrderModal = (o?: PaymentOrder) => {
     setEditingOrder(o ?? null);
     setOrderForm(o
-      ? { orderType: normalizeOrderType(o.orderType), payingCompany: o.payingCompany, beneficiaryId: o.beneficiaryId,
+      ? { orderType: normalizeOrderType(o.orderType), payingCompany: o.payingCompany, supplierId: o.supplierId,
           projectId: o.projectId, amount: String(o.amount), currency: o.currency,
           concept: o.concept, notes: o.notes ?? '', payrollId: o.payrollId ?? '' }
       : EMPTY_ORDER
@@ -403,7 +330,7 @@ export default function PaymentOrdersPage() {
 
   const saveOrder = () => {
     if (!orderForm.payingCompany.trim()) return setFormErr('La empresa pagadora es requerida');
-    if (!orderForm.beneficiaryId)        return setFormErr('Selecciona un beneficiario');
+    if (!orderForm.supplierId)           return setFormErr('Selecciona un suplidor / beneficiario');
     if (!orderForm.projectId)            return setFormErr('Selecciona un proyecto');
     if (!orderForm.amount || Number(orderForm.amount) <= 0) return setFormErr('El monto debe ser mayor a 0');
     if (!orderForm.concept.trim())       return setFormErr('El concepto es requerido');
@@ -411,7 +338,7 @@ export default function PaymentOrdersPage() {
     const payload: any = {
       orderType:     orderForm.orderType,
       payingCompany: orderForm.payingCompany,
-      beneficiaryId: orderForm.beneficiaryId,
+      supplierId:    orderForm.supplierId,
       projectId:     orderForm.projectId,
       amount:        Number(orderForm.amount),
       currency:      orderForm.currency,
@@ -425,51 +352,6 @@ export default function PaymentOrdersPage() {
 
   const copyText = (text: string) => { navigator.clipboard.writeText(text).then(() => flash('📋 Texto copiado')); };
 
-  // ── Import CSV helpers ────────────────────────────────────────
-  const closeImportModal = () => { setImportModal(false); setImportRows([]); setImportProgress('idle'); setImportResults({ ok: 0, err: 0 }); setImportErrors([]); };
-
-  const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = (ev.target?.result as string) || '';
-      const rows = parseCSVText(text);
-      if (rows.length === 0) flash('No se encontraron filas válidas en el archivo.');
-      setImportRows(rows);
-    };
-    reader.readAsText(file, 'UTF-8');
-    // Reset input so same file can be re-selected
-    e.target.value = '';
-  };
-
-  const runImport = async () => {
-    setImportProgress('importing');
-    setImportErrors([]);
-    try {
-      const payload = importRows.map((r) => ({
-        name:          r.name,
-        bank:          r.bank,
-        accountType:   r.accountType,
-        accountNumber: r.accountNumber,
-        cedula:        r.cedula || undefined,
-        phone:         r.phone  || undefined,
-      }));
-      const res = await beneficiariesApi.bulkCreate(payload);
-      const { ok, err, results } = res.data.data;
-      const errs = results
-        .filter((r) => r.status === 'error')
-        .map((r) => `"${r.name}": ${r.error}`);
-      setImportResults({ ok, err });
-      setImportErrors(errs);
-      if (ok > 0) qc.invalidateQueries({ queryKey: ['beneficiaries'] });
-    } catch (e: any) {
-      const msg = e?.response?.data?.error || e?.message || 'Error de conexión';
-      setImportErrors([msg]);
-      setImportResults({ ok: 0, err: importRows.length });
-    }
-    setImportProgress('done');
-  };
 
   // ── Render ────────────────────────────────────────────────────
   return (
@@ -490,37 +372,11 @@ export default function PaymentOrdersPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">Solicitudes de pago vía transferencia (Nómina · Materiales · General)</p>
         </div>
-        <div className="flex gap-2">
-          {tab === 'orders' && (
-            <button onClick={() => openOrderModal()} className="btn-primary flex items-center gap-2">
-              <Plus className="w-4 h-4" /> Nueva orden
-            </button>
-          )}
-          {tab === 'beneficiaries' && (
-            <>
-              <button onClick={() => setImportModal(true)} className="btn-secondary flex items-center gap-2">
-                <Upload className="w-4 h-4" /> Importar
-              </button>
-              <button onClick={() => openBeneModal()} className="btn-primary flex items-center gap-2">
-                <Plus className="w-4 h-4" /> Nuevo beneficiario
-              </button>
-            </>
-          )}
-        </div>
+        <button onClick={() => openOrderModal()} className="btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Nueva orden
+        </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
-        {([['orders', 'Órdenes de Pago'], ['beneficiaries', 'Beneficiarios']] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setTab(k)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${tab === k ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── TAB: ÓRDENES ─────────────────────────────────────── */}
-      {tab === 'orders' && (
         <div className="space-y-4">
 
           {/* Filtros + acciones masivas */}
@@ -742,8 +598,8 @@ export default function PaymentOrdersPage() {
                       <td className="px-4 py-3 text-xs text-gray-400 font-mono">OP-{String(o.number).padStart(3, '0')}</td>
                       <td className="px-4 py-3"><TypeBadge type={o.orderType} /></td>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900">{o.beneficiary.name}</p>
-                        <p className="text-xs text-gray-400">{o.beneficiary.bank}</p>
+                        <p className="font-medium text-gray-900">{o.supplier.name}</p>
+                        <p className="text-xs text-gray-400">{o.supplier.bank ?? ""}</p>
                       </td>
                       <td className="px-4 py-3">
                         <p className="text-xs font-mono text-gray-500">{o.project.code}</p>
@@ -771,126 +627,6 @@ export default function PaymentOrdersPage() {
           </div>
         </div>
       )}
-
-      {/* ── TAB: BENEFICIARIOS ──────────────────────────────── */}
-      {tab === 'beneficiaries' && (
-        <div className="card overflow-hidden">
-          {loadingBenes ? (
-            <div className="flex items-center justify-center py-12 gap-2 text-gray-400"><Loader2 className="w-5 h-5 animate-spin" /> Cargando...</div>
-          ) : beneficiaries.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <CreditCard className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p className="text-sm">No hay beneficiarios registrados.</p>
-              <button onClick={() => setImportModal(true)} className="mt-3 text-sm text-primary-600 hover:underline flex items-center gap-1 mx-auto">
-                <Upload className="w-3.5 h-3.5" /> Importar desde CSV
-              </button>
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nombre / Empresa</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Banco</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Cuenta</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {beneficiaries.map((b) => (
-                  <tr key={b.id} className={`hover:bg-gray-50 transition-colors ${!b.isActive ? 'opacity-50' : ''}`}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1 flex-wrap">
-                        <p className="font-medium text-gray-900">{b.name}</p>
-                        {b.supplier && (
-                          <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium">
-                            {b.supplier.name}
-                          </span>
-                        )}
-                      </div>
-                      {b.cedula && <p className="text-xs text-gray-400">Cédula: {b.cedula}</p>}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{b.bank}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold mr-1 ${ACCT_BADGE[b.accountType] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {b.accountType.replace('Cuenta ', '')}
-                      </span>
-                      <span className="font-mono text-gray-700">{b.accountNumber}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {b.isActive
-                        ? <span className="flex items-center gap-1 text-green-600 text-xs"><CheckCircle className="w-3.5 h-3.5" /> Activo</span>
-                        : <span className="text-xs text-gray-400">Inactivo</span>}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1 justify-end">
-                        <button onClick={() => openBeneModal(b)} className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
-                        {b.isActive && (
-                          <button onClick={() => { if (confirm(`¿Desactivar a "${b.name}"?`)) deactivateBeneMut.mutate(b.id); }}
-                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"><PowerOff className="w-4 h-4" /></button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {/* ── MODAL: BENEFICIARIO ─────────────────────────────── */}
-      {beneModal && (
-        <Modal title={editingBene ? '✏️ Editar beneficiario' : '➕ Nuevo beneficiario'} onClose={closeBeneModal}>
-          {formErr && <AlertBox msg={formErr} />}
-
-          {/* Suplidor vinculado — opcional, pre-llena nombre y teléfono */}
-          <div className="mb-4">
-            <label className="label">Suplidor vinculado <span className="text-gray-400 font-normal text-xs">(opcional)</span></label>
-            <select
-              className="input-field"
-              value={beneForm.supplierId}
-              onChange={(e) => {
-                const sid = e.target.value;
-                const sup = suppliers.find((s) => s.id === sid);
-                setBeneForm((f) => ({
-                  ...f,
-                  supplierId: sid,
-                  name:  sup ? sup.name  : f.name,
-                  phone: sup && sup.phone && !f.phone ? sup.phone : f.phone,
-                }));
-              }}
-            >
-              <option value="">— Sin suplidor vinculado —</option>
-              {suppliers.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}{s.rnc ? ` · ${s.rnc}` : ''}</option>
-              ))}
-            </select>
-            {beneForm.supplierId && (
-              <p className="text-xs text-blue-600 mt-1">Pre-llena nombre y teléfono desde el suplidor seleccionado</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Nombre / Empresa *"><input className="input-field" placeholder="Juan Pérez o ABC SRL" value={beneForm.name} onChange={(e) => setBeneForm((f) => ({ ...f, name: e.target.value }))} /></Field>
-            <Field label="Banco *"><input className="input-field" placeholder="Banco Popular" value={beneForm.bank} onChange={(e) => setBeneForm((f) => ({ ...f, bank: e.target.value }))} /></Field>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Tipo de cuenta *">
-              <select className="input-field" value={beneForm.accountType} onChange={(e) => setBeneForm((f) => ({ ...f, accountType: e.target.value }))}>
-                {ACCOUNT_TYPES.map((t) => <option key={t}>{t}</option>)}
-              </select>
-            </Field>
-            <Field label="Número de cuenta *"><input className="input-field font-mono" placeholder="000-00000-0" value={beneForm.accountNumber} onChange={(e) => setBeneForm((f) => ({ ...f, accountNumber: e.target.value }))} /></Field>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Cédula / RNC (opcional)"><input className="input-field" placeholder="001-0000000-0 ó 1-31-12345-6" value={beneForm.cedula} onChange={(e) => setBeneForm((f) => ({ ...f, cedula: e.target.value }))} /></Field>
-            <Field label="Teléfono (opcional)"><input className="input-field" placeholder="809-000-0000" value={beneForm.phone} onChange={(e) => setBeneForm((f) => ({ ...f, phone: e.target.value }))} /></Field>
-          </div>
-          <ModalFooter onCancel={closeBeneModal} onSave={saveBene} saving={createBeneMut.isPending || updateBeneMut.isPending} label={editingBene ? 'Guardar cambios' : 'Registrar'} />
-        </Modal>
-      )}
-
       {/* ── MODAL: ORDEN DE PAGO ────────────────────────────── */}
       {orderModal && (
         <Modal title={editingOrder ? '✏️ Editar orden' : '💳 Nueva orden de pago'} onClose={closeOrderModal} wide>
@@ -905,7 +641,7 @@ export default function PaymentOrdersPage() {
                   <p className="font-bold text-green-800">¡Orden generada exitosamente!</p>
                   <p className="text-sm text-green-700">
                     OP-{String(lastCreatedOrder.number).padStart(3, '0')}
-                    &nbsp;·&nbsp; {lastCreatedOrder.beneficiary.name}
+                    &nbsp;·&nbsp; {lastCreatedOrder.supplier.name}
                     &nbsp;·&nbsp; {fmtMonto(lastCreatedOrder.amount, lastCreatedOrder.currency)}
                   </p>
                   {sessionOrders.length > 1 && (
@@ -958,7 +694,7 @@ export default function PaymentOrdersPage() {
                     {sessionOrders.map((o, i) => (
                       <div key={o.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-sm">
                         <span className="text-xs text-gray-400 font-mono shrink-0">{i + 1}. OP-{String(o.number).padStart(3, '0')}</span>
-                        <span className="text-gray-700 truncate mx-3 flex-1">{o.beneficiary.name}</span>
+                        <span className="text-gray-700 truncate mx-3 flex-1">{o.supplier.name}</span>
                         <span className="text-gray-500 shrink-0 text-xs">{fmtMonto(o.amount, o.currency)}</span>
                         <div className="flex gap-1 ml-2">
                           <button onClick={() => copyText(o.generatedText ?? '')} title="Copiar"
@@ -1048,21 +784,33 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              <Field label="Beneficiario *">
-                <select className="input-field" value={orderForm.beneficiaryId}
-                  onChange={(e) => setOrderForm((f) => ({ ...f, beneficiaryId: e.target.value }))}>
-                  <option value="">— Selecciona beneficiario —</option>
-                  {activeBenes.map((b) => <option key={b.id} value={b.id}>{b.name} · {b.bank} · {b.accountNumber}</option>)}
+              <Field label="Suplidor / Beneficiario *">
+                <select className="input-field" value={orderForm.supplierId}
+                  onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value })); setSupplierSearch(''); }}>
+                  <option value="">— Selecciona suplidor —</option>
+                  {activeSuppliers
+                    .filter((s) => s.bank && s.accountNumber)
+                    .map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}{s.bank ? ` · ${s.bank} · ${s.accountNumber}` : ''}
+                      </option>
+                    ))}
                 </select>
+                {activeSuppliers.filter((s) => !s.bank || !s.accountNumber).length > 0 && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    Solo se muestran suplidores con datos bancarios. Actualiza los demás desde Directorio de Suplidores.
+                  </p>
+                )}
               </Field>
 
-              {orderForm.beneficiaryId && (() => {
-                const b = activeBenes.find((x) => x.id === orderForm.beneficiaryId);
-                return b ? (
+              {orderForm.supplierId && (() => {
+                const s = activeSuppliers.find((x) => x.id === orderForm.supplierId);
+                return s ? (
                   <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600 border border-gray-200 -mt-2 mb-4">
-                    🏦 <strong>{b.bank}</strong> &nbsp;·&nbsp; {b.accountType} &nbsp;·&nbsp;
-                    <span className="font-mono">{b.accountNumber}</span>
-                    {b.cedula && <> &nbsp;·&nbsp; {b.cedula}</>}
+                    🏦 <strong>{s.bank}</strong> &nbsp;·&nbsp; {s.accountType} &nbsp;·&nbsp;
+                    <span className="font-mono">{s.accountNumber}</span>
+                    {s.cedula && <> &nbsp;·&nbsp; {s.cedula}</>}
+                    {s.rnc    && <> &nbsp;·&nbsp; RNC: {s.rnc}</>}
                   </div>
                 ) : null;
               })()}
@@ -1188,191 +936,7 @@ export default function PaymentOrdersPage() {
         </Modal>
       )}
 
-      {/* ── MODAL: IMPORTAR BENEFICIARIOS ──────────────────── */}
-      {importModal && (
-        <Modal title="📥 Importar beneficiarios" onClose={closeImportModal} wide>
 
-          {importProgress === 'done' ? (
-            /* Resultado */
-            <div className="space-y-4">
-              <div className="text-center py-4">
-                {importResults.ok > 0
-                  ? <CheckCircle className="w-14 h-14 text-green-500 mx-auto mb-3" />
-                  : <AlertCircle className="w-14 h-14 text-red-400 mx-auto mb-3" />}
-                <p className="text-lg font-bold text-gray-800">Importación completada</p>
-              </div>
-              <div className="flex gap-4 justify-center">
-                <div className="bg-green-50 border border-green-200 rounded-xl px-6 py-3 text-center">
-                  <p className="text-2xl font-bold text-green-700">{importResults.ok}</p>
-                  <p className="text-xs text-green-600">importados</p>
-                </div>
-                {importResults.err > 0 && (
-                  <div className="bg-red-50 border border-red-200 rounded-xl px-6 py-3 text-center">
-                    <p className="text-2xl font-bold text-red-600">{importResults.err}</p>
-                    <p className="text-xs text-red-500">con error</p>
-                  </div>
-                )}
-              </div>
-              {importErrors.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                  <p className="text-xs font-bold text-red-700 mb-2">Detalle de errores:</p>
-                  <ul className="space-y-1 max-h-40 overflow-y-auto">
-                    {importErrors.map((e, i) => (
-                      <li key={i} className="text-xs text-red-600 flex items-start gap-1">
-                        <span className="shrink-0">•</span> {e}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <div className="flex gap-2 justify-center">
-                {importResults.err > 0 && (
-                  <button onClick={() => { setImportProgress('idle'); }}
-                    className="btn-secondary text-sm">Reintentar</button>
-                )}
-                <button onClick={closeImportModal} className="btn-primary">Cerrar</button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-5">
-
-              {/* Paso 1: Descargar plantilla */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <p className="text-sm font-bold text-blue-800 mb-1">📝 Paso 1 — Descarga la plantilla CSV</p>
-                <p className="text-xs text-blue-600 mb-3">Abre el archivo en Excel, llena los datos y guárdalo como CSV.</p>
-                <div className="bg-white rounded-lg border border-blue-200 px-3 py-2 mb-3 space-y-1">
-                  <p className="text-xs font-mono text-blue-600">nombre, banco, tipoCuenta, numeroCuenta, cedula_rnc*, telefono*</p>
-                  <div className="text-xs text-blue-500 space-y-0.5">
-                    <p>• <strong>tipoCuenta:</strong> Ahorro · Corriente · Nómina (o la forma completa)</p>
-                    <p>• <strong>cedula_rnc:</strong> Cédula <span className="font-mono">001-0000000-0</span> o RNC <span className="font-mono">1-31-12345-6</span> — opcional</p>
-                    <p>• <strong>telefono:</strong> opcional</p>
-                  </div>
-                </div>
-                <button onClick={downloadBeneTemplate} className="btn-secondary text-sm flex items-center gap-2">
-                  <Download className="w-4 h-4" /> Descargar plantilla CSV
-                </button>
-              </div>
-
-              {/* Paso 2: Cargar archivo */}
-              <div>
-                <p className="text-sm font-bold text-gray-700 mb-2">📂 Paso 2 — Carga el archivo completado</p>
-                <label className="block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all">
-                  <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600 font-semibold">
-                    {importRows.length > 0
-                      ? `✅ ${importRows.length} filas cargadas — haz clic para cambiar`
-                      : 'Haz clic para seleccionar el archivo CSV'}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">Solo archivos .csv</p>
-                  <input ref={fileInputRef} type="file" accept=".csv" className="hidden" onChange={onFileSelected} />
-                </label>
-              </div>
-
-              {/* Vista previa */}
-              {importRows.length > 0 && (
-                <div>
-                  <p className="text-sm font-bold text-gray-700 mb-2">
-                    👁 Vista previa — {importRows.length} beneficiario{importRows.length !== 1 ? 's' : ''}
-                  </p>
-                  <div className="rounded-xl border border-gray-200 overflow-hidden max-h-52 overflow-y-auto">
-                    <table className="w-full text-xs">
-                      <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
-                        <tr>
-                          <th className="text-left px-3 py-2 text-gray-500">Nombre</th>
-                          <th className="text-left px-3 py-2 text-gray-500">Banco</th>
-                          <th className="text-left px-3 py-2 text-gray-500">Tipo</th>
-                          <th className="text-left px-3 py-2 text-gray-500 font-mono">Cuenta</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {importRows.map((r, i) => (
-                          <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                            <td className="px-3 py-2 font-medium text-gray-800">{r.name}</td>
-                            <td className="px-3 py-2 text-gray-600">{r.bank}</td>
-                            <td className="px-3 py-2 text-gray-500">{r.accountType.replace('Cuenta ', '')}</td>
-                            <td className="px-3 py-2 font-mono text-gray-700">{r.accountNumber}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-3 justify-end pt-2 border-t border-gray-100">
-                <button onClick={closeImportModal} className="btn-secondary">Cancelar</button>
-                <button
-                  onClick={runImport}
-                  disabled={importRows.length === 0 || importProgress === 'importing'}
-                  className="btn-primary flex items-center gap-2">
-                  {importProgress === 'importing'
-                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Importando...</>
-                    : <><Upload className="w-4 h-4" /> {importRows.length > 0 ? `Importar ${importRows.length} beneficiarios` : 'Importar'}</>}
-                </button>
-              </div>
-            </div>
-          )}
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-// ── Sub-componentes ───────────────────────────────────────────
-function StatusBadge({ status }: { status: string }) {
-  const cfg = STATUS_CFG[status as keyof typeof STATUS_CFG] ?? STATUS_CFG.PENDING;
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.cls}`}>
-      {cfg.icon} {cfg.label}
-    </span>
-  );
-}
-
-function TypeBadge({ type }: { type: any }) {
-  const normalizedType: OrderType = (type === 'GENERAL' || !['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type)) ? 'SERVICIO' : type;
-  const cfg: Record<OrderType, { label: string; cls: string }> = {
-    SERVICIO:  { label: 'Servicio',   cls: 'bg-purple-100 text-purple-700' },
-    PAYROLL:   { label: 'Nómina',     cls: 'bg-blue-100 text-blue-700' },
-    MATERIALS: { label: 'Materiales', cls: 'bg-amber-100 text-amber-700' },
-  };
-  const c = cfg[normalizedType] ?? cfg.SERVICIO;
-  return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${c.cls}`}>{c.label}</span>;
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="mb-4"><label className="label">{label}</label>{children}</div>;
-}
-
-function AlertBox({ msg }: { msg: string }) {
-  return (
-    <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
-      <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-      <p className="text-sm text-red-600">{msg}</p>
-    </div>
-  );
-}
-
-function Modal({ title, onClose, wide = false, children }: { title: string; onClose: () => void; wide?: boolean; children: React.ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className={`bg-white rounded-2xl shadow-xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} p-6 max-h-[90vh] overflow-y-auto`}>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-bold text-gray-900 text-base">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function ModalFooter({ onCancel, onSave, saving, label }: { onCancel: () => void; onSave: () => void; saving: boolean; label: string }) {
-  return (
-    <div className="flex gap-3 mt-2 justify-end">
-      <button onClick={onCancel} className="btn-secondary">Cancelar</button>
-      <button onClick={onSave} disabled={saving} className="btn-primary">
-        {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</> : <><CheckCircle className="w-4 h-4" /> {label}</>}
-      </button>
     </div>
   );
 }

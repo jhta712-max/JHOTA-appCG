@@ -9,28 +9,32 @@ import { suppliersApi } from '../../api';
 import { useRole }       from '../../hooks/useRole';
 import type { Supplier } from '../../types';
 
+const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'] as const;
+
 // ── Tipos de formulario ───────────────────────────────────────
 type SupplierForm = {
-  name:    string;
-  rnc:     string;
-  phone:   string;
-  email:   string;
-  address: string;
-  notes:   string;
+  name: string; rnc: string; cedula: string; phone: string;
+  email: string; address: string; notes: string;
+  bank: string; accountType: string; accountNumber: string;
 };
 
 const EMPTY_FORM: SupplierForm = {
-  name: '', rnc: '', phone: '', email: '', address: '', notes: '',
+  name: '', rnc: '', cedula: '', phone: '', email: '', address: '', notes: '',
+  bank: '', accountType: 'Cuenta de Ahorros', accountNumber: '',
 };
 
 function formToPayload(f: SupplierForm) {
   return {
-    name:    f.name.trim(),
-    rnc:     f.rnc.trim()     || null,
-    phone:   f.phone.trim()   || null,
-    email:   f.email.trim()   || null,
-    address: f.address.trim() || null,
-    notes:   f.notes.trim()   || null,
+    name:          f.name.trim(),
+    rnc:           f.rnc.trim()           || null,
+    cedula:        f.cedula.trim()        || null,
+    phone:         f.phone.trim()         || null,
+    email:         f.email.trim()         || null,
+    address:       f.address.trim()       || null,
+    notes:         f.notes.trim()         || null,
+    bank:          f.bank.trim()          || null,
+    accountType:   f.accountType          || null,
+    accountNumber: f.accountNumber.trim() || null,
   };
 }
 
@@ -99,12 +103,16 @@ export default function SuppliersPage() {
   function openEdit(s: Supplier) {
     setEditing(s);
     setForm({
-      name:    s.name,
-      rnc:     s.rnc     ?? '',
-      phone:   s.phone   ?? '',
-      email:   s.email   ?? '',
-      address: s.address ?? '',
-      notes:   s.notes   ?? '',
+      name:          s.name,
+      rnc:           s.rnc           ?? '',
+      cedula:        s.cedula        ?? '',
+      phone:         s.phone         ?? '',
+      email:         s.email         ?? '',
+      address:       s.address       ?? '',
+      notes:         s.notes         ?? '',
+      bank:          s.bank          ?? '',
+      accountType:   s.accountType   ?? 'Cuenta de Ahorros',
+      accountNumber: s.accountNumber ?? '',
     });
     setApiError('');
     setModal('edit');
@@ -347,72 +355,76 @@ export default function SuppliersPage() {
                 />
               </div>
 
-              {/* RNC */}
-              <div>
-                <label className="label">RNC</label>
-                <input
-                  className="input-field"
-                  name="rnc"
-                  value={form.rnc}
-                  onChange={handleChange}
-                  placeholder="9 u 11 dígitos"
-                  maxLength={11}
-                />
-                <p className="text-xs text-gray-400 mt-1">Registro Nacional del Contribuyente (opcional)</p>
+              {/* RNC y Cédula */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="label">RNC</label>
+                  <input className="input-field" name="rnc" value={form.rnc} onChange={handleChange}
+                    placeholder="9 u 11 dígitos" maxLength={11} />
+                  <p className="text-xs text-gray-400 mt-1">Empresa / contribuyente</p>
+                </div>
+                <div>
+                  <label className="label">Cédula</label>
+                  <input className="input-field" name="cedula" value={form.cedula} onChange={handleChange}
+                    placeholder="001-0000000-0" maxLength={20} />
+                  <p className="text-xs text-gray-400 mt-1">Persona física</p>
+                </div>
               </div>
 
-              {/* Teléfono y Email en fila */}
+              {/* Teléfono y Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Teléfono</label>
-                  <input
-                    className="input-field"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    placeholder="809-000-0000"
-                    maxLength={20}
-                  />
+                  <input className="input-field" name="phone" value={form.phone} onChange={handleChange}
+                    placeholder="809-000-0000" maxLength={20} />
                 </div>
                 <div>
                   <label className="label">Correo electrónico</label>
-                  <input
-                    className="input-field"
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    placeholder="contacto@empresa.com"
-                    maxLength={150}
-                  />
+                  <input className="input-field" name="email" type="email" value={form.email} onChange={handleChange}
+                    placeholder="contacto@empresa.com" maxLength={150} />
                 </div>
               </div>
 
               {/* Dirección */}
               <div>
                 <label className="label">Dirección</label>
-                <input
-                  className="input-field"
-                  name="address"
-                  value={form.address}
-                  onChange={handleChange}
-                  placeholder="Calle, sector, ciudad"
-                  maxLength={500}
-                />
+                <input className="input-field" name="address" value={form.address} onChange={handleChange}
+                  placeholder="Calle, sector, ciudad" maxLength={500} />
               </div>
 
               {/* Notas */}
               <div>
                 <label className="label">Notas</label>
-                <textarea
-                  className="input-field resize-none"
-                  name="notes"
-                  value={form.notes}
-                  onChange={handleChange}
-                  placeholder="Información adicional..."
-                  rows={3}
-                  maxLength={1000}
-                />
+                <textarea className="input-field resize-none" name="notes" value={form.notes} onChange={handleChange}
+                  placeholder="Información adicional..." rows={2} maxLength={1000} />
+              </div>
+
+              {/* ── Datos bancarios ── */}
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  Datos bancarios <span className="font-normal text-gray-400">(para recibir pagos directos)</span>
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <label className="label">Banco</label>
+                    <input className="input-field" name="bank" value={form.bank} onChange={handleChange}
+                      placeholder="Ej: Banco Popular, BHD León, Banreservas…" maxLength={100} />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="label">Tipo de cuenta</label>
+                      <select className="input-field" name="accountType" value={form.accountType}
+                        onChange={handleChange as any}>
+                        {ACCOUNT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label">Número de cuenta</label>
+                      <input className="input-field font-mono" name="accountNumber" value={form.accountNumber}
+                        onChange={handleChange} placeholder="000-000000-0" maxLength={50} />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Botones */}

@@ -8,14 +8,14 @@ export async function listSuppliers(search?: string, onlyActive = false) {
   if (search) {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
-      { rnc: { contains: search } },
+      { rnc:  { contains: search } },
     ];
   }
   return prisma.supplier.findMany({
     where,
     include: {
-      createdBy:     { select: { id: true, name: true } },
-      _count:        { select: { beneficiaries: true } },
+      createdBy: { select: { id: true, name: true } },
+      _count:    { select: { paymentOrders: true } },
     },
     orderBy: { name: 'asc' },
   });
@@ -25,12 +25,8 @@ export async function getSupplierById(id: string) {
   const supplier = await prisma.supplier.findUnique({
     where: { id },
     include: {
-      createdBy:     { select: { id: true, name: true } },
-      _count:        { select: { beneficiaries: true } },
-      beneficiaries: {
-        select: { id: true, name: true, bank: true, accountType: true, accountNumber: true, isActive: true },
-        take: 5,
-      },
+      createdBy: { select: { id: true, name: true } },
+      _count:    { select: { paymentOrders: true } },
     },
   });
   if (!supplier) throw new AppError(404, 'Suplidor no encontrado', 'SUPPLIER_NOT_FOUND');
@@ -40,35 +36,31 @@ export async function getSupplierById(id: string) {
 export async function getSupplierHistory(id: string) {
   const supplier = await getSupplierById(id);
 
-  // Match quotations by RNC (exact) or name (case-insensitive)
   const quotationWhere: any = {
-    OR: [
-      { supplierName: { equals: supplier.name, mode: 'insensitive' } },
-    ],
+    OR: [{ supplierName: { equals: supplier.name, mode: 'insensitive' } }],
   };
   if (supplier.rnc) quotationWhere.OR.push({ supplierRnc: supplier.rnc });
 
   const quotations = await prisma.quotation.findMany({
-    where: quotationWhere,
+    where:   quotationWhere,
     include: {
       project:  { select: { id: true, code: true, name: true } },
       payments: { select: { amount: true } },
     },
     orderBy: { quotationDate: 'desc' },
-    take: 50,
+    take:    50,
   });
 
-  // Match fiscal vouchers by RNC
   const fiscalVouchers = supplier.rnc
     ? await prisma.fiscalVoucher.findMany({
-        where: { supplierRnc: supplier.rnc },
+        where:   { supplierRnc: supplier.rnc },
         include: {
           expense: {
             include: { project: { select: { id: true, code: true, name: true } } },
           },
         },
         orderBy: { createdAt: 'desc' },
-        take: 50,
+        take:    50,
       })
     : [];
 
@@ -79,13 +71,28 @@ export async function getSupplierHistory(id: string) {
     take:    50,
   });
 
-  const totalQuoted        = quotations.reduce((s, q) => s + Number(q.total), 0);
-  const totalPaid          = quotations.reduce((s, q) => s + q.payments.reduce((ps, p) => ps + Number(p.amount), 0), 0);
-  const totalFiscal        = fiscalVouchers.reduce((s, v) => s + Number(v.expense.amount), 0);
+  // Órdenes de pago recibidas por este suplidor
+  const paymentOrders = await prisma.paymentOrder.findMany({
+    where:   { supplierId: id },
+    include: {
+      project:   { select: { id: true, code: true, name: true } },
+      createdBy: { select: { id: true, name: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+    take:    100,
+  });
+
+  const totalQuoted         = quotations.reduce((s, q) => s + Number(q.total), 0);
+  const totalPaid           = quotations.reduce((s, q) => s + q.payments.reduce((ps, p) => ps + Number(p.amount), 0), 0);
+  const totalFiscal         = fiscalVouchers.reduce((s, v) => s + Number(v.expense.amount), 0);
   const totalOfficeExpenses = officeExpenses.reduce((s, e) => s + Number(e.amount), 0);
-  const projectIds         = new Set([
+  const totalPaymentOrders  = paymentOrders
+    .filter((po) => po.status === 'PAID')
+    .reduce((s, po) => s + Number(po.amount), 0);
+  const projectIds = new Set([
     ...quotations.map((q) => q.projectId),
     ...fiscalVouchers.map((v) => v.expense.projectId),
+    ...paymentOrders.map((po) => po.projectId),
   ]);
 
   return {
@@ -95,14 +102,17 @@ export async function getSupplierHistory(id: string) {
       totalPaid,
       totalFiscal,
       totalOfficeExpenses,
+      totalPaymentOrders,
       quotationCount:     quotations.length,
       voucherCount:       fiscalVouchers.length,
       officeExpenseCount: officeExpenses.length,
+      paymentOrderCount:  paymentOrders.length,
       projectCount:       projectIds.size,
     },
     quotations,
     fiscalVouchers,
     officeExpenses,
+    paymentOrders,
   };
 }
 
@@ -112,7 +122,7 @@ export async function createSupplier(data: CreateSupplierInput, userId: string) 
     if (exists) throw new AppError(409, 'Ya existe un suplidor con ese RNC', 'SUPPLIER_RNC_EXISTS');
   }
   return prisma.supplier.create({
-    data: { ...data, createdById: userId },
+    data:    { ...data, createdById: userId },
     include: { createdBy: { select: { id: true, name: true } } },
   });
 }
@@ -124,7 +134,7 @@ export async function updateSupplier(id: string, data: UpdateSupplierInput) {
     if (exists) throw new AppError(409, 'Ya existe un suplidor con ese RNC', 'SUPPLIER_RNC_EXISTS');
   }
   return prisma.supplier.update({
-    where: { id },
+    where:   { id },
     data,
     include: { createdBy: { select: { id: true, name: true } } },
   });
@@ -134,6 +144,6 @@ export async function toggleSupplierActive(id: string) {
   const supplier = await getSupplierById(id);
   return prisma.supplier.update({
     where: { id },
-    data: { isActive: !supplier.isActive },
+    data:  { isActive: !supplier.isActive },
   });
 }

@@ -174,30 +174,14 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   OTHER:    'Otro',
 };
 
-// ── Beneficiarios ─────────────────────────────────────────────
-export interface Beneficiary {
-  id:            string;
-  name:          string;
-  bank:          string;
-  accountType:   string;
-  accountNumber: string;
-  cedula?:       string | null;
-  phone?:        string | null;
-  isActive:      boolean;
-  supplierId?:   string | null;
-  supplier?:     { id: string; name: string; rnc?: string | null } | null;
-  createdBy:     { id: string; name: string };
-  createdAt:     string;
-}
-
 // ── Órdenes de Pago ───────────────────────────────────────────
 export interface PaymentOrder {
   id:            string;
   number:        number;
   orderType:     'SERVICIO' | 'PAYROLL' | 'MATERIALS';
   payingCompany: string;
-  beneficiaryId: string;
-  beneficiary:   Beneficiary;
+  supplierId:    string;
+  supplier:      Supplier;
   projectId:     string;
   project:       { id: string; code: string; name: string };
   amount:        number;
@@ -224,19 +208,23 @@ export const PROJECT_STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'Cancelado',
 };
 
-// ── Suplidores ─────────────────────────────────────────────────
+// ── Suplidores (también actúan como beneficiarios de pagos) ────
 export interface Supplier {
-  id:        string;
-  name:      string;
-  rnc?:      string | null;
-  phone?:    string | null;
-  email?:    string | null;
-  address?:  string | null;
-  notes?:    string | null;
-  isActive:  boolean;
-  createdBy: { id: string; name: string };
-  createdAt: string;
-  updatedAt: string;
+  id:             string;
+  name:           string;
+  rnc?:           string | null;
+  cedula?:        string | null;
+  phone?:         string | null;
+  email?:         string | null;
+  address?:       string | null;
+  notes?:         string | null;
+  bank?:          string | null;
+  accountType?:   string | null;
+  accountNumber?: string | null;
+  isActive:       boolean;
+  createdBy:      { id: string; name: string };
+  createdAt:      string;
+  updatedAt:      string;
 }
 
 export interface SupplierHistory {
@@ -246,9 +234,11 @@ export interface SupplierHistory {
     totalPaid:           number;
     totalFiscal:         number;
     totalOfficeExpenses: number;
+    totalPaymentOrders:  number;
     quotationCount:      number;
     voucherCount:        number;
     officeExpenseCount:  number;
+    paymentOrderCount:   number;
     projectCount:        number;
   };
   quotations: Array<{
@@ -283,6 +273,19 @@ export interface SupplierHistory {
     hasFiscalDoc:  boolean;
     fiscalDocNum:  string | null;
     createdBy:     { id: string; name: string };
+  }>;
+  paymentOrders: Array<{
+    id:        string;
+    number:    number;
+    orderType: string;
+    concept:   string;
+    amount:    number;
+    currency:  string;
+    status:    string;
+    paidAt?:   string | null;
+    createdAt: string;
+    project:   { id: string; code: string; name: string };
+    createdBy: { id: string; name: string };
   }>;
 }
 

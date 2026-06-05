@@ -364,23 +364,7 @@ export interface AiAnalysisResult {
   analyzedAt:      string;
 }
 
-// ── Beneficiarios ─────────────────────────────────────────────
-import type { Beneficiary, PaymentOrder } from '../types';
-
-export const beneficiariesApi = {
-  list:       (onlyActive = true) =>
-    api.get<{ success: boolean; data: Beneficiary[] }>('/beneficiaries', { params: { active: onlyActive ? 'true' : 'false' } }),
-  getById:    (id: string) =>
-    api.get<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`),
-  create:     (data: unknown) =>
-    api.post<{ success: boolean; data: Beneficiary }>('/beneficiaries', data),
-  bulkCreate: (rows: unknown[]) =>
-    api.post<{ success: boolean; data: { ok: number; err: number; results: { index: number; name: string; status: 'ok' | 'error'; error?: string }[] } }>('/beneficiaries/bulk', rows),
-  update:     (id: string, data: unknown) =>
-    api.put<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`, data),
-  deactivate: (id: string) =>
-    api.delete<{ success: boolean; data: Beneficiary }>(`/beneficiaries/${id}`),
-};
+import type { PaymentOrder } from '../types';
 
 // ── Órdenes de Pago ───────────────────────────────────────────
 export const paymentOrdersApi = {

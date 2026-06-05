@@ -4,12 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Building2, ArrowLeft, Phone, Mail, MapPin, Hash, FileText,
   Receipt, BarChart3, CheckCircle, AlertCircle, X, Pencil,
-  ToggleLeft, ToggleRight, StickyNote, Sparkles, CreditCard,
+  ToggleLeft, ToggleRight, StickyNote, Sparkles, CreditCard, DollarSign,
 } from 'lucide-react';
-import { suppliersApi, beneficiariesApi } from '../../api';
+import { suppliersApi } from '../../api';
 import { useRole }       from '../../hooks/useRole';
 import { fmtDate }       from '../../utils/date';
-import type { Supplier, Beneficiary } from '../../types';
+import type { Supplier } from '../../types';
 
 // ── Formato moneda ─────────────────────────────────────────────
 function fmtDOP(amount: number) {
@@ -32,35 +32,55 @@ const QUOTATION_STATUS: Record<string, { label: string; cls: string }> = {
   CANCELLED:        { label: 'Cancelada',       cls: 'bg-red-100 text-red-600'      },
 };
 
+const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
+  PENDING: { label: 'Pendiente', cls: 'bg-amber-100 text-amber-700' },
+  PAID:    { label: 'Pagada',    cls: 'bg-green-100 text-green-700' },
+  VOIDED:  { label: 'Anulada',   cls: 'bg-red-100 text-red-600'    },
+};
+
+const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'] as const;
+
 // ── Tipos de formulario ────────────────────────────────────────
 type SupplierForm = {
-  name:    string;
-  rnc:     string;
-  phone:   string;
-  email:   string;
-  address: string;
-  notes:   string;
+  name:          string;
+  rnc:           string;
+  cedula:        string;
+  phone:         string;
+  email:         string;
+  address:       string;
+  notes:         string;
+  bank:          string;
+  accountType:   string;
+  accountNumber: string;
 };
 
 function supplierToForm(s: Supplier): SupplierForm {
   return {
-    name:    s.name,
-    rnc:     s.rnc     ?? '',
-    phone:   s.phone   ?? '',
-    email:   s.email   ?? '',
-    address: s.address ?? '',
-    notes:   s.notes   ?? '',
+    name:          s.name,
+    rnc:           s.rnc           ?? '',
+    cedula:        s.cedula        ?? '',
+    phone:         s.phone         ?? '',
+    email:         s.email         ?? '',
+    address:       s.address       ?? '',
+    notes:         s.notes         ?? '',
+    bank:          s.bank          ?? '',
+    accountType:   s.accountType   ?? '',
+    accountNumber: s.accountNumber ?? '',
   };
 }
 
 function formToPayload(f: SupplierForm) {
   return {
-    name:    f.name.trim(),
-    rnc:     f.rnc.trim()     || null,
-    phone:   f.phone.trim()   || null,
-    email:   f.email.trim()   || null,
-    address: f.address.trim() || null,
-    notes:   f.notes.trim()   || null,
+    name:          f.name.trim(),
+    rnc:           f.rnc.trim()           || null,
+    cedula:        f.cedula.trim()        || null,
+    phone:         f.phone.trim()         || null,
+    email:         f.email.trim()         || null,
+    address:       f.address.trim()       || null,
+    notes:         f.notes.trim()         || null,
+    bank:          f.bank.trim()          || null,
+    accountType:   f.accountType.trim()   || null,
+    accountNumber: f.accountNumber.trim() || null,
   };
 }
 
@@ -70,10 +90,11 @@ export default function SupplierDetailPage() {
   const qc      = useQueryClient();
   const role    = useRole();
 
-  const [activeTab, setActiveTab]   = useState<'quotations' | 'vouchers' | 'office' | 'beneficiaries'>('quotations');
+  const [activeTab, setActiveTab]   = useState<'quotations' | 'vouchers' | 'office' | 'payments'>('quotations');
   const [editModal,  setEditModal]  = useState(false);
   const [form,       setForm]       = useState<SupplierForm>({
-    name: '', rnc: '', phone: '', email: '', address: '', notes: '',
+    name: '', rnc: '', cedula: '', phone: '', email: '', address: '', notes: '',
+    bank: '', accountType: '', accountNumber: '',
   });
   const [apiError, setApiError] = useState('');
   const [apiOk,    setApiOk]    = useState('');
@@ -88,16 +109,6 @@ export default function SupplierDetailPage() {
 
   const supplier = histData?.supplier;
   const stats    = histData?.stats;
-
-  // ── Beneficiaries linked to this supplier ────────────────────
-  const { data: linkedBenes = [] } = useQuery({
-    queryKey: ['beneficiaries', 'by-supplier', id],
-    queryFn:  async () => {
-      const res = await beneficiariesApi.list(false);
-      return (res.data.data as Beneficiary[]).filter((b) => b.supplierId === id);
-    },
-    enabled: !!id,
-  });
 
   // ── Mutations ────────────────────────────────────────────────
   const updateMutation = useMutation({
@@ -128,7 +139,7 @@ export default function SupplierDetailPage() {
     setEditModal(true);
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   }
@@ -173,6 +184,7 @@ export default function SupplierDetailPage() {
   const quotations     = histData?.quotations     ?? [];
   const fiscalVouchers = histData?.fiscalVouchers ?? [];
   const officeExpenses = histData?.officeExpenses ?? [];
+  const paymentOrders  = histData?.paymentOrders  ?? [];
 
   // ── Render ────────────────────────────────────────────────────
   return (
@@ -232,6 +244,12 @@ export default function SupplierDetailPage() {
                   RNC: <span className="font-mono">{supplier.rnc}</span>
                 </span>
               )}
+              {supplier.cedula && (
+                <span className="text-sm text-gray-600 flex items-center gap-2">
+                  <Hash className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  Cédula: <span className="font-mono">{supplier.cedula}</span>
+                </span>
+              )}
               {supplier.phone && (
                 <span className="text-sm text-gray-600 flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
@@ -257,6 +275,24 @@ export default function SupplierDetailPage() {
                 </span>
               )}
             </div>
+
+            {/* Bank data */}
+            {(supplier.bank || supplier.accountNumber) && (
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-3 flex-wrap">
+                <CreditCard className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                {supplier.bank && (
+                  <span className="text-sm text-gray-600">{supplier.bank}</span>
+                )}
+                {supplier.accountType && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                    {supplier.accountType.replace('Cuenta ', '')}
+                  </span>
+                )}
+                {supplier.accountNumber && (
+                  <span className="font-mono text-sm text-gray-700">{supplier.accountNumber}</span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Acciones */}
@@ -290,12 +326,12 @@ export default function SupplierDetailPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <StatCard label="Total cotizado"   value={fmtDOP(stats.totalQuoted)}           icon={<BarChart3 className="w-4 h-4" />}    color="amber"  />
-        <StatCard label="Total pagado"     value={fmtDOP(stats.totalPaid)}             icon={<CheckCircle className="w-4 h-4" />}  color="green"  />
-        <StatCard label="Total facturas"   value={fmtDOP(stats.totalFiscal)}           icon={<Receipt className="w-4 h-4" />}      color="blue"   />
-        <StatCard label="Gastos oficina"   value={fmtDOP(stats.totalOfficeExpenses ?? 0)} icon={<Sparkles className="w-4 h-4" />}  color="purple" />
-        <StatCard label="Cotizaciones"     value={String(stats.quotationCount)}         icon={<FileText className="w-4 h-4" />}     color="purple" />
-        <StatCard label="Proyectos"        value={String(stats.projectCount)}           icon={<Building2 className="w-4 h-4" />}   color="gray"   />
+        <StatCard label="Total cotizado"    value={fmtDOP(stats.totalQuoted)}               icon={<BarChart3 className="w-4 h-4" />}    color="amber"  />
+        <StatCard label="Total pagado"      value={fmtDOP(stats.totalPaid)}                 icon={<CheckCircle className="w-4 h-4" />}  color="green"  />
+        <StatCard label="Órdenes de pago"   value={fmtDOP(stats.totalPaymentOrders ?? 0)}   icon={<DollarSign className="w-4 h-4" />}   color="blue"   />
+        <StatCard label="Gastos oficina"    value={fmtDOP(stats.totalOfficeExpenses ?? 0)}  icon={<Sparkles className="w-4 h-4" />}     color="purple" />
+        <StatCard label="Cotizaciones"      value={String(stats.quotationCount)}             icon={<FileText className="w-4 h-4" />}     color="purple" />
+        <StatCard label="Proyectos"         value={String(stats.projectCount)}               icon={<Building2 className="w-4 h-4" />}   color="gray"   />
       </div>
 
       {/* Tabs */}
@@ -310,6 +346,16 @@ export default function SupplierDetailPage() {
             }`}
           >
             Cotizaciones ({quotations.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('payments')}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'payments'
+                ? 'border-amber-400 text-amber-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Órdenes de pago ({paymentOrders.length})
           </button>
           <button
             onClick={() => setActiveTab('vouchers')}
@@ -330,16 +376,6 @@ export default function SupplierDetailPage() {
             }`}
           >
             Gastos de oficina ({officeExpenses.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('beneficiaries')}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'beneficiaries'
-                ? 'border-amber-400 text-amber-700'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Cuentas bancarias ({linkedBenes.length})
           </button>
         </nav>
       </div>
@@ -391,6 +427,71 @@ export default function SupplierDetailPage() {
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.cls}`}>
                               {status.label}
                             </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {activeTab === 'payments' && (
+        <>
+          {paymentOrders.length === 0 ? (
+            <EmptyState
+              icon={<DollarSign className="w-10 h-10 text-gray-200" />}
+              message="No hay órdenes de pago registradas para este suplidor"
+            />
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">No.</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Concepto</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Proyecto</th>
+                      <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Monto</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha pago</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {paymentOrders.map((po) => {
+                      const status = ORDER_STATUS[po.status] ?? { label: po.status, cls: 'bg-gray-100 text-gray-600' };
+                      const amount = po.currency === 'DOP'
+                        ? fmtDOP(Number(po.amount))
+                        : `${po.currency} ${Number(po.amount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+                      return (
+                        <tr key={po.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-3 font-mono text-gray-700">
+                            OP-{String(po.number).padStart(4, '0')}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-700">
+                              {po.orderType}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-800 max-w-xs truncate">{po.concept}</td>
+                          <td className="px-4 py-3">
+                            <span className="font-mono text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded mr-1">
+                              {po.project.code}
+                            </span>
+                            <span className="text-gray-600 text-xs">{po.project.name}</span>
+                          </td>
+                          <td className="px-4 py-3 text-right font-medium text-gray-800">{amount}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.cls}`}>
+                              {status.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                            {po.paidAt ? fmtDate(po.paidAt) : '—'}
                           </td>
                         </tr>
                       );
@@ -492,62 +593,6 @@ export default function SupplierDetailPage() {
         </>
       )}
 
-      {activeTab === 'beneficiaries' && (
-        <>
-          {linkedBenes.length === 0 ? (
-            <div className="card p-10 text-center">
-              <div className="flex justify-center mb-3">
-                <CreditCard className="w-10 h-10 text-gray-200" />
-              </div>
-              <p className="text-gray-500 text-sm max-w-sm mx-auto">
-                No hay cuentas bancarias registradas
-              </p>
-              <p className="text-gray-400 text-xs mt-1">
-                Agregar desde Ord. de Pago &rarr; Beneficiarios
-              </p>
-            </div>
-          ) : (
-            <div className="card overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-100 bg-gray-50">
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nombre / Empresa</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Banco</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Cuenta</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {linkedBenes.map((b) => (
-                      <tr key={b.id} className={`hover:bg-gray-50 transition-colors ${!b.isActive ? 'opacity-50' : ''}`}>
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-gray-900">{b.name}</p>
-                          {b.cedula && <p className="text-xs text-gray-400">Cédula: {b.cedula}</p>}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">{b.bank}</td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-700">
-                            {b.accountType.replace('Cuenta ', '')}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-mono text-gray-700 text-xs">{b.accountNumber}</td>
-                        <td className="px-4 py-3">
-                          {b.isActive
-                            ? <span className="flex items-center gap-1 text-green-600 text-xs"><CheckCircle className="w-3.5 h-3.5" /> Activo</span>
-                            : <span className="text-xs text-gray-400">Inactivo</span>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
       {/* Modal de edición */}
       {editModal && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-4">
@@ -576,10 +621,17 @@ export default function SupplierDetailPage() {
                   required minLength={2} maxLength={200} />
               </div>
 
-              <div>
-                <label className="label">RNC</label>
-                <input className="input-field" name="rnc" value={form.rnc} onChange={handleChange}
-                  placeholder="9 u 11 dígitos" maxLength={11} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="label">RNC</label>
+                  <input className="input-field" name="rnc" value={form.rnc} onChange={handleChange}
+                    placeholder="9 u 11 dígitos" maxLength={11} />
+                </div>
+                <div>
+                  <label className="label">Cédula</label>
+                  <input className="input-field" name="cedula" value={form.cedula} onChange={handleChange}
+                    placeholder="000-0000000-0" maxLength={20} />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -604,7 +656,37 @@ export default function SupplierDetailPage() {
               <div>
                 <label className="label">Notas</label>
                 <textarea className="input-field resize-none" name="notes" value={form.notes}
-                  onChange={handleChange} rows={3} maxLength={1000} />
+                  onChange={handleChange} rows={2} maxLength={1000} />
+              </div>
+
+              {/* Bank data section */}
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <CreditCard className="w-3.5 h-3.5" /> Datos bancarios
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <label className="label">Banco</label>
+                    <input className="input-field" name="bank" value={form.bank} onChange={handleChange}
+                      placeholder="BanReservas, Popular, BHD..." maxLength={100} />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="label">Tipo de cuenta</label>
+                      <select className="input-field" name="accountType" value={form.accountType} onChange={handleChange}>
+                        <option value="">Seleccionar...</option>
+                        {ACCOUNT_TYPES.map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label">Número de cuenta</label>
+                      <input className="input-field" name="accountNumber" value={form.accountNumber}
+                        onChange={handleChange} placeholder="0000000000" maxLength={50} />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-2">

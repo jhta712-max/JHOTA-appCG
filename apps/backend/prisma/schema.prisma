@@ -68,7 +68,6 @@ model User {
   quotationPayments       QuotationPayment[]     @relation("QuotationPaymentCreatedBy")
   quotationLinks          QuotationExpenseLink[] @relation("QuotationLinkCreatedBy")
   quotationAttachments    QuotationAttachment[]
-  beneficiaries           Beneficiary[]          @relation("BeneficiaryCreatedBy")
   paymentOrdersCreated    PaymentOrder[]         @relation("PaymentOrderCreatedBy")
   paymentOrdersPaid       PaymentOrder[]         @relation("PaymentOrderPaidBy")
   officeExpenses          OfficeExpense[]        @relation("OfficeExpenseCreatedBy")
@@ -668,52 +667,30 @@ model QuotationExpenseLink {
 }
 
 // ============================================================
-// BENEFICIARIOS (órdenes de pago)
+// DIRECTORIO DE SUPLIDORES (también actúan como beneficiarios de pagos)
 // ============================================================
-model Beneficiary {
+model Supplier {
   id            String   @id @default(uuid()) @db.Uuid
   name          String   @db.VarChar(200)
-  bank          String   @db.VarChar(100)
-  accountType   String   @map("account_type") @db.VarChar(30)   // Cuenta de Ahorros | Cuenta Corriente | Cuenta Nómina
-  accountNumber String   @map("account_number") @db.VarChar(50)
+  rnc           String?  @unique @db.VarChar(11)
   cedula        String?  @db.VarChar(20)
   phone         String?  @db.VarChar(20)
+  email         String?  @db.VarChar(150)
+  address       String?  @db.Text
+  notes         String?  @db.Text
+  // Datos bancarios (opcionales — solo si recibe pagos directos)
+  bank          String?  @db.VarChar(100)
+  accountType   String?  @map("account_type") @db.VarChar(30)  // Cuenta de Ahorros | Cuenta Corriente | Cuenta Nómina
+  accountNumber String?  @map("account_number") @db.VarChar(50)
   isActive      Boolean  @default(true) @map("is_active")
-  supplierId    String?  @map("supplier_id") @db.Uuid
-  createdById   String   @map("created_by_id") @db.Uuid
+  createdById   String   @map("created_by") @db.Uuid
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  createdBy     User           @relation("BeneficiaryCreatedBy", fields: [createdById], references: [id])
-  supplier      Supplier?      @relation("BeneficiarySupplier", fields: [supplierId], references: [id], onDelete: SetNull)
-  paymentOrders PaymentOrder[]
-
-  @@index([name])
-  @@index([isActive])
-  @@index([supplierId])
-  @@map("beneficiaries")
-}
-
-// ============================================================
-// DIRECTORIO DE SUPLIDORES
-// ============================================================
-model Supplier {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String   @db.VarChar(200)
-  rnc         String?  @unique @db.VarChar(11)
-  phone       String?  @db.VarChar(20)
-  email       String?  @db.VarChar(150)
-  address     String?  @db.Text
-  notes       String?  @db.Text
-  isActive    Boolean  @default(true) @map("is_active")
-  createdById String   @map("created_by") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  createdBy      User            @relation("SupplierCreatedBy", fields: [createdById], references: [id])
-  officeExpenses OfficeExpense[] @relation("OfficeExpenseSupplier")
+  createdBy          User              @relation("SupplierCreatedBy", fields: [createdById], references: [id])
+  officeExpenses     OfficeExpense[]   @relation("OfficeExpenseSupplier")
   contratosAjustados ContratoAjustado[] @relation("SupplierContratosAjustados")
-  beneficiaries  Beneficiary[]   @relation("BeneficiarySupplier")
+  paymentOrders      PaymentOrder[]
 
   @@index([name])
   @@index([rnc])
@@ -729,7 +706,7 @@ model PaymentOrder {
   number        Int                                               // Autoincremental por aplicación
   orderType     String   @default("SERVICIO") @map("order_type") @db.VarChar(20) // SERVICIO | PAYROLL | MATERIALS
   payingCompany String   @map("paying_company") @db.VarChar(200)
-  beneficiaryId String   @map("beneficiary_id") @db.Uuid
+  supplierId    String   @map("supplier_id") @db.Uuid
   projectId     String   @map("project_id") @db.Uuid
   amount        Decimal  @db.Decimal(15, 2)
   currency      String   @default("RD$") @db.VarChar(10)
@@ -746,16 +723,16 @@ model PaymentOrder {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id])
-  project       Project     @relation(fields: [projectId], references: [id])
-  createdBy     User        @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
-  paidBy        User?       @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
-  payroll       Payroll?    @relation(fields: [payrollId], references: [id])
-  expense       Expense?    @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
+  supplier  Supplier    @relation(fields: [supplierId], references: [id])
+  project   Project     @relation(fields: [projectId], references: [id])
+  createdBy User        @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
+  paidBy    User?       @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
+  payroll   Payroll?    @relation(fields: [payrollId], references: [id])
+  expense   Expense?    @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
 
   @@index([status])
   @@index([projectId])
-  @@index([beneficiaryId])
+  @@index([supplierId])
   @@index([createdAt])
   @@map("payment_orders")
 }
