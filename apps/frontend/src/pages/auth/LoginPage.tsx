@@ -15,14 +15,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 function AppLogo({ className = 'w-12 h-14' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <path d="M20 1L39 11.5V36.5L20 47L1 36.5V11.5Z" fill="#1C1C1C" stroke="#F5C218" strokeWidth="1.5"/>
-      <line x1="6"  y1="34" x2="22" y2="14" stroke="#F5C218" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="13" y1="38" x2="34" y2="14" stroke="#F5C218" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="18" y1="34" x2="34" y2="18" stroke="#F5C218" strokeWidth="5" strokeLinecap="round"/>
-    </svg>
-  );
+  return <img src="/icon.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }}/>;
 }
 
 export default function LoginPage() {
