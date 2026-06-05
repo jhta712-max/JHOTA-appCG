@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Building2, ArrowLeft, Phone, Mail, MapPin, Hash, FileText,
   Receipt, BarChart3, CheckCircle, AlertCircle, X, Pencil,
-  ToggleLeft, ToggleRight, StickyNote,
+  ToggleLeft, ToggleRight, StickyNote, Sparkles,
 } from 'lucide-react';
 import { suppliersApi } from '../../api';
 import { useRole }       from '../../hooks/useRole';
@@ -70,7 +70,7 @@ export default function SupplierDetailPage() {
   const qc      = useQueryClient();
   const role    = useRole();
 
-  const [activeTab, setActiveTab]   = useState<'quotations' | 'vouchers'>('quotations');
+  const [activeTab, setActiveTab]   = useState<'quotations' | 'vouchers' | 'office'>('quotations');
   const [editModal,  setEditModal]  = useState(false);
   const [form,       setForm]       = useState<SupplierForm>({
     name: '', rnc: '', phone: '', email: '', address: '', notes: '',
@@ -160,8 +160,9 @@ export default function SupplierDetailPage() {
     );
   }
 
-  const quotations    = histData?.quotations    ?? [];
+  const quotations     = histData?.quotations     ?? [];
   const fiscalVouchers = histData?.fiscalVouchers ?? [];
+  const officeExpenses = histData?.officeExpenses ?? [];
 
   // ── Render ────────────────────────────────────────────────────
   return (
@@ -278,12 +279,13 @@ export default function SupplierDetailPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <StatCard label="Total cotizado"   value={fmtDOP(stats.totalQuoted)}  icon={<BarChart3 className="w-4 h-4" />} color="amber" />
-        <StatCard label="Total pagado"     value={fmtDOP(stats.totalPaid)}    icon={<CheckCircle className="w-4 h-4" />} color="green" />
-        <StatCard label="Total facturas"   value={fmtDOP(stats.totalFiscal)}  icon={<Receipt className="w-4 h-4" />} color="blue" />
-        <StatCard label="Cotizaciones"     value={String(stats.quotationCount)} icon={<FileText className="w-4 h-4" />} color="purple" />
-        <StatCard label="Proyectos"        value={String(stats.projectCount)}   icon={<Building2 className="w-4 h-4" />} color="gray" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <StatCard label="Total cotizado"   value={fmtDOP(stats.totalQuoted)}           icon={<BarChart3 className="w-4 h-4" />}    color="amber"  />
+        <StatCard label="Total pagado"     value={fmtDOP(stats.totalPaid)}             icon={<CheckCircle className="w-4 h-4" />}  color="green"  />
+        <StatCard label="Total facturas"   value={fmtDOP(stats.totalFiscal)}           icon={<Receipt className="w-4 h-4" />}      color="blue"   />
+        <StatCard label="Gastos oficina"   value={fmtDOP(stats.totalOfficeExpenses ?? 0)} icon={<Sparkles className="w-4 h-4" />}  color="purple" />
+        <StatCard label="Cotizaciones"     value={String(stats.quotationCount)}         icon={<FileText className="w-4 h-4" />}     color="purple" />
+        <StatCard label="Proyectos"        value={String(stats.projectCount)}           icon={<Building2 className="w-4 h-4" />}   color="gray"   />
       </div>
 
       {/* Tabs */}
@@ -308,6 +310,16 @@ export default function SupplierDetailPage() {
             }`}
           >
             Comprobantes fiscales ({fiscalVouchers.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('office')}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'office'
+                ? 'border-amber-400 text-amber-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Gastos de oficina ({officeExpenses.length})
           </button>
         </nav>
       </div>
@@ -410,6 +422,46 @@ export default function SupplierDetailPage() {
                         <td className="px-4 py-3 text-right font-medium text-gray-800">
                           {fmtDOP(Number(v.expense.amount))}
                         </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {activeTab === 'office' && (
+        <>
+          {officeExpenses.length === 0 ? (
+            <EmptyState
+              icon={<Sparkles className="w-10 h-10 text-gray-200" />}
+              message="No hay gastos de oficina vinculados a este suplidor"
+            />
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Descripción</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Categoría</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Método</th>
+                      <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {officeExpenses.map((oe) => (
+                      <tr key={oe.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(oe.expenseDate)}</td>
+                        <td className="px-4 py-3 text-gray-800 max-w-xs truncate">{oe.description}</td>
+                        <td className="px-4 py-3 text-gray-600 text-xs capitalize">{oe.category.replace(/_/g, ' ').toLowerCase()}</td>
+                        <td className="px-4 py-3 text-gray-600 text-xs">{
+                          ({ CASH: 'Efectivo', TRANSFER: 'Transf.', CARD: 'Tarjeta', CHECK: 'Cheque', OTHER: 'Otro' })[oe.paymentMethod] ?? oe.paymentMethod
+                        }</td>
+                        <td className="px-4 py-3 text-right font-medium text-gray-800">{fmtDOP(Number(oe.amount))}</td>
                       </tr>
                     ))}
                   </tbody>

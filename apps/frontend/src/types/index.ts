@@ -240,12 +240,14 @@ export interface Supplier {
 export interface SupplierHistory {
   supplier: Supplier;
   stats: {
-    totalQuoted:    number;
-    totalPaid:      number;
-    totalFiscal:    number;
-    quotationCount: number;
-    voucherCount:   number;
-    projectCount:   number;
+    totalQuoted:         number;
+    totalPaid:           number;
+    totalFiscal:         number;
+    totalOfficeExpenses: number;
+    quotationCount:      number;
+    voucherCount:        number;
+    officeExpenseCount:  number;
+    projectCount:        number;
   };
   quotations: Array<{
     id:            string;
@@ -268,6 +270,17 @@ export interface SupplierHistory {
       description: string;
       project:     { id: string; code: string; name: string };
     };
+  }>;
+  officeExpenses: Array<{
+    id:            string;
+    description:   string;
+    amount:        string;
+    expenseDate:   string;
+    category:      string;
+    paymentMethod: string;
+    hasFiscalDoc:  boolean;
+    fiscalDocNum:  string | null;
+    createdBy:     { id: string; name: string };
   }>;
 }
 

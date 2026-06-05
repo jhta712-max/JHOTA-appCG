@@ -62,10 +62,18 @@ export async function getSupplierHistory(id: string) {
       })
     : [];
 
-  const totalQuoted  = quotations.reduce((s, q) => s + Number(q.total), 0);
-  const totalPaid    = quotations.reduce((s, q) => s + q.payments.reduce((ps, p) => ps + Number(p.amount), 0), 0);
-  const totalFiscal  = fiscalVouchers.reduce((s, v) => s + Number(v.expense.amount), 0);
-  const projectIds   = new Set([
+  const officeExpenses = await prisma.officeExpense.findMany({
+    where:   { supplierId: id, status: 'ACTIVE' },
+    include: { createdBy: { select: { id: true, name: true } } },
+    orderBy: { expenseDate: 'desc' },
+    take:    50,
+  });
+
+  const totalQuoted        = quotations.reduce((s, q) => s + Number(q.total), 0);
+  const totalPaid          = quotations.reduce((s, q) => s + q.payments.reduce((ps, p) => ps + Number(p.amount), 0), 0);
+  const totalFiscal        = fiscalVouchers.reduce((s, v) => s + Number(v.expense.amount), 0);
+  const totalOfficeExpenses = officeExpenses.reduce((s, e) => s + Number(e.amount), 0);
+  const projectIds         = new Set([
     ...quotations.map((q) => q.projectId),
     ...fiscalVouchers.map((v) => v.expense.projectId),
   ]);
@@ -76,12 +84,15 @@ export async function getSupplierHistory(id: string) {
       totalQuoted,
       totalPaid,
       totalFiscal,
-      quotationCount: quotations.length,
-      voucherCount:   fiscalVouchers.length,
-      projectCount:   projectIds.size,
+      totalOfficeExpenses,
+      quotationCount:     quotations.length,
+      voucherCount:       fiscalVouchers.length,
+      officeExpenseCount: officeExpenses.length,
+      projectCount:       projectIds.size,
     },
     quotations,
     fiscalVouchers,
+    officeExpenses,
   };
 }
 

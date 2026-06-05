@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Receipt, Plus, X, Save, Trash2, ChevronDown, ChevronUp,
-  Sparkles, AlertCircle, CreditCard,
+  Sparkles, AlertCircle, CreditCard, Camera, Loader2, Building2,
 } from 'lucide-react';
 import {
-  officeExpensesApi, cardsApi,
+  officeExpensesApi, cardsApi, ocrApi, suppliersApi,
   OFFICE_EXPENSE_CATEGORY_LABELS,
   type OfficeExpense, type OfficeExpenseCategory,
 } from '../../api';
@@ -47,6 +47,7 @@ const emptyForm = () => ({
   expenseDate:   new Date().toISOString().slice(0, 10),
   paymentMethod: 'CASH',
   companyCardId: '',
+  supplierId:    '',
   hasFiscalDoc:  false,
   fiscalDocNum:  '',
   notes:         '',
@@ -59,6 +60,7 @@ const emptyForm = () => ({
 export default function OfficeExpensesPage() {
   const qc = useQueryClient();
   const { isSupervisor } = useRole();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [showForm,    setShowForm]    = useState(false);
   const [editingId,   setEditingId]   = useState<string | null>(null);
@@ -67,6 +69,9 @@ export default function OfficeExpensesPage() {
   const [flash,       setFlash]       = useState('');
   const [catFilter,   setCatFilter]   = useState('');
   const [expandStats, setExpandStats] = useState(true);
+  const [ocrLoading,  setOcrLoading]  = useState(false);
+  const [ocrError,    setOcrError]    = useState('');
+  const [actionError, setActionError] = useState('');
 
   // queries
   const { data: listData, isLoading } = useQuery({
@@ -87,7 +92,15 @@ export default function OfficeExpensesPage() {
     select:   (r) => r.data.data?.filter((c: any) => c.isActive) ?? [],
   });
 
-  const expenses = listData?.data ?? [];
+  const { data: suppliersData } = useQuery({
+    queryKey: ['suppliers-active'],
+    queryFn:  () => suppliersApi.list({ onlyActive: true }),
+    select:   (r) => r.data.data ?? [],
+    enabled:  showForm,
+  });
+
+  const expenses  = listData?.data ?? [];
+  const suppliers = suppliersData ?? [];
 
   // mutations
   function invalidate() {
@@ -105,6 +118,7 @@ export default function OfficeExpensesPage() {
       ...form,
       amount:        Number(form.amount),
       companyCardId: form.companyCardId || null,
+      supplierId:    form.supplierId    || null,
       fiscalDocNum:  form.fiscalDocNum  || null,
       notes:         form.notes         || null,
     }),
@@ -114,6 +128,7 @@ export default function OfficeExpensesPage() {
       setForm(emptyForm());
       showFlash('✅ Gasto de oficina registrado');
     },
+    onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al guardar'),
   });
 
   const updateMut = useMutation({
@@ -121,6 +136,7 @@ export default function OfficeExpensesPage() {
       ...form,
       amount:        Number(form.amount),
       companyCardId: form.companyCardId || null,
+      supplierId:    form.supplierId    || null,
       fiscalDocNum:  form.fiscalDocNum  || null,
       notes:         form.notes         || null,
     }),
@@ -132,6 +148,7 @@ export default function OfficeExpensesPage() {
       setForm(emptyForm());
       showFlash('✅ Gasto actualizado');
     },
+    onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al guardar'),
   });
 
   const voidMut = useMutation({
@@ -147,6 +164,8 @@ export default function OfficeExpensesPage() {
   function openCreate() {
     setEditingId(null);
     setForm(emptyForm());
+    setActionError('');
+    setOcrError('');
     setShowForm(true);
   }
 
@@ -159,18 +178,53 @@ export default function OfficeExpensesPage() {
       expenseDate:   exp.expenseDate.slice(0, 10),
       paymentMethod: exp.paymentMethod,
       companyCardId: exp.companyCardId ?? '',
+      supplierId:    exp.supplierId    ?? '',
       hasFiscalDoc:  exp.hasFiscalDoc,
       fiscalDocNum:  exp.fiscalDocNum ?? '',
       notes:         exp.notes ?? '',
     });
+    setActionError('');
+    setOcrError('');
     setShowForm(true);
     setViewingExp(null);
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setActionError('');
     if (editingId) updateMut.mutate();
     else           createMut.mutate();
+  }
+
+  async function handleOcrFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setOcrLoading(true);
+    setOcrError('');
+    try {
+      const res  = await ocrApi.analyze(file);
+      const data = res.data.data;
+      setForm((f) => ({
+        ...f,
+        ...(data.amount      && { amount:      String(data.amount) }),
+        ...(data.date        && { expenseDate:  data.date }),
+        ...(data.description && { description:  data.description }),
+        ...(data.ncf         && { hasFiscalDoc: true, fiscalDocNum: data.ncf }),
+        ...((!data.ncf && (data.supplierRnc || data.supplierName)) && { hasFiscalDoc: true }),
+      }));
+      if (data.supplierName && suppliers.length > 0) {
+        const match = suppliers.find((s: any) =>
+          s.name.toLowerCase().includes(data.supplierName!.toLowerCase()) ||
+          data.supplierName!.toLowerCase().includes(s.name.toLowerCase())
+        );
+        if (match) setForm((f) => ({ ...f, supplierId: match.id }));
+      }
+    } catch {
+      setOcrError('No se pudo analizar la imagen. Intenta con una foto más clara.');
+    } finally {
+      setOcrLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   }
 
   const isSubmitting = createMut.isPending || updateMut.isPending;
@@ -299,6 +353,11 @@ export default function OfficeExpensesPage() {
                 <p className="text-sm text-gray-500 mt-0.5">
                   {fmtDate(exp.expenseDate)} · {PAYMENT_METHODS[exp.paymentMethod] ?? exp.paymentMethod}
                   {exp.hasFiscalDoc && <span className="ml-2 text-xs text-green-600">· Factura</span>}
+                  {exp.supplier && (
+                    <span className="ml-2 text-xs text-blue-600 flex-inline items-center gap-1">
+                      · <Building2 className="w-3 h-3 inline" /> {exp.supplier.name}
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="text-right shrink-0">
@@ -324,6 +383,36 @@ export default function OfficeExpensesPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
+
+              {/* OCR button */}
+              {!editingId && (
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    onChange={handleOcrFile}
+                  />
+                  <button
+                    type="button"
+                    disabled={ocrLoading}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-purple-300 text-purple-700 hover:bg-purple-50 transition-colors text-sm font-medium"
+                  >
+                    {ocrLoading
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando recibo...</>
+                      : <><Camera className="w-4 h-4" /> Escanear recibo con IA</>
+                    }
+                  </button>
+                  {ocrError && (
+                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> {ocrError}
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Categoría */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
@@ -377,6 +466,25 @@ export default function OfficeExpensesPage() {
                     required
                   />
                 </div>
+              </div>
+
+              {/* Suplidor */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                  <Building2 className="w-3.5 h-3.5" /> Suplidor (opcional)
+                </label>
+                <select
+                  className="input-field"
+                  value={form.supplierId}
+                  onChange={(e) => setForm((f) => ({ ...f, supplierId: e.target.value }))}
+                >
+                  <option value="">Sin suplidor</option>
+                  {suppliers.map((s: any) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}{s.rnc ? ` — RNC ${s.rnc}` : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Método de pago */}
@@ -452,10 +560,10 @@ export default function OfficeExpensesPage() {
               </div>
 
               {/* Error */}
-              {(createMut.isError || updateMut.isError) && (
+              {actionError && (
                 <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg">
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>Error al guardar. Verifica los datos e intenta de nuevo.</span>
+                  <span>{actionError}</span>
                 </div>
               )}
 
@@ -511,6 +619,15 @@ export default function OfficeExpensesPage() {
                   <div>
                     <p className="text-gray-500">Tarjeta</p>
                     <p className="font-medium">{viewingExp.companyCard.holderName} ···{viewingExp.companyCard.lastFour}</p>
+                  </div>
+                )}
+                {viewingExp.supplier && (
+                  <div>
+                    <p className="text-gray-500">Suplidor</p>
+                    <p className="font-medium flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                      {viewingExp.supplier.name}
+                    </p>
                   </div>
                 )}
                 <div>

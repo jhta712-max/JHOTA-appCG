@@ -701,7 +701,8 @@ model Supplier {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  createdBy User @relation("SupplierCreatedBy", fields: [createdById], references: [id])
+  createdBy      User            @relation("SupplierCreatedBy", fields: [createdById], references: [id])
+  officeExpenses OfficeExpense[] @relation("OfficeExpenseSupplier")
 
   @@index([name])
   @@index([rnc])
@@ -759,6 +760,7 @@ model OfficeExpense {
   expenseDate   DateTime            @map("expense_date") @db.Date
   paymentMethod PaymentMethod       @map("payment_method")
   companyCardId Int?                @map("company_card_id")
+  supplierId    String?             @map("supplier_id") @db.Uuid
   hasFiscalDoc  Boolean             @default(false) @map("has_fiscal_doc")
   fiscalDocNum  String?             @map("fiscal_doc_num") @db.VarChar(50)
   notes         String?             @db.Text
@@ -770,9 +772,11 @@ model OfficeExpense {
 
   createdBy     User                @relation("OfficeExpenseCreatedBy", fields: [createdById], references: [id])
   companyCard   CompanyCard?        @relation(fields: [companyCardId], references: [id])
+  supplier      Supplier?           @relation("OfficeExpenseSupplier", fields: [supplierId], references: [id])
 
   @@index([category])
   @@index([expenseDate])
+  @@index([supplierId])
   @@index([createdAt])
   @@map("office_expenses")
 }

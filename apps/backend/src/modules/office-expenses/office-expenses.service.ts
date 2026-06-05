@@ -5,6 +5,7 @@ import type { CreateOfficeExpenseInput, UpdateOfficeExpenseInput, ListOfficeExpe
 const INCLUDE = {
   createdBy:   { select: { id: true, name: true, email: true } },
   companyCard: { select: { id: true, holderName: true, lastFour: true, bank: true } },
+  supplier:    { select: { id: true, name: true, rnc: true } },
 } as const;
 
 // ── List ─────────────────────────────────────────────────────────────────────
@@ -64,6 +65,7 @@ export async function createOfficeExpense(data: CreateOfficeExpenseInput, userId
       expenseDate:   new Date(data.expenseDate),
       paymentMethod: data.paymentMethod as any,
       companyCardId: data.companyCardId ? Number(data.companyCardId) : null,
+      supplierId:    data.supplierId ?? null,
       hasFiscalDoc:  data.hasFiscalDoc,
       fiscalDocNum:  data.fiscalDocNum ?? null,
       notes:         data.notes ?? null,
@@ -92,6 +94,7 @@ export async function updateOfficeExpense(id: string, data: UpdateOfficeExpenseI
       ...(data.expenseDate   && { expenseDate: new Date(data.expenseDate) }),
       ...(paymentMethod      && { paymentMethod: paymentMethod as any }),
       ...(data.companyCardId !== undefined && { companyCardId: data.companyCardId ? Number(data.companyCardId) : null }),
+      ...(data.supplierId    !== undefined && { supplierId: data.supplierId ?? null }),
       ...(data.hasFiscalDoc  !== undefined && { hasFiscalDoc: data.hasFiscalDoc }),
       ...(data.fiscalDocNum  !== undefined && { fiscalDocNum: data.fiscalDocNum }),
       ...(data.notes         !== undefined && { notes: data.notes }),
