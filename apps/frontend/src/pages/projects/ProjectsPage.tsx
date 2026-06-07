@@ -176,8 +176,7 @@ export default function ProjectsPage() {
                         {p.code}{p.client ? ` · ${p.client}` : ''}{p.location ? ` · ${p.location}` : ''}
                       </p>
                     </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0, display: 'none' }} className="sm:block"
-                         style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div className="sm:block" style={{ textAlign: 'right', flexShrink: 0 }}>
                       <p style={{ fontFamily: MONO, fontWeight: 700, fontSize: '0.85rem', color: B.dark, margin: 0 }}>
                         {formatCurrency(budget)}
                       </p>
