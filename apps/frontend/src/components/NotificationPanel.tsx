@@ -339,6 +339,20 @@ export default function NotificationPanel({
             </div>
           )}
         </div>
+
+        {/* Footer with stats */}
+        {notifications.length > 0 && (
+          <div className={`border-t px-6 py-3 text-xs ${
+            isDark
+              ? 'border-white/10 text-gray-500'
+              : 'border-gray-200 text-gray-500'
+          }`}>
+            <div className="flex justify-between">
+              <span>{notifications.length} total</span>
+              <span>{unreadCount} no leída{unreadCount !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

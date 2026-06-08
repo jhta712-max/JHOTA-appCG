@@ -10,6 +10,7 @@ import { authApi } from '../../api';
 import clsx from 'clsx';
 import Header from './Header';
 import RoleViewSwitcher from './RoleViewSwitcher';
+import ThemeToggle from '../ThemeToggle';
 
 type NavItem = {
   to: string;
@@ -207,6 +208,7 @@ export default function Layout() {
             <AppIcon className="w-6 h-7 shrink-0" />
             <span className="font-bold text-white text-sm tracking-wide">Sistema de Gastos</span>
           </div>
+          <ThemeToggle />
           <RoleViewSwitcher compact />
         </header>
 
