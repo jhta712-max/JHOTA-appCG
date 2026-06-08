@@ -17,7 +17,9 @@ const EXPENSE_INCLUDE = {
 } as const;
 
 // Roles que requieren aprobación al crear gastos
-const ROLES_NEED_APPROVAL = new Set(['operator', 'supervisor']);
+// Solo operadores necesitan aprobación. Supervisores y admin auto-aprueban.
+// Además, gastos con comprobante fiscal se auto-aprueban (validación externa)
+const ROLES_NEED_APPROVAL = new Set(['operator']);
 
 // ---------------------------------------------------------------
 // Listar con filtros
@@ -98,7 +100,11 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
   const category = await prisma.expenseCategory.findUnique({ where: { id: data.categoryId } });
   if (!category || !category.isActive) throw new AppError(404, 'Categoría no encontrada o inactiva', 'NOT_FOUND');
 
-  const needsApproval = ROLES_NEED_APPROVAL.has(userRole ?? '');
+  // Lógica de aprobación:
+  // - Con comprobante fiscal: ACTIVE (validación externa)
+  // - Sin comprobante y rol que necesita aprobación: PENDING_APPROVAL
+  // - Sino: ACTIVE
+  const needsApproval = !data.hasFiscalDoc && ROLES_NEED_APPROVAL.has(userRole ?? '');
   const status = needsApproval ? 'PENDING_APPROVAL' : 'ACTIVE';
 
   const expense = await prisma.expense.create({

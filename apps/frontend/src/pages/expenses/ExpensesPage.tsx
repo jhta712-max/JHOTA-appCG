@@ -193,6 +193,7 @@ export default function ExpensesPage() {
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
           <option value="">Todos los estados</option>
           <option value="ACTIVE">Activos</option>
+          <option value="PENDING_APPROVAL">Pendientes de aprobación</option>
           <option value="VOIDED">Anulados</option>
         </select>
 
