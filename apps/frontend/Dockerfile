@@ -1,22 +1,16 @@
-FROM node:20-alpine AS builder
-
-# Declarar build arg para que Railway lo inyecte en el build
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
-
-RUN npm install -g pnpm
-
+# Build stage
+FROM node:24-alpine AS builder
 WORKDIR /app
-
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
-
-COPY . .
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/frontend ./apps/frontend
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
+WORKDIR /app/apps/frontend
 RUN pnpm run build
 
+# Production stage - Nginx
 FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
+COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html
+RUN rm -f /etc/nginx/conf.d/default.conf
+RUN echo 'server { listen 3000; location / { root /usr/share/nginx/html; try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
+EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]
