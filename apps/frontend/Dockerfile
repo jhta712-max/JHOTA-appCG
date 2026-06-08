@@ -10,7 +10,6 @@ RUN pnpm run build
 # Production stage - Nginx
 FROM nginx:alpine
 COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html
-RUN rm -f /etc/nginx/conf.d/default.conf
-RUN echo 'server { listen 3000; location / { root /usr/share/nginx/html; try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
-EXPOSE 3000
+COPY apps/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

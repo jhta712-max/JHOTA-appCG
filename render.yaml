@@ -25,7 +25,7 @@ services:
     region: ohio
     runtime: docker
 
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./apps/backend/Dockerfile
 
     envVars:
       - key: NODE_ENV
@@ -58,7 +58,6 @@ services:
         value: info
 
     autoDeploy: true
-    rootDir: apps/backend
 
     healthCheckPath: /api/v1/health
 
@@ -74,7 +73,7 @@ services:
     region: ohio
     runtime: docker
 
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./apps/frontend/Dockerfile
 
     buildCommand: null
     startCommand: null
@@ -84,7 +83,6 @@ services:
         value: https://servingmi-backend.onrender.com/api/v1
 
     autoDeploy: true
-    rootDir: apps/frontend
 
     headers:
       - path: /
