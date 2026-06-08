@@ -349,7 +349,7 @@ export default function PaymentOrdersPage() {
       payload.payrollData = {
         periodStart: orderForm.payrollPeriodStart,
         periodEnd:   orderForm.payrollPeriodEnd,
-        type:        orderForm.payrollType,
+        type:        'LABOR',
       };
     }
 
@@ -851,20 +851,6 @@ export default function PaymentOrdersPage() {
                       <input type="date" className="input-field text-sm"
                         value={orderForm.payrollPeriodEnd}
                         onChange={(e) => setOrderForm((f) => ({ ...f, payrollPeriodEnd: e.target.value }))} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-blue-800 mb-1">Tipo de nómina *</label>
-                    <div className="flex gap-3">
-                      {([['LABOR', '👷 Mano de obra'], ['SERVICE', '🔧 Servicios contratados']] as const).map(([val, label]) => (
-                        <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-all ${orderForm.payrollType === val ? 'bg-blue-100 border-blue-400 text-blue-800 font-semibold' : 'bg-white border-gray-200 text-gray-600'}`}>
-                          <input type="radio" name="payrollType" value={val}
-                            checked={orderForm.payrollType === val}
-                            onChange={() => setOrderForm((f) => ({ ...f, payrollType: val }))}
-                            className="sr-only" />
-                          {label}
-                        </label>
-                      ))}
                     </div>
                   </div>
                   <p className="text-xs text-blue-600">
