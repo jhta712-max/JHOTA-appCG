@@ -170,10 +170,8 @@ export default function PayrollFormPage() {
       </Link>
 
       <div>
-        <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <Wallet className="w-5 h-5" style={{ color: '#F5C218' }} />
-          {isEdit ? 'Editar Nómina' : 'Nueva Nómina'}
-        </h1>
+        <p className="module-label">MÓDULO / NÓMINAS</p>
+        <h1 className="page-title">{isEdit ? 'Editar Nómina' : 'Nueva Nómina'}</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           {isEdit
             ? 'Modifica los datos generales. Las líneas se gestionan desde el detalle.'

@@ -711,14 +711,15 @@ export default function ContratosAjustadosPage() {
             <FileCheck className="w-6 h-6 text-blue-700" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Contratos Ajustados</h1>
+            <p className="module-label">MÓDULO / CONTRATOS</p>
+            <h1 className="page-title">Contratos Ajustados</h1>
             <p className="text-sm text-gray-500">Seguimiento de contratos por suplidor y proyecto</p>
           </div>
         </div>
         {canCreate && (
           <button
             onClick={() => { setEditing(null); setShowForm(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+            className="smi-btn">
             <Plus className="w-4 h-4" />
             Nuevo Contrato
           </button>

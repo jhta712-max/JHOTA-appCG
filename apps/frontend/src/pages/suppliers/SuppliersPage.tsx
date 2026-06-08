@@ -158,18 +158,16 @@ export default function SuppliersPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-amber-500" />
-            Directorio de Suplidores
-          </h1>
+          <p className="module-label">MÓDULO / SUPLIDORES</p>
+          <h1 className="page-title">Directorio de Suplidores</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {suppliers?.length ?? 0} suplidor{(suppliers?.length ?? 0) !== 1 ? 'es' : ''} registrado{(suppliers?.length ?? 0) !== 1 ? 's' : ''}
           </p>
         </div>
         {role.canManageSuppliers && (
-          <button onClick={openCreate} className="btn-primary text-sm flex items-center gap-2">
+          <button onClick={openCreate} className="smi-btn">
             <Plus className="w-4 h-4" />
-            Nuevo suplidor
+            Nuevo Suplidor
           </button>
         )}
       </div>

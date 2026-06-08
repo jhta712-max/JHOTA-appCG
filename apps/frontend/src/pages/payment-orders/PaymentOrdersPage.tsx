@@ -305,9 +305,8 @@ export default function PaymentOrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary-600" /> Órdenes de Pago
-          </h1>
+          <p className="module-label">MÓDULO / ÓRDENES DE PAGO</p>
+          <h1 className="page-title">Órdenes de Pago</h1>
           <p className="text-sm text-gray-500 mt-0.5">Solicitudes de pago vía transferencia (Nómina · Materiales · General)</p>
         </div>
         <button onClick={() => openOrderModal()} className="btn-primary flex items-center gap-2">

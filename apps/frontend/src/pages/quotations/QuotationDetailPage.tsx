@@ -157,7 +157,7 @@ export default function QuotationDetailPage() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-gray-900 truncate">{quotation.supplierName}</h1>
+            <h1 className="page-title truncate">{quotation.supplierName}</h1>
             {quotation.quotationNumber && (
               <span className="text-sm text-gray-400 font-mono">#{quotation.quotationNumber}</span>
             )}

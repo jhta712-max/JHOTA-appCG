@@ -150,7 +150,7 @@ export default function SetupPage() {
             <ShieldCheck className="w-3 h-3" /> Configuración inicial del sistema
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Crear administrador</h1>
+          <h1 className="page-title mb-1" style={{ fontSize: '1.6rem' }}>Crear administrador</h1>
           <p className="text-gray-500 text-sm mb-6">
             Este acceso solo es posible cuando no existe ningún usuario en el sistema.
           </p>

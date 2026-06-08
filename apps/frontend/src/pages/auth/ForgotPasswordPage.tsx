@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
                 <ArrowLeft className="w-4 h-4" /> Volver al login
               </button>
 
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">¿Olvidaste tu contraseña?</h1>
+              <h1 className="page-title mb-2" style={{ fontSize: '1.6rem' }}>¿Olvidaste tu contraseña?</h1>
               <p className="text-gray-500 text-sm mb-8">
                 Ingresa tu correo electrónico y te enviaremos un enlace para resetear tu contraseña.
               </p>

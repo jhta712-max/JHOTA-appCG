@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, AlertCircle, Settings, ArrowRight } from 'lucide-react';
+import { LogIn, Eye, EyeOff, AlertCircle, Settings } from 'lucide-react';
 import { authApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import api from '../../api/client';
@@ -14,13 +14,8 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
-const B = { dark: '#1C1C1C', yellow: '#F5C218', darkAlt: '#141414' } as const;
-const DISPLAY = "'Barlow Condensed', system-ui, sans-serif";
-const BODY    = "'DM Sans', system-ui, sans-serif";
-const MONO    = "'Space Mono', monospace";
-
 function AppLogo({ className = 'w-12 h-14' }: { className?: string }) {
-  return <img src="/logo.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }} />;
+  return <img src="/logo.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }}/>;
 }
 
 export default function LoginPage() {
@@ -30,20 +25,11 @@ export default function LoginPage() {
   const [error,      setError]      = useState('');
   const [needsSetup, setNeedsSetup] = useState(false);
 
-  useEffect(() => {
-    if (!document.querySelector('[data-smi-fonts]')) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=Space+Mono:wght@400;700&display=swap';
-      link.setAttribute('data-smi-fonts', '1');
-      document.head.appendChild(link);
-    }
-  }, []);
-
+  // Verificar si el sistema tiene usuarios registrados
   useEffect(() => {
     api.get('/setup/check')
       .then((r) => setNeedsSetup(r.data.data.needsSetup))
-      .catch(() => {});
+      .catch(() => {}); // silencioso — no interrumpir el login
   }, []);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -66,230 +52,131 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ fontFamily: BODY, minHeight: '100vh', display: 'flex' }}>
-      <style>{`
-        @keyframes lg-fade { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-        .lg-fade { animation: lg-fade 0.5s cubic-bezier(.2,.8,.2,1) both; }
-        .lg-fade-1 { animation: lg-fade 0.5s 0.1s cubic-bezier(.2,.8,.2,1) both; }
-        .lg-fade-2 { animation: lg-fade 0.5s 0.2s cubic-bezier(.2,.8,.2,1) both; }
-        .smi-input {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          font-size: 0.875rem;
-          font-family: ${BODY};
-          color: #111;
-          background: #fff;
-          outline: none;
-          transition: border-color 0.15s, box-shadow 0.15s;
-        }
-        .smi-input:focus {
-          border-color: #F5C218;
-          box-shadow: 0 0 0 3px rgba(245,194,24,0.15);
-        }
-        .smi-input.error { border-color: #ef4444; }
-        .smi-input.error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
-        /* grid texture on left panel */
-        .login-grid {
-          background-image:
-            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
-      `}</style>
+    <div className="min-h-screen flex" style={{ background: '#1C1C1C' }}>
 
-      {/* ── LEFT PANEL — branding ──────────────────────── */}
-      <div className="hidden lg:flex flex-col justify-between w-[45%] login-grid"
-           style={{ background: B.darkAlt, padding: '3rem 3.5rem' }}>
-
-        {/* Logo */}
+      {/* Panel izquierdo — branding (solo desktop) */}
+      <div className="hidden lg:flex flex-col justify-between w-2/5 p-12"
+           style={{ background: '#141414' }}>
         <div className="flex items-center gap-3">
           <AppLogo className="w-10 h-12" />
           <div>
-            <p style={{ fontFamily: DISPLAY, fontWeight: 800, color: '#fff', fontSize: '1.1rem', letterSpacing: '0.08em' }}>
-              SERVINGMI
-            </p>
-            <p style={{ fontFamily: BODY, fontSize: '0.7rem', color: '#555', letterSpacing: '0.05em' }}>
-              Sistema de Gastos
-            </p>
+            <p className="font-bold text-white text-lg tracking-widest">Sistema de Gastos</p>
+            <p className="text-xs text-gray-500">Control de Proyectos</p>
           </div>
         </div>
 
-        {/* Main message */}
         <div>
-          <div style={{ width: '40px', height: '3px', background: B.yellow, marginBottom: '2rem', borderRadius: '2px' }} />
-          <h2 style={{ fontFamily: DISPLAY, fontWeight: 900, color: '#fff', lineHeight: 1.0,
-                        fontSize: 'clamp(2.8rem, 4vw, 4rem)', letterSpacing: '-0.01em', marginBottom: '1.25rem' }}>
-            CONTROL<br />DE GASTOS<br />
-            <span style={{ color: B.yellow }}>POR PROYECTO</span>
+          <h2 className="text-3xl font-bold text-white leading-snug mb-4">
+            Control de gastos<br />
+            <span style={{ color: '#F5C218' }}>por proyectos</span>
           </h2>
-          <p style={{ fontFamily: BODY, color: '#666', fontSize: '0.85rem', lineHeight: 1.7, maxWidth: '320px' }}>
+          <p className="text-gray-400 text-sm leading-relaxed">
             Gestiona los gastos de cada proyecto con trazabilidad completa,
             comprobantes fiscales DGII y reportes exportables.
           </p>
-
-          {/* Feature list */}
-          <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {['Presupuestos por proyecto', 'Reportes Excel / PDF', 'Cumplimiento DGII'].map((f) => (
-              <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: B.yellow, flexShrink: 0 }} />
-                <span style={{ fontFamily: BODY, color: '#888', fontSize: '0.78rem' }}>{f}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
-        <p style={{ fontFamily: MONO, fontSize: '0.6rem', color: '#333', letterSpacing: '0.06em' }}>
-          © {new Date().getFullYear()} SISTEMA INTERNO
+        <p className="text-xs text-gray-600">
+          © {new Date().getFullYear()} Sistema de Gastos · Sistema interno
         </p>
       </div>
 
-      {/* ── RIGHT PANEL — form ──────────────────────────── */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                     padding: '2rem', background: '#FAFAFA' }}>
-        <div style={{ width: '100%', maxWidth: '400px' }} className="lg-fade">
+      {/* Panel derecho — formulario */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-gray-50">
+        <div className="w-full max-w-sm">
 
-          {/* Mobile logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2.5rem', justifyContent: 'center' }}
-               className="lg:hidden">
+          {/* Logo mobile */}
+          <div className="flex lg:hidden items-center justify-center gap-3 mb-8">
             <AppLogo className="w-10 h-12" />
             <div>
-              <p style={{ fontFamily: DISPLAY, fontWeight: 800, color: B.dark, fontSize: '1.2rem', letterSpacing: '0.08em' }}>SERVINGMI</p>
-              <p style={{ fontFamily: BODY, fontSize: '0.7rem', color: '#9ca3af' }}>Sistema de Gastos</p>
+              <p className="font-bold text-gray-900 text-xl tracking-widest">Sistema de Gastos</p>
+              <p className="text-xs text-gray-500">Control de Proyectos</p>
             </div>
           </div>
 
-          {/* Heading */}
-          <div style={{ marginBottom: '2rem' }} className="lg-fade-1">
-            <h1 style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: '2.5rem', lineHeight: 1.0,
-                          color: B.dark, letterSpacing: '-0.01em', marginBottom: '6px' }}>
-              BIENVENIDO
-            </h1>
-            <p style={{ fontFamily: BODY, fontSize: '0.85rem', color: '#9ca3af' }}>
-              Ingresa tus credenciales para acceder al sistema
-            </p>
-          </div>
+          <h1 className="page-title mb-1" style={{ fontSize: '1.8rem' }}>Bienvenido</h1>
+          <p className="text-gray-500 text-sm mb-8">Ingresa tus credenciales para continuar</p>
 
-          {/* Error */}
           {error && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px',
-                           background: '#fef2f2', border: '1px solid #fecaca',
-                           borderLeft: '3px solid #ef4444',
-                           color: '#dc2626', borderRadius: '8px', padding: '12px 14px',
-                           marginBottom: '1.25rem', fontSize: '0.82rem', fontFamily: BODY }}>
-              <AlertCircle style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-5 text-sm">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               {error}
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="lg-fade-2">
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ fontFamily: BODY, fontSize: '0.75rem', fontWeight: 600, color: '#374151',
-                               letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block',
-                               marginBottom: '6px' }}>
-                Correo electrónico
-              </label>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div>
+              <label className="label">Correo electrónico</label>
               <input
                 type="email"
                 placeholder="correo@empresa.com"
-                className={`smi-input${errors.email ? ' error' : ''}`}
+                className={`input-field ${errors.email ? 'input-error' : ''}`}
                 {...register('email')}
               />
-              {errors.email && (
-                <p style={{ fontFamily: BODY, fontSize: '0.72rem', color: '#ef4444', marginTop: '4px' }}>
-                  {errors.email.message}
-                </p>
-              )}
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
-            <div style={{ marginBottom: '1.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <label style={{ fontFamily: BODY, fontSize: '0.75rem', fontWeight: 600, color: '#374151',
-                                  letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                  Contraseña
-                </label>
-                <button type="button" onClick={() => navigate('/forgot-password')}
-                        style={{ fontFamily: BODY, fontSize: '0.72rem', color: '#9ca3af',
-                                   background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                        className="hover:text-gray-600 transition-colors">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="label">Contraseña</label>
+                <button
+                  type="button"
+                  onClick={() => navigate('/forgot-password')}
+                  className="text-xs text-blue-600 hover:text-blue-700"
+                >
                   ¿Olvidaste tu contraseña?
                 </button>
               </div>
-              <div style={{ position: 'relative' }}>
+              <div className="relative">
                 <input
                   type={showPwd ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className={`smi-input${errors.password ? ' error' : ''}`}
-                  style={{ paddingRight: '2.75rem' }}
+                  className={`input-field pr-10 ${errors.password ? 'input-error' : ''}`}
                   {...register('password')}
                 />
-                <button type="button" onClick={() => setShowPwd(!showPwd)}
-                        style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-                                   background: 'none', border: 'none', cursor: 'pointer',
-                                   color: '#9ca3af', padding: '2px' }}
-                        className="hover:text-gray-600 transition-colors">
-                  {showPwd ? <EyeOff style={{ width: '16px', height: '16px' }} /> : <Eye style={{ width: '16px', height: '16px' }} />}
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(!showPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && (
-                <p style={{ fontFamily: BODY, fontSize: '0.72rem', color: '#ef4444', marginTop: '4px' }}>
-                  {errors.password.message}
-                </p>
-              )}
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
             </div>
 
-            <button type="submit" disabled={isSubmitting}
-                    style={{ width: '100%', background: isSubmitting ? '#e5c800' : B.yellow,
-                               color: B.dark, fontFamily: DISPLAY, fontWeight: 800,
-                               fontSize: '1rem', letterSpacing: '0.08em',
-                               padding: '0.85rem 1.5rem', borderRadius: '8px', border: 'none',
-                               cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                               transition: 'all 0.15s' }}>
-              {isSubmitting ? (
-                <>
-                  <span style={{ width: '16px', height: '16px', border: `2px solid rgba(28,28,28,0.3)`,
-                                   borderTopColor: B.dark, borderRadius: '50%', display: 'inline-block',
-                                   animation: 'spin 0.7s linear infinite' }} />
-                  ENTRANDO...
-                </>
-              ) : (
-                <>ENTRAR AL SISTEMA <ArrowRight style={{ width: '16px', height: '16px' }} /></>
-              )}
+            <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3 text-base mt-2">
+              {isSubmitting
+                ? <><span className="w-4 h-4 border-2 border-gray-900/40 border-t-gray-900 rounded-full animate-spin" /> Entrando...</>
+                : <><LogIn className="w-4 h-4" /> Entrar al sistema</>
+              }
             </button>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </form>
 
-          {/* Setup notice */}
+          {/* Primer acceso — solo visible cuando no hay usuarios */}
           {needsSetup && (
-            <div style={{ marginTop: '1.5rem', border: `1px solid #fde68a`,
-                           background: '#fffbeb', borderRadius: '10px', padding: '1rem' }}>
-              <p style={{ fontFamily: DISPLAY, fontWeight: 800, fontSize: '0.85rem',
-                           color: '#92400e', letterSpacing: '0.04em', marginBottom: '4px',
-                           display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Settings style={{ width: '14px', height: '14px' }} />
-                SISTEMA SIN CONFIGURAR
+            <div className="mt-6 border border-amber-200 bg-amber-50 rounded-xl p-4">
+              <p className="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1.5">
+                <Settings className="w-3.5 h-3.5" /> Sistema sin configurar
               </p>
-              <p style={{ fontFamily: BODY, fontSize: '0.75rem', color: '#b45309', marginBottom: '10px' }}>
+              <p className="text-xs text-amber-600 mb-3">
                 No existe ningún usuario. Configura el administrador principal para comenzar.
               </p>
-              <button onClick={() => navigate('/setup')}
-                      style={{ width: '100%', fontFamily: DISPLAY, fontWeight: 700, fontSize: '0.85rem',
-                                 letterSpacing: '0.05em', color: '#92400e', background: 'white',
-                                 border: '1px solid #fcd34d', borderRadius: '6px',
-                                 padding: '0.5rem', cursor: 'pointer',
-                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                      className="hover:bg-amber-50 transition-colors">
-                <Settings style={{ width: '13px', height: '13px' }} />
-                CONFIGURAR PRIMER ACCESO
+              <button
+                onClick={() => navigate('/setup')}
+                className="w-full text-xs font-semibold text-amber-700 border border-amber-300
+                           bg-white hover:bg-amber-50 rounded-lg py-2 transition-colors
+                           flex items-center justify-center gap-1.5">
+                <Settings className="w-3.5 h-3.5" /> Configurar primer acceso
               </button>
             </div>
           )}
 
-          <p style={{ fontFamily: BODY, fontSize: '0.68rem', color: '#d1d5db', textAlign: 'center', marginTop: '2rem' }}>
-            Sistema interno · Solo personal autorizado
+          <p className="text-center text-xs text-gray-400 mt-6">
+            Sistema interno — solo personal autorizado
+          </p>
+          <p className="text-center text-xs text-gray-300 mt-1">
+            Desarrollado con <span className="text-gray-400">Cowork Claude AI</span>
           </p>
         </div>
       </div>

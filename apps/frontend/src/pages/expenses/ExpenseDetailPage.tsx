@@ -121,7 +121,7 @@ export default function ExpenseDetailPage() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-gray-900 truncate">{expense.description}</h1>
+            <h1 className="page-title truncate">{expense.description}</h1>
             {isVoided   && <span className="badge-voided">Anulado</span>}
             {isActive   && <span className="badge-active">Activo</span>}
             {isPending  && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1"><Clock className="w-3 h-3" />Pendiente aprobación</span>}

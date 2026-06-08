@@ -128,7 +128,8 @@ export default function ExportPage() {
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-gray-900">Exportación de Datos</h1>
+            <p className="module-label">REPORTES / EXPORTACIÓN</p>
+            <h1 className="page-title">Exportación de Datos</h1>
             <span className="flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
               <Shield className="w-3 h-3" /> Admin
             </span>

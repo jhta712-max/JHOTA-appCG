@@ -12,6 +12,62 @@
 }
 
 @layer components {
+  /* ── SERVINGMI design system ──────────────────────────────── */
+  .page-title {
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.1;
+    color: #1C1C1C;
+    letter-spacing: 0.01em;
+  }
+  .module-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9CA3AF;
+    margin-bottom: 0.2rem;
+  }
+  .smi-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #1C1C1C;
+    color: #fff;
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    padding: 0.55rem 1.1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .smi-btn:hover { opacity: 0.85; }
+  .smi-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .smi-btn-yellow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #F5C218;
+    color: #1C1C1C;
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    padding: 0.55rem 1.1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .smi-btn-yellow:hover { opacity: 0.85; }
+  /* ────────────────────────────────────────────────────────── */
+
   .btn-primary {
     @apply bg-primary-500 text-gray-900 font-semibold px-4 py-2.5 rounded-lg
            hover:bg-primary-600 active:bg-primary-700

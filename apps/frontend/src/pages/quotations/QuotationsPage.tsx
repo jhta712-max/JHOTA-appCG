@@ -65,11 +65,12 @@ export default function QuotationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Cotizaciones</h1>
-          <p className="text-sm text-gray-500">{pagination?.total ?? 0} cotizaciones registradas</p>
+          <p className="module-label">MÓDULO / COTIZACIONES</p>
+          <h1 className="page-title">Cotizaciones</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{pagination?.total ?? 0} cotizaciones registradas</p>
         </div>
         {canCreateQuotation && (
-          <Link to="/quotations/new" className="btn-primary text-sm">
+          <Link to="/quotations/new" className="smi-btn text-sm">
             <Plus className="w-4 h-4" /> Nueva
           </Link>
         )}

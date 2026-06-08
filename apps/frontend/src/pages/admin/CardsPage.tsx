@@ -118,13 +118,11 @@ export default function CardsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-primary-600" />
-            Tarjetas corporativas
-          </h1>
+          <p className="module-label">ADMINISTRACIÓN / TARJETAS</p>
+          <h1 className="page-title">Tarjetas Corporativas</h1>
           <p className="text-sm text-gray-500 mt-0.5">Gestión de tarjetas de pago de la empresa</p>
         </div>
-        <button onClick={openCreate} className="btn-primary flex items-center gap-2">
+        <button onClick={openCreate} className="smi-btn">
           <Plus className="w-4 h-4" />
           Nueva tarjeta
         </button>

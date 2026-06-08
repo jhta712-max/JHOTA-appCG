@@ -775,10 +775,8 @@ export default function MonitoringPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Activity className="w-5 h-5" style={{ color: '#F5C218' }} />
-            Monitoreo del Sistema
-          </h1>
+          <p className="module-label">ADMINISTRACIÓN / SISTEMA</p>
+          <h1 className="page-title">Monitoreo del Sistema</h1>
           {dashData && (
             <p className="text-sm text-gray-400 mt-0.5">
               Última actualización: {new Date(dashData.generatedAt).toLocaleTimeString('es-DO')}
