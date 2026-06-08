@@ -46,7 +46,9 @@ pnpm db:generate                # Regenerar Prisma client
 
 ## Primeros pasos en una sesión
 
-1. Lee `workspace/SESSION_NOTES/` → qué pasó antes
-2. Lee `workspace/README.md` → estructura del workspace
-3. Si hay error de deploy → busca en `workspace/TROUBLESHOOTING/`
+1. Lee `workspace/README.md` → brújula de dónde buscar (todas carpetas tienen CLAUDE.md local)
+2. Lee `workspace/SESSION_NOTES/` → qué pasó antes
+3. Si hay error de deploy → busca en `workspace/TROUBLESHOOTING/DOCKER_ISSUES.md`
 4. Si necesitas agregar módulo → `workspace/DEVELOPMENT_GUIDES/ADDING_NEW_MODULE.md`
+
+**Nota:** Backend live en https://servingmi-backend.onrender.com (auto-deploy desde main)

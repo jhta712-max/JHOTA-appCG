@@ -40,5 +40,10 @@ Qué hacer después
 - Archivos de sesiones pasadas (son histórico)
 - Números o fechas — si necesitas actualizar, crea NUEVO archivo
 
+## Reglas clave
+- Si reorganizas `workspace/` → actualiza `workspace/README.md` con las nuevas carpetas
+- Si cambias CLAUDE.md en raíz o carpetas → documenta la razón en la sesión
+- Si encuentras algo que ahorraría tiempo futuro → agrégalo a los CLAUDE.md correspondientes
+
 ## Objetivo
 Que la próxima sesión entienda qué pasó sin preguntar.

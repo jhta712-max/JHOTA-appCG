@@ -101,11 +101,13 @@ Ejemplos:
 
 ## Cómo usar este workspace
 
-1. **Al empezar una sesión:** Abre `SESSION_NOTES/` para context anterior
+1. **Al empezar una sesión:** Lee `SESSION_NOTES/` para contexto anterior
 2. **Cuando encuentres un problema:** Busca en `TROUBLESHOOTING/`
 3. **Para agregar una feature:** Lee `DEVELOPMENT_GUIDES/`
 4. **Antes de deployear:** Consulta `DEPLOYMENT/DEPLOY_CHECKLIST.md`
 5. **Para entender la BD:** Abre `DATABASE/SCHEMA_OVERVIEW.md`
+
+**Cada carpeta tiene `CLAUDE.md` con sus reglas locales** — léelo primero al entrar a esa carpeta.
 
 ---
 
