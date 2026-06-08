@@ -4,6 +4,7 @@ import { authApi } from '../../api';
 import { useNavigate } from 'react-router-dom';
 import NotificationBell from '../NotificationBell';
 import RoleViewSwitcher from './RoleViewSwitcher';
+import ThemeToggle from '../ThemeToggle';
 
 export default function Header() {
   const { user, clearAuth } = useAuthStore();
@@ -52,6 +53,9 @@ export default function Header() {
             <p className="text-sm font-medium text-white truncate">{user?.name}</p>
             <p className="text-xs text-gray-400 truncate capitalize">{user?.role?.name}</p>
           </div>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* Notifications */}
           <div className="border-l border-white/10 pl-3">
