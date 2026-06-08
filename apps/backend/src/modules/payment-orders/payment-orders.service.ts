@@ -161,6 +161,114 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
       throw new AppError(400, 'El contrato no pertenece a este proyecto/suplidor', 'CONTRACT_MISMATCH');
   }
 
+  // ── AUTO-CREATE PAYROLL when type=PAYROLL + payrollData ──────
+  if (data.orderType === 'PAYROLL' && data.payrollData) {
+    const payrollLast = await prisma.payroll.findFirst({ where: { projectId: data.projectId }, orderBy: { number: 'desc' } });
+    const payrollNumber = (payrollLast?.number ?? 0) + 1;
+
+    const categoryName = data.payrollData.type === 'LABOR' ? 'Mano de obra' : 'Servicios';
+    let category = await prisma.expenseCategory.findFirst({
+      where: { name: { contains: categoryName, mode: 'insensitive' }, isActive: true },
+    });
+    if (!category) {
+      category = await prisma.expenseCategory.upsert({
+        where:  { name: categoryName },
+        update: { isActive: true },
+        create: { name: categoryName, description: 'Auto-creada para nóminas', isActive: true },
+      });
+    }
+
+    return prisma.$transaction(async (tx) => {
+      // 1. Crear nómina directamente en APPROVED (sin pasar por DRAFT)
+      const payroll = await tx.payroll.create({
+        data: {
+          projectId:   data.projectId,
+          number:      payrollNumber,
+          periodStart: new Date(data.payrollData!.periodStart),
+          periodEnd:   new Date(data.payrollData!.periodEnd),
+          type:        data.payrollData!.type,
+          description: data.concept,
+          totalAmount:  Number(data.amount),
+          status:      'APPROVED',
+          approvedById: userId,
+          approvedAt:  new Date(),
+          createdById: userId,
+          lines: {
+            create: [{
+              lineNumber:   1,
+              description:  data.concept,
+              quantity:     1,
+              unit:         'Global',
+              unitPrice:    Number(data.amount),
+              subtotal:     Number(data.amount),
+              supplierName: supplier.name,
+              bankName:     bankAccount!.bank,
+              bankAccount:  bankAccount!.accountNumber,
+            }],
+          },
+        },
+        include: { lines: true },
+      });
+
+      // 2. Crear gasto para la línea de nómina
+      const nomRef = `NOM-${String(payrollNumber).padStart(3, '0')}`;
+      const expense = await tx.expense.create({
+        data: {
+          projectId:          data.projectId,
+          categoryId:         category!.id,
+          userId,
+          expenseDate:        new Date(data.payrollData!.periodEnd),
+          amount:             Number(data.amount),
+          description:        `${nomRef} — ${supplier.name}: ${data.concept}`,
+          paymentMethod:      'TRANSFER',
+          hasFiscalDoc:       false,
+          notes:              `Auto-generado al crear orden de pago de nómina ${nomRef}.`,
+          contratoAjustadoId: data.contratoAjustadoId ?? null,
+        },
+      });
+
+      // 3. Vincular gasto a la línea de nómina
+      const line = payroll.lines[0];
+      if (line) {
+        await tx.payrollLine.update({ where: { id: line.id }, data: { expenseId: expense.id } });
+      }
+
+      // 4. Si hay contrato ajustado, registrar avance
+      if (data.contratoAjustadoId) {
+        await tx.contratoAjustadoPago.create({
+          data: {
+            contratoAjustadoId: data.contratoAjustadoId,
+            nominaId:           payroll.id,
+            gastoId:            expense.id,
+            monto:              Number(data.amount),
+            fecha:              new Date(data.payrollData!.periodEnd),
+            creadoPorId:        userId,
+          },
+        });
+      }
+
+      // 5. Crear orden de pago vinculada a la nómina recién creada
+      return tx.paymentOrder.create({
+        data: {
+          number,
+          orderType:          'PAYROLL',
+          payingCompany:      data.payingCompany,
+          supplierId:         data.supplierId,
+          projectId:          data.projectId,
+          amount:             data.amount,
+          currency:           data.currency ?? 'RD$',
+          concept:            data.concept,
+          notes:              data.notes,
+          generatedText,
+          payrollId:          payroll.id,
+          contratoAjustadoId: data.contratoAjustadoId ?? null,
+          createdById:        userId,
+        },
+        include: INCLUDE,
+      });
+    });
+  }
+
   return prisma.paymentOrder.create({
     data: {
       number,
@@ -280,6 +388,24 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
         paymentReference: paymentInfo?.paymentReference ?? null,
       },
     });
+
+    // When paying a PAYROLL order, also mark the linked payroll as PAID
+    if (po.orderType === 'PAYROLL' && (po as any).payrollId) {
+      const payroll = await tx.payroll.findUnique({ where: { id: (po as any).payrollId } });
+      if (payroll && payroll.status === 'APPROVED') {
+        await tx.payroll.update({
+          where: { id: (po as any).payrollId },
+          data: {
+            status:           'PAID',
+            paidAt:           new Date(),
+            paymentMethod:    paymentInfo?.paymentBank ? 'TRANSFER' : 'CASH',
+            paymentDate:      new Date(),
+            paymentBank:      paymentInfo?.paymentBank      ?? null,
+            paymentReference: paymentInfo?.paymentReference ?? null,
+          },
+        });
+      }
+    }
 
     if (!po.expenseId && po.orderType !== 'PAYROLL') {
       const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : 'Servicios';

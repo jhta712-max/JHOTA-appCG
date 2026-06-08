@@ -18,10 +18,12 @@ type OrderForm = {
   orderType: OrderType; payingCompany: string; supplierId: string;
   projectId: string; amount: string; currency: string; concept: string;
   notes: string; payrollId: string; bankAccountId: string; contratoAjustadoId: string;
+  payrollPeriodStart: string; payrollPeriodEnd: string; payrollType: 'LABOR' | 'SERVICE';
 };
 const EMPTY_ORDER: OrderForm = {
   orderType: 'SERVICIO', payingCompany: '', supplierId: '', projectId: '',
   amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '', bankAccountId: '', contratoAjustadoId: '',
+  payrollPeriodStart: '', payrollPeriodEnd: '', payrollType: 'LABOR',
 };
 
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'];
@@ -266,10 +268,24 @@ export default function PaymentOrdersPage() {
 
   const openOrderModal = (o?: PaymentOrder) => {
     setEditingOrder(o ?? null);
+    const payroll = (o as any)?.payroll;
     setOrderForm(o
-      ? { orderType: normalizeOrderType(o.orderType), payingCompany: o.payingCompany, supplierId: o.supplierId,
-          projectId: o.projectId, amount: String(o.amount), currency: o.currency,
-          concept: o.concept, notes: o.notes ?? '', payrollId: o.payrollId ?? '' }
+      ? {
+          orderType:          normalizeOrderType(o.orderType),
+          payingCompany:      o.payingCompany,
+          supplierId:         o.supplierId,
+          projectId:          o.projectId,
+          amount:             String(o.amount),
+          currency:           o.currency,
+          concept:            o.concept,
+          notes:              o.notes ?? '',
+          payrollId:          o.payrollId ?? '',
+          bankAccountId:      '',
+          contratoAjustadoId: (o as any).contratoAjustadoId ?? '',
+          payrollPeriodStart: payroll?.periodStart ? payroll.periodStart.slice(0, 10) : '',
+          payrollPeriodEnd:   payroll?.periodEnd   ? payroll.periodEnd.slice(0, 10)   : '',
+          payrollType:        payroll?.type ?? 'LABOR',
+        }
       : EMPTY_ORDER
     );
     setModalView('form');
@@ -303,18 +319,35 @@ export default function PaymentOrdersPage() {
     if (!orderForm.amount || Number(orderForm.amount) <= 0) return setFormErr('El monto debe ser mayor a 0');
     if (!orderForm.concept.trim())       return setFormErr('El concepto es requerido');
 
+    // PAYROLL: validar período (solo en creación)
+    const isNewPayroll = orderForm.orderType === 'PAYROLL' && !editingOrder;
+    if (isNewPayroll) {
+      if (!orderForm.payrollPeriodStart) return setFormErr('La fecha de inicio del período es requerida');
+      if (!orderForm.payrollPeriodEnd)   return setFormErr('La fecha de fin del período es requerida');
+      if (orderForm.payrollPeriodEnd < orderForm.payrollPeriodStart)
+        return setFormErr('La fecha fin debe ser posterior a la fecha inicio');
+    }
+
     const payload: any = {
-      orderType:     orderForm.orderType,
-      payingCompany: orderForm.payingCompany,
-      supplierId:    orderForm.supplierId,
-      projectId:     orderForm.projectId,
-      amount:        Number(orderForm.amount),
-      currency:      orderForm.currency,
-      concept:       orderForm.concept,
+      orderType:          orderForm.orderType,
+      payingCompany:      orderForm.payingCompany,
+      supplierId:         orderForm.supplierId,
+      projectId:          orderForm.projectId,
+      amount:             Number(orderForm.amount),
+      currency:           orderForm.currency,
+      concept:            orderForm.concept,
       notes:              orderForm.notes || undefined,
       bankAccountId:      orderForm.bankAccountId || undefined,
       contratoAjustadoId: orderForm.contratoAjustadoId || undefined,
     };
+
+    if (isNewPayroll) {
+      payload.payrollData = {
+        periodStart: orderForm.payrollPeriodStart,
+        periodEnd:   orderForm.payrollPeriodEnd,
+        type:        orderForm.payrollType,
+      };
+    }
 
     if (editingOrder) updateOrderMut.mutate({ id: editingOrder.id, d: payload });
     else              createOrderMut.mutate(payload);
@@ -406,31 +439,33 @@ export default function PaymentOrdersPage() {
                 <div className={`rounded-xl p-3 border text-sm ${viewingOrder.payroll ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Nómina vinculada</p>
-                    {viewingOrder.status !== 'VOIDED' && (
-                      viewingOrder.payroll
-                        ? <button onClick={() => { if (confirm('¿Desvincular nómina?')) unlinkPayrollMut.mutate(viewingOrder.id); }}
-                            className="text-xs text-red-500 hover:text-red-700 font-semibold">Desvincular</button>
-                        : <button onClick={() => setLinkPayrollModal(true)}
-                            className="text-xs text-blue-600 hover:text-blue-800 font-semibold border border-blue-300 px-2 py-0.5 rounded-lg">
-                            + Vincular nómina
-                          </button>
+                    {viewingOrder.status !== 'VOIDED' && !viewingOrder.payroll && (
+                      <button onClick={() => setLinkPayrollModal(true)}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-semibold border border-blue-300 px-2 py-0.5 rounded-lg">
+                        + Vincular nómina existente
+                      </button>
                     )}
                   </div>
                   {viewingOrder.payroll ? (
-                    <div>
-                      <p className="font-semibold text-blue-800">
-                        {PAYROLL_TYPE_LABEL[viewingOrder.payroll.type]} #{viewingOrder.payroll.number}
-                        <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${viewingOrder.payroll.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold text-blue-800">
+                          {PAYROLL_TYPE_LABEL[viewingOrder.payroll.type]} #{viewingOrder.payroll.number}
+                        </p>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                          viewingOrder.payroll.status === 'PAID'    ? 'bg-green-100 text-green-700' :
+                          viewingOrder.payroll.status === 'APPROVED'? 'bg-blue-100 text-blue-700'  :
+                          'bg-amber-100 text-amber-700'}`}>
                           {viewingOrder.payroll.status}
                         </span>
-                      </p>
-                      <p className="text-xs text-blue-600 mt-0.5">
-                        {fmtDate(viewingOrder.payroll.periodStart)} — {fmtDate(viewingOrder.payroll.periodEnd)}
+                      </div>
+                      <p className="text-xs text-blue-600">
+                        Período: {fmtDate(viewingOrder.payroll.periodStart)} — {fmtDate(viewingOrder.payroll.periodEnd)}
                         &nbsp;·&nbsp; {fmtMonto(viewingOrder.payroll.totalAmount, viewingOrder.currency)}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-xs">Sin nómina vinculada — haz clic en "+ Vincular nómina" para asociar una retroactivamente</p>
+                    <p className="text-gray-400 text-xs">Sin nómina vinculada</p>
                   )}
                 </div>
               )}
@@ -785,10 +820,50 @@ export default function PaymentOrdersPage() {
                 </Field>
               </div>
 
-              {/* Info nómina */}
-              {orderForm.orderType === 'PAYROLL' && (
+              {/* PAYROLL: campos de período + tipo (solo en creación) */}
+              {orderForm.orderType === 'PAYROLL' && !editingOrder && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3 mb-1">
+                  <p className="text-xs font-bold text-blue-700 uppercase tracking-wide">
+                    👷 Datos de la nómina — se creará automáticamente
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-blue-800 mb-1">Período inicio *</label>
+                      <input type="date" className="input-field text-sm"
+                        value={orderForm.payrollPeriodStart}
+                        onChange={(e) => setOrderForm((f) => ({ ...f, payrollPeriodStart: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-blue-800 mb-1">Período fin *</label>
+                      <input type="date" className="input-field text-sm"
+                        value={orderForm.payrollPeriodEnd}
+                        onChange={(e) => setOrderForm((f) => ({ ...f, payrollPeriodEnd: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-blue-800 mb-1">Tipo de nómina *</label>
+                    <div className="flex gap-3">
+                      {([['LABOR', '👷 Mano de obra'], ['SERVICE', '🔧 Servicios contratados']] as const).map(([val, label]) => (
+                        <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-all ${orderForm.payrollType === val ? 'bg-blue-100 border-blue-400 text-blue-800 font-semibold' : 'bg-white border-gray-200 text-gray-600'}`}>
+                          <input type="radio" name="payrollType" value={val}
+                            checked={orderForm.payrollType === val}
+                            onChange={() => setOrderForm((f) => ({ ...f, payrollType: val }))}
+                            className="sr-only" />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-blue-600">
+                    ✅ Al generar la orden, la nómina se crea y aprueba automáticamente con los datos anteriores.
+                  </p>
+                </div>
+              )}
+
+              {/* Info nómina — cuando se está editando */}
+              {orderForm.orderType === 'PAYROLL' && editingOrder && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 mb-2">
-                  <strong>👷 Orden de Nómina:</strong> Especifica el monto y concepto del pago de mano de obra o servicios. La orden queda registrada independientemente.
+                  <strong>👷 Orden de Nómina:</strong> Los datos del período no se pueden modificar desde aquí. Edita la nómina directamente desde el módulo Nóminas si es necesario.
                 </div>
               )}
 
