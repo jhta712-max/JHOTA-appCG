@@ -341,18 +341,18 @@ export default function OfficeExpensesPage() {
           <div className="flex-1" />
 
           {/* Orden */}
-          <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-2" title="Ordenar por campo y dirección">
             <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <select className="text-sm text-gray-700 bg-transparent border-none outline-none cursor-pointer"
-              value={orderBy} onChange={(e) => setOrderBy(e.target.value as any)}>
-              <option value="expenseDate">Fecha factura</option>
-              <option value="createdAt">Fecha registro</option>
+              value={orderBy} onChange={(e) => setOrderBy(e.target.value as any)} title="Seleccionar campo para ordenar">
+              <option value="expenseDate">Fecha de factura</option>
+              <option value="createdAt">Fecha de ingreso al sistema</option>
               <option value="amount">Monto</option>
             </select>
             <select className="text-sm text-gray-700 bg-transparent border-none outline-none cursor-pointer"
-              value={order} onChange={(e) => setOrder(e.target.value as any)}>
-              <option value="desc">↓ Nuevo primero</option>
-              <option value="asc">↑ Viejo primero</option>
+              value={order} onChange={(e) => setOrder(e.target.value as any)} title="Seleccionar sentido de ordenamiento">
+              <option value="desc">↓ Más recientes primero</option>
+              <option value="asc">↑ Más antiguos primero</option>
             </select>
           </div>
 
@@ -397,14 +397,14 @@ export default function OfficeExpensesPage() {
                 </select>
               </div>
               <div>
-                <label className="label">Desde</label>
+                <label className="label" title="Filtro por fecha de factura (no de ingreso)">Desde (factura)</label>
                 <input type="date" className="input-field" value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)} />
+                  onChange={(e) => setDateFrom(e.target.value)} title="Fecha de factura desde" />
               </div>
               <div>
-                <label className="label">Hasta</label>
+                <label className="label" title="Filtro por fecha de factura (no de ingreso)">Hasta (factura)</label>
                 <input type="date" className="input-field" value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)} />
+                  onChange={(e) => setDateTo(e.target.value)} title="Fecha de factura hasta" />
               </div>
             </div>
           </div>
