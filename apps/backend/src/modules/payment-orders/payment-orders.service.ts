@@ -32,10 +32,9 @@ export async function getPaymentOrders(
   userCtx: { userId: string; role: string },
 ) {
   const { page, limit, skip } = parsePagination(query);
-  const canSeeAll = userCtx.role === 'admin' || userCtx.role === 'financiero';
+  const { role, userId } = userCtx;
 
   const where: any = {};
-  if (query.status)     where.status     = query.status;
   if (query.projectId)  where.projectId  = query.projectId;
   if (query.supplierId) where.supplierId = query.supplierId;
   if (query.orderType)  where.orderType  = query.orderType;
@@ -47,10 +46,19 @@ export async function getPaymentOrders(
     ];
   }
 
-  if (!canSeeAll) {
-    // Supervisors/operators/etc: only their own PENDING orders
-    where.createdById = userCtx.userId;
-    if (!query.status) where.status = 'PENDING';
+  if (role === 'financiero') {
+    // Financiero: all orders, respects status filter
+    if (query.status) where.status = query.status;
+  } else if (role === 'admin') {
+    // Admin: all orders from any creator, defaults to PENDING
+    where.status = query.status || 'PENDING';
+  } else if (role === 'auxiliar') {
+    // Auxiliar: all PENDING from any creator, status fixed
+    where.status = 'PENDING';
+  } else {
+    // Supervisor / operator / others: only their own PENDING
+    where.createdById = userId;
+    where.status      = 'PENDING';
   }
 
   const [data, total] = await Promise.all([
@@ -290,10 +298,12 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
 }
 
 // ── Actualizar ────────────────────────────────────────────────
-export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInput) {
+export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInput, userRole?: string) {
   const po = await getPaymentOrderById(id);
-  if (po.status === 'PAID' || po.status === 'VOIDED')
-    throw new AppError(400, 'No se puede editar una orden pagada o anulada', 'ORDER_CLOSED');
+  if (po.status === 'VOIDED')
+    throw new AppError(400, 'No se puede editar una orden anulada', 'ORDER_VOIDED');
+  if (po.status === 'PAID' && userRole !== 'admin')
+    throw new AppError(400, 'Solo un administrador puede editar una orden pagada', 'ORDER_CLOSED');
 
   const supplierId = data.supplierId ?? po.supplierId;
   const supplier = await prisma.supplier.findUnique({ where: { id: supplierId } });

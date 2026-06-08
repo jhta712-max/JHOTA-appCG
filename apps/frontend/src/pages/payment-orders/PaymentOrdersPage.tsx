@@ -101,12 +101,17 @@ function shareWhatsApp(text: string, onCopied?: () => void) {
 
 // ────────────────────────────────────────────────────────────────
 export default function PaymentOrdersPage() {
-  const qc       = useQueryClient();
-  const authUser = useAuthStore((s) => s.user);
-  const isAdmin  = authUser?.role?.name === 'admin';
+  const qc        = useQueryClient();
+  const authUser  = useAuthStore((s) => s.user);
+  const userRole  = authUser?.role?.name ?? '';
+  const isAdmin   = userRole === 'admin';
+  const isAuxiliar = userRole === 'auxiliar';
+  const isFinanciero = userRole === 'financiero';
+  // Auxiliar/supervisor/others: fixed to PENDING; admin/financiero: can filter
+  const canFilterStatus = isAdmin || isFinanciero;
   const [viewingOrder, setViewingOrder] = useState<PaymentOrder | null>(null);
   const [toast,        setToast]        = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [filterStatus, setFilterStatus] = useState('PENDING');
   const [filterType,   setFilterType]   = useState('');
 
   // Modales
@@ -383,7 +388,7 @@ export default function PaymentOrdersPage() {
 
           {/* Filtros + acciones masivas */}
           <div className="flex flex-wrap items-center gap-2">
-            {(['', 'PENDING', 'PAID'] as const).map((s) => (
+            {canFilterStatus && (['', 'PENDING', 'PAID'] as const).map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === s ? 'bg-primary-500 text-gray-900' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                 {s === '' ? 'Todas' : s === 'PENDING' ? '🕐 Pendientes' : '✅ Pagadas'}
@@ -564,20 +569,29 @@ export default function PaymentOrdersPage() {
               )}
 
               {/* Acciones */}
-              {viewingOrder.status === 'PENDING' && (
+              {viewingOrder.status !== 'VOIDED' && (
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
-                  <button onClick={() => openOrderModal(viewingOrder)} className="btn-secondary text-sm flex items-center gap-2">
-                    <Pencil className="w-3.5 h-3.5" /> Editar
-                  </button>
-                  <button onClick={() => openPayModal(viewingOrder)}
-                    className="btn-primary text-sm flex items-center gap-2" disabled={markPaidMut.isPending}>
-                    {markPaidMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
-                    Marcar como pagada
-                  </button>
-                  <button onClick={() => { if (confirm('¿Anular esta orden de pago?')) voidOrderMut.mutate(viewingOrder.id); }}
-                    className="text-sm text-red-600 hover:text-red-700 border border-red-300 hover:bg-red-50 px-3 py-2 rounded-lg font-semibold transition-all">
-                    Anular
-                  </button>
+                  {/* Editar: PENDING para todos, PAID solo admin */}
+                  {(viewingOrder.status === 'PENDING' || (isAdmin && viewingOrder.status === 'PAID')) && (
+                    <button onClick={() => openOrderModal(viewingOrder)} className="btn-secondary text-sm flex items-center gap-2">
+                      <Pencil className="w-3.5 h-3.5" />
+                      {isAdmin && viewingOrder.status === 'PAID' ? 'Editar (Admin)' : 'Editar'}
+                    </button>
+                  )}
+                  {/* Marcar como pagada + Anular: solo PENDING */}
+                  {viewingOrder.status === 'PENDING' && (
+                    <>
+                      <button onClick={() => openPayModal(viewingOrder)}
+                        className="btn-primary text-sm flex items-center gap-2" disabled={markPaidMut.isPending}>
+                        {markPaidMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
+                        Marcar como pagada
+                      </button>
+                      <button onClick={() => { if (confirm('¿Anular esta orden de pago?')) voidOrderMut.mutate(viewingOrder.id); }}
+                        className="text-sm text-red-600 hover:text-red-700 border border-red-300 hover:bg-red-50 px-3 py-2 rounded-lg font-semibold transition-all">
+                        Anular
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
 

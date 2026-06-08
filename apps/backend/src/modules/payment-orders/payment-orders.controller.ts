@@ -50,7 +50,8 @@ export async function createPaymentOrder(req: Request, res: Response, next: Next
 export async function updatePaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     const data = updatePaymentOrderSchema.parse(req.body);
-    res.json({ success: true, data: await svc.updatePaymentOrder(req.params.id, data) });
+    const role = (req as any).user.role;
+    res.json({ success: true, data: await svc.updatePaymentOrder(req.params.id, data, role) });
   } catch (err) { next(err); }
 }
 
