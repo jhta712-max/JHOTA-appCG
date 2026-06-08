@@ -477,7 +477,7 @@ export const officeExpensesApi = {
 };
 
 // ── Suplidores ────────────────────────────────────────────────
-import type { Supplier, SupplierHistory } from '../types';
+import type { Supplier, SupplierHistory, SupplierBankAccount } from '../types';
 
 export const suppliersApi = {
   list:         (params?: { search?: string; onlyActive?: boolean }) =>
@@ -492,6 +492,17 @@ export const suppliersApi = {
     api.put<{ success: boolean; data: Supplier }>(`/suppliers/${id}`, data),
   toggleActive: (id: string) =>
     api.patch<{ success: boolean; data: Supplier }>(`/suppliers/${id}/toggle`),
+  // Cuentas bancarias
+  getBankAccounts:    (id: string) =>
+    api.get<{ success: boolean; data: SupplierBankAccount[] }>(`/suppliers/${id}/bank-accounts`),
+  addBankAccount:     (id: string, data: unknown) =>
+    api.post<{ success: boolean; data: SupplierBankAccount }>(`/suppliers/${id}/bank-accounts`, data),
+  updateBankAccount:  (id: string, accountId: string, data: unknown) =>
+    api.put<{ success: boolean; data: SupplierBankAccount }>(`/suppliers/${id}/bank-accounts/${accountId}`, data),
+  deleteBankAccount:  (id: string, accountId: string) =>
+    api.delete(`/suppliers/${id}/bank-accounts/${accountId}`),
+  setDefaultBankAccount: (id: string, accountId: string) =>
+    api.patch<{ success: boolean; data: SupplierBankAccount }>(`/suppliers/${id}/bank-accounts/${accountId}/set-default`),
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────

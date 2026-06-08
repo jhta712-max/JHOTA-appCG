@@ -1,6 +1,12 @@
 import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
-import type { CreateSupplierInput, UpdateSupplierInput } from './suppliers.schema';
+import type { CreateSupplierInput, UpdateSupplierInput, CreateBankAccountInput, UpdateBankAccountInput } from './suppliers.schema';
+
+const SUPPLIER_INCLUDE = {
+  createdBy:    { select: { id: true, name: true } },
+  _count:       { select: { paymentOrders: true } },
+  bankAccounts: { orderBy: { isDefault: 'desc' as const } },
+} as const;
 
 export async function listSuppliers(search?: string, onlyActive = false) {
   const where: any = {};
@@ -13,24 +19,77 @@ export async function listSuppliers(search?: string, onlyActive = false) {
   }
   return prisma.supplier.findMany({
     where,
-    include: {
-      createdBy: { select: { id: true, name: true } },
-      _count:    { select: { paymentOrders: true } },
-    },
+    include: SUPPLIER_INCLUDE,
     orderBy: { name: 'asc' },
   });
 }
 
 export async function getSupplierById(id: string) {
   const supplier = await prisma.supplier.findUnique({
-    where: { id },
-    include: {
-      createdBy: { select: { id: true, name: true } },
-      _count:    { select: { paymentOrders: true } },
-    },
+    where:   { id },
+    include: SUPPLIER_INCLUDE,
   });
   if (!supplier) throw new AppError(404, 'Suplidor no encontrado', 'SUPPLIER_NOT_FOUND');
   return supplier;
+}
+
+// ── Cuentas bancarias ─────────────────────────────────────────
+
+export async function listBankAccounts(supplierId: string) {
+  await getSupplierById(supplierId);
+  return prisma.supplierBankAccount.findMany({
+    where:   { supplierId },
+    orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+  });
+}
+
+export async function addBankAccount(supplierId: string, data: CreateBankAccountInput) {
+  await getSupplierById(supplierId);
+  const existing = await prisma.supplierBankAccount.count({ where: { supplierId } });
+
+  return prisma.$transaction(async (tx) => {
+    if (data.isDefault || existing === 0) {
+      await tx.supplierBankAccount.updateMany({ where: { supplierId }, data: { isDefault: false } });
+    }
+    return tx.supplierBankAccount.create({
+      data: { ...data, supplierId, isDefault: data.isDefault ?? existing === 0 },
+    });
+  });
+}
+
+export async function updateBankAccount(supplierId: string, accountId: string, data: UpdateBankAccountInput) {
+  const account = await prisma.supplierBankAccount.findFirst({ where: { id: accountId, supplierId } });
+  if (!account) throw new AppError(404, 'Cuenta bancaria no encontrada', 'BANK_ACCOUNT_NOT_FOUND');
+
+  return prisma.$transaction(async (tx) => {
+    if (data.isDefault) {
+      await tx.supplierBankAccount.updateMany({ where: { supplierId }, data: { isDefault: false } });
+    }
+    return tx.supplierBankAccount.update({ where: { id: accountId }, data });
+  });
+}
+
+export async function deleteBankAccount(supplierId: string, accountId: string) {
+  const account = await prisma.supplierBankAccount.findFirst({ where: { id: accountId, supplierId } });
+  if (!account) throw new AppError(404, 'Cuenta bancaria no encontrada', 'BANK_ACCOUNT_NOT_FOUND');
+
+  await prisma.supplierBankAccount.delete({ where: { id: accountId } });
+
+  // If deleted account was default, promote the first remaining account
+  if (account.isDefault) {
+    const next = await prisma.supplierBankAccount.findFirst({ where: { supplierId }, orderBy: { createdAt: 'asc' } });
+    if (next) await prisma.supplierBankAccount.update({ where: { id: next.id }, data: { isDefault: true } });
+  }
+}
+
+export async function setDefaultBankAccount(supplierId: string, accountId: string) {
+  const account = await prisma.supplierBankAccount.findFirst({ where: { id: accountId, supplierId } });
+  if (!account) throw new AppError(404, 'Cuenta bancaria no encontrada', 'BANK_ACCOUNT_NOT_FOUND');
+
+  return prisma.$transaction(async (tx) => {
+    await tx.supplierBankAccount.updateMany({ where: { supplierId }, data: { isDefault: false } });
+    return tx.supplierBankAccount.update({ where: { id: accountId }, data: { isDefault: true } });
+  });
 }
 
 export async function getSupplierHistory(id: string) {

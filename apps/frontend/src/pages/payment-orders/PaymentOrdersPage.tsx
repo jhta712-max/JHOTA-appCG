@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
-import type { PaymentOrder, Supplier } from '../../types';
+import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
 
 // ── Tipos locales ─────────────────────────────────────────────
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
@@ -17,11 +17,11 @@ type ModalView = 'form' | 'success';
 type OrderForm = {
   orderType: OrderType; payingCompany: string; supplierId: string;
   projectId: string; amount: string; currency: string; concept: string;
-  notes: string; payrollId: string;
+  notes: string; payrollId: string; bankAccountId: string;
 };
 const EMPTY_ORDER: OrderForm = {
   orderType: 'SERVICIO', payingCompany: '', supplierId: '', projectId: '',
-  amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '',
+  amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '', bankAccountId: '',
 };
 
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'];
@@ -306,6 +306,7 @@ export default function PaymentOrdersPage() {
       currency:      orderForm.currency,
       concept:       orderForm.concept,
       notes:         orderForm.notes || undefined,
+      bankAccountId: orderForm.bankAccountId || undefined,
     };
 
     if (editingOrder) updateOrderMut.mutate({ id: editingOrder.id, d: payload });
@@ -766,7 +767,7 @@ export default function PaymentOrdersPage() {
 
               <Field label="Suplidor / Beneficiario *">
                 <select className="input-field" value={orderForm.supplierId}
-                  onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value })); setSupplierSearch(''); }}>
+                  onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '' })); setSupplierSearch(''); }}>
                   <option value="">— Selecciona suplidor —</option>
                   {activeSuppliers
                     .filter((s) => s.bank && s.accountNumber)
@@ -785,14 +786,45 @@ export default function PaymentOrdersPage() {
 
               {orderForm.supplierId && (() => {
                 const s = activeSuppliers.find((x) => x.id === orderForm.supplierId);
-                return s ? (
+                if (!s) return null;
+                const accounts = s.bankAccounts ?? [];
+                // Multiple accounts → show selector
+                if (accounts.length > 1) {
+                  const selected = accounts.find((a) => a.id === orderForm.bankAccountId) ?? accounts.find((a) => a.isDefault) ?? accounts[0];
+                  return (
+                    <div className="-mt-2 mb-4 space-y-1.5">
+                      <select
+                        className="input-field text-sm"
+                        value={orderForm.bankAccountId || selected?.id || ''}
+                        onChange={(e) => setOrderForm((f) => ({ ...f, bankAccountId: e.target.value }))}
+                      >
+                        {accounts.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            🏦 {a.bank} · {a.accountType} · {a.accountNumber}{a.isDefault ? ' ★' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                }
+                // Single account or legacy fields
+                const acc = accounts[0];
+                const bank    = acc?.bank          ?? s.bank;
+                const accType = acc?.accountType   ?? s.accountType;
+                const accNum  = acc?.accountNumber ?? s.accountNumber;
+                if (!bank && !accNum) return (
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-xs text-orange-700 -mt-2 mb-4">
+                    ⚠️ Este suplidor no tiene cuentas bancarias registradas. Agrégalas en el directorio de suplidores.
+                  </div>
+                );
+                return (
                   <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600 border border-gray-200 -mt-2 mb-4">
-                    🏦 <strong>{s.bank}</strong> &nbsp;·&nbsp; {s.accountType} &nbsp;·&nbsp;
-                    <span className="font-mono">{s.accountNumber}</span>
+                    🏦 <strong>{bank}</strong> &nbsp;·&nbsp; {accType} &nbsp;·&nbsp;
+                    <span className="font-mono">{accNum}</span>
                     {s.cedula && <> &nbsp;·&nbsp; {s.cedula}</>}
                     {s.rnc    && <> &nbsp;·&nbsp; RNC: {s.rnc}</>}
                   </div>
-                ) : null;
+                );
               })()}
 
               <div className="grid grid-cols-2 gap-4">

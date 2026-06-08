@@ -18,5 +18,17 @@ export const createSupplierSchema = z.object({
 
 export const updateSupplierSchema = createSupplierSchema.partial();
 
-export type CreateSupplierInput = z.infer<typeof createSupplierSchema>;
-export type UpdateSupplierInput = z.infer<typeof updateSupplierSchema>;
+export const createBankAccountSchema = z.object({
+  bank:          z.string().min(2).max(100),
+  accountType:   z.enum(ACCOUNT_TYPES).default('Cuenta de Ahorros'),
+  accountNumber: z.string().min(4).max(50),
+  isDefault:     z.boolean().optional().default(false),
+  notes:         z.string().max(200).optional().nullable(),
+});
+
+export const updateBankAccountSchema = createBankAccountSchema.partial();
+
+export type CreateSupplierInput    = z.infer<typeof createSupplierSchema>;
+export type UpdateSupplierInput    = z.infer<typeof updateSupplierSchema>;
+export type CreateBankAccountInput = z.infer<typeof createBankAccountSchema>;
+export type UpdateBankAccountInput = z.infer<typeof updateBankAccountSchema>;

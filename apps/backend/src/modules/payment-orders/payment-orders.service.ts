@@ -31,7 +31,7 @@ export async function getPaymentOrders(
   userCtx: { userId: string; role: string },
 ) {
   const { page, limit, skip } = parsePagination(query);
-  const isAdmin = userCtx.role === 'admin';
+  const canSeeAll = userCtx.role === 'admin' || userCtx.role === 'financiero';
 
   const where: any = {};
   if (query.status)     where.status     = query.status;
@@ -46,9 +46,10 @@ export async function getPaymentOrders(
     ];
   }
 
-  if (!isAdmin) {
+  if (!canSeeAll) {
+    // Supervisors/operators/etc: only their own PENDING orders
     where.createdById = userCtx.userId;
-    where.status      = { notIn: ['PAID', 'VOIDED'] };
+    if (!query.status) where.status = 'PENDING';
   }
 
   const [data, total] = await Promise.all([
@@ -67,11 +68,9 @@ export async function getPaymentOrderById(
   const po = await prisma.paymentOrder.findUnique({ where: { id }, include: INCLUDE });
   if (!po) throw new AppError(404, 'Orden de pago no encontrada', 'NOT_FOUND');
 
-  if (userCtx && userCtx.role !== 'admin') {
+  if (userCtx && userCtx.role !== 'admin' && userCtx.role !== 'financiero') {
     if (po.createdById !== userCtx.userId)
       throw new AppError(403, 'No tienes acceso a esta orden de pago', 'FORBIDDEN');
-    if (['PAID', 'VOIDED'].includes(po.status))
-      throw new AppError(404, 'Orden de pago no encontrada', 'NOT_FOUND');
   }
   return po;
 }
@@ -102,7 +101,22 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
 
   const supplier = await prisma.supplier.findUnique({ where: { id: data.supplierId } });
   if (!supplier || !supplier.isActive) throw new AppError(404, 'Suplidor no encontrado o inactivo', 'NOT_FOUND');
-  if (!supplier.bank || !supplier.accountNumber)
+
+  // Resolve bank account: explicit selection → default → first → legacy fields
+  let bankAccount: { bank: string; accountType: string | null; accountNumber: string } | null = null;
+  if (data.bankAccountId) {
+    bankAccount = await prisma.supplierBankAccount.findFirst({ where: { id: data.bankAccountId, supplierId: data.supplierId } });
+    if (!bankAccount) throw new AppError(404, 'Cuenta bancaria no encontrada', 'BANK_ACCOUNT_NOT_FOUND');
+  } else {
+    bankAccount = await prisma.supplierBankAccount.findFirst({
+      where:   { supplierId: data.supplierId },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+    });
+    if (!bankAccount && supplier.bank && supplier.accountNumber) {
+      bankAccount = { bank: supplier.bank, accountType: supplier.accountType, accountNumber: supplier.accountNumber };
+    }
+  }
+  if (!bankAccount)
     throw new AppError(400, 'El suplidor no tiene datos bancarios registrados. Actualícelo primero.', 'SUPPLIER_NO_BANK');
 
   if (data.orderType === 'PAYROLL' && data.payrollId) {
@@ -123,9 +137,9 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
     amount:        Number(data.amount),
     concept:       data.concept,
     project:       `${project.code} — ${project.name}`,
-    bank:          supplier.bank,
-    accountType:   supplier.accountType ?? '',
-    accountNumber: supplier.accountNumber,
+    bank:          bankAccount.bank,
+    accountType:   bankAccount.accountType ?? '',
+    accountNumber: bankAccount.accountNumber,
     holderName:    supplier.name,
   });
 
@@ -154,8 +168,15 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
   if (po.status === 'PAID' || po.status === 'VOIDED')
     throw new AppError(400, 'No se puede editar una orden pagada o anulada', 'ORDER_CLOSED');
 
-  const supplier = await prisma.supplier.findUnique({ where: { id: data.supplierId ?? po.supplierId } });
+  const supplierId = data.supplierId ?? po.supplierId;
+  const supplier = await prisma.supplier.findUnique({ where: { id: supplierId } });
   const project  = await prisma.project.findUnique({ where: { id: data.projectId ?? po.projectId } });
+
+  // Resolve bank account for regenerated text
+  const bankAccount =
+    await prisma.supplierBankAccount.findFirst({ where: { supplierId }, orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] })
+    ?? (supplier?.bank ? { bank: supplier.bank, accountType: supplier.accountType, accountNumber: supplier.accountNumber! } : null)
+    ?? { bank: (po.supplier as any).bank ?? '', accountType: (po.supplier as any).accountType ?? '', accountNumber: (po.supplier as any).accountNumber ?? '' };
 
   const merged = {
     payingCompany: data.payingCompany ?? po.payingCompany,
@@ -163,9 +184,9 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
     amount:        Number(data.amount ?? po.amount),
     concept:       data.concept       ?? po.concept,
     project:       `${project!.code} — ${project!.name}`,
-    bank:          supplier!.bank          ?? (po.supplier as any).bank          ?? '',
-    accountType:   supplier!.accountType   ?? (po.supplier as any).accountType   ?? '',
-    accountNumber: supplier!.accountNumber ?? (po.supplier as any).accountNumber ?? '',
+    bank:          bankAccount.bank,
+    accountType:   bankAccount.accountType ?? '',
+    accountNumber: bankAccount.accountNumber ?? '',
     holderName:    supplier!.name,
   };
 

@@ -691,15 +691,33 @@ model Supplier {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  createdBy          User               @relation("SupplierCreatedBy", fields: [createdById], references: [id])
-  officeExpenses     OfficeExpense[]    @relation("OfficeExpenseSupplier")
-  contratosAjustados ContratoAjustado[] @relation("SupplierContratosAjustados")
+  createdBy          User                  @relation("SupplierCreatedBy", fields: [createdById], references: [id])
+  officeExpenses     OfficeExpense[]        @relation("OfficeExpenseSupplier")
+  contratosAjustados ContratoAjustado[]     @relation("SupplierContratosAjustados")
   paymentOrders      PaymentOrder[]
+  bankAccounts       SupplierBankAccount[]
 
   @@index([name])
   @@index([rnc])
   @@index([isActive])
   @@map("suppliers")
+}
+
+model SupplierBankAccount {
+  id            String   @id @default(uuid()) @db.Uuid
+  supplierId    String   @map("supplier_id") @db.Uuid
+  bank          String   @db.VarChar(100)
+  accountType   String   @default("Cuenta de Ahorros") @map("account_type") @db.VarChar(30)
+  accountNumber String   @map("account_number") @db.VarChar(50)
+  isDefault     Boolean  @default(false) @map("is_default")
+  notes         String?  @db.VarChar(200)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@map("supplier_bank_accounts")
 }
 
 // ============================================================
