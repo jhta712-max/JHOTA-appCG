@@ -1,5 +1,9 @@
 # Build stage
 FROM node:24-alpine AS builder
+
+# Cache invalidation - forces fresh build
+ARG BUILD_DATE=2026-06-08T16:30:00Z
+
 RUN apk add --no-cache git
 WORKDIR /app
 
