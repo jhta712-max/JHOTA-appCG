@@ -1,7 +1,15 @@
 import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
+import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
 import type { CreatePaymentOrderInput, UpdatePaymentOrderInput, PaymentOrderQuery } from './payment-orders.schema';
+
+interface FiscalVoucherInput {
+  ncf:          string;
+  supplierRnc:  string;
+  supplierName: string;
+  itbisAmount?: number;
+}
 
 const INCLUDE = {
   supplier:  true,
@@ -211,7 +219,7 @@ export async function unlinkPayroll(id: string) {
 }
 
 // ── Marcar como pagada + auto-crear gasto ─────────────────────
-export async function markAsPaid(id: string, userId: string) {
+export async function markAsPaid(id: string, userId: string, fiscalVoucher?: FiscalVoucherInput | null) {
   const po = await getPaymentOrderById(id);
   if (po.status === 'PAID')   throw new AppError(400, 'La orden ya está marcada como pagada', 'ALREADY_PAID');
   if (po.status === 'VOIDED') throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
@@ -227,7 +235,9 @@ export async function markAsPaid(id: string, userId: string) {
         create: { name: categoryName, description: 'Auto-creada para órdenes de pago', isActive: true },
       });
 
-      const opRef   = `OP-${String(po.number).padStart(3, '0')}`;
+      const opRef      = `OP-${String(po.number).padStart(3, '0')}`;
+      const hasFiscal  = !!(fiscalVoucher?.ncf);
+
       const expense = await tx.expense.create({
         data: {
           projectId:     po.projectId,
@@ -237,8 +247,20 @@ export async function markAsPaid(id: string, userId: string) {
           amount:        po.amount,
           description:   `[${opRef}] ${po.concept}`,
           paymentMethod: 'TRANSFER',
-          hasFiscalDoc:  false,
+          hasFiscalDoc:  hasFiscal,
           notes:         `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.`,
+          ...(hasFiscal && fiscalVoucher && {
+            fiscalVoucher: {
+              create: {
+                ncf:          fiscalVoucher.ncf,
+                ncfType:      extractNCFType(fiscalVoucher.ncf),
+                isElectronic: isElectronicNCF(fiscalVoucher.ncf),
+                supplierRnc:  fiscalVoucher.supplierRnc,
+                supplierName: fiscalVoucher.supplierName,
+                itbisAmount:  fiscalVoucher.itbisAmount ?? 0,
+              },
+            },
+          }),
         },
       });
 

@@ -76,7 +76,8 @@ export async function unlinkPayroll(req: Request, res: Response, next: NextFunct
 
 export async function markAsPaid(req: Request, res: Response, next: NextFunction) {
   try {
-    res.json({ success: true, data: await svc.markAsPaid(req.params.id, (req as any).user.userId) });
+    const fiscalVoucher = req.body?.fiscalVoucher ?? null;
+    res.json({ success: true, data: await svc.markAsPaid(req.params.id, (req as any).user.userId, fiscalVoucher) });
   } catch (err) { next(err); }
 }
 

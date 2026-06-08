@@ -27,6 +27,10 @@ const EMPTY_ORDER: OrderForm = {
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'];
 const CURRENCIES    = ['RD$', 'US$', '€'];
 
+const NCF_REGEX    = /^[A-Z]\d{10}$/;
+const E_NCF_REGEX  = /^E\d{12}$/;
+const validateNcf  = (v: string) => NCF_REGEX.test(v) || E_NCF_REGEX.test(v);
+
 const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
   SERVICIO:  { label: 'Servicio',   icon: <FileText className="w-4 h-4" />,      color: 'border-purple-300 bg-purple-50',  desc: 'Pago por servicios' },
   PAYROLL:   { label: 'Nómina',     icon: <Wallet className="w-4 h-4" />,        color: 'border-blue-400 bg-blue-50',     desc: 'Pago de mano de obra' },
@@ -188,6 +192,20 @@ export default function PaymentOrdersPage() {
   const [selectedPayrollId, setSelectedPayrollId] = useState('');
   const [supplierSearch,    setSupplierSearch]    = useState('');
 
+  // Modal confirmar pago + comprobante fiscal
+  const [payModal,     setPayModal]     = useState(false);
+  const [payingOrder,  setPayingOrder]  = useState<PaymentOrder | null>(null);
+  const [fiscalForm,   setFiscalForm]   = useState({ hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '' });
+  const [fiscalErr,    setFiscalErr]    = useState('');
+
+  const openPayModal = (o: PaymentOrder) => {
+    setPayingOrder(o);
+    setFiscalForm({ hasFiscal: false, ncf: '', supplierRnc: o.supplier?.rnc ?? '', supplierName: o.supplier?.name ?? '', itbisAmount: '' });
+    setFiscalErr('');
+    setPayModal(true);
+  };
+  const closePayModal = () => { setPayModal(false); setPayingOrder(null); };
+
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3500); };
 
   // ── Queries ───────────────────────────────────────────────────
@@ -249,9 +267,10 @@ export default function PaymentOrdersPage() {
     onError:   (e: any) => setFormErr(e.response?.data?.error || 'Error'),
   });
   const markPaidMut = useMutation({
-    mutationFn: (id: string) => paymentOrdersApi.markAsPaid(id),
-    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('✅ Orden marcada como pagada'); },
-    onError:   (e: any) => flash(e.response?.data?.error || 'Error'),
+    mutationFn: ({ id, fiscalVoucher }: { id: string; fiscalVoucher?: { ncf: string; supplierRnc: string; supplierName: string; itbisAmount?: number } | null }) =>
+      paymentOrdersApi.markAsPaid(id, fiscalVoucher),
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); closePayModal(); flash('✅ Orden marcada como pagada'); },
+    onError:   (e: any) => setFiscalErr(e.response?.data?.error || 'Error al confirmar pago'),
   });
   const voidOrderMut = useMutation({
     mutationFn: (id: string) => paymentOrdersApi.void(id),
@@ -538,7 +557,7 @@ export default function PaymentOrdersPage() {
                   <button onClick={() => openOrderModal(viewingOrder)} className="btn-secondary text-sm flex items-center gap-2">
                     <Pencil className="w-3.5 h-3.5" /> Editar
                   </button>
-                  <button onClick={() => { if (confirm('¿Marcar esta orden como PAGADA?')) markPaidMut.mutate(viewingOrder.id); }}
+                  <button onClick={() => openPayModal(viewingOrder)}
                     className="btn-primary text-sm flex items-center gap-2" disabled={markPaidMut.isPending}>
                     {markPaidMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
                     Marcar como pagada
@@ -936,6 +955,123 @@ export default function PaymentOrdersPage() {
         </Modal>
       )}
 
+      {/* ── Modal: Confirmar pago + comprobante fiscal ─────────── */}
+      {payModal && payingOrder && (
+        <Modal
+          title="Confirmar pago"
+          onClose={closePayModal}
+          size="md"
+        >
+          <div className="space-y-4">
+            {/* Resumen de la orden */}
+            <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
+              <p className="font-semibold text-gray-800">
+                OP-{String(payingOrder.number).padStart(3, '0')} — {payingOrder.concept}
+              </p>
+              <p className="text-gray-500">
+                {payingOrder.supplier?.name} · RD$ {Number(payingOrder.amount).toLocaleString('es-DO')}
+              </p>
+            </div>
+
+            {/* ¿Tiene comprobante fiscal? */}
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={fiscalForm.hasFiscal}
+                onChange={(e) => setFiscalForm((f) => ({ ...f, hasFiscal: e.target.checked, ncf: '', supplierRnc: payingOrder.supplier?.rnc ?? '', supplierName: payingOrder.supplier?.name ?? '' }))}
+                className="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400"
+              />
+              <span className="text-sm font-medium text-gray-700">Tiene comprobante fiscal (NCF / e-NCF)</span>
+            </label>
+
+            {/* Campos fiscales */}
+            {fiscalForm.hasFiscal && (
+              <div className="space-y-3 border-t border-gray-100 pt-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    NCF / e-NCF <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={fiscalForm.ncf}
+                    onChange={(e) => setFiscalForm((f) => ({ ...f, ncf: e.target.value.toUpperCase() }))}
+                    placeholder="B0100000001 o E310000000001"
+                    maxLength={13}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">NCF: 11 chars (ej. B0100000001) · e-NCF: 13 chars (ej. E310000000001)</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">RNC del suplidor <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={fiscalForm.supplierRnc}
+                      onChange={(e) => setFiscalForm((f) => ({ ...f, supplierRnc: e.target.value }))}
+                      placeholder="101000000"
+                      maxLength={11}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre del suplidor <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={fiscalForm.supplierName}
+                      onChange={(e) => setFiscalForm((f) => ({ ...f, supplierName: e.target.value }))}
+                      placeholder="Razón social"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">ITBIS (RD$)</label>
+                  <input
+                    type="number"
+                    value={fiscalForm.itbisAmount}
+                    onChange={(e) => setFiscalForm((f) => ({ ...f, itbisAmount: e.target.value }))}
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  />
+                </div>
+              </div>
+            )}
+
+            {fiscalErr && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{fiscalErr}</p>}
+          </div>
+
+          <ModalFooter
+            onCancel={closePayModal}
+            onSave={() => {
+              setFiscalErr('');
+              if (fiscalForm.hasFiscal) {
+                if (!fiscalForm.ncf)          { setFiscalErr('El NCF es obligatorio cuando hay comprobante fiscal'); return; }
+                if (!fiscalForm.supplierRnc)  { setFiscalErr('El RNC del suplidor es obligatorio'); return; }
+                if (!fiscalForm.supplierName) { setFiscalErr('El nombre del suplidor es obligatorio'); return; }
+                const ncf = fiscalForm.ncf.trim();
+                if (!validateNcf(ncf)) {
+                  setFiscalErr('Formato de NCF inválido. Ej: B0100000001 (NCF) o E310000000001 (e-NCF)'); return;
+                }
+                markPaidMut.mutate({
+                  id: payingOrder.id,
+                  fiscalVoucher: {
+                    ncf,
+                    supplierRnc:  fiscalForm.supplierRnc.trim(),
+                    supplierName: fiscalForm.supplierName.trim(),
+                    itbisAmount:  fiscalForm.itbisAmount ? Number(fiscalForm.itbisAmount) : 0,
+                  },
+                });
+              } else {
+                markPaidMut.mutate({ id: payingOrder.id, fiscalVoucher: null });
+              }
+            }}
+            saving={markPaidMut.isPending}
+            label="Confirmar pago"
+          />
+        </Modal>
+      )}
 
     </div>
   );
