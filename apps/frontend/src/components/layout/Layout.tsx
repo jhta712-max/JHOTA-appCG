@@ -283,9 +283,13 @@ export default function Layout() {
             <AppIcon className="w-6 h-7 shrink-0" />
             <span className="font-bold text-white text-sm tracking-wide">Sistema de Gastos</span>
           </div>
-          <NotificationBell />
           <RoleViewSwitcher compact />
         </header>
+
+        {/* Notification Bell - Fixed en esquina superior derecha */}
+        <div className="fixed top-4 right-4 z-50">
+          <NotificationBell />
+        </div>
 
         {/* Banner de vista previa */}
         {isPreviewing && (
