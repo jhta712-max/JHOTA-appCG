@@ -85,20 +85,14 @@ function normalizeAccountType(raw: string): 'Cuenta de Ahorros' | 'Cuenta Corrie
 
 
 // ── WhatsApp share ────────────────────────────────────────────
-// isMobile: true en Android/iPhone → usa Web Share API nativa (emoji intactos)
-// Desktop: WhatsApp Web corrompe emoji via URL → copiamos al portapapeles directo
 const isMobileDevice = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-async function shareWhatsApp(text: string, onCopied?: () => void) {
+function shareWhatsApp(text: string, onCopied?: () => void) {
+  const encoded = encodeURIComponent(text);
   if (isMobileDevice()) {
-    if (navigator.share) {
-      try { await navigator.share({ text }); return; } catch { /* cancelado */ }
-    }
-    // Fallback móvil sin Web Share API
-    window.open(`whatsapp://send?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`whatsapp://send?text=${encoded}`, '_blank');
   } else {
-    // Desktop: copiar al portapapeles (WA Web corrompe emoji en URL)
-    await navigator.clipboard.writeText(text);
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
     onCopied?.();
   }
 }
