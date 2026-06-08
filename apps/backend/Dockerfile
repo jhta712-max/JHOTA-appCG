@@ -2,16 +2,13 @@
 FROM node:24-alpine AS builder
 
 # Cache invalidation - forces fresh build
-ARG BUILD_DATE=2026-06-08T16:30:00Z
+ARG BUILD_DATE=2026-06-08T16:35:00Z
 
 RUN apk add --no-cache git
 WORKDIR /app
 
-# Try to copy files first (local builds), fallback to clone (CI/Render)
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./ 2>/dev/null || \
-    (git clone --depth 1 https://github.com/jhta712-max/servingmi-appCG.git . && rm -rf .git)
-
-COPY apps/backend ./apps/backend 2>/dev/null || true
+# Clone repository
+RUN git clone --depth 1 https://github.com/jhta712-max/servingmi-appCG.git . && rm -rf .git
 
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 WORKDIR /app/apps/backend
