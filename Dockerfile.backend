@@ -22,6 +22,9 @@ RUN pnpm run build
 FROM node:24-alpine
 WORKDIR /app
 
+# Install OpenSSL 1.1 required by Prisma
+RUN apk add --no-cache openssl
+
 # Copy dependencies from builder (flattened structure for production)
 COPY --from=builder /app/apps/backend/node_modules ./node_modules
 
