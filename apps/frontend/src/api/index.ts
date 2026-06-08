@@ -398,6 +398,8 @@ export const paymentOrdersApi = {
     api.get<{ success: boolean; data: any[] }>('/payment-orders/available-payrolls', { params: { projectId } }),
   availableExpenses: (projectId: string) =>
     api.get<{ success: boolean; data: any[] }>('/payment-orders/available-expenses', { params: { projectId } }),
+  availableContracts: (projectId: string, supplierId: string) =>
+    api.get<{ success: boolean; data: any[] }>('/payment-orders/available-contracts', { params: { projectId, supplierId } }),
   linkExpense: (id: string, expenseId: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-expense`, { expenseId }),
   unlinkExpense: (id: string) =>

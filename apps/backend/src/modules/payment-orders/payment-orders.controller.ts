@@ -32,6 +32,13 @@ export async function getAvailableExpenses(req: Request, res: Response, next: Ne
   } catch (err) { next(err); }
 }
 
+export async function getAvailableContracts(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { projectId, supplierId } = z.object({ projectId: z.string().uuid(), supplierId: z.string().uuid() }).parse(req.query);
+    res.json({ success: true, data: await svc.getAvailableContracts(projectId, supplierId) });
+  } catch (err) { next(err); }
+}
+
 export async function createPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     const data = createPaymentOrderSchema.parse(req.body);

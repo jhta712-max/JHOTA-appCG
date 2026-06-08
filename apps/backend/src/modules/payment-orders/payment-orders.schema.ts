@@ -8,9 +8,10 @@ export const createPaymentOrderSchema = z.object({
   amount:        z.coerce.number().positive(),
   currency:      z.enum(['RD$', 'US$', '€']).default('RD$'),
   concept:       z.string().min(3).max(2000),
-  notes:          z.string().max(500).optional(),
-  payrollId:      z.string().uuid().optional(),
-  bankAccountId:  z.string().uuid().optional(),
+  notes:             z.string().max(500).optional(),
+  payrollId:         z.string().uuid().optional(),
+  bankAccountId:     z.string().uuid().optional(),
+  contratoAjustadoId: z.string().uuid().optional().nullable(),
 });
 
 export const updatePaymentOrderSchema = createPaymentOrderSchema.partial();

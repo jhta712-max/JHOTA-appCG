@@ -17,11 +17,11 @@ type ModalView = 'form' | 'success';
 type OrderForm = {
   orderType: OrderType; payingCompany: string; supplierId: string;
   projectId: string; amount: string; currency: string; concept: string;
-  notes: string; payrollId: string; bankAccountId: string;
+  notes: string; payrollId: string; bankAccountId: string; contratoAjustadoId: string;
 };
 const EMPTY_ORDER: OrderForm = {
   orderType: 'SERVICIO', payingCompany: '', supplierId: '', projectId: '',
-  amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '', bankAccountId: '',
+  amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '', bankAccountId: '', contratoAjustadoId: '',
 };
 
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'];
@@ -181,6 +181,13 @@ export default function PaymentOrdersPage() {
     enabled:  linkModal && !!linkingOrderProjectId,
   });
 
+  const { data: availableContracts = [] } = useQuery({
+    queryKey: ['payment-orders', 'contracts', orderForm.projectId, orderForm.supplierId],
+    queryFn:  () => paymentOrdersApi.availableContracts(orderForm.projectId, orderForm.supplierId),
+    select:   (r) => r.data.data as any[],
+    enabled:  orderModal && !!orderForm.projectId && !!orderForm.supplierId,
+  });
+
   // ── Order mutations ───────────────────────────────────────────
   const createOrderMut = useMutation({
     mutationFn: (d: unknown) => paymentOrdersApi.create(d),
@@ -304,8 +311,9 @@ export default function PaymentOrdersPage() {
       amount:        Number(orderForm.amount),
       currency:      orderForm.currency,
       concept:       orderForm.concept,
-      notes:         orderForm.notes || undefined,
-      bankAccountId: orderForm.bankAccountId || undefined,
+      notes:              orderForm.notes || undefined,
+      bankAccountId:      orderForm.bankAccountId || undefined,
+      contratoAjustadoId: orderForm.contratoAjustadoId || undefined,
     };
 
     if (editingOrder) updateOrderMut.mutate({ id: editingOrder.id, d: payload });
@@ -458,6 +466,21 @@ export default function PaymentOrdersPage() {
                   ) : (
                     <p className="text-gray-400 text-xs">Sin gasto vinculado — se vincula cuando se confirme la transferencia</p>
                   )}
+                </div>
+              )}
+
+              {/* Contrato ajustado vinculado */}
+              {(viewingOrder as any).contratoAjustado && (
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-sm">
+                  <p className="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-1">📋 Contrato ajustado vinculado</p>
+                  <p className="font-semibold text-indigo-800">{(viewingOrder as any).contratoAjustado.descripcionTrabajo}</p>
+                  <p className="text-xs text-indigo-600 mt-0.5">
+                    Monto contrato: {fmtMonto((viewingOrder as any).contratoAjustado.montoContratado, viewingOrder.currency)}
+                    &nbsp;·&nbsp; Estado: {(viewingOrder as any).contratoAjustado.estado}
+                  </p>
+                  <p className="text-xs text-indigo-500 mt-1">
+                    El gasto generado quedará registrado como avance de este contrato.
+                  </p>
                 </div>
               )}
 
@@ -755,7 +778,7 @@ export default function PaymentOrdersPage() {
                 </Field>
                 <Field label="Proyecto *">
                   <select className="input-field" value={orderForm.projectId}
-                    onChange={(e) => setOrderForm((f) => ({ ...f, projectId: e.target.value, payrollId: '' }))}>
+                    onChange={(e) => setOrderForm((f) => ({ ...f, projectId: e.target.value, payrollId: '', contratoAjustadoId: '' }))}>
                     <option value="">— Selecciona —</option>
                     {projects.map((p) => <option key={p.id} value={p.id}>{p.code} — {p.name}</option>)}
                   </select>
@@ -778,7 +801,7 @@ export default function PaymentOrdersPage() {
 
               <Field label="Suplidor / Beneficiario *">
                 <select className="input-field" value={orderForm.supplierId}
-                  onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '' })); setSupplierSearch(''); }}>
+                  onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '', contratoAjustadoId: '' })); setSupplierSearch(''); }}>
                   <option value="">— Selecciona suplidor —</option>
                   {activeSuppliers
                     .filter((s) => (s.bankAccounts && s.bankAccounts.length > 0) || (s.bank && s.accountNumber))
@@ -835,6 +858,32 @@ export default function PaymentOrdersPage() {
                   </div>
                 );
               })()}
+
+              {/* Contrato ajustado — solo si hay contratos activos para proyecto+suplidor */}
+              {availableContracts.length > 0 && (
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-1">
+                  <label className="block text-xs font-bold text-indigo-700 uppercase tracking-wide mb-1.5">
+                    📋 Vincular a contrato ajustado <span className="font-normal text-indigo-500 normal-case">(opcional)</span>
+                  </label>
+                  <select
+                    className="input-field text-sm"
+                    value={orderForm.contratoAjustadoId}
+                    onChange={(e) => setOrderForm((f) => ({ ...f, contratoAjustadoId: e.target.value }))}
+                  >
+                    <option value="">— Sin contrato ajustado —</option>
+                    {availableContracts.map((c: any) => (
+                      <option key={c.id} value={c.id}>
+                        {c.descripcionTrabajo} · RD$ {Number(c.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                      </option>
+                    ))}
+                  </select>
+                  {orderForm.contratoAjustadoId && (
+                    <p className="text-xs text-indigo-600 mt-1">
+                      ✅ El gasto generado quedará vinculado automáticamente a este contrato como avance.
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Monto *">

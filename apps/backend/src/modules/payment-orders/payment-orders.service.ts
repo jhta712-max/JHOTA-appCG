@@ -17,12 +17,13 @@ interface PaymentInfoInput {
 }
 
 const INCLUDE = {
-  supplier:  true,
-  project:   { select: { id: true, code: true, name: true } },
-  createdBy: { select: { id: true, name: true } },
-  paidBy:    { select: { id: true, name: true } },
-  payroll:   { select: { id: true, number: true, type: true, totalAmount: true, periodStart: true, periodEnd: true, status: true } },
-  expense:   { select: { id: true, amount: true, expenseDate: true, description: true, status: true } },
+  supplier:         true,
+  project:          { select: { id: true, code: true, name: true } },
+  createdBy:        { select: { id: true, name: true } },
+  paidBy:           { select: { id: true, name: true } },
+  payroll:          { select: { id: true, number: true, type: true, totalAmount: true, periodStart: true, periodEnd: true, status: true } },
+  expense:          { select: { id: true, amount: true, expenseDate: true, description: true, status: true } },
+  contratoAjustado: { select: { id: true, descripcionTrabajo: true, montoContratado: true, estado: true } },
 } as const;
 
 // ── Listar con filtros y paginación ───────────────────────────
@@ -81,6 +82,15 @@ export async function getAvailablePayrolls(projectId: string) {
     where:   { projectId, status: 'APPROVED', paymentOrder: null },
     orderBy: { createdAt: 'desc' },
     select:  { id: true, number: true, type: true, totalAmount: true, periodStart: true, periodEnd: true, description: true },
+  });
+}
+
+// ── Contratos ajustados ACTIVOS para proyecto+suplidor ────────
+export async function getAvailableContracts(projectId: string, supplierId: string) {
+  return prisma.contratoAjustado.findMany({
+    where:   { projectId, supplierId, estado: 'ACTIVO' },
+    orderBy: { fechaContrato: 'desc' },
+    select:  { id: true, descripcionTrabajo: true, montoContratado: true, fechaContrato: true },
   });
 }
 
@@ -143,20 +153,29 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
     holderName:    supplier.name,
   });
 
+  // Validate contrato ajustado if provided
+  if (data.contratoAjustadoId) {
+    const contrato = await prisma.contratoAjustado.findUnique({ where: { id: data.contratoAjustadoId } });
+    if (!contrato) throw new AppError(404, 'Contrato ajustado no encontrado', 'NOT_FOUND');
+    if (contrato.projectId !== data.projectId || contrato.supplierId !== data.supplierId)
+      throw new AppError(400, 'El contrato no pertenece a este proyecto/suplidor', 'CONTRACT_MISMATCH');
+  }
+
   return prisma.paymentOrder.create({
     data: {
       number,
-      orderType:     data.orderType ?? 'SERVICIO',
-      payingCompany: data.payingCompany,
-      supplierId:    data.supplierId,
-      projectId:     data.projectId,
-      amount:        data.amount,
-      currency:      data.currency ?? 'RD$',
-      concept:       data.concept,
-      notes:         data.notes,
+      orderType:          data.orderType ?? 'SERVICIO',
+      payingCompany:      data.payingCompany,
+      supplierId:         data.supplierId,
+      projectId:          data.projectId,
+      amount:             data.amount,
+      currency:           data.currency ?? 'RD$',
+      concept:            data.concept,
+      notes:              data.notes,
       generatedText,
-      payrollId:     data.orderType === 'PAYROLL' ? (data.payrollId ?? null) : null,
-      createdById:   userId,
+      payrollId:          data.orderType === 'PAYROLL' ? (data.payrollId ?? null) : null,
+      contratoAjustadoId: data.contratoAjustadoId ?? null,
+      createdById:        userId,
     },
     include: INCLUDE,
   });
@@ -275,15 +294,16 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
 
       const expense = await tx.expense.create({
         data: {
-          projectId:     po.projectId,
-          categoryId:    category.id,
+          projectId:          po.projectId,
+          categoryId:         category.id,
           userId,
-          expenseDate:   new Date(),
-          amount:        po.amount,
-          description:   `[${opRef}] ${po.concept}`,
-          paymentMethod: 'TRANSFER',
-          hasFiscalDoc:  hasFiscal,
-          notes:         `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.`,
+          expenseDate:        new Date(),
+          amount:             po.amount,
+          description:        `[${opRef}] ${po.concept}`,
+          paymentMethod:      'TRANSFER',
+          hasFiscalDoc:       hasFiscal,
+          notes:              `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.`,
+          contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
           ...(hasFiscal && fiscalVoucher && {
             fiscalVoucher: {
               create: {
@@ -298,6 +318,20 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
           }),
         },
       });
+
+      // Register advance in contrato ajustado if linked
+      if ((po as any).contratoAjustadoId) {
+        await tx.contratoAjustadoPago.create({
+          data: {
+            contratoAjustadoId: (po as any).contratoAjustadoId,
+            ordenPagoId:        po.id,
+            gastoId:            expense.id,
+            monto:              po.amount,
+            fecha:              new Date(),
+            creadoPorId:        userId,
+          },
+        });
+      }
 
       await tx.paymentOrder.update({ where: { id }, data: { expenseId: expense.id } });
     }
@@ -324,17 +358,32 @@ export async function generateExpenseForOrder(id: string, userId: string) {
     const opRef = `OP-${String(po.number).padStart(3, '0')}`;
     const expense = await tx.expense.create({
       data: {
-        projectId:     po.projectId,
-        categoryId:    category.id,
+        projectId:          po.projectId,
+        categoryId:         category.id,
         userId,
-        expenseDate:   po.paidAt ?? new Date(),
-        amount:        po.amount,
-        description:   `[${opRef}] ${po.concept}`,
-        paymentMethod: 'TRANSFER',
-        hasFiscalDoc:  false,
-        notes:         `Generado retroactivamente para ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}.`,
+        expenseDate:        po.paidAt ?? new Date(),
+        amount:             po.amount,
+        description:        `[${opRef}] ${po.concept}`,
+        paymentMethod:      'TRANSFER',
+        hasFiscalDoc:       false,
+        notes:              `Generado retroactivamente para ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}.`,
+        contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
       },
     });
+
+    if ((po as any).contratoAjustadoId) {
+      await tx.contratoAjustadoPago.create({
+        data: {
+          contratoAjustadoId: (po as any).contratoAjustadoId,
+          ordenPagoId:        po.id,
+          gastoId:            expense.id,
+          monto:              po.amount,
+          fecha:              po.paidAt ?? new Date(),
+          creadoPorId:        userId,
+        },
+      });
+    }
+
     await tx.paymentOrder.update({ where: { id }, data: { expenseId: expense.id } });
     return tx.paymentOrder.findUniqueOrThrow({ where: { id }, include: INCLUDE });
   });

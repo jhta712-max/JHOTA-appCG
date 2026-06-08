@@ -741,22 +741,25 @@ model PaymentOrder {
   paymentBank       String?   @map("payment_bank")      @db.VarChar(100) // Banco emisor
   paymentReference  String?   @map("payment_reference") @db.VarChar(100) // No. de transacción
   // Vínculos opcionales
-  payrollId     String?   @unique @map("payroll_id") @db.Uuid // Si es orden de nómina
-  expenseId     String?   @unique @map("expense_id") @db.Uuid // Si es orden de materiales (vinculado después)
-  createdById   String    @map("created_by_id") @db.Uuid
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  payrollId          String?   @unique @map("payroll_id") @db.Uuid
+  expenseId          String?   @unique @map("expense_id") @db.Uuid
+  contratoAjustadoId String?   @map("contrato_ajustado_id") @db.Uuid
+  createdById        String    @map("created_by_id") @db.Uuid
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  supplier  Supplier @relation(fields: [supplierId], references: [id])
-  project   Project  @relation(fields: [projectId], references: [id])
-  createdBy User     @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
-  paidBy    User?    @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
-  payroll   Payroll? @relation(fields: [payrollId], references: [id])
-  expense   Expense? @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
+  supplier         Supplier          @relation(fields: [supplierId], references: [id])
+  project          Project           @relation(fields: [projectId], references: [id])
+  createdBy        User              @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
+  paidBy           User?             @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
+  payroll          Payroll?          @relation(fields: [payrollId], references: [id])
+  expense          Expense?          @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
+  contratoAjustado ContratoAjustado? @relation("PaymentOrderContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([projectId])
   @@index([supplierId])
+  @@index([contratoAjustadoId])
   @@index([createdAt])
   @@map("payment_orders")
 }
@@ -933,9 +936,10 @@ model ContratoAjustado {
   supplier     Supplier               @relation("SupplierContratosAjustados", fields: [supplierId], references: [id])
   createdBy    User                   @relation("ContratoAjustadoCreatedBy", fields: [createdById], references: [id])
   updatedBy    User?                  @relation("ContratoAjustadoUpdatedBy", fields: [updatedById], references: [id])
-  pagos        ContratoAjustadoPago[]
-  expenses     Expense[]              @relation("ExpenseContratoAjustado")
-  payrollLines PayrollLine[]          @relation("PayrollLineContratoAjustado")
+  pagos         ContratoAjustadoPago[]
+  expenses      Expense[]              @relation("ExpenseContratoAjustado")
+  payrollLines  PayrollLine[]          @relation("PayrollLineContratoAjustado")
+  paymentOrders PaymentOrder[]         @relation("PaymentOrderContratoAjustado")
 
   @@index([projectId])
   @@index([supplierId])
