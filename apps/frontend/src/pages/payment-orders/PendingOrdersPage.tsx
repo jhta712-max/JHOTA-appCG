@@ -5,6 +5,7 @@ import {
   ShoppingCart, Filter,
 } from 'lucide-react';
 import { paymentOrdersApi, projectsApi } from '../../api';
+import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder } from '../../types';
 
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
@@ -29,6 +30,9 @@ function fmtDate(d: string) {
 
 export default function PendingOrdersPage() {
   const qc = useQueryClient();
+  const { user, viewAsRole } = useAuthStore();
+  const effectiveRole = viewAsRole || user?.role?.name || '';
+  const canPay        = effectiveRole !== 'supervisor';
   const [filterProject, setFilterProject] = useState('');
   const [filterType,    setFilterType]    = useState('');
   const [confirmId,     setConfirmId]     = useState<string | null>(null);
