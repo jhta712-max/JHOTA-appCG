@@ -190,7 +190,6 @@ export default function Layout() {
                 {isPreviewing ? `Admin · viendo como ${viewAsRole}` : userRole}
               </p>
             </div>
-            <NotificationBell />
             <button onClick={handleLogout}
               className="text-gray-500 hover:text-red-400 transition-colors" title="Cerrar sesión">
               <LogOut className="w-4 h-4" />
