@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy monorepo files
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 
-# Copy backend
-COPY apps/backend ./apps/backend
+# Copy all apps (workspace needs all apps even if only building one)
+COPY apps ./apps
 
 # Install and build
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
