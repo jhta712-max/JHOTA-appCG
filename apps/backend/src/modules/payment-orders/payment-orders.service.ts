@@ -11,6 +11,11 @@ interface FiscalVoucherInput {
   itbisAmount?: number;
 }
 
+interface PaymentInfoInput {
+  paymentBank?:      string | null;
+  paymentReference?: string | null;
+}
+
 const INCLUDE = {
   supplier:  true,
   project:   { select: { id: true, code: true, name: true } },
@@ -219,13 +224,22 @@ export async function unlinkPayroll(id: string) {
 }
 
 // ── Marcar como pagada + auto-crear gasto ─────────────────────
-export async function markAsPaid(id: string, userId: string, fiscalVoucher?: FiscalVoucherInput | null) {
+export async function markAsPaid(id: string, userId: string, fiscalVoucher?: FiscalVoucherInput | null, paymentInfo?: PaymentInfoInput | null) {
   const po = await getPaymentOrderById(id);
   if (po.status === 'PAID')   throw new AppError(400, 'La orden ya está marcada como pagada', 'ALREADY_PAID');
   if (po.status === 'VOIDED') throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
 
   return prisma.$transaction(async (tx) => {
-    await tx.paymentOrder.update({ where: { id }, data: { status: 'PAID', paidAt: new Date(), paidById: userId } });
+    await tx.paymentOrder.update({
+      where: { id },
+      data: {
+        status:           'PAID',
+        paidAt:           new Date(),
+        paidById:         userId,
+        paymentBank:      paymentInfo?.paymentBank      ?? null,
+        paymentReference: paymentInfo?.paymentReference ?? null,
+      },
+    });
 
     if (!po.expenseId && po.orderType !== 'PAYROLL') {
       const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : 'Servicios';

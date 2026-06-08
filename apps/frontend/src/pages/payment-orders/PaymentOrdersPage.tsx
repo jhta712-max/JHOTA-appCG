@@ -134,11 +134,13 @@ export default function PaymentOrdersPage() {
   const [payModal,     setPayModal]     = useState(false);
   const [payingOrder,  setPayingOrder]  = useState<PaymentOrder | null>(null);
   const [fiscalForm,   setFiscalForm]   = useState({ hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '' });
+  const [payInfoForm,  setPayInfoForm]  = useState({ paymentBank: '', paymentReference: '' });
   const [fiscalErr,    setFiscalErr]    = useState('');
 
   const openPayModal = (o: PaymentOrder) => {
     setPayingOrder(o);
     setFiscalForm({ hasFiscal: false, ncf: '', supplierRnc: o.supplier?.rnc ?? '', supplierName: o.supplier?.name ?? '', itbisAmount: '' });
+    setPayInfoForm({ paymentBank: '', paymentReference: '' });
     setFiscalErr('');
     setPayModal(true);
   };
@@ -205,8 +207,11 @@ export default function PaymentOrdersPage() {
     onError:   (e: any) => setFormErr(e.response?.data?.error || 'Error'),
   });
   const markPaidMut = useMutation({
-    mutationFn: ({ id, fiscalVoucher }: { id: string; fiscalVoucher?: { ncf: string; supplierRnc: string; supplierName: string; itbisAmount?: number } | null }) =>
-      paymentOrdersApi.markAsPaid(id, fiscalVoucher),
+    mutationFn: ({ id, fiscalVoucher, paymentInfo }: {
+      id: string;
+      fiscalVoucher?: { ncf: string; supplierRnc: string; supplierName: string; itbisAmount?: number } | null;
+      paymentInfo?:   { paymentBank?: string; paymentReference?: string } | null;
+    }) => paymentOrdersApi.markAsPaid(id, fiscalVoucher, paymentInfo),
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); closePayModal(); flash('✅ Orden marcada como pagada'); },
     onError:   (e: any) => setFiscalErr(e.response?.data?.error || 'Error al confirmar pago'),
   });
@@ -503,6 +508,25 @@ export default function PaymentOrdersPage() {
                     className="text-sm text-red-600 hover:text-red-700 border border-red-300 hover:bg-red-50 px-3 py-2 rounded-lg font-semibold transition-all">
                     Anular
                   </button>
+                </div>
+              )}
+
+              {/* Comprobante de transferencia — solo cuando está PAID */}
+              {viewingOrder.status === 'PAID' && (viewingOrder.paymentReference || viewingOrder.paymentBank) && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm space-y-1">
+                  <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-1">Transferencia</p>
+                  {viewingOrder.paymentReference && (
+                    <p className="text-gray-700">
+                      <span className="font-semibold text-gray-500">No. transacción:</span>{' '}
+                      <span className="font-mono">{viewingOrder.paymentReference}</span>
+                    </p>
+                  )}
+                  {viewingOrder.paymentBank && (
+                    <p className="text-gray-700">
+                      <span className="font-semibold text-gray-500">Banco emisor:</span>{' '}
+                      {viewingOrder.paymentBank}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -976,6 +1000,33 @@ export default function PaymentOrdersPage() {
               </div>
             )}
 
+            {/* Información de transferencia */}
+            <div className="space-y-3 border-t border-gray-100 pt-3">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Transferencia (opcional)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">No. de transacción</label>
+                  <input
+                    type="text"
+                    value={payInfoForm.paymentReference}
+                    onChange={(e) => setPayInfoForm((f) => ({ ...f, paymentReference: e.target.value }))}
+                    placeholder="ej. 123456789"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Banco emisor</label>
+                  <input
+                    type="text"
+                    value={payInfoForm.paymentBank}
+                    onChange={(e) => setPayInfoForm((f) => ({ ...f, paymentBank: e.target.value }))}
+                    placeholder="ej. BHD, BanReservas"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  />
+                </div>
+              </div>
+            </div>
+
             {fiscalErr && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{fiscalErr}</p>}
           </div>
 
@@ -983,6 +1034,10 @@ export default function PaymentOrdersPage() {
             onCancel={closePayModal}
             onSave={() => {
               setFiscalErr('');
+              const pi = {
+                paymentReference: payInfoForm.paymentReference.trim() || undefined,
+                paymentBank:      payInfoForm.paymentBank.trim()      || undefined,
+              };
               if (fiscalForm.hasFiscal) {
                 if (!fiscalForm.ncf)          { setFiscalErr('El NCF es obligatorio cuando hay comprobante fiscal'); return; }
                 if (!fiscalForm.supplierRnc)  { setFiscalErr('El RNC del suplidor es obligatorio'); return; }
@@ -993,15 +1048,11 @@ export default function PaymentOrdersPage() {
                 }
                 markPaidMut.mutate({
                   id: payingOrder.id,
-                  fiscalVoucher: {
-                    ncf,
-                    supplierRnc:  fiscalForm.supplierRnc.trim(),
-                    supplierName: fiscalForm.supplierName.trim(),
-                    itbisAmount:  fiscalForm.itbisAmount ? Number(fiscalForm.itbisAmount) : 0,
-                  },
+                  fiscalVoucher: { ncf, supplierRnc: fiscalForm.supplierRnc.trim(), supplierName: fiscalForm.supplierName.trim(), itbisAmount: fiscalForm.itbisAmount ? Number(fiscalForm.itbisAmount) : 0 },
+                  paymentInfo: pi,
                 });
               } else {
-                markPaidMut.mutate({ id: payingOrder.id, fiscalVoucher: null });
+                markPaidMut.mutate({ id: payingOrder.id, fiscalVoucher: null, paymentInfo: pi });
               }
             }}
             saving={markPaidMut.isPending}

@@ -190,9 +190,11 @@ export interface PaymentOrder {
   status:        'PENDING' | 'PAID' | 'VOIDED';
   generatedText: string | null;
   notes?:        string | null;
-  paidAt?:       string | null;
-  paidBy?:       { id: string; name: string } | null;
-  payrollId?:    string | null;
+  paidAt?:            string | null;
+  paidBy?:            { id: string; name: string } | null;
+  paymentBank?:       string | null;
+  paymentReference?:  string | null;
+  payrollId?:         string | null;
   payroll?:      { id: string; number: number; type: string; totalAmount: number; periodStart: string; periodEnd: string; status: string } | null;
   expenseId?:    string | null;
   expense?:      { id: string; amount: number; expenseDate: string; description: string; status: string } | null;

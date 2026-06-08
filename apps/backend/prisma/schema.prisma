@@ -718,8 +718,10 @@ model PaymentOrder {
   status        String    @default("PENDING") @db.VarChar(20) // PENDING | PAID | VOIDED
   generatedText String?   @map("generated_text") @db.Text
   notes         String?   @db.VarChar(500)
-  paidAt        DateTime? @map("paid_at")
-  paidById      String?   @map("paid_by_id") @db.Uuid
+  paidAt            DateTime? @map("paid_at")
+  paidById          String?   @map("paid_by_id") @db.Uuid
+  paymentBank       String?   @map("payment_bank")      @db.VarChar(100) // Banco emisor
+  paymentReference  String?   @map("payment_reference") @db.VarChar(100) // No. de transacción
   // Vínculos opcionales
   payrollId     String?   @unique @map("payroll_id") @db.Uuid // Si es orden de nómina
   expenseId     String?   @unique @map("expense_id") @db.Uuid // Si es orden de materiales (vinculado después)

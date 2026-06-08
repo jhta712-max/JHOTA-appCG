@@ -406,8 +406,15 @@ export const paymentOrdersApi = {
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-payroll`, { payrollId }),
   unlinkPayroll: (id: string) =>
     api.delete<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-payroll`),
-  markAsPaid: (id: string, fiscalVoucher?: { ncf: string; supplierRnc: string; supplierName: string; itbisAmount?: number } | null) =>
-    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`, { fiscalVoucher: fiscalVoucher ?? null }),
+  markAsPaid: (
+    id: string,
+    fiscalVoucher?: { ncf: string; supplierRnc: string; supplierName: string; itbisAmount?: number } | null,
+    paymentInfo?:   { paymentBank?: string; paymentReference?: string } | null,
+  ) =>
+    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`, {
+      fiscalVoucher: fiscalVoucher ?? null,
+      paymentInfo:   paymentInfo   ?? null,
+    }),
   generateExpense: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/generate-expense`),
   void: (id: string) =>
