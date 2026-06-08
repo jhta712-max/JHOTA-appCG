@@ -21,10 +21,14 @@ RUN pnpm run build
 # Production stage
 FROM node:24-alpine
 WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/backend/node_modules ./apps/backend/node_modules
+
+# Copy dependencies from builder (flattened structure for production)
+COPY --from=builder /app/apps/backend/node_modules ./node_modules
+
+# Copy compiled application
 COPY --from=builder /app/apps/backend/dist ./dist
 COPY --from=builder /app/apps/backend/package.json ./
 COPY --from=builder /app/apps/backend/prisma ./prisma
+
 EXPOSE 3001
 CMD ["node", "dist/server.js"]
