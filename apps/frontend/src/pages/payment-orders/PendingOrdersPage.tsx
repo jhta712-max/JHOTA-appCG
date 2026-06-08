@@ -5,6 +5,7 @@ import {
   ShoppingCart, Filter,
 } from 'lucide-react';
 import { paymentOrdersApi, projectsApi } from '../../api';
+import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder } from '../../types';
 
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
@@ -28,7 +29,9 @@ function fmtDate(d: string) {
 }
 
 export default function PendingOrdersPage() {
-  const qc = useQueryClient();
+  const qc       = useQueryClient();
+  const authUser = useAuthStore((s) => s.user);
+  const canPay   = authUser?.role?.name !== 'supervisor';
   const [filterProject, setFilterProject] = useState('');
   const [filterType,    setFilterType]    = useState('');
   const [confirmId,     setConfirmId]     = useState<string | null>(null);
@@ -206,12 +209,16 @@ export default function PendingOrdersPage() {
                         {fmtDate(o.createdAt)}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => setConfirmId(o.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 transition-colors mx-auto"
-                        >
-                          <BadgeCheck className="w-3.5 h-3.5" /> Marcar pagada
-                        </button>
+                        {canPay ? (
+                          <button
+                            onClick={() => setConfirmId(o.id)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 transition-colors mx-auto"
+                          >
+                            <BadgeCheck className="w-3.5 h-3.5" /> Marcar pagada
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
                       </td>
                     </tr>
                   );

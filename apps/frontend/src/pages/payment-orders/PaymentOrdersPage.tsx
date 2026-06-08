@@ -571,8 +571,8 @@ export default function PaymentOrdersPage() {
               {/* Acciones */}
               {viewingOrder.status !== 'VOIDED' && (
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
-                  {/* Editar: PENDING para todos, PAID solo admin */}
-                  {(viewingOrder.status === 'PENDING' || (isAdmin && viewingOrder.status === 'PAID')) && (
+                  {/* Editar: PENDING para admin/auxiliar/financiero, PAID solo admin */}
+                  {!isAuxiliar && userRole !== 'supervisor' && (viewingOrder.status === 'PENDING' || (isAdmin && viewingOrder.status === 'PAID')) && (
                     <button onClick={() => openOrderModal(viewingOrder)} className="btn-secondary text-sm flex items-center gap-2">
                       <Pencil className="w-3.5 h-3.5" />
                       {isAdmin && viewingOrder.status === 'PAID' ? 'Editar (Admin)' : 'Editar'}
