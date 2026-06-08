@@ -148,15 +148,17 @@ export default function NotificationPanel({
         } ${isDark ? 'bg-gray-950 border-gray-800' : 'bg-white border-gray-200'} border-l`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+        <div className={`flex items-center justify-between px-6 py-4 border-b ${
+          isDark ? 'border-white/10' : 'border-gray-200'
+        }`}>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg" style={{ background: '#F5C218' }}>
               <Bell className="w-5 h-5 text-gray-900" />
             </div>
             <div>
-              <h2 className="font-semibold text-white text-base">Notificaciones</h2>
+              <h2 className={`font-semibold text-base ${isDark ? 'text-white' : 'text-gray-900'}`}>Notificaciones</h2>
               {unreadCount > 0 && (
-                <p className="text-xs text-gray-400">
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   {unreadCount} nuevas
                 </p>
               )}
@@ -164,7 +166,11 @@ export default function NotificationPanel({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+            className={`p-2 rounded-lg transition-colors ${
+              isDark
+                ? 'text-gray-400 hover:text-white hover:bg-white/10'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'
+            }`}
             title="Cerrar"
           >
             <X className="w-5 h-5" />
@@ -172,16 +178,24 @@ export default function NotificationPanel({
         </div>
 
         {/* Search + Actions */}
-        <div className="px-4 py-3 border-b border-white/10 space-y-3">
+        <div className={`px-4 py-3 border-b space-y-3 ${
+          isDark ? 'border-white/10' : 'border-gray-200'
+        }`}>
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${
+              isDark ? 'text-gray-500' : 'text-gray-400'
+            }`} />
             <input
               type="text"
               placeholder="Buscar notificaciones..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white/5 text-white text-sm rounded-lg pl-9 pr-3 py-2 border border-white/10 placeholder-gray-500 focus:outline-none focus:bg-white/10 focus:border-white/20 transition-colors"
+              className={`w-full text-sm rounded-lg pl-9 pr-3 py-2 border transition-colors outline-none ${
+                isDark
+                  ? 'bg-white/5 text-white border-white/10 placeholder-gray-500 focus:bg-white/10 focus:border-white/20'
+                  : 'bg-gray-50 text-gray-900 border-gray-300 placeholder-gray-400 focus:bg-white focus:border-gray-400'
+              }`}
             />
           </div>
 
@@ -190,98 +204,132 @@ export default function NotificationPanel({
             <div className="flex flex-wrap gap-2">
               {NOTIFICATION_TYPES.filter((type) =>
                 notifications.some((n) => n.type === type.id)
-              ).map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => toggleTypeFilter(type.id)}
-                  className={`text-xs font-medium px-2.5 py-1.5 rounded-lg transition-all ${
-                    selectedTypes.includes(type.id)
-                      ? 'bg-white/20 text-white'
-                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                  }`}
-                >
-                  {type.label}
-                </button>
-              ))}
+              ).map((type) => {
+                const count = notifications.filter((n) => n.type === type.id).length;
+                return (
+                  <button
+                    key={type.id}
+                    onClick={() => toggleTypeFilter(type.id)}
+                    className={`text-xs font-medium px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                      selectedTypes.includes(type.id)
+                        ? isDark
+                          ? 'bg-white/20 text-white'
+                          : 'bg-gray-200 text-gray-900'
+                        : isDark
+                          ? 'bg-white/5 text-gray-400 hover:bg-white/10'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {type.label}
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                      isDark ? 'bg-white/10' : 'bg-white'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )}
 
           {/* Quick Actions */}
-          {notifications.length > 0 && (
+          {notifications.length > 0 && unreadCount > 0 && (
             <div className="flex gap-2 pt-1">
-              {unreadCount > 0 && (
-                <button
-                  onClick={() => markAllRead.mutate()}
-                  disabled={markAllRead.isPending}
-                  className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex-1"
-                  style={{ color: '#F5C218', background: 'rgba(245, 194, 24, 0.1)' }}
-                >
-                  <CheckCheck className="w-3.5 h-3.5" />
-                  Leer todas
-                </button>
-              )}
+              <button
+                onClick={() => markAllRead.mutate()}
+                disabled={markAllRead.isPending}
+                className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex-1 ${
+                  isDark
+                    ? 'text-yellow-400 bg-yellow-400/10 hover:bg-yellow-400/20'
+                    : 'text-yellow-600 bg-yellow-100 hover:bg-yellow-200'
+                } disabled:opacity-50`}
+              >
+                <CheckCheck className="w-3.5 h-3.5" />
+                Leer todas
+              </button>
             </div>
           )}
         </div>
 
         {/* Notifications List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className={`flex-1 overflow-y-auto ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
           {isLoading ? (
-            <div className="py-12 text-center text-gray-400 text-sm">
-              <div className="animate-spin w-5 h-5 border-2 border-gray-600 border-t-yellow-400 rounded-full mx-auto mb-3" />
+            <div className={`py-12 text-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+              <div className={`animate-spin w-5 h-5 border-2 rounded-full mx-auto mb-3 ${
+                isDark ? 'border-gray-600 border-t-yellow-400' : 'border-gray-300 border-t-yellow-500'
+              }`} />
               Cargando...
             </div>
           ) : notifications.length === 0 ? (
             <div className="py-16 text-center px-4">
-              <Bell className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-              <p className="text-gray-400 text-sm">No hay notificaciones</p>
-              <p className="text-gray-500 text-xs mt-1">Aquí aparecerán tus alertas y actualizaciones</p>
+              <Bell className={`w-12 h-12 mx-auto mb-3 ${isDark ? 'text-gray-700' : 'text-gray-300'}`} />
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>No hay notificaciones</p>
+              <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Aquí aparecerán tus alertas y actualizaciones</p>
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="py-12 text-center px-4">
-              <Bell className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-              <p className="text-gray-400 text-sm">Sin resultados</p>
-              <p className="text-gray-500 text-xs mt-1">Intenta otro filtro o búsqueda</p>
+              <Bell className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-gray-700' : 'text-gray-300'}`} />
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Sin resultados</p>
+              <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Intenta otro filtro o búsqueda</p>
             </div>
           ) : (
             <div>
               {Object.entries(grouped).map(([type, items]) => (
                 <div key={type}>
                   {/* Tipo header */}
-                  <div className="px-6 py-2 bg-white/3 border-b border-white/5 sticky top-0">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  <div className={`px-6 py-2 sticky top-0 border-b ${
+                    isDark
+                      ? 'bg-white/3 border-white/5'
+                      : 'bg-gray-100 border-gray-200'
+                  }`}>
+                    <p className={`text-xs font-semibold uppercase tracking-wide ${
+                      isDark ? 'text-gray-400' : 'text-gray-500'
+                    }`}>
                       {NOTIFICATION_TYPES.find((t) => t.id === type)?.label || type}
                     </p>
                   </div>
 
                   {/* Items */}
-                  <div className="divide-y divide-white/5">
+                  <div className={`divide-y ${isDark ? 'divide-white/5' : 'divide-gray-200'}`}>
                     {items.map((n) => (
                       <button
                         key={n.id}
                         onClick={() => handleClick(n)}
-                        className={`w-full text-left px-6 py-4 flex items-start gap-3 transition-colors hover:bg-white/5 ${
-                          !n.isRead ? 'bg-white/5' : ''
+                        className={`w-full text-left px-6 py-4 flex items-start gap-3 transition-colors ${
+                          isDark
+                            ? `hover:bg-white/5 ${!n.isRead ? 'bg-white/5' : ''}`
+                            : `hover:bg-gray-100 ${!n.isRead ? 'bg-yellow-50' : ''}`
                         }`}
                       >
                         <div className="mt-0.5 shrink-0">
-                          {TYPE_ICON[n.type] ?? <Bell className="w-5 h-5 text-gray-500" />}
+                          {TYPE_ICON[n.type] ?? <Bell className={`w-5 h-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p
                             className={`text-sm leading-snug font-medium ${
-                              !n.isRead ? 'text-white font-semibold' : 'text-gray-300'
+                              !n.isRead
+                                ? isDark
+                                  ? 'text-white font-semibold'
+                                  : 'text-gray-900 font-semibold'
+                                : isDark
+                                  ? 'text-gray-300'
+                                  : 'text-gray-700'
                             }`}
                           >
                             {n.title}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1 leading-snug line-clamp-2">
+                          <p className={`text-xs mt-1 leading-snug line-clamp-2 ${
+                            isDark ? 'text-gray-400' : 'text-gray-600'
+                          }`}>
                             {n.message}
                           </p>
-                          <p className="text-xs text-gray-500 mt-2">{timeAgo(n.createdAt)}</p>
+                          <p className={`text-xs mt-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{timeAgo(n.createdAt)}</p>
                         </div>
                         {!n.isRead && (
-                          <span className="mt-1 w-2.5 h-2.5 rounded-full shrink-0" style={{ background: '#F5C218' }} />
+                          <span
+                            className="mt-1 w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ background: '#F5C218' }}
+                          />
                         )}
                       </button>
                     ))}
