@@ -1,5 +1,10 @@
 # Build stage - Backend (Force rebuild)
 FROM node:24-alpine AS builder
+
+# Cache invalidation - forces fresh build every deployment
+ARG CACHE_BUST=default
+RUN echo "Cache bust: $CACHE_BUST"
+
 WORKDIR /app
 
 # Copy monorepo files
