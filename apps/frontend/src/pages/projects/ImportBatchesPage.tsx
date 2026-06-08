@@ -19,7 +19,8 @@ export default function ImportBatchesPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Importar Lotes desde CSV</h1>
+            <p className="module-label">MÓDULO / IMPORTACIÓN</p>
+            <h1 className="page-title">Importar Lotes desde CSV</h1>
             <p className="text-sm text-gray-500 mt-1">
               Carga un archivo CSV con los gastos históricos para importarlos como lotes
             </p>

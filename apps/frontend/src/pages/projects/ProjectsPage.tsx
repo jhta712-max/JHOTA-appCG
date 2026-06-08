@@ -37,12 +37,13 @@ export default function ProjectsPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Proyectos</h1>
-          <p className="text-sm text-gray-500">{data?.pagination?.total ?? 0} proyectos registrados</p>
+          <p className="module-label">MÓDULO / PROYECTOS</p>
+          <h1 className="page-title">Proyectos</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{data?.pagination?.total ?? 0} proyectos registrados</p>
         </div>
         {canCreateProject && (
-          <Link to="/projects/new" className="btn-primary text-sm">
-            <Plus className="w-4 h-4" /> Nuevo
+          <Link to="/projects/new" className="smi-btn">
+            <Plus className="w-4 h-4" /> Nuevo Proyecto
           </Link>
         )}
       </div>

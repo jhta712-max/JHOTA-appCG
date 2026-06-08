@@ -285,7 +285,8 @@ export default function ProjectFormPage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">{isEdit ? 'Editar proyecto' : 'Nuevo proyecto'}</h1>
+          <p className="module-label">MÓDULO / PROYECTOS</p>
+          <h1 className="page-title">{isEdit ? 'Editar proyecto' : 'Nuevo proyecto'}</h1>
           <p className="text-sm text-gray-500">Completa la información del proyecto</p>
         </div>
       </div>

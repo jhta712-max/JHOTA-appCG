@@ -95,13 +95,12 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Tag className="w-5 h-5 text-primary-600" /> Categorías
-          </h1>
-          <p className="text-sm text-gray-500">{categories?.length ?? 0} categorías disponibles</p>
+          <p className="module-label">ADMINISTRACIÓN / CATEGORÍAS</p>
+          <h1 className="page-title">Categorías</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{categories?.length ?? 0} categorías disponibles</p>
         </div>
         {isAdmin && (
-          <button onClick={openCreate} className="btn-primary text-sm">
+          <button onClick={openCreate} className="smi-btn">
             <Plus className="w-4 h-4" /> Nueva categoría
           </button>
         )}

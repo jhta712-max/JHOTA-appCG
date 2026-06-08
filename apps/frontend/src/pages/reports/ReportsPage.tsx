@@ -102,9 +102,8 @@ export default function ReportsPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-primary-600" /> Reportes y Exportación
-        </h1>
+        <p className="module-label">MÓDULO / REPORTES</p>
+        <h1 className="page-title">Reportes y Exportación</h1>
         <p className="text-sm text-gray-500 mt-0.5">Genera reportes en Excel o PDF para análisis y auditoría</p>
       </div>
 

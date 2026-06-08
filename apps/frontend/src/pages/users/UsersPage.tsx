@@ -162,13 +162,12 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary-600" /> Usuarios
-          </h1>
-          <p className="text-sm text-gray-500">{users?.length ?? 0} usuarios activos</p>
+          <p className="module-label">ADMINISTRACIÓN / USUARIOS</p>
+          <h1 className="page-title">Usuarios</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{users?.length ?? 0} usuarios activos</p>
         </div>
         {canManage && (
-          <button onClick={openInvite} className="btn-primary text-sm">
+          <button onClick={openInvite} className="smi-btn">
             <UserPlus className="w-4 h-4" /> Invitar usuario
           </button>
         )}

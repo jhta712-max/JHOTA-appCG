@@ -70,7 +70,7 @@ export default function ProjectDetailPage() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-gray-900 truncate">{project.name}</h1>
+            <h1 className="page-title truncate">{project.name}</h1>
             <span className={STATUS_BADGE[project.status]}>
               {PROJECT_STATUS_LABELS[project.status]}
             </span>

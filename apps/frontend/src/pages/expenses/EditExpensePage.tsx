@@ -158,7 +158,8 @@ export default function EditExpensePage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Editar gasto</h1>
+          <p className="module-label">MÓDULO / GASTOS</p>
+          <h1 className="page-title">Editar Gasto</h1>
           <p className="text-sm text-gray-500">Modifica los datos del gasto</p>
         </div>
       </div>

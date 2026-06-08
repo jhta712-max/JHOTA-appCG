@@ -84,10 +84,8 @@ export default function PendingOrdersPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-amber-500" />
-            Bandeja de Pagos Pendientes
-          </h1>
+          <p className="module-label">MÓDULO / PAGOS PENDIENTES</p>
+          <h1 className="page-title">Bandeja de Pagos Pendientes</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Órdenes de pago pendientes de procesar en todos los proyectos
           </p>

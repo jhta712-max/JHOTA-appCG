@@ -215,7 +215,7 @@ export default function ProjectFinancialPage() {
               {project.code}
             </Link>
             <span className="text-gray-300">/</span>
-            <h1 className="text-xl font-bold text-gray-900">Análisis Financiero</h1>
+            <h1 className="page-title">Análisis Financiero</h1>
           </div>
           <p className="text-sm text-gray-500 truncate">{project.name}</p>
         </div>

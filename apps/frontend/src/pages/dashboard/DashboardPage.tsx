@@ -90,8 +90,8 @@ export default function DashboardPage() {
       {/* Saludo */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-            {greeting()}, {user?.name?.split(' ')[0]} 👋
+          <h1 className="page-title" style={{ fontSize: '1.6rem' }}>
+            {greeting()}, {user?.name?.split(' ')[0]}
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">Aquí está el resumen de hoy</p>
         </div>

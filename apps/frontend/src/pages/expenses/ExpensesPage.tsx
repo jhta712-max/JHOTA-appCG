@@ -93,8 +93,9 @@ export default function ExpensesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Gastos</h1>
-          <p className="text-sm text-gray-500">{pagination?.total ?? 0} gastos registrados</p>
+          <p className="module-label">MÓDULO / GASTOS</p>
+          <h1 className="page-title">Gastos</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{pagination?.total ?? 0} gastos registrados</p>
         </div>
         {canCreateExpense && (
           <div className="flex gap-2">
@@ -102,8 +103,8 @@ export default function ExpensesPage() {
             <button onClick={() => fileRef.current?.click()} className="btn-secondary text-sm">
               <Upload className="w-4 h-4" /> Importar CSV
             </button>
-            <Link to="/expenses/new" className="btn-primary text-sm">
-              <Plus className="w-4 h-4" /> Nuevo
+            <Link to="/expenses/new" className="smi-btn">
+              <Plus className="w-4 h-4" /> Nuevo Gasto
             </Link>
           </div>
         )}

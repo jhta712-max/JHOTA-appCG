@@ -243,17 +243,15 @@ export default function OfficeExpensesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-500" />
-            Gastos de Oficina
-          </h1>
+          <p className="module-label">MÓDULO / GASTOS DE OFICINA</p>
+          <h1 className="page-title">Gastos de Oficina</h1>
           <p className="text-sm text-gray-500">
             Insumos de limpieza, material gastable y servicios generales de oficina
           </p>
         </div>
         {isSupervisor && (
-          <button onClick={openCreate} className="btn-primary text-sm">
-            <Plus className="w-4 h-4" /> Nuevo gasto
+          <button onClick={openCreate} className="smi-btn">
+            <Plus className="w-4 h-4" /> Nuevo Gasto
           </button>
         )}
       </div>

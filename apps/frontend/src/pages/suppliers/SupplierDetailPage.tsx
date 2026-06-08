@@ -227,7 +227,7 @@ export default function SupplierDetailPage() {
           {/* Datos */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-lg font-bold text-gray-900">{supplier.name}</h1>
+              <h1 className="page-title">{supplier.name}</h1>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 supplier.isActive
                   ? 'bg-green-100 text-green-700'
