@@ -261,11 +261,32 @@ export async function rejectExpense(id: string, rejectorId: string, reason: stri
   if (expense.status !== 'PENDING_APPROVAL') {
     throw new AppError(400, 'Solo se pueden rechazar gastos pendientes', 'INVALID_STATUS');
   }
-  const updated = await prisma.expense.update({
-    where: { id },
-    data:  { status: 'REJECTED', rejectedById: rejectorId, rejectedAt: new Date(), rejectionReason: reason },
-    include: EXPENSE_INCLUDE,
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const rejectedExpense = await tx.expense.update({
+      where:   { id },
+      data:    { status: 'REJECTED', rejectedById: rejectorId, rejectedAt: new Date(), rejectionReason: reason },
+      include: EXPENSE_INCLUDE,
+    });
+
+    // Si el gasto está vinculado a una orden de pago, revertirla a PENDING
+    const linkedOrder = await tx.paymentOrder.findFirst({ where: { expenseId: id } });
+    if (linkedOrder && linkedOrder.status === 'PAID') {
+      await tx.paymentOrder.update({
+        where: { id: linkedOrder.id },
+        data:  {
+          status:           'PENDING',
+          paidAt:           null,
+          paidById:         null,
+          paymentBank:      null,
+          paymentReference: null,
+        },
+      });
+    }
+
+    return rejectedExpense;
   });
+
   // Notificar al creador
   await createNotification({
     userId:   expense.userId,
