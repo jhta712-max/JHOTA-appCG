@@ -27,6 +27,8 @@ services:
 
     dockerfilePath: ./Dockerfile.backend
 
+    preDeployCommand: cd apps/backend && pnpm run db:migrate:prod
+
     envVars:
       - key: NODE_ENV
         value: production
