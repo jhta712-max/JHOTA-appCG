@@ -53,8 +53,8 @@ export async function getPaymentOrders(
     // Admin: all orders from any creator, defaults to PENDING
     where.status = query.status || 'PENDING';
   } else if (role === 'auxiliar') {
-    // Auxiliar: all PENDING from any creator, status fixed
-    where.status = 'PENDING';
+    // Auxiliar: sees all orders (same as financiero)
+    if (query.status) where.status = query.status;
   } else {
     // Supervisor / operator / others: only their own PENDING
     where.createdById = userId;

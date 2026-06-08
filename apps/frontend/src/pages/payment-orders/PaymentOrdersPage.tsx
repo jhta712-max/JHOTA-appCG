@@ -107,8 +107,7 @@ export default function PaymentOrdersPage() {
   const isAdmin   = userRole === 'admin';
   const isAuxiliar = userRole === 'auxiliar';
   const isFinanciero = userRole === 'financiero';
-  // Auxiliar/supervisor/others: fixed to PENDING; admin/financiero: can filter
-  const canFilterStatus = isAdmin || isFinanciero;
+  const canFilterStatus = isAdmin || isFinanciero || isAuxiliar;
   const [viewingOrder, setViewingOrder] = useState<PaymentOrder | null>(null);
   const [toast,        setToast]        = useState('');
   const [filterStatus, setFilterStatus] = useState('PENDING');
