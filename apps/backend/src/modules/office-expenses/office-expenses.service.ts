@@ -11,11 +11,12 @@ const INCLUDE = {
 // ── List ─────────────────────────────────────────────────────────────────────
 
 export async function listOfficeExpenses(params: ListOfficeExpensesInput) {
-  const { page, limit, category, from, to, orderBy, order } = params;
+  const { page, limit, category, from, to, hasFiscalDoc, orderBy, order } = params;
   const skip = (page - 1) * limit;
 
   const where: any = { status: 'ACTIVE' };
-  if (category)   where.category    = category;
+  if (category)                   where.category     = category;
+  if (hasFiscalDoc !== undefined)  where.hasFiscalDoc = hasFiscalDoc;
   if (from || to) {
     where.expenseDate = {};
     if (from) where.expenseDate.gte = new Date(from);

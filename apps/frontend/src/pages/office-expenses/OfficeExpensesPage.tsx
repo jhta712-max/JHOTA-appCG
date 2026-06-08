@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Receipt, Plus, X, Save, Trash2, ChevronDown, ChevronUp,
   Sparkles, AlertCircle, CreditCard, Camera, Loader2, Building2,
+  ArrowUpDown, Filter,
 } from 'lucide-react';
 import {
   officeExpensesApi, cardsApi, ocrApi, suppliersApi,
@@ -62,21 +63,41 @@ export default function OfficeExpensesPage() {
   const { isSupervisor } = useRole();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [showForm,    setShowForm]    = useState(false);
-  const [editingId,   setEditingId]   = useState<string | null>(null);
-  const [viewingExp,  setViewingExp]  = useState<OfficeExpense | null>(null);
-  const [form,        setForm]        = useState(emptyForm());
-  const [flash,       setFlash]       = useState('');
-  const [catFilter,   setCatFilter]   = useState('');
-  const [expandStats, setExpandStats] = useState(true);
-  const [ocrLoading,  setOcrLoading]  = useState(false);
-  const [ocrError,    setOcrError]    = useState('');
-  const [actionError, setActionError] = useState('');
+  const [showForm,      setShowForm]      = useState(false);
+  const [editingId,     setEditingId]     = useState<string | null>(null);
+  const [viewingExp,    setViewingExp]    = useState<OfficeExpense | null>(null);
+  const [form,          setForm]          = useState(emptyForm());
+  const [flash,         setFlash]         = useState('');
+  const [catFilter,     setCatFilter]     = useState('');
+  const [expandStats,   setExpandStats]   = useState(true);
+  const [ocrLoading,    setOcrLoading]    = useState(false);
+  const [ocrError,      setOcrError]      = useState('');
+  const [actionError,   setActionError]   = useState('');
+  const [orderBy,       setOrderBy]       = useState<'expenseDate' | 'amount' | 'createdAt'>('expenseDate');
+  const [order,         setOrder]         = useState<'asc' | 'desc'>('desc');
+  const [hasFiscalDoc,  setHasFiscalDoc]  = useState('');
+  const [dateFrom,      setDateFrom]      = useState('');
+  const [dateTo,        setDateTo]        = useState('');
+  const [showFilters,   setShowFilters]   = useState(false);
+
+  const activeFilterCount = [hasFiscalDoc, dateFrom, dateTo].filter(Boolean).length;
+
+  function resetFilters() {
+    setHasFiscalDoc(''); setDateFrom(''); setDateTo('');
+  }
 
   // queries
   const { data: listData, isLoading } = useQuery({
-    queryKey: ['office-expenses', catFilter],
-    queryFn:  () => officeExpensesApi.list({ category: catFilter || undefined, limit: 50 }),
+    queryKey: ['office-expenses', catFilter, orderBy, order, hasFiscalDoc, dateFrom, dateTo],
+    queryFn:  () => officeExpensesApi.list({
+      category:     catFilter     || undefined,
+      hasFiscalDoc: hasFiscalDoc !== '' ? hasFiscalDoc === 'true' : undefined,
+      from:         dateFrom      || undefined,
+      to:           dateTo        || undefined,
+      orderBy,
+      order,
+      limit: 50,
+    }),
     select:   (r) => r.data,
   });
 
@@ -292,27 +313,102 @@ export default function OfficeExpensesPage() {
         </div>
       )}
 
-      {/* Filtro categoría */}
-      <div className="flex gap-2 flex-wrap">
-        <button
-          onClick={() => setCatFilter('')}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-            catFilter === '' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
-          }`}
-        >
-          Todas
-        </button>
-        {CATEGORIES.map(([key, label]) => (
+      {/* Filtros: categoría + orden + avanzados */}
+      <div className="space-y-3">
+        {/* Fila 1: tabs de categoría */}
+        <div className="flex gap-2 flex-wrap items-center">
           <button
-            key={key}
-            onClick={() => setCatFilter(key)}
+            onClick={() => setCatFilter('')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-              catFilter === key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
+              catFilter === '' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
             }`}
           >
-            {label}
+            Todas
           </button>
-        ))}
+          {CATEGORIES.map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setCatFilter(key)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                catFilter === key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+
+          {/* Separador */}
+          <div className="flex-1" />
+
+          {/* Orden */}
+          <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-2">
+            <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <select className="text-sm text-gray-700 bg-transparent border-none outline-none cursor-pointer"
+              value={orderBy} onChange={(e) => setOrderBy(e.target.value as any)}>
+              <option value="expenseDate">Fecha factura</option>
+              <option value="createdAt">Fecha registro</option>
+              <option value="amount">Monto</option>
+            </select>
+            <select className="text-sm text-gray-700 bg-transparent border-none outline-none cursor-pointer"
+              value={order} onChange={(e) => setOrder(e.target.value as any)}>
+              <option value="desc">↓ Nuevo primero</option>
+              <option value="asc">↑ Viejo primero</option>
+            </select>
+          </div>
+
+          {/* Botón filtros avanzados */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+              showFilters || activeFilterCount > 0
+                ? 'bg-brand-yellow/10 border-brand-yellow text-brand-dark'
+                : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+            }`}
+          >
+            <Filter className="w-3.5 h-3.5" />
+            Filtros
+            {activeFilterCount > 0 && (
+              <span className="bg-brand-dark text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Fila 2: filtros avanzados (expandibles) */}
+        {showFilters && (
+          <div className="card p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filtros avanzados</p>
+              {activeFilterCount > 0 && (
+                <button onClick={resetFilters} className="text-xs text-red-500 hover:text-red-700 font-medium">
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="label">Comprobante (NCF / Factura)</label>
+                <select className="input-field" value={hasFiscalDoc}
+                  onChange={(e) => setHasFiscalDoc(e.target.value)}>
+                  <option value="">Todos</option>
+                  <option value="true">Con factura</option>
+                  <option value="false">Sin factura</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Desde</label>
+                <input type="date" className="input-field" value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)} />
+              </div>
+              <div>
+                <label className="label">Hasta</label>
+                <input type="date" className="input-field" value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* List */}
