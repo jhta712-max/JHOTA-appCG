@@ -27,7 +27,7 @@ services:
 
     dockerfilePath: ./Dockerfile.backend
 
-    preDeployCommand: node /app/node_modules/.bin/prisma migrate deploy --schema /app/prisma/schema.prisma
+    preDeployCommand: null
 
     envVars:
       - key: NODE_ENV
