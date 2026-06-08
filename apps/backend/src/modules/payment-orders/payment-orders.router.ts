@@ -3,7 +3,7 @@ import { authenticate } from '../../middlewares/authenticate';
 import { authorize }    from '../../middlewares/authorize';
 import {
   listPaymentOrders, getPaymentOrder,
-  getAvailablePayrolls, getAvailableExpenses, getAvailableContracts,
+  getAvailablePayrolls, getAvailableExpenses, getAvailableContracts, getAvailableQuotations,
   createPaymentOrder, updatePaymentOrder,
   linkExpense, unlinkExpense,
   linkPayroll, unlinkPayroll,
@@ -20,6 +20,7 @@ router.get('/',                       listPaymentOrders);
 router.get('/available-payrolls',     getAvailablePayrolls);
 router.get('/available-expenses',     getAvailableExpenses);
 router.get('/available-contracts',    getAvailableContracts);
+router.get('/available-quotations',   getAvailableQuotations);
 router.get('/:id',                    getPaymentOrder);
 router.post('/',                      createPaymentOrder);
 router.put('/:id',                    authorize('admin', 'supervisor', 'financiero'), updatePaymentOrder);

@@ -39,6 +39,13 @@ export async function getAvailableContracts(req: Request, res: Response, next: N
   } catch (err) { next(err); }
 }
 
+export async function getAvailableQuotations(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { projectId, supplierId } = z.object({ projectId: z.string().uuid(), supplierId: z.string().uuid() }).parse(req.query);
+    res.json({ success: true, data: await svc.getAvailableQuotations(projectId, supplierId) });
+  } catch (err) { next(err); }
+}
+
 export async function createPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     const data = createPaymentOrderSchema.parse(req.body);

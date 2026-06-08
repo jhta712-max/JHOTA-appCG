@@ -93,6 +93,21 @@ export async function getAvailablePayrolls(projectId: string) {
   });
 }
 
+// ── Cotizaciones abiertas para proyecto+suplidor ──────────────
+export async function getAvailableQuotations(projectId: string, supplierId: string) {
+  const supplier = await prisma.supplier.findUnique({ where: { id: supplierId }, select: { name: true } });
+  const openStatuses = ['APPROVED', 'ADVANCE_PAID', 'IN_PROGRESS', 'PARTIAL_INVOICED', 'INVOICED'];
+  return prisma.quotation.findMany({
+    where: {
+      projectId,
+      status: { in: openStatuses as any },
+      ...(supplier ? { supplierName: { contains: supplier.name, mode: 'insensitive' } } : {}),
+    },
+    orderBy: { quotationDate: 'desc' },
+    select: { id: true, number: true, description: true, total: true, currency: true, status: true, quotationDate: true, supplierName: true },
+  });
+}
+
 // ── Contratos ajustados ACTIVOS para proyecto+suplidor ────────
 export async function getAvailableContracts(projectId: string, supplierId: string) {
   return prisma.contratoAjustado.findMany({
@@ -167,6 +182,14 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
     if (!contrato) throw new AppError(404, 'Contrato ajustado no encontrado', 'NOT_FOUND');
     if (contrato.projectId !== data.projectId || contrato.supplierId !== data.supplierId)
       throw new AppError(400, 'El contrato no pertenece a este proyecto/suplidor', 'CONTRACT_MISMATCH');
+  }
+
+  // Validate quotation if provided
+  if (data.quotationId) {
+    const quotation = await prisma.quotation.findUnique({ where: { id: data.quotationId } });
+    if (!quotation) throw new AppError(404, 'Cotización no encontrada', 'NOT_FOUND');
+    if (quotation.projectId !== data.projectId)
+      throw new AppError(400, 'La cotización no pertenece a este proyecto', 'QUOTATION_MISMATCH');
   }
 
   // ── AUTO-CREATE PAYROLL when type=PAYROLL + payrollData ──────
@@ -270,6 +293,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
           generatedText,
           payrollId:          payroll.id,
           contratoAjustadoId: data.contratoAjustadoId ?? null,
+          quotationId:        null,
           createdById:        userId,
         },
         include: INCLUDE,
@@ -291,6 +315,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
       generatedText,
       payrollId:          data.orderType === 'PAYROLL' ? (data.payrollId ?? null) : null,
       contratoAjustadoId: data.contratoAjustadoId ?? null,
+      quotationId:        data.orderType === 'SERVICIO' ? (data.quotationId ?? null) : null,
       createdById:        userId,
     },
     include: INCLUDE,
@@ -454,6 +479,19 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
           }),
         },
       });
+
+      // Link expense to quotation if this SERVICIO order has a quotation linked
+      if ((po as any).quotationId) {
+        await tx.quotationExpenseLink.create({
+          data: {
+            quotationId: (po as any).quotationId,
+            expenseId:   expense.id,
+            linkType:    'PARTIAL_INVOICE',
+            notes:       `Auto-vinculado desde OP-${String(po.number).padStart(3, '0')}`,
+            createdById: userId,
+          },
+        });
+      }
 
       // Register advance in contrato ajustado if linked
       if ((po as any).contratoAjustadoId) {

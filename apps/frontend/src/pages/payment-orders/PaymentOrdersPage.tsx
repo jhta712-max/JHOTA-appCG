@@ -17,12 +17,12 @@ type ModalView = 'form' | 'success';
 type OrderForm = {
   orderType: OrderType; payingCompany: string; supplierId: string;
   projectId: string; amount: string; currency: string; concept: string;
-  notes: string; payrollId: string; bankAccountId: string; contratoAjustadoId: string;
+  notes: string; payrollId: string; bankAccountId: string; contratoAjustadoId: string; quotationId: string;
   payrollPeriodStart: string; payrollPeriodEnd: string; payrollType: 'LABOR' | 'SERVICE';
 };
 const EMPTY_ORDER: OrderForm = {
   orderType: 'SERVICIO', payingCompany: '', supplierId: '', projectId: '',
-  amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '', bankAccountId: '', contratoAjustadoId: '',
+  amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '', bankAccountId: '', contratoAjustadoId: '', quotationId: '',
   payrollPeriodStart: '', payrollPeriodEnd: '', payrollType: 'LABOR',
 };
 
@@ -194,6 +194,13 @@ export default function PaymentOrdersPage() {
     enabled:  orderModal && !!orderForm.projectId && !!orderForm.supplierId,
   });
 
+  const { data: availableQuotations = [] } = useQuery({
+    queryKey: ['payment-orders', 'quotations', orderForm.projectId, orderForm.supplierId],
+    queryFn:  () => paymentOrdersApi.availableQuotations(orderForm.projectId, orderForm.supplierId),
+    select:   (r) => r.data.data as any[],
+    enabled:  orderModal && orderForm.orderType === 'SERVICIO' && !!orderForm.projectId && !!orderForm.supplierId,
+  });
+
   // ── Order mutations ───────────────────────────────────────────
   const createOrderMut = useMutation({
     mutationFn: (d: unknown) => paymentOrdersApi.create(d),
@@ -286,6 +293,7 @@ export default function PaymentOrdersPage() {
           payrollId:          o.payrollId ?? '',
           bankAccountId:      '',
           contratoAjustadoId: (o as any).contratoAjustadoId ?? '',
+          quotationId:        (o as any).quotationId ?? '',
           payrollPeriodStart: payroll?.periodStart ? payroll.periodStart.slice(0, 10) : '',
           payrollPeriodEnd:   payroll?.periodEnd   ? payroll.periodEnd.slice(0, 10)   : '',
           payrollType:        payroll?.type ?? 'LABOR',
@@ -343,6 +351,7 @@ export default function PaymentOrdersPage() {
       notes:              orderForm.notes || undefined,
       bankAccountId:      orderForm.bankAccountId || undefined,
       contratoAjustadoId: orderForm.contratoAjustadoId || undefined,
+      quotationId:        orderForm.orderType === 'SERVICIO' ? (orderForm.quotationId || undefined) : undefined,
     };
 
     if (isNewPayroll) {
@@ -805,8 +814,8 @@ export default function PaymentOrdersPage() {
                         onClick={() => setOrderForm((f) => ({
                           ...f,
                           orderType: t,
-                          // solo reinicia payrollId al cambiar tipo; conserva monto y concepto al editar
                           payrollId: '',
+                          quotationId: '',
                           ...(!editingOrder ? { amount: '', concept: '' } : {}),
                         }))}
                         className={`p-3 rounded-xl border-2 text-left transition-all ${orderForm.orderType === t ? cfg.color + ' border-opacity-100' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
@@ -954,6 +963,32 @@ export default function PaymentOrdersPage() {
                   {orderForm.contratoAjustadoId && (
                     <p className="text-xs text-indigo-600 mt-1">
                       ✅ El gasto generado quedará vinculado automáticamente a este contrato como avance.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Cotización abierta — solo si tipo=SERVICIO y hay cotizaciones activas para proyecto+suplidor */}
+              {orderForm.orderType === 'SERVICIO' && availableQuotations.length > 0 && (
+                <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 mb-1">
+                  <label className="block text-xs font-bold text-teal-700 uppercase tracking-wide mb-1.5">
+                    📄 Vincular a cotización abierta <span className="font-normal text-teal-500 normal-case">(opcional)</span>
+                  </label>
+                  <select
+                    className="input-field text-sm"
+                    value={orderForm.quotationId}
+                    onChange={(e) => setOrderForm((f) => ({ ...f, quotationId: e.target.value }))}
+                  >
+                    <option value="">— Sin cotización vinculada —</option>
+                    {availableQuotations.map((q: any) => (
+                      <option key={q.id} value={q.id}>
+                        COTI-{String(q.number).padStart(3, '0')} · {q.description?.slice(0, 50)}{q.description?.length > 50 ? '…' : ''} · {q.currency} {Number(q.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                      </option>
+                    ))}
+                  </select>
+                  {orderForm.quotationId && (
+                    <p className="text-xs text-teal-600 mt-1">
+                      ✅ Al confirmar el pago, el gasto quedará vinculado automáticamente a esta cotización como factura parcial.
                     </p>
                   )}
                 </div>
