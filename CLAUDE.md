@@ -1,6 +1,12 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
+
 # servingmi-appCG — Instrucciones para Claude
 
-## Regla de deploy en Render
+## 🚀 Regla de deploy en Render
 
 **Siempre hacer push a `main` después de cada cambio.**
 
@@ -9,35 +15,77 @@ Render auto-deploya desde `main`. El flujo es:
 2. Merge a `main`.
 3. `git push origin main` → Render lanza el redeploy automático.
 
+**IMPORTANTE**: Backend y Frontend están en la **MISMA rama** (`main`). No hay ramas separadas.
+
 ---
 
-## Stack tecnológico
+## 📋 Comandos comunes
 
-- **Backend**: Node.js + Express + TypeScript + Prisma ORM + PostgreSQL
+Ejecutar **siempre desde `/home/user/servingmi-appCG`** (raíz del monorepo).
+
+### Desarrollo local
+```bash
+pnpm install                    # Instalar todas las dependencias del workspace
+pnpm dev                        # Correr backend + frontend simultáneamente
+pnpm dev:backend               # Solo backend (http://localhost:3001)
+pnpm dev:frontend              # Solo frontend (http://localhost:5173)
+```
+
+### Base de datos
+```bash
+docker-compose up -d postgres  # Levantar PostgreSQL local
+docker-compose down            # Bajar PostgreSQL
+pnpm db:migrate                # Ejecutar migraciones (dev)
+pnpm db:seed                   # Seed de roles y categorías
+pnpm db:studio                 # Abrir Prisma Studio
+```
+
+### Build & Deploy
+```bash
+pnpm build:backend             # Compilar backend TypeScript
+pnpm build:frontend            # Compilar frontend Vite
+docker build -f Dockerfile.backend .   # Testear Docker build local
+docker build -f Dockerfile.frontend .  # Testear Docker build local
+```
+
+### Verificaciones pre-commit
+```bash
+pnpm --filter backend db:generate      # Regenerar Prisma client
+git status                             # Verificar archivos sin stage
+git diff main                          # Revisar cambios vs main
+```
+
+---
+
+## 🏗️ Stack tecnológico
+
+- **Backend**: Node.js 24 + Express + TypeScript + Prisma ORM + PostgreSQL 16
 - **Frontend**: React 18 + TypeScript + Vite + TailwindCSS + TanStack Query + Zustand
-- **Monorepo**: pnpm workspaces (`apps/backend`, `apps/frontend`)
-- **Deploy**: Render.com (auto-deploy desde `main`)
-- **Rama de trabajo activa**: `claude/skills-directory-setup-tiPbm`
+- **Monorepo**: pnpm workspaces v9+ (`apps/backend`, `apps/frontend`)
+- **Deploy**: Render.com (Docker, auto-deploy desde `main`)
+- **Node version**: >=20.0.0 (Render usa 24)
 
 ---
 
-## Directorios clave — SIEMPRE informar al usuario cuál usar
+## 📁 Directorios clave — SIEMPRE informar al usuario cuál usar
 
 | Tarea                                   | Directorio                                       |
 |-----------------------------------------|--------------------------------------------------|
-| Git, deploy, pnpm install               | `/home/user/servingmi-appCG`                     |
-| Backend, Prisma, migraciones, seed      | `/home/user/servingmi-appCG/apps/backend`        |
-| Frontend, TypeScript, vite              | `/home/user/servingmi-appCG/apps/frontend`       |
-| Schema de BD                            | `/home/user/servingmi-appCG/apps/backend/prisma` |
+| Git, deploy, pnpm install               | `/home/user/servingmi-appCG` (raíz)               |
+| Backend, Prisma, migraciones            | `/home/user/servingmi-appCG/apps/backend`        |
+| Frontend, Vite, React                   | `/home/user/servingmi-appCG/apps/frontend`       |
+| Prisma schema & migraciones             | `/home/user/servingmi-appCG/apps/backend/prisma` |
+| Docker configuration                    | `/home/user/servingmi-appCG` (Dockerfile.*)      |
+| Render configuration                    | `/home/user/servingmi-appCG/render.yaml`         |
 
-**Regla**: Antes de dar cualquier comando al usuario, indicar el directorio exacto donde ejecutarlo.
+**REGLA**: Antes de dar cualquier comando al usuario, indicar el directorio exacto.
 
 ---
 
-## Arquitectura de la app
+## 🏛️ Arquitectura de la app
 
 ### Backend (`apps/backend/src/modules/`)
-Cada módulo sigue el patrón: `controller → service → router → schema`
+Cada módulo sigue: `controller → service → router → schema (Zod)`
 
 | Módulo           | Descripción                              |
 |-----------------|------------------------------------------|
@@ -58,7 +106,6 @@ Cada módulo sigue el patrón: `controller → service → router → schema`
 | backup           | Export masivo de datos                   |
 
 ### Frontend (`apps/frontend/src/`)
-
 ```
 pages/          ← Una carpeta por módulo, mismo nombre que las rutas
 components/     ← Layout.tsx (nav, header) + componentes reutilizables
@@ -66,12 +113,12 @@ hooks/useRole.ts← RBAC centralizado — SIEMPRE usar este hook
 stores/authStore.ts ← Zustand: user, tokens, viewAsRole
 api/index.ts    ← Todos los endpoints del frontend
 types/          ← Interfaces TypeScript compartidas
-utils/date.ts   ← Formateo de fechas
+utils/          ← Helpers (date, formatting)
 ```
 
 ---
 
-## RBAC — Sistema de roles
+## 🔐 RBAC — Sistema de roles
 
 ### Hook centralizado: `useRole()`
 **SIEMPRE usar `useRole()` en lugar de `useAuthStore` para permisos.**
@@ -93,12 +140,9 @@ Cuando `admin` tiene `viewAsRole` activo, `useRole()` devuelve los permisos del 
 | auxiliar    | Ver + marcar órdenes pendientes, crear/editar nóminas              |
 | financiero  | Solo lectura: proyectos, gastos, cotizaciones, reportes, exportar  |
 
-### Nav items filtrados por rol (Layout.tsx)
-La navegación usa `roles?: string[]` en cada item. `visibleItems` se filtra por `effectiveRole`.
-
 ---
 
-## Flujos de negocio críticos
+## 💼 Flujos de negocio críticos
 
 ### Flujo Orden de Pago → Nómina (CORRECTO)
 1. Crear Orden de Pago (tipo PAYROLL)
@@ -119,7 +163,71 @@ La navegación usa `roles?: string[]` en cada item. `visibleItems` se filtra por
 
 ---
 
-## Patrones de código que seguir
+## 📊 Base de datos — Schema clave
+
+### Modelos principales
+- `User` → roles: admin, supervisor, operator, auxiliar, financiero
+- `Project` → status: ACTIVE, PAUSED, COMPLETED, CANCELLED
+- `Expense` → status: ACTIVE, VOIDED | categoryId → ExpenseCategory
+- `Payroll` → status: DRAFT, APPROVED, PAID, VOIDED | paymentOrder: PaymentOrder? (one-to-one)
+- `PaymentOrder` → orderType: SERVICIO, MATERIALS, PAYROLL | status: PENDING, PAID, VOIDED
+- `Quotation` → 8 estados posibles
+
+### Relaciones importantes
+- `PaymentOrder.payrollId` → FK a `Payroll` (un PaymentOrder tiene un Payroll)
+- `PaymentOrder.expenseId` → FK a `Expense` (auto-creado al markAsPaid)
+- `Payroll.paymentOrder` → relación inversa (uno a uno, campo singular)
+
+**IMPORTANTE**: En `PAYROLL_INCLUDE` usar `paymentOrder` (singular), NO `paymentOrders`.
+
+---
+
+## 🐳 Docker & Render — CRÍTICO para Deploy
+
+### Estructura de Dockerfiles
+- **Dockerfile** (copia del backend, se usa por defecto)
+- **Dockerfile.backend** (Node.js 24 Alpine + Prisma)
+- **Dockerfile.frontend** (Nginx Alpine)
+
+### Reglas cruciales para NO repetir problemas:
+
+1. **SIEMPRE copiar TODO el workspace**
+   ```dockerfile
+   COPY apps ./apps          # ✅ CORRECTO
+   COPY apps/backend ./apps/backend    # ❌ INCORRECTO (quebra pnpm workspace)
+   ```
+
+2. **Ejecutar Prisma generate en Docker**
+   ```dockerfile
+   RUN pnpm run db:generate   # Regenerar con binary targets correctos
+   RUN pnpm run build
+   ```
+
+3. **Prisma binary targets para Alpine OpenSSL 3.0**
+   - Schema debe incluir: `"linux-musl-openssl-3.0.x"`
+   - Ver: `apps/backend/prisma/schema.prisma`
+   - Si lo cambias: ejecutar `pnpm run db:generate` ANTES de push
+
+4. **Invalidación de cache Docker**
+   - Dockerfiles tienen `ARG CACHE_BUST=default`
+   - Si Render no actualiza a nuevo commit: revisar git status de Render
+
+### Render.yaml — Configuración crítica
+```yaml
+preDeployCommand: cd apps/backend && pnpm run db:migrate:prod   # Backend
+preDeployCommand: null                                           # Frontend
+```
+
+**Variables de entorno requeridas en Render:**
+- NODE_ENV: production
+- DATABASE_URL: (linked from PostgreSQL service)
+- JWT_SECRET: (manual entry, >32 chars)
+- JWT_REFRESH_SECRET: (manual entry, >32 chars)
+- FRONTEND_URL: https://servingmi-frontend.onrender.com
+
+---
+
+## 🔧 Patrones de código
 
 ### Manejo de errores en mutaciones
 ```typescript
@@ -151,57 +259,31 @@ const invalidate = () => {
 
 ---
 
-## Base de datos — Schema clave
+## ⚠️ Troubleshooting — Problemas comunes y soluciones
 
-### Modelos principales
-- `User` → roles: admin, supervisor, operator, auxiliar, financiero
-- `Project` → status: ACTIVE, PAUSED, COMPLETED, CANCELLED
-- `Expense` → status: ACTIVE, VOIDED | categoryId → ExpenseCategory
-- `Payroll` → status: DRAFT, APPROVED, PAID, VOIDED | paymentOrder: PaymentOrder? (one-to-one)
-- `PaymentOrder` → orderType: SERVICIO, MATERIALS, PAYROLL | status: PENDING, PAID, VOIDED
-- `Quotation` → 8 estados posibles
+### "Cannot find module 'zod'" en Render
+**Causa**: pnpm workspace incompleto durante install
+- ✅ Solución: Asegurar `COPY apps ./apps` (TODO el workspace)
+- ✅ Verificar: pnpm-lock.yaml referencia todas las apps
 
-### Relaciones importantes
-- `PaymentOrder.payrollId` → FK a `Payroll` (un PaymentOrder tiene un Payroll)
-- `PaymentOrder.expenseId` → FK a `Expense` (auto-creado al markAsPaid)
-- `Payroll.paymentOrder` → relación inversa (uno a uno, campo singular)
+### "libquery_engine-linux-musl.so.node not found"
+**Causa**: Prisma binary target incorrecto para Alpine OpenSSL 3.0
+- ✅ Solución: Agregar `"linux-musl-openssl-3.0.x"` a binaryTargets en schema.prisma
+- ✅ Verificar: `pnpm run db:generate` ejecutado en Docker before build
 
-**IMPORTANTE**: En `PAYROLL_INCLUDE` usar `paymentOrder` (singular), NO `paymentOrders`.
+### Docker build no actualiza a nuevo commit
+**Causa**: Docker cache layer stacking
+- ✅ Solución: `ARG CACHE_BUST` en Dockerfile invalida cache
+- ✅ Si aún falla: Render dashboard → rebuild (no re-deploy)
 
----
-
-## Archivos de configuración y su ubicación
-
-| Archivo                                    | Para qué                              |
-|--------------------------------------------|---------------------------------------|
-| `apps/backend/prisma/schema.prisma`        | Estructura completa de la BD          |
-| `apps/backend/prisma/seed.ts`              | Roles y categorías iniciales          |
-| `apps/backend/src/config/env.ts`           | Variables de entorno                  |
-| `apps/frontend/src/api/index.ts`           | Todos los endpoints del frontend      |
-| `apps/frontend/src/hooks/useRole.ts`       | RBAC — permisos por rol               |
-| `apps/frontend/src/stores/authStore.ts`    | Estado de auth + viewAsRole           |
-| `apps/frontend/src/components/layout/Layout.tsx` | Nav, header, RoleViewSwitcher  |
-| `render.yaml`                              | Configuración de Render               |
-| `docker-compose.yml`                       | BD local para desarrollo              |
+### Migraciones no ejecutadas en Render
+**Causa**: preDeployCommand no configurado
+- ✅ Verificar: render.yaml tiene `preDeployCommand: cd apps/backend && pnpm run db:migrate:prod`
+- ✅ Verificar: Comando ejecuta ANTES de container start
 
 ---
 
-## Documentación del proyecto
-
-Ver `/docs/` para guías en español:
-- `docs/PROYECTO.md` — Qué es el sistema, estructura, URLs
-- `docs/COMANDOS.md` — Comandos con directorios (para no programadores)
-- `docs/ROLES.md` — Tabla de permisos por rol
-- `docs/FLUJOS.md` — Flujos de negocio paso a paso
-
-Archivos organizados:
-- `scripts/sql/` — Scripts SQL de mantenimiento
-- `data/gastos/` — Archivos CSV con datos históricos
-- `templates/` — Plantillas HTML (orden de pago)
-
----
-
-## Categorías de gastos del seed (nombres exactos)
+## 📝 Categorías de gastos del seed (nombres exactos)
 
 ```
 Materiales, Servicios, Mano de obra, Equipos, Transporte,
@@ -210,3 +292,81 @@ Combustible, Dietas, Otros
 
 **CRÍTICO**: Al auto-crear gastos desde código, usar estos nombres exactos con el mismo casing.
 El `upsert` de categorías es case-sensitive en PostgreSQL.
+
+---
+
+## 📚 Documentación del proyecto
+
+Ver `/docs/` para guías en español:
+- `docs/PROYECTO.md` — Qué es el sistema, estructura, URLs
+- `docs/COMANDOS.md` — Comandos con directorios
+- `docs/ROLES.md` — Tabla de permisos por rol
+- `docs/FLUJOS.md` — Flujos de negocio paso a paso
+
+Archivos organizados:
+- `scripts/sql/` — Scripts SQL de mantenimiento
+- `data/gastos/` — Archivos CSV con datos históricos
+- `templates/` — Plantillas HTML
+
+---
+
+## 🔗 Archivos de configuración clave
+
+| Archivo                                    | Descripción                           |
+|--------------------------------------------|---------------------------------------|
+| `apps/backend/prisma/schema.prisma`        | BD schema + binary targets            |
+| `apps/backend/src/config/env.ts`           | Validación de env variables (Zod)     |
+| `apps/frontend/src/api/index.ts`           | Todos los endpoints                   |
+| `apps/frontend/src/hooks/useRole.ts`       | RBAC centralizad                      |
+| `apps/frontend/src/stores/authStore.ts`    | Auth state + viewAsRole               |
+| `render.yaml`                              | Render deployment config              |
+| `Dockerfile`, `Dockerfile.backend`, `Dockerfile.frontend` | Docker multi-stage builds |
+| `.dockerignore`                            | Archivos excluidos de Docker context  |
+| `docker-compose.yml`                       | BD local para desarrollo              |
+| `pnpm-workspace.yaml`                      | Configuración del workspace           |
+
+---
+
+## ✅ Checklist antes de cada push a main
+
+- [ ] `pnpm install` — Dependencias actualizadas
+- [ ] Backend: `pnpm run db:generate` si cambió schema.prisma
+- [ ] Frontend: `pnpm build:frontend` compila sin errores
+- [ ] Backend: `pnpm build:backend` compila sin errores
+- [ ] `git status` — No hay archivos uncommitted
+- [ ] `git diff main` — Revisar todos los cambios
+- [ ] Si cambió Dockerfile: verificar `COPY apps ./apps`
+- [ ] Si cambió schema.prisma: verificar binaryTargets completos
+- [ ] `docker build -f Dockerfile.backend .` — Test local (opcional pero recomendado)
+
+---
+
+## 🔐 Secrets & Environment Variables
+
+**NUNCA hardcodear secrets.** Usar Render environment variables:
+
+### En código
+```typescript
+// ✅ CORRECTO
+const dbUrl = process.env.DATABASE_URL;
+const jwtSecret = env.JWT_SECRET;  // Validado con Zod en startup
+
+// ❌ INCORRECTO
+const password = "hardcoded_secret_123";
+```
+
+### En Render.yaml
+```yaml
+JWT_SECRET: sync:false              # Manual entry in Render dashboard
+JWT_REFRESH_SECRET: sync:false      # Manual entry
+DATABASE_URL: fromDatabase          # Auto-linked from service
+```
+
+---
+
+## 📞 Contacto y contexto
+
+- **Stack**: Node.js 24, Express, Prisma, PostgreSQL 16, React, Vite
+- **Deploy**: Render.com (auto desde main)
+- **Estado**: LIVE (https://servingmi-backend.onrender.com)
+- **Rama principal**: main (auto-deploy)
