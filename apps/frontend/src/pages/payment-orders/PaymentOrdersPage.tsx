@@ -787,14 +787,12 @@ export default function PaymentOrdersPage() {
                   onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '' })); setSupplierSearch(''); }}>
                   <option value="">— Selecciona suplidor —</option>
                   {activeSuppliers
-                    .filter((s) => s.bank && s.accountNumber)
+                    .filter((s) => (s.bankAccounts && s.bankAccounts.length > 0) || (s.bank && s.accountNumber))
                     .map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}{s.bank ? ` · ${s.bank} · ${s.accountNumber}` : ''}
-                      </option>
+                      <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                 </select>
-                {activeSuppliers.filter((s) => !s.bank || !s.accountNumber).length > 0 && (
+                {activeSuppliers.filter((s) => (!s.bankAccounts || s.bankAccounts.length === 0) && (!s.bank || !s.accountNumber)).length > 0 && (
                   <p className="text-xs text-amber-600 mt-1">
                     Solo se muestran suplidores con datos bancarios. Actualiza los demás desde Directorio de Suplidores.
                   </p>
