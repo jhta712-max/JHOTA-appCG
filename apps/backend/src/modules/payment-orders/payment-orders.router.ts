@@ -7,7 +7,7 @@ import {
   createPaymentOrder, updatePaymentOrder,
   linkExpense, unlinkExpense,
   linkPayroll, unlinkPayroll,
-  markAsPaid, voidPaymentOrder,
+  markAsPaid, revertToPending, voidPaymentOrder,
   generateExpense, hardDeletePaymentOrder,
 } from './payment-orders.controller';
 
@@ -27,6 +27,7 @@ router.post('/:id/link-payroll',      linkPayroll);
 router.delete('/:id/link-payroll',    unlinkPayroll);
 router.post('/:id/pay',               markAsPaid);
 router.post('/:id/generate-expense',  generateExpense);
+router.post('/:id/revert-to-pending', authorize('admin'), revertToPending);
 router.post('/:id/void',              voidPaymentOrder);
 router.delete('/:id',                 authorize('admin'), hardDeletePaymentOrder);
 

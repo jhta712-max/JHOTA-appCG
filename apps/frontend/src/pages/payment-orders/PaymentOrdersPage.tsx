@@ -250,6 +250,11 @@ export default function PaymentOrdersPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(null); flash('🗑 Orden eliminada permanentemente'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error al eliminar'),
   });
+  const revertToPendingMut = useMutation({
+    mutationFn: (id: string) => paymentOrdersApi.revertToPending(id),
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('↩️ Orden revertida a Pendiente'); },
+    onError:   (e: any) => flash(e.response?.data?.error || 'Error al revertir'),
+  });
 
   // ── Order modal helpers ───────────────────────────────────────
   const normalizeOrderType = (type: any): OrderType => {
@@ -479,6 +484,18 @@ export default function PaymentOrdersPage() {
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Revertir a Pendiente — cuando gasto vinculado fue rechazado */}
+              {isAdmin && viewingOrder.status === 'PAID' && viewingOrder.expense?.status === 'REJECTED' && (
+                <div className="pt-2 border-t border-orange-100">
+                  <button
+                    onClick={() => { if (confirm('¿Revertir esta orden a PENDIENTE? Se limpiará la información de pago.')) revertToPendingMut.mutate(viewingOrder.id); }}
+                    disabled={revertToPendingMut.isPending}
+                    className="w-full text-xs text-orange-700 font-bold border border-orange-300 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5">
+                    ↩️ Revertir a Pendiente (gasto rechazado)
+                  </button>
                 </div>
               )}
 

@@ -417,6 +417,8 @@ export const paymentOrdersApi = {
     }),
   generateExpense: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/generate-expense`),
+  revertToPending: (id: string) =>
+    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/revert-to-pending`),
   void: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/void`),
   hardDelete: (id: string) =>

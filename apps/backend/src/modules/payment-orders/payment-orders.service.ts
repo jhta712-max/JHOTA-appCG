@@ -340,6 +340,26 @@ export async function generateExpenseForOrder(id: string, userId: string) {
   });
 }
 
+// ── Revertir a PENDING (cuando gasto vinculado fue rechazado) ─
+export async function revertToPending(id: string) {
+  const po = await getPaymentOrderById(id);
+  if (po.status !== 'PAID') throw new AppError(400, 'Solo se pueden revertir órdenes pagadas', 'INVALID_STATUS');
+
+  // Only allow revert if the linked expense is REJECTED (or there's no expense)
+  if (po.expenseId) {
+    const expense = await prisma.expense.findUnique({ where: { id: po.expenseId } });
+    if (expense && expense.status !== 'REJECTED') {
+      throw new AppError(400, 'Solo se puede revertir si el gasto vinculado fue rechazado', 'EXPENSE_NOT_REJECTED');
+    }
+  }
+
+  return prisma.paymentOrder.update({
+    where:   { id },
+    data:    { status: 'PENDING', paidAt: null, paidById: null, paymentBank: null, paymentReference: null },
+    include: INCLUDE,
+  });
+}
+
 // ── Anular ────────────────────────────────────────────────────
 export async function voidPaymentOrder(id: string) {
   const po = await getPaymentOrderById(id);

@@ -88,6 +88,12 @@ export async function generateExpense(req: Request, res: Response, next: NextFun
   } catch (err) { next(err); }
 }
 
+export async function revertToPending(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json({ success: true, data: await svc.revertToPending(req.params.id) });
+  } catch (err) { next(err); }
+}
+
 export async function voidPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     res.json({ success: true, data: await svc.voidPaymentOrder(req.params.id) });
