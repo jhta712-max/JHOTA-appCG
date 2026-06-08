@@ -16,6 +16,7 @@ COPY apps ./apps
 # Install and build
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 WORKDIR /app/apps/backend
+RUN pnpm run db:generate
 RUN pnpm run build
 
 # Production stage
