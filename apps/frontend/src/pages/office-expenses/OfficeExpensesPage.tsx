@@ -72,6 +72,7 @@ export default function OfficeExpensesPage() {
   const [expandStats,   setExpandStats]   = useState(true);
   const [ocrLoading,    setOcrLoading]    = useState(false);
   const [ocrError,      setOcrError]      = useState('');
+  const [ocrValidated,  setOcrValidated]  = useState(false); // Usuario debe validar datos OCR
   const [actionError,   setActionError]   = useState('');
   const [orderBy,       setOrderBy]       = useState<'expenseDate' | 'amount' | 'createdAt'>('expenseDate');
   const [order,         setOrder]         = useState<'asc' | 'desc'>('desc');
@@ -147,6 +148,7 @@ export default function OfficeExpensesPage() {
       invalidate();
       setShowForm(false);
       setForm(emptyForm());
+      setOcrValidated(false);
       showFlash('✅ Gasto de oficina registrado');
     },
     onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al guardar'),
@@ -167,6 +169,7 @@ export default function OfficeExpensesPage() {
       setEditingId(null);
       setViewingExp(null);
       setForm(emptyForm());
+      setOcrValidated(false);
       showFlash('✅ Gasto actualizado');
     },
     onError: (e: any) => setActionError(e.response?.data?.error ?? 'Error al guardar'),
@@ -187,6 +190,7 @@ export default function OfficeExpensesPage() {
     setForm(emptyForm());
     setActionError('');
     setOcrError('');
+    setOcrValidated(false); // Reset validación OCR al abrir nuevo formulario
     setShowForm(true);
   }
 
@@ -206,6 +210,7 @@ export default function OfficeExpensesPage() {
     });
     setActionError('');
     setOcrError('');
+    setOcrValidated(false); // Reset validación OCR al abrir edición
     setShowForm(true);
     setViewingExp(null);
   }
@@ -480,7 +485,7 @@ export default function OfficeExpensesPage() {
 
               {/* OCR button */}
               {!editingId && (
-                <div>
+                <div className="space-y-3">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -500,9 +505,31 @@ export default function OfficeExpensesPage() {
                     }
                   </button>
                   {ocrError && (
-                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                    <p className="text-xs text-red-500 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" /> {ocrError}
                     </p>
+                  )}
+
+                  {/* ⚠️ VALIDACIÓN OBLIGATORIA DE OCR */}
+                  {form.hasFiscalDoc && !ocrValidated && (
+                    <div className="bg-amber-50 border border-amber-300 rounded-xl p-3">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={ocrValidated}
+                          onChange={(e) => setOcrValidated(e.target.checked)}
+                          className="mt-1 rounded border-gray-300 cursor-pointer"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-amber-900">
+                            ✓ He revisado y validado los datos del OCR
+                          </p>
+                          <p className="text-xs text-amber-700 mt-1">
+                            Confirma que comparaste los datos extraídos (especialmente montos, NCF y fechas) con el comprobante original y que son correctos. Esta validación es obligatoria para registrar el gasto.
+                          </p>
+                        </div>
+                      </label>
+                    </div>
                   )}
                 </div>
               )}
@@ -669,7 +696,12 @@ export default function OfficeExpensesPage() {
                 >
                   Cancelar
                 </button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 btn-primary">
+                <button
+                  type="submit"
+                  disabled={isSubmitting || (form.hasFiscalDoc && !ocrValidated && !editingId)}
+                  title={form.hasFiscalDoc && !ocrValidated && !editingId ? 'Debes validar los datos del OCR antes de guardar' : ''}
+                  className="flex-1 btn-primary"
+                >
                   <Save className="w-4 h-4" />
                   {isSubmitting ? 'Guardando...' : editingId ? 'Actualizar' : 'Guardar gasto'}
                 </button>

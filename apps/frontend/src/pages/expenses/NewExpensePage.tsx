@@ -64,10 +64,11 @@ export default function NewExpensePage() {
   const [apiError,    setApiError]    = useState('');
 
   // OCR state
-  const [ocrLoading,  setOcrLoading]  = useState(false);
-  const [ocrResult,   setOcrResult]   = useState<OcrResult | null>(null);
-  const [ocrError,    setOcrError]    = useState('');
-  const [aiFields,    setAiFields]    = useState<Set<string>>(new Set()); // campos llenados por IA
+  const [ocrLoading,    setOcrLoading]    = useState(false);
+  const [ocrResult,     setOcrResult]     = useState<OcrResult | null>(null);
+  const [ocrError,      setOcrError]      = useState('');
+  const [ocrValidated,  setOcrValidated]  = useState(false); // Usuario debe validar datos OCR
+  const [aiFields,      setAiFields]      = useState<Set<string>>(new Set()); // campos llenados por IA
 
   const { register, handleSubmit, watch, formState: { errors }, reset, setValue, getValues } =
     useForm<FormData>({
@@ -160,6 +161,7 @@ export default function NewExpensePage() {
     setPhoto(file);
     setOcrResult(null);
     setOcrError('');
+    setOcrValidated(false); // Reset validación cuando se carga nueva foto
     setAiFields(new Set());
     setPhotoPreview(null);
     if (file && file.type !== 'application/pdf') {
@@ -176,6 +178,7 @@ export default function NewExpensePage() {
     setOcrLoading(true);
     setOcrError('');
     setOcrResult(null);
+    setOcrValidated(false); // Reset validación cuando se analiza nueva foto
     setAiFields(new Set());
 
     try {
@@ -401,34 +404,56 @@ export default function NewExpensePage() {
 
           {/* Resultado OCR */}
           {ocrResult && !ocrLoading && (
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-indigo-600" />
-                  <p className="text-sm font-semibold text-indigo-800">
-                    IA detectó {ocrResult.fieldsDetected} campo{ocrResult.fieldsDetected !== 1 ? 's' : ''}
-                  </p>
+            <div className="space-y-3">
+              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-indigo-600" />
+                    <p className="text-sm font-semibold text-indigo-800">
+                      IA detectó {ocrResult.fieldsDetected} campo{ocrResult.fieldsDetected !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  {confidenceCfg && (
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${confidenceCfg.color}`}>
+                      {confidenceCfg.icon} {confidenceCfg.label}
+                    </span>
+                  )}
                 </div>
-                {confidenceCfg && (
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${confidenceCfg.color}`}>
-                    {confidenceCfg.icon} {confidenceCfg.label}
-                  </span>
+                <p className="text-xs text-indigo-600 flex items-center gap-1">
+                  <Info className="w-3.5 h-3.5" />
+                  Los campos marcados en violeta fueron completados automáticamente. Verifica y corrige si es necesario.
+                </p>
+                {ocrResult.warnings.length > 0 && (
+                  <div className="space-y-1">
+                    {ocrResult.warnings.map((w, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5">
+                        <TriangleAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        {w}
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-              <p className="text-xs text-indigo-600 flex items-center gap-1">
-                <Info className="w-3.5 h-3.5" />
-                Los campos marcados en violeta fueron completados automáticamente. Verifica y corrige si es necesario.
-              </p>
-              {ocrResult.warnings.length > 0 && (
-                <div className="space-y-1">
-                  {ocrResult.warnings.map((w, i) => (
-                    <div key={i} className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5">
-                      <TriangleAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                      {w}
-                    </div>
-                  ))}
-                </div>
-              )}
+
+              {/* ⚠️ VALIDACIÓN OBLIGATORIA DE OCR */}
+              <div className="bg-amber-50 border border-amber-300 rounded-xl p-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={ocrValidated}
+                    onChange={(e) => setOcrValidated(e.target.checked)}
+                    className="mt-1 rounded border-gray-300 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-amber-900">
+                      ✓ He revisado y validado los datos del OCR
+                    </p>
+                    <p className="text-xs text-amber-700 mt-1">
+                      Confirma que comparaste los datos extraídos (especialmente montos, NCF y fechas) con la factura original y que son correctos. Esta validación es obligatoria para registrar el gasto.
+                    </p>
+                  </div>
+                </label>
+              </div>
             </div>
           )}
         </div>
@@ -674,10 +699,26 @@ export default function NewExpensePage() {
           )}
         </div>
 
+        {/* Alerta si OCR no está validado */}
+        {ocrResult && !ocrValidated && (
+          <div className="flex items-start gap-2 bg-red-50 border border-red-300 rounded-xl p-4">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-red-700">
+              <p className="font-semibold">No puedes registrar el gasto sin validar el OCR</p>
+              <p className="text-xs mt-1">Marca el checkbox de validación arriba para confirmar que revisaste los datos</p>
+            </div>
+          </div>
+        )}
+
         {/* Botones */}
         <div className="flex gap-3 pb-6">
           <button type="button" onClick={() => navigate(-1)} className="btn-secondary flex-1">Cancelar</button>
-          <button type="submit" disabled={mutation.isPending} className="btn-primary flex-1 py-3">
+          <button
+            type="submit"
+            disabled={mutation.isPending || (ocrResult !== null && !ocrValidated)}
+            title={ocrResult && !ocrValidated ? 'Debes validar los datos del OCR antes de guardar' : ''}
+            className="btn-primary flex-1 py-3"
+          >
             {mutation.isPending
               ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Guardando...</>
               : <><CheckCircle className="w-4 h-4" /> Guardar gasto</>
