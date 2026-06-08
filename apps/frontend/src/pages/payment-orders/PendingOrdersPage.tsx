@@ -29,9 +29,10 @@ function fmtDate(d: string) {
 }
 
 export default function PendingOrdersPage() {
-  const qc       = useQueryClient();
-  const authUser = useAuthStore((s) => s.user);
-  const canPay   = authUser?.role?.name !== 'supervisor';
+  const qc = useQueryClient();
+  const { user, viewAsRole } = useAuthStore();
+  const effectiveRole = viewAsRole || user?.role?.name || '';
+  const canPay        = effectiveRole !== 'supervisor';
   const [filterProject, setFilterProject] = useState('');
   const [filterType,    setFilterType]    = useState('');
   const [confirmId,     setConfirmId]     = useState<string | null>(null);
