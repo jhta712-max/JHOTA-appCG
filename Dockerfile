@@ -1,4 +1,4 @@
-# Build stage - Backend
+# Build stage - Backend (Force rebuild)
 FROM node:24-alpine AS builder
 WORKDIR /app
 
