@@ -1,5 +1,6 @@
 import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
+import { buildExpenseData } from '../payment-orders/payment-orders.service';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import ExcelJS from 'exceljs';
 import {
@@ -341,17 +342,15 @@ export async function approvePayroll(id: string, approvedById: string) {
     for (const line of payroll.lines) {
       const lineAmount = parseFloat((Number(line.quantity) * Number(line.unitPrice)).toFixed(2));
       const expense = await tx.expense.create({
-        data: {
-          projectId:    payroll.projectId,
-          categoryId:   category!.id,
-          userId:       approvedById,
-          expenseDate:  payroll.periodEnd,
-          amount:       lineAmount,
-          description:  `NOM-${String(payroll.number).padStart(3, '0')} — ${line.supplierName || 'Sin suplidor'}: ${line.description}`,
-          paymentMethod: 'TRANSFER',
-          hasFiscalDoc:  false,
-          notes: `Línea ${line.lineNumber} de nómina. Generado automáticamente al aprobar nómina.`,
-        },
+        data: buildExpenseData({
+          projectId:   payroll.projectId,
+          categoryId:  category!.id,
+          userId:      approvedById,
+          expenseDate: payroll.periodEnd,
+          amount:      lineAmount,
+          description: `NOM-${String(payroll.number).padStart(3, '0')} — ${line.supplierName || 'Sin suplidor'}: ${line.description}`,
+          notes:       `Línea ${line.lineNumber} de nómina. Generado automáticamente al aprobar nómina.`,
+        }),
       });
 
       // Link expense to payroll line

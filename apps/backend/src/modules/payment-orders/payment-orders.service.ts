@@ -6,6 +6,42 @@ import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
 import { autoUpdateStatus as autoUpdateQuotationStatus } from '../quotations/quotations.service';
 import { env } from '../../config/env';
 import type { CreatePaymentOrderInput, UpdatePaymentOrderInput, PaymentOrderQuery } from './payment-orders.schema';
+import type { Prisma } from '@prisma/client';
+
+// ── Shared helper: build expense data for auto-generated expenses ─
+interface ExpenseSourceData {
+  projectId:          string;
+  categoryId:         number;
+  userId:             string;
+  expenseDate:        Date | string;
+  amount:             number | { toString(): string };
+  description:        string;
+  paymentMethod?:     string;
+  hasFiscalDoc?:      boolean;
+  notes?:             string | null;
+  contratoAjustadoId?: string | null;
+  foreignAmount?:     number | { toString(): string } | null;
+  foreignCurrency?:   string | null;
+  exchangeRate?:      number | { toString(): string } | null;
+}
+
+export function buildExpenseData(src: ExpenseSourceData): Prisma.ExpenseUncheckedCreateInput {
+  return {
+    projectId:          src.projectId,
+    categoryId:         src.categoryId,
+    userId:             src.userId,
+    expenseDate:        new Date(src.expenseDate as string),
+    amount:             Number(src.amount),
+    description:        src.description,
+    paymentMethod:      (src.paymentMethod ?? 'TRANSFER') as any,
+    hasFiscalDoc:       src.hasFiscalDoc ?? false,
+    ...(src.notes              != null ? { notes:          src.notes }                           : {}),
+    ...(src.contratoAjustadoId != null ? { contratoAjustadoId: src.contratoAjustadoId }         : {}),
+    ...(src.foreignAmount      != null ? { foreignAmount:  Number(src.foreignAmount) }           : {}),
+    ...(src.foreignCurrency    != null ? { foreignCurrency: src.foreignCurrency }               : {}),
+    ...(src.exchangeRate       != null ? { exchangeRate:   Number(src.exchangeRate) }            : {}),
+  };
+}
 
 const aiClient = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null;
 
@@ -474,22 +510,23 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
 
       const expense = await tx.expense.create({
         data: {
-          projectId:          po.projectId,
-          categoryId:         category.id,
-          userId,
-          expenseDate:        new Date(),
-          amount:             amountDOP,
-          description:        `[${opRef}] ${po.concept}`,
-          paymentMethod:      'TRANSFER',
-          hasFiscalDoc:       hasFiscal,
-          notes:              `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.${isForeign ? ` Divisa original: ${po.currency} ${Number(po.amount).toFixed(2)}${exchangeRate ? ` (TC: ${exchangeRate})` : ''}.` : ''}`,
-          contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
-          ...(isForeign && foreignCurrencyISO && {
-            foreignAmount:   po.amount,
-            foreignCurrency: foreignCurrencyISO,
-            exchangeRate:    exchangeRate ?? undefined,
+          ...buildExpenseData({
+            projectId:          po.projectId,
+            categoryId:         category.id,
+            userId,
+            expenseDate:        new Date(),
+            amount:             amountDOP,
+            description:        `[${opRef}] ${po.concept}`,
+            hasFiscalDoc:       hasFiscal,
+            notes:              `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.${isForeign ? ` Divisa original: ${po.currency} ${Number(po.amount).toFixed(2)}${exchangeRate ? ` (TC: ${exchangeRate})` : ''}.` : ''}`,
+            contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
+            ...(isForeign && foreignCurrencyISO ? {
+              foreignAmount:   po.amount,
+              foreignCurrency: foreignCurrencyISO,
+              exchangeRate:    exchangeRate ?? undefined,
+            } : {}),
           }),
-          ...(hasFiscal && fiscalVoucher && {
+          ...(hasFiscal && fiscalVoucher ? {
             fiscalVoucher: {
               create: {
                 ncf:          fiscalVoucher.ncf,
@@ -500,8 +537,8 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
                 itbisAmount:  fiscalVoucher.itbisAmount ?? 0,
               },
             },
-          }),
-        },
+          } : {}),
+        } as any,
       });
 
       // Link expense to quotation if this SERVICIO order has a quotation linked
@@ -592,18 +629,16 @@ export async function generateExpenseForOrder(id: string, userId: string) {
   return prisma.$transaction(async (tx) => {
     const opRef = `OP-${String(po.number).padStart(3, '0')}`;
     const expense = await tx.expense.create({
-      data: {
+      data: buildExpenseData({
         projectId:          po.projectId,
         categoryId:         category.id,
         userId,
         expenseDate:        po.paidAt ?? new Date(),
         amount:             po.amount,
         description:        `[${opRef}] ${po.concept}`,
-        paymentMethod:      'TRANSFER',
-        hasFiscalDoc:       false,
         notes:              `Generado retroactivamente para ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}.`,
         contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
-      },
+      }),
     });
 
     if ((po as any).contratoAjustadoId) {
