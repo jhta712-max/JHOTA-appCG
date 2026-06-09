@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi, ocrApi, cardsApi, type OcrResult } from '../../api';
 import { useRole } from '../../hooks/useRole';
+import { NCF_REGEX, E_NCF_REGEX, RNC_REGEX } from '../../utils/fiscal';
 
 type FV = { ncf: string; supplierRnc: string; supplierName: string; itbisAmount: number };
 type FormData = {
@@ -21,10 +22,6 @@ type FormData = {
   foreignAmount?: number;
   exchangeRate?: number;
 };
-
-const NCF_REGEX   = /^[A-Z]\d{10}$/;
-const E_NCF_REGEX = /^E\d{12}$/;
-const RNC_REGEX   = /^\d{9}(\d{2})?$/;
 
 const CONFIDENCE_CONFIG = {
   high:   { label: 'Alta confianza',   color: 'text-green-700 bg-green-100',  icon: '✓' },

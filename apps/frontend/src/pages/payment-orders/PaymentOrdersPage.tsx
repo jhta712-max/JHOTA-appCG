@@ -9,6 +9,7 @@ import {
 import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
+import { validateNCF } from '../../utils/fiscal';
 
 // ── Tipos locales ─────────────────────────────────────────────
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
@@ -28,10 +29,6 @@ const EMPTY_ORDER: OrderForm = {
 
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'];
 const CURRENCIES    = ['RD$', 'US$', '€'];
-
-const NCF_REGEX    = /^[A-Z]\d{10}$/;
-const E_NCF_REGEX  = /^E\d{12}$/;
-const validateNcf  = (v: string) => NCF_REGEX.test(v) || E_NCF_REGEX.test(v);
 
 const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
   SERVICIO:  { label: 'Servicio',   icon: <FileText className="w-4 h-4" />,      color: 'border-purple-300 bg-purple-50',  desc: 'Pago por servicios' },
@@ -1310,7 +1307,7 @@ export default function PaymentOrdersPage() {
                 if (!fiscalForm.supplierRnc)  { setFiscalErr('El RNC del suplidor es obligatorio'); return; }
                 if (!fiscalForm.supplierName) { setFiscalErr('El nombre del suplidor es obligatorio'); return; }
                 const ncf = fiscalForm.ncf.trim();
-                if (!validateNcf(ncf)) {
+                if (!validateNCF(ncf)) {
                   setFiscalErr('Formato de NCF inválido. Ej: B0100000001 (NCF) o E310000000001 (e-NCF)'); return;
                 }
                 markPaidMut.mutate({
