@@ -1,6 +1,10 @@
 import prisma from '../../config/database';
+import Anthropic from '@anthropic-ai/sdk';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
+import { env } from '../../config/env';
+
+const aiClient = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null;
 import type {
   CreateProjectInput, UpdateProjectInput, ProjectQuery,
   CreateAddendumInput, UpdateAddendumInput,
@@ -437,4 +441,94 @@ export async function getFinancialAnalysis(projectId: string) {
       createdAt:   c.createdAt,
     })),
   };
+}
+
+export async function generateAiSummary(projectId: string): Promise<{ summary: string; generatedAt: string }> {
+  const project = await prisma.project.findUnique({
+    where:   { id: projectId },
+    include: {
+      addendums: { select: { amount: true, description: true, number: true } },
+    },
+  });
+  if (!project) throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
+
+  const addendumTotal = project.addendums.reduce((s, a) => s + Number(a.amount), 0);
+  const totalBudget   = Number(project.estimatedBudget) + addendumTotal;
+
+  const [expenseStats, byCategory, pendingOrders, quotationStats] = await Promise.all([
+    prisma.expense.aggregate({
+      where:  { projectId, status: 'ACTIVE' },
+      _sum:   { amount: true },
+      _count: { id: true },
+    }),
+    prisma.expense.groupBy({
+      by:      ['categoryId'],
+      where:   { projectId, status: 'ACTIVE' },
+      _sum:    { amount: true },
+      orderBy: { _sum: { amount: 'desc' } },
+      take:    4,
+    }),
+    prisma.paymentOrder.count({
+      where: { projectId, status: 'PENDING' },
+    }),
+    prisma.quotation.aggregate({
+      where:  { projectId },
+      _count: { id: true },
+      _sum:   { total: true },
+    }),
+  ]);
+
+  const catIds = byCategory.map((c) => c.categoryId);
+  const cats   = await prisma.expenseCategory.findMany({ where: { id: { in: catIds } }, select: { id: true, name: true } });
+  const catMap = Object.fromEntries(cats.map((c) => [c.id, c.name]));
+
+  const totalSpent      = Number(expenseStats._sum.amount ?? 0);
+  const budgetRemaining = totalBudget - totalSpent;
+  const usedPct         = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  const fmt             = (n: number) => `RD$ ${n.toLocaleString('es-DO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+
+  const catLines = byCategory.map((c) =>
+    `  - ${catMap[c.categoryId] ?? 'Sin categoría'}: ${fmt(Number(c._sum.amount ?? 0))}`
+  ).join('\n');
+
+  const context = `
+Proyecto: ${project.name} (${project.code})
+Estado: ${project.status}
+Cliente: ${project.client ?? 'No especificado'}
+Presupuesto base: ${fmt(Number(project.estimatedBudget))}
+${project.addendums.length > 0 ? `Adendas (${project.addendums.length}): +${fmt(addendumTotal)} → Presupuesto total: ${fmt(totalBudget)}` : ''}
+Total gastado: ${fmt(totalSpent)} (${usedPct.toFixed(1)}% del presupuesto)
+Disponible: ${fmt(budgetRemaining)}${budgetRemaining < 0 ? ' ⚠️ EN DÉFICIT' : ''}
+Número de gastos: ${expenseStats._count.id}
+Órdenes de pago pendientes: ${pendingOrders}
+Cotizaciones activas: ${quotationStats._count.id} (total cotizado: ${fmt(Number(quotationStats._sum.total ?? 0))})
+Principales categorías de gasto:
+${catLines || '  (sin gastos registrados)'}
+`.trim();
+
+  if (!aiClient) {
+    const status = budgetRemaining < 0
+      ? `El proyecto está en déficit de ${fmt(Math.abs(budgetRemaining))}.`
+      : usedPct >= 90
+      ? `El presupuesto está casi agotado (${usedPct.toFixed(1)}% utilizado).`
+      : `El proyecto tiene ${fmt(budgetRemaining)} disponibles (${(100 - usedPct).toFixed(1)}% del presupuesto).`;
+    return {
+      summary: `${project.name} — ${status} Se han registrado ${expenseStats._count.id} gastos y hay ${pendingOrders} órdenes pendientes de pago.`,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  const msg = await aiClient.messages.create({
+    model:      'claude-haiku-4-5-20251001',
+    max_tokens: 350,
+    messages:   [{
+      role:    'user',
+      content: `Eres el asistente financiero de una empresa constructora dominicana. Genera un resumen ejecutivo conciso (3-4 párrafos cortos) en español sobre el siguiente proyecto, orientado a la gerencia. Incluye: estado presupuestario, alertas si las hay, y una recomendación breve. Sé directo y claro.
+
+${context}`,
+    }],
+  });
+
+  const summary = ((msg.content[0] as any).text ?? '').trim();
+  return { summary, generatedAt: new Date().toISOString() };
 }

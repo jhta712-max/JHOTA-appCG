@@ -23,6 +23,9 @@ router.get('/:id', ctrl.getOne);
 // GET  /api/v1/projects/:id/summary
 router.get('/:id/summary', ctrl.getSummary);
 
+// POST /api/v1/projects/:id/ai-summary
+router.post('/:id/ai-summary', ctrl.aiSummary);
+
 // POST /api/v1/projects  — admin, supervisor y auxiliar
 router.post('/',    authorize('admin', 'supervisor', 'auxiliar'), validate(createProjectSchema), ctrl.create);
 

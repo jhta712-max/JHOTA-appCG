@@ -47,6 +47,8 @@ export const projectsApi = {
     api.post<{ success: boolean; data: Assignment }>(`/projects/${projectId}/assignments`, { userId }),
   unassignUser:    (projectId: string, userId: string) =>
     api.delete(`/projects/${projectId}/assignments/${userId}`),
+  aiSummary:       (projectId: string) =>
+    api.post<{ success: boolean; data: { summary: string; generatedAt: string } }>(`/projects/${projectId}/ai-summary`),
 };
 
 // ── Gastos ────────────────────────────────────────────────────
