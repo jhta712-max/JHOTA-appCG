@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
-  Camera, CheckCircle, AlertCircle, ArrowLeft, Receipt,
+  Camera, CheckCircle, AlertCircle, ArrowLeft,
   Sparkles, Loader2, TriangleAlert, X, Info, FileText, Upload, CreditCard,
 } from 'lucide-react';
+import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
 import { expensesApi, projectsApi, categoriesApi, ocrApi, cardsApi, type OcrResult } from '../../api';
 import { useRole } from '../../hooks/useRole';
 
@@ -21,10 +22,6 @@ type FormData = {
   foreignAmount?: number;
   exchangeRate?: number;
 };
-
-const NCF_REGEX   = /^[A-Z]\d{10}$/;
-const E_NCF_REGEX = /^E\d{12}$/;
-const RNC_REGEX   = /^\d{9}(\d{2})?$/;
 
 const CONFIDENCE_CONFIG = {
   high:   { label: 'Alta confianza',   color: 'text-green-700 bg-green-100',  icon: '✓' },
