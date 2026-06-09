@@ -174,6 +174,8 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
     accountType:   bankAccount.accountType ?? '',
     accountNumber: bankAccount.accountNumber,
     holderName:    supplier.name,
+    cedula:        supplier.cedula,
+    rnc:           supplier.rnc,
   });
 
   // Validate contrato ajustado if provided
@@ -350,6 +352,8 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
     accountType:   bankAccount.accountType ?? '',
     accountNumber: bankAccount.accountNumber ?? '',
     holderName:    supplier!.name,
+    cedula:        supplier!.cedula,
+    rnc:           supplier!.rnc,
   };
 
   const { payrollId, ...rest } = data as any;
@@ -603,9 +607,11 @@ function buildOrderText(p: {
   payingCompany: string; currency: string; amount: number;
   concept: string; project: string; bank: string;
   accountType: string; accountNumber: string; holderName: string;
+  cedula?: string | null; rnc?: string | null;
 }) {
   const monto = p.amount.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fecha = new Date().toLocaleDateString('es-DO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const identificacion = p.cedula || p.rnc;
 
   return [
     p.payingCompany,
@@ -615,6 +621,7 @@ function buildOrderText(p: {
     `Banco: ${p.bank}`,
     `${p.accountType}: ${p.accountNumber}`,
     `nombre: ${p.holderName}`,
+    ...(identificacion ? [`Cédula/RNC: ${identificacion}`] : []),
     `📅 Fecha: ${fecha.charAt(0).toUpperCase() + fecha.slice(1)}`,
   ].join('\n');
 }
