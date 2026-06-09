@@ -14,6 +14,7 @@ interface FiscalVoucherInput {
 interface PaymentInfoInput {
   paymentBank?:      string | null;
   paymentReference?: string | null;
+  exchangeRate?:     number | null; // Required when currency != 'RD$'
 }
 
 const INCLUDE = {
@@ -457,18 +458,32 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
       const opRef      = `OP-${String(po.number).padStart(3, '0')}`;
       const hasFiscal  = !!(fiscalVoucher?.ncf);
 
+      // Resolve amount: if foreign currency, convert to DOP using exchangeRate
+      const isForeign      = po.currency !== 'RD$';
+      const exchangeRate   = paymentInfo?.exchangeRate ?? null;
+      const amountDOP      = isForeign && exchangeRate
+        ? Number(po.amount) * exchangeRate
+        : Number(po.amount);
+      // Map order currency symbol to ISO code for Expense model
+      const foreignCurrencyISO = po.currency === 'US$' ? 'USD' : po.currency === '€' ? 'EUR' : null;
+
       const expense = await tx.expense.create({
         data: {
           projectId:          po.projectId,
           categoryId:         category.id,
           userId,
           expenseDate:        new Date(),
-          amount:             po.amount,
+          amount:             amountDOP,
           description:        `[${opRef}] ${po.concept}`,
           paymentMethod:      'TRANSFER',
           hasFiscalDoc:       hasFiscal,
-          notes:              `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.`,
+          notes:              `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.${isForeign ? ` Divisa original: ${po.currency} ${Number(po.amount).toFixed(2)}${exchangeRate ? ` (TC: ${exchangeRate})` : ''}.` : ''}`,
           contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
+          ...(isForeign && foreignCurrencyISO && {
+            foreignAmount:   po.amount,
+            foreignCurrency: foreignCurrencyISO,
+            exchangeRate:    exchangeRate ?? undefined,
+          }),
           ...(hasFiscal && fiscalVoucher && {
             fiscalVoucher: {
               create: {
@@ -486,12 +501,42 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
 
       // Link expense to quotation if this SERVICIO order has a quotation linked
       if ((po as any).quotationId) {
+        // Also create a QuotationPayment so it appears in the cotización module
+        const quotation = await tx.quotation.findUnique({ where: { id: (po as any).quotationId } });
+        if (quotation) {
+          const lastPayment = await tx.quotationPayment.findFirst({
+            where:   { quotationId: (po as any).quotationId },
+            orderBy: { sequence: 'desc' },
+          });
+          const nextSeq = (lastPayment?.sequence ?? 0) + 1;
+
+          // Amount in quotation currency: use po.amount directly if currencies match,
+          // otherwise store the foreign amount (quotation curator resolves equivalence)
+          const quotationAmount = isForeign && exchangeRate
+            ? amountDOP  // store DOP equivalent so totals add up in quotation
+            : Number(po.amount);
+
+          await tx.quotationPayment.create({
+            data: {
+              quotationId:   (po as any).quotationId,
+              expenseId:     expense.id,
+              sequence:      nextSeq,
+              amount:        quotationAmount,
+              paymentDate:   new Date(),
+              paymentMethod: 'TRANSFER',
+              description:   `Pago desde ${opRef}${isForeign ? ` (${po.currency} ${Number(po.amount).toFixed(2)}${exchangeRate ? ` × TC ${exchangeRate}` : ''})` : ''}`,
+              notes:         isForeign ? `Divisa: ${po.currency} ${Number(po.amount).toFixed(2)}${exchangeRate ? `. Tasa de cambio: 1 ${po.currency} = RD$ ${exchangeRate}` : ''}` : null,
+              createdById:   userId,
+            },
+          });
+        }
+
         await tx.quotationExpenseLink.create({
           data: {
             quotationId: (po as any).quotationId,
             expenseId:   expense.id,
             linkType:    'PARTIAL_INVOICE',
-            notes:       `Auto-vinculado desde OP-${String(po.number).padStart(3, '0')}`,
+            notes:       `Auto-vinculado desde ${opRef}${isForeign ? ` | ${po.currency} ${Number(po.amount).toFixed(2)}` : ''}`,
             createdById: userId,
           },
         });

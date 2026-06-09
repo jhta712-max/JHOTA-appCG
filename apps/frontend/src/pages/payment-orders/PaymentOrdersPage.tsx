@@ -134,13 +134,13 @@ export default function PaymentOrdersPage() {
   const [payModal,     setPayModal]     = useState(false);
   const [payingOrder,  setPayingOrder]  = useState<PaymentOrder | null>(null);
   const [fiscalForm,   setFiscalForm]   = useState({ hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '' });
-  const [payInfoForm,  setPayInfoForm]  = useState({ paymentBank: '', paymentReference: '' });
+  const [payInfoForm,  setPayInfoForm]  = useState({ paymentBank: '', paymentReference: '', exchangeRate: '' });
   const [fiscalErr,    setFiscalErr]    = useState('');
 
   const openPayModal = (o: PaymentOrder) => {
     setPayingOrder(o);
     setFiscalForm({ hasFiscal: false, ncf: '', supplierRnc: o.supplier?.rnc ?? '', supplierName: o.supplier?.name ?? '', itbisAmount: '' });
-    setPayInfoForm({ paymentBank: '', paymentReference: '' });
+    setPayInfoForm({ paymentBank: '', paymentReference: '', exchangeRate: '' });
     setFiscalErr('');
     setPayModal(true);
   };
@@ -1202,6 +1202,34 @@ export default function PaymentOrdersPage() {
             {/* Información de transferencia */}
             <div className="space-y-3 border-t border-gray-100 pt-3">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Transferencia (opcional)</p>
+              {/* Tasa de cambio — solo para divisas extranjeras */}
+              {payingOrder.currency !== 'RD$' && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+                  <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                    💱 Orden en {payingOrder.currency} — Tasa de cambio requerida
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <label className="block text-xs font-semibold text-gray-600 shrink-0">
+                      1 {payingOrder.currency} = RD$
+                    </label>
+                    <input
+                      type="number"
+                      value={payInfoForm.exchangeRate}
+                      onChange={(e) => setPayInfoForm((f) => ({ ...f, exchangeRate: e.target.value }))}
+                      placeholder="ej. 60.50"
+                      min="0.01"
+                      step="0.01"
+                      className="flex-1 border border-amber-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+                    />
+                  </div>
+                  {payInfoForm.exchangeRate && Number(payInfoForm.exchangeRate) > 0 && (
+                    <p className="text-xs text-amber-700">
+                      Equivalente: RD$ {(Number(payingOrder.amount) * Number(payInfoForm.exchangeRate)).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1">No. de transacción</label>
@@ -1233,9 +1261,15 @@ export default function PaymentOrdersPage() {
             onCancel={closePayModal}
             onSave={() => {
               setFiscalErr('');
+              const isForeignOrder = payingOrder.currency !== 'RD$';
+              if (isForeignOrder && !payInfoForm.exchangeRate) {
+                setFiscalErr(`Debe ingresar la tasa de cambio para órdenes en ${payingOrder.currency}`);
+                return;
+              }
               const pi = {
                 paymentReference: payInfoForm.paymentReference.trim() || undefined,
                 paymentBank:      payInfoForm.paymentBank.trim()      || undefined,
+                exchangeRate:     payInfoForm.exchangeRate ? Number(payInfoForm.exchangeRate) : undefined,
               };
               if (fiscalForm.hasFiscal) {
                 if (!fiscalForm.ncf)          { setFiscalErr('El NCF es obligatorio cuando hay comprobante fiscal'); return; }
