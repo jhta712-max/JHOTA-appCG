@@ -48,16 +48,25 @@ export async function createInvitation(
   // URL de activación
   const inviteUrl = `${env.FRONTEND_URL}/invite/${token}`;
 
-  // Enviar email en segundo plano (fire-and-forget) para no bloquear la respuesta
+  // Enviar email y capturar resultado
   const emailConfigured = !!(env.GMAIL_USER && env.GMAIL_APP_PASSWORD);
+  let emailSent  = false;
+  let emailError: string | null = null;
+
   if (emailConfigured) {
-    sendInvitationEmail({
-      toEmail:       email,
-      invitedByName: invitedBy.name,
-      roleName:      role.name,
-      inviteUrl,
-      expiresHours:  INVITE_EXPIRES_HOURS,
-    }).catch((err) => console.error('[mailer] Error enviando invitación:', err));
+    try {
+      await sendInvitationEmail({
+        toEmail:       email,
+        invitedByName: invitedBy.name,
+        roleName:      role.name,
+        inviteUrl,
+        expiresHours:  INVITE_EXPIRES_HOURS,
+      });
+      emailSent = true;
+    } catch (err: any) {
+      emailError = err?.message ?? 'Error desconocido enviando email';
+      console.error('[mailer] Error enviando invitación:', err);
+    }
   }
 
   return {
@@ -65,7 +74,9 @@ export async function createInvitation(
     email,
     inviteUrl,
     expiresAt,
-    emailSent: !!(env.GMAIL_USER && env.GMAIL_APP_PASSWORD),
+    emailSent,
+    emailError,
+    emailConfigured,
   };
 }
 

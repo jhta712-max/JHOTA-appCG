@@ -77,11 +77,15 @@ export default function UsersPage() {
     mutationFn: (data: any) => api.post('/invitations', data),
     onSuccess: (res) => {
       refetchInvites();
-      setInviteLink(res.data.data.inviteUrl);
-      setApiOk(res.data.data.emailSent
-        ? `Invitación enviada a ${inviteForm.getValues('email')}`
-        : `Invitación creada. El email no está configurado — usa el enlace de abajo.`
-      );
+      const d = res.data.data;
+      setInviteLink(d.inviteUrl);
+      if (d.emailSent) {
+        setApiOk(`Invitación enviada a ${d.email}`);
+      } else if (!d.emailConfigured) {
+        setApiOk(`Invitación creada. Email no configurado — comparte el enlace manualmente.`);
+      } else {
+        setApiOk(`Invitación creada, pero falló el envío${d.emailError ? `: ${d.emailError}` : ''}. Comparte el enlace manualmente.`);
+      }
     },
     onError: (err: any) => setApiError(err.response?.data?.error || 'Error al invitar'),
   });
