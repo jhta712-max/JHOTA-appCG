@@ -626,7 +626,6 @@ export default function PaymentOrdersPage() {
             )}
           </div>
         </div>
-      )}
       {/* ── MODAL: ORDEN DE PAGO ────────────────────────────── */}
       {orderModal && (
         <Modal title={editingOrder ? '✏️ Editar orden' : '💳 Nueva orden de pago'} onClose={closeOrderModal} wide>
