@@ -121,3 +121,15 @@ export async function hardDeletePaymentOrder(req: Request, res: Response, next: 
     res.json({ success: true, message: 'Orden eliminada permanentemente' });
   } catch (err) { next(err); }
 }
+
+export async function suggestConcept(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { orderType, supplierName, projectCode, projectName, amount, currency } = req.body;
+    if (!orderType) {
+      res.status(400).json({ success: false, error: 'orderType es requerido' });
+      return;
+    }
+    const data = await svc.suggestConcept({ orderType, supplierName, projectCode, projectName, amount, currency });
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}

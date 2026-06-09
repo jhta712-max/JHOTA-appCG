@@ -429,6 +429,8 @@ export const paymentOrdersApi = {
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/void`),
   hardDelete: (id: string) =>
     api.delete(`/payment-orders/${id}`),
+  suggestConcept: (data: { orderType: string; supplierName?: string; projectCode?: string; projectName?: string; amount?: number; currency?: string }) =>
+    api.post<{ success: boolean; data: { concept: string } }>('/payment-orders/suggest-concept', data),
 };
 
 // ── Gastos de Oficina ─────────────────────────────────────────

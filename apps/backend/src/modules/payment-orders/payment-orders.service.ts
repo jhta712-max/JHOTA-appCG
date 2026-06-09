@@ -1,9 +1,13 @@
 import prisma from '../../config/database';
+import Anthropic from '@anthropic-ai/sdk';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
 import { autoUpdateStatus as autoUpdateQuotationStatus } from '../quotations/quotations.service';
+import { env } from '../../config/env';
 import type { CreatePaymentOrderInput, UpdatePaymentOrderInput, PaymentOrderQuery } from './payment-orders.schema';
+
+const aiClient = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null;
 
 interface FiscalVoucherInput {
   ncf:          string;
@@ -653,6 +657,50 @@ export async function hardDeletePaymentOrder(id: string) {
   const po = await prisma.paymentOrder.findUnique({ where: { id } });
   if (!po) throw new AppError(404, 'Orden no encontrada', 'NOT_FOUND');
   await prisma.paymentOrder.delete({ where: { id } });
+}
+
+// ── Sugerir concepto con IA ───────────────────────────────────
+export async function suggestConcept(input: {
+  orderType: string;
+  supplierName?: string | null;
+  projectCode?: string | null;
+  projectName?: string | null;
+  amount?: number | null;
+  currency?: string | null;
+}): Promise<{ concept: string }> {
+  const fallback = buildFallbackConcept(input);
+  if (!aiClient) return { concept: fallback };
+
+  const typeLabel = input.orderType === 'SERVICIO' ? 'servicio' : input.orderType === 'MATERIALS' ? 'materiales/insumos' : 'nómina';
+
+  try {
+    const msg = await aiClient.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 80,
+      messages: [{
+        role: 'user',
+        content: `Genera un concepto conciso (máx 15 palabras) para una orden de pago de construcción en República Dominicana.
+Tipo: ${typeLabel}
+Suplidor: ${input.supplierName ?? 'No especificado'}
+Proyecto: ${input.projectCode ? `${input.projectCode} – ${input.projectName ?? ''}` : 'No especificado'}
+Monto: ${input.currency ?? 'RD$'} ${input.amount?.toLocaleString('es-DO') ?? '0'}
+
+Solo el texto del concepto, sin comillas ni explicaciones. Ejemplo: "Pago por suministro de materiales pétreos para proyecto Santiago"`,
+      }],
+    });
+    const text = ((msg.content[0] as any).text ?? '').trim().replace(/^["']|["']$/g, '');
+    return { concept: text || fallback };
+  } catch {
+    return { concept: fallback };
+  }
+}
+
+function buildFallbackConcept(input: { orderType: string; supplierName?: string | null; projectCode?: string | null; projectName?: string | null }) {
+  const type = input.orderType === 'SERVICIO' ? 'Pago por servicios' : input.orderType === 'MATERIALS' ? 'Pago por materiales' : 'Pago de nómina';
+  const parts = [type];
+  if (input.supplierName) parts.push(`a ${input.supplierName}`);
+  if (input.projectCode)  parts.push(`— Proyecto ${input.projectCode}`);
+  return parts.join(' ');
 }
 
 // ── Helper ────────────────────────────────────────────────────

@@ -4,7 +4,7 @@ import {
   FileText, Plus, CheckCircle, AlertCircle, Loader2,
   Pencil, ClipboardCopy, X,
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
-  MessageCircle,
+  MessageCircle, Sparkles,
 } from 'lucide-react';
 import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
@@ -136,6 +136,7 @@ export default function PaymentOrdersPage() {
   const [fiscalForm,   setFiscalForm]   = useState({ hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '' });
   const [payInfoForm,  setPayInfoForm]  = useState({ paymentBank: '', paymentReference: '', exchangeRate: '' });
   const [fiscalErr,    setFiscalErr]    = useState('');
+  const [conceptLoading, setConceptLoading] = useState(false);
 
   const openPayModal = (o: PaymentOrder) => {
     setPayingOrder(o);
@@ -147,6 +148,25 @@ export default function PaymentOrdersPage() {
   const closePayModal = () => { setPayModal(false); setPayingOrder(null); };
 
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3500); };
+
+  const handleSuggestConcept = async () => {
+    setConceptLoading(true);
+    try {
+      const supplier = activeSuppliers.find((s) => s.id === orderForm.supplierId);
+      const project  = projects.find((p) => p.id === orderForm.projectId);
+      const res = await paymentOrdersApi.suggestConcept({
+        orderType:    orderForm.orderType,
+        supplierName: supplier?.name,
+        projectCode:  project?.code,
+        projectName:  project?.name,
+        amount:       orderForm.amount ? parseFloat(orderForm.amount.replace(/,/g, '')) : undefined,
+        currency:     orderForm.currency,
+      });
+      setOrderForm((f) => ({ ...f, concept: res.data.data.concept }));
+    } catch { /* silencioso */ } finally {
+      setConceptLoading(false);
+    }
+  };
 
   // ── Queries ───────────────────────────────────────────────────
   const { data: orders = [], isLoading: loadingOrders } = useQuery({
@@ -1018,10 +1038,24 @@ export default function PaymentOrdersPage() {
                 </Field>
               </div>
 
-              <Field label="Concepto / Descripción *">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="label !mb-0">Concepto / Descripción *</label>
+                  <button
+                    type="button"
+                    onClick={handleSuggestConcept}
+                    disabled={conceptLoading}
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors font-medium disabled:opacity-50"
+                  >
+                    {conceptLoading
+                      ? <><Loader2 className="w-3 h-3 animate-spin" /> Generando...</>
+                      : <><Sparkles className="w-3 h-3" /> Generar con IA</>
+                    }
+                  </button>
+                </div>
                 <textarea className="input-field resize-none" rows={2} placeholder="Pago de servicios..."
                   value={orderForm.concept} onChange={(e) => setOrderForm((f) => ({ ...f, concept: e.target.value }))} />
-              </Field>
+              </div>
 
               <Field label="Notas (opcional)">
                 <input className="input-field" placeholder="Información adicional" value={orderForm.notes}

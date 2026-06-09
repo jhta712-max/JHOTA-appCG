@@ -8,7 +8,7 @@ import {
   linkExpense, unlinkExpense,
   linkPayroll, unlinkPayroll,
   markAsPaid, revertToPending, voidPaymentOrder,
-  generateExpense, hardDeletePaymentOrder,
+  generateExpense, hardDeletePaymentOrder, suggestConcept,
 } from './payment-orders.controller';
 
 const router = Router();
@@ -22,6 +22,7 @@ router.get('/available-expenses',     getAvailableExpenses);
 router.get('/available-contracts',    getAvailableContracts);
 router.get('/available-quotations',   getAvailableQuotations);
 router.get('/:id',                    getPaymentOrder);
+router.post('/suggest-concept',       suggestConcept);
 router.post('/',                      createPaymentOrder);
 router.put('/:id',                    authorize('admin', 'supervisor', 'financiero'), updatePaymentOrder);
 router.post('/:id/link-expense',      linkExpense);
