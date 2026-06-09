@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -69,6 +69,11 @@ export default function NewExpensePage() {
   const [ocrError,      setOcrError]      = useState('');
   const [ocrValidated,  setOcrValidated]  = useState(false); // Usuario debe validar datos OCR
   const [aiFields,      setAiFields]      = useState<Set<string>>(new Set()); // campos llenados por IA
+
+  // Sugerencia de categoría automática
+  const [catSuggestion, setCatSuggestion] = useState<{ categoryName: string; confidence: 'high' | 'medium' | 'low' } | null>(null);
+  const [catSuggestLoading, setCatSuggestLoading] = useState(false);
+  const catDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { register, handleSubmit, watch, formState: { errors }, reset, setValue, getValues } =
     useForm<FormData>({
@@ -239,6 +244,7 @@ export default function NewExpensePage() {
       }
 
       setAiFields(filled);
+      if (filled.has('categoryId')) setCatSuggestion(null);
     } catch (err: any) {
       setOcrError(err.response?.data?.error ?? 'Error al procesar la imagen con IA');
     } finally {
@@ -248,6 +254,34 @@ export default function NewExpensePage() {
 
   const clearAiField = (field: string) => {
     setAiFields((prev) => { const next = new Set(prev); next.delete(field); return next; });
+  };
+
+  const handleDescriptionChange = useCallback((value: string) => {
+    // Si ya hay categoría seleccionada por el usuario, no sugerir
+    if (aiFields.has('categoryId')) return;
+    setCatSuggestion(null);
+    if (catDebounceRef.current) clearTimeout(catDebounceRef.current);
+    if (value.trim().length < 5) return;
+    catDebounceRef.current = setTimeout(async () => {
+      setCatSuggestLoading(true);
+      try {
+        const res = await expensesApi.suggestCategory(value.trim());
+        const { categoryName, confidence } = res.data.data;
+        if (categoryName) setCatSuggestion({ categoryName, confidence });
+      } catch { /* silencioso */ } finally {
+        setCatSuggestLoading(false);
+      }
+    }, 700);
+  }, [aiFields]);
+
+  const acceptCatSuggestion = () => {
+    if (!catSuggestion || !categories) return;
+    const match = categories.find((c) => c.name.toLowerCase() === catSuggestion.categoryName.toLowerCase());
+    if (match) {
+      setValue('categoryId', match.id);
+      setAiFields((prev) => new Set([...prev, 'categoryId']));
+    }
+    setCatSuggestion(null);
   };
 
   const confidenceCfg = ocrResult ? CONFIDENCE_CONFIG[ocrResult.confidence] : null;
@@ -553,9 +587,31 @@ export default function NewExpensePage() {
             <input
               type="text" placeholder="¿En qué se gastó?"
               className={`input-field ${errors.description ? 'input-error' : ''} ${aiFields.has('description') ? 'ring-2 ring-violet-400' : ''}`}
-              {...register('description', { required: 'La descripción es requerida', minLength: { value: 3, message: 'Mínimo 3 caracteres' } })}
+              {...register('description', {
+                required: 'La descripción es requerida',
+                minLength: { value: 3, message: 'Mínimo 3 caracteres' },
+                onChange: (e) => handleDescriptionChange(e.target.value),
+              })}
             />
             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
+            {/* Chip de sugerencia de categoría */}
+            {catSuggestLoading && !aiFields.has('categoryId') && (
+              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" /> Analizando categoría...
+              </p>
+            )}
+            {catSuggestion && !aiFields.has('categoryId') && (
+              <button
+                type="button"
+                onClick={acceptCatSuggestion}
+                className="mt-1.5 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors font-medium"
+              >
+                <Sparkles className="w-3 h-3" />
+                Categoría sugerida: <strong>{catSuggestion.categoryName}</strong>
+                {catSuggestion.confidence === 'high' && <span className="text-green-600">✓</span>}
+                — Clic para aceptar
+              </button>
+            )}
           </AiField>
 
           <div className="grid grid-cols-2 gap-4">

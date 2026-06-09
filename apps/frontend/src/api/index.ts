@@ -76,6 +76,8 @@ export const expensesApi = {
     api.post<{ success: boolean; data: Expense }>(`/expenses/${id}/approve`),
   reject:  (id: string, reason: string) =>
     api.post<{ success: boolean; data: Expense }>(`/expenses/${id}/reject`, { reason }),
+  suggestCategory: (description: string) =>
+    api.post<{ success: boolean; data: { categoryName: string | null; confidence: 'high' | 'medium' | 'low' } }>('/expenses/suggest-category', { description }),
 };
 
 // ── Categorías ────────────────────────────────────────────────
