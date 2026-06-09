@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Plus, X, Pencil, Trash2, Link, Unlink, Search,
-  FileCheck, AlertTriangle, Loader2, ChevronDown, ChevronUp,
+  FileCheck, AlertTriangle, Loader2, ChevronDown, ChevronUp, FilePlus,
 } from 'lucide-react';
 import { contratosAjustadosApi, suppliersApi, projectsApi } from '../../api';
 import { useRole } from '../../hooks/useRole';
@@ -454,15 +454,18 @@ function ContratoDetailPanel({
   canEdit: boolean;
 }) {
   const qc = useQueryClient();
-  const [showVincular, setShowVincular] = useState(false);
-  const [unlinkError, setUnlinkError] = useState('');
+  const [showVincular,   setShowVincular]   = useState(false);
+  const [unlinkError,    setUnlinkError]    = useState('');
+  const [showAdendaForm, setShowAdendaForm] = useState(false);
+  const [adendaForm,     setAdendaForm]     = useState({ monto: '', descripcion: '', fecha: new Date().toISOString().split('T')[0] });
+  const [adendaError,    setAdendaError]    = useState('');
 
   const { data: detailRes, isLoading } = useQuery({
     queryKey: ['contrato-detail', contrato.id],
     queryFn: () => contratosAjustadosApi.getById(contrato.id),
   });
 
-  const detail: ContratoAjustado = detailRes?.data?.data ?? contrato;
+  const detail: any = detailRes?.data?.data ?? contrato;
 
   const unlinkMutation = useMutation({
     mutationFn: (expenseId: string) => contratosAjustadosApi.unlinkExpense(contrato.id, expenseId),
@@ -471,6 +474,30 @@ function ContratoDetailPanel({
       qc.invalidateQueries({ queryKey: ['contrato-detail', contrato.id] });
     },
     onError: (e: any) => setUnlinkError(e.response?.data?.error ?? 'Error al desvincular'),
+  });
+
+  const addAdendaMut = useMutation({
+    mutationFn: () => contratosAjustadosApi.createAdenda(contrato.id, {
+      monto:       parseFloat(adendaForm.monto),
+      descripcion: adendaForm.descripcion,
+      fecha:       adendaForm.fecha,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['contratos-ajustados'] });
+      qc.invalidateQueries({ queryKey: ['contrato-detail', contrato.id] });
+      setShowAdendaForm(false);
+      setAdendaError('');
+      setAdendaForm({ monto: '', descripcion: '', fecha: new Date().toISOString().split('T')[0] });
+    },
+    onError: (e: any) => setAdendaError(e.response?.data?.error ?? 'Error al agregar adenda'),
+  });
+
+  const deleteAdendaMut = useMutation({
+    mutationFn: (adendaId: string) => contratosAjustadosApi.deleteAdenda(contrato.id, adendaId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['contratos-ajustados'] });
+      qc.invalidateQueries({ queryKey: ['contrato-detail', contrato.id] });
+    },
   });
 
   return (
@@ -539,24 +566,137 @@ function ContratoDetailPanel({
               <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div>
-                    <p className="text-gray-500 text-xs mb-0.5">Contratado</p>
-                    <p className="font-bold text-gray-900">{fmt(detail.montoContratado)}</p>
+                    <p className="text-gray-500 text-xs mb-0.5">Monto base</p>
+                    <p className="font-bold text-gray-900">{fmt(Number(detail.montoContratado))}</p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs mb-0.5">Pagado</p>
-                    <p className="font-bold text-green-700">{fmt(detail.pagadoAcumulado)}</p>
+                    <p className="font-bold text-green-700">{fmt(detail.pagadoAcumulado ?? 0)}</p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs mb-0.5">Balance</p>
                     <p className={clsx('font-bold', detail.sobregirado ? 'text-red-600' : 'text-amber-700')}>
-                      {fmt(detail.balancePendiente)}
+                      {fmt(detail.balancePendiente ?? 0)}
                     </p>
                   </div>
                 </div>
+                {(detail.adendas?.length ?? 0) > 0 && (
+                  <div className="flex items-center justify-between text-xs bg-indigo-50 rounded-lg px-3 py-1.5 text-indigo-700">
+                    <span>+ Adendas: <strong>{fmt(detail.sumAdendas ?? 0)}</strong></span>
+                    <span>Total efectivo: <strong>{fmt(detail.montoEfectivo ?? Number(detail.montoContratado))}</strong></span>
+                  </div>
+                )}
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Progreso de ejecución</p>
-                  <ProgressBar pct={detail.porcentajeEjecutado} sobregirado={detail.sobregirado} />
+                  <ProgressBar pct={detail.porcentajeEjecutado ?? 0} sobregirado={detail.sobregirado ?? false} />
                 </div>
+              </div>
+
+              {/* Adendas por monto */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-gray-700">
+                    Adendas por monto ({detail.adendas?.length ?? 0})
+                  </h3>
+                  {canEdit && detail.estado === 'ACTIVO' && !showAdendaForm && (
+                    <button
+                      onClick={() => setShowAdendaForm(true)}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                      <FilePlus className="w-3.5 h-3.5" /> Nueva adenda
+                    </button>
+                  )}
+                </div>
+
+                {showAdendaForm && (
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-3 space-y-2">
+                    <p className="text-xs font-bold text-indigo-700 uppercase tracking-wide">Nueva adenda de monto</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-0.5">Monto adicional *</label>
+                        <input type="number" min="1" step="0.01" className="input-field text-sm"
+                          placeholder="0.00"
+                          value={adendaForm.monto}
+                          onChange={(e) => setAdendaForm((f) => ({ ...f, monto: e.target.value }))} />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-0.5">Fecha *</label>
+                        <input type="date" className="input-field text-sm"
+                          value={adendaForm.fecha}
+                          onChange={(e) => setAdendaForm((f) => ({ ...f, fecha: e.target.value }))} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-0.5">Descripción *</label>
+                      <input type="text" className="input-field text-sm"
+                        placeholder="Ej: Ampliación alcance trabajos adicionales"
+                        value={adendaForm.descripcion}
+                        onChange={(e) => setAdendaForm((f) => ({ ...f, descripcion: e.target.value }))} />
+                    </div>
+                    {adendaError && <p className="text-xs text-red-600">{adendaError}</p>}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        disabled={addAdendaMut.isPending}
+                        onClick={() => {
+                          setAdendaError('');
+                          const m = parseFloat(adendaForm.monto);
+                          if (isNaN(m) || m <= 0) return setAdendaError('El monto debe ser mayor a 0');
+                          if (!adendaForm.descripcion.trim()) return setAdendaError('La descripción es requerida');
+                          if (!adendaForm.fecha) return setAdendaError('La fecha es requerida');
+                          addAdendaMut.mutate();
+                        }}
+                        className="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1.5">
+                        {addAdendaMut.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
+                        Agregar adenda
+                      </button>
+                      <button
+                        onClick={() => { setShowAdendaForm(false); setAdendaError(''); setAdendaForm({ monto: '', descripcion: '', fecha: new Date().toISOString().split('T')[0] }); }}
+                        className="px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {(!detail.adendas || detail.adendas.length === 0) ? (
+                  <p className="text-sm text-gray-400 text-center py-3 border border-dashed border-gray-200 rounded-lg">
+                    No hay adendas registradas
+                  </p>
+                ) : (
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-indigo-50">
+                        <tr>
+                          <th className="text-left px-3 py-2 text-xs font-medium text-indigo-600">#</th>
+                          <th className="text-left px-3 py-2 text-xs font-medium text-indigo-600">Descripción</th>
+                          <th className="text-left px-3 py-2 text-xs font-medium text-indigo-600">Fecha</th>
+                          <th className="text-right px-3 py-2 text-xs font-medium text-indigo-600">Monto adicional</th>
+                          {canEdit && <th className="px-3 py-2" />}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {detail.adendas.map((a: any) => (
+                          <tr key={a.id} className="border-t border-gray-100 hover:bg-gray-50">
+                            <td className="px-3 py-2 text-gray-400 font-mono text-xs">A-{String(a.number).padStart(2, '0')}</td>
+                            <td className="px-3 py-2 text-gray-800">{a.descripcion}</td>
+                            <td className="px-3 py-2 text-gray-500 whitespace-nowrap">{fmtDate(a.fecha)}</td>
+                            <td className="px-3 py-2 text-right font-semibold text-indigo-700">{fmt(Number(a.monto))}</td>
+                            {canEdit && (
+                              <td className="px-3 py-2 text-right">
+                                <button
+                                  onClick={() => deleteAdendaMut.mutate(a.id)}
+                                  disabled={deleteAdendaMut.isPending}
+                                  className="text-gray-400 hover:text-red-500 transition-colors"
+                                  title="Eliminar adenda">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
 
               {/* Gastos vinculados */}

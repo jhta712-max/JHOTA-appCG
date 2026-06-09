@@ -18,4 +18,8 @@ router.get('/:id/available-expenses',    ctrl.getAvailableExpenses);
 router.post('/:id/link-expense',         ctrl.linkExpense);
 router.post('/:id/unlink-expense',       ctrl.unlinkExpense);
 
+// Adendas por monto
+router.post('/:id/adendas',             authorize('admin', 'supervisor'), ctrl.createAdenda);
+router.delete('/:id/adendas/:adendaId', authorize('admin', 'supervisor'), ctrl.deleteAdenda);
+
 export default router;

@@ -68,3 +68,22 @@ export async function getAvailableExpenses(req: Request, res: Response, next: Ne
     res.json({ success: true, data: await svc.getAvailableExpenses(req.params.id) });
   } catch (err) { next(err); }
 }
+
+export async function createAdenda(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { monto, descripcion, fecha } = req.body;
+    const c = await svc.createAdenda(
+      req.params.id,
+      { monto: Number(monto), descripcion, fecha },
+      (req as any).user.userId,
+    );
+    res.status(201).json({ success: true, data: c });
+  } catch (err) { next(err); }
+}
+
+export async function deleteAdenda(req: Request, res: Response, next: NextFunction) {
+  try {
+    const c = await svc.deleteAdenda(req.params.id, req.params.adendaId);
+    res.json({ success: true, data: c });
+  } catch (err) { next(err); }
+}

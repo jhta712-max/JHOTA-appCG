@@ -72,8 +72,9 @@ model User {
   paymentOrdersPaid         PaymentOrder[]         @relation("PaymentOrderPaidBy")
   officeExpenses            OfficeExpense[]        @relation("OfficeExpenseCreatedBy")
   suppliersCreated          Supplier[]             @relation("SupplierCreatedBy")
-  contratosAjustadosCreated ContratoAjustado[]     @relation("ContratoAjustadoCreatedBy")
-  contratosAjustadosUpdated ContratoAjustado[]     @relation("ContratoAjustadoUpdatedBy")
+  contratosAjustadosCreated ContratoAjustado[]       @relation("ContratoAjustadoCreatedBy")
+  contratosAjustadosUpdated ContratoAjustado[]       @relation("ContratoAjustadoUpdatedBy")
+  contratoAdendas           ContratoAjustadoAdenda[] @relation("ContratoAdendaCreatedBy")
 
   @@index([email])
   @@index([roleId])
@@ -941,6 +942,7 @@ model ContratoAjustado {
   createdBy    User                   @relation("ContratoAjustadoCreatedBy", fields: [createdById], references: [id])
   updatedBy    User?                  @relation("ContratoAjustadoUpdatedBy", fields: [updatedById], references: [id])
   pagos         ContratoAjustadoPago[]
+  adendas       ContratoAjustadoAdenda[]
   expenses      Expense[]              @relation("ExpenseContratoAjustado")
   payrollLines  PayrollLine[]          @relation("PayrollLineContratoAjustado")
   paymentOrders PaymentOrder[]         @relation("PaymentOrderContratoAjustado")
@@ -949,6 +951,24 @@ model ContratoAjustado {
   @@index([supplierId])
   @@index([estado])
   @@map("contratos_ajustados")
+}
+
+model ContratoAjustadoAdenda {
+  id                 String   @id @default(uuid()) @db.Uuid
+  contratoAjustadoId String   @map("contrato_ajustado_id") @db.Uuid
+  number             Int
+  monto              Decimal  @db.Decimal(15, 2)
+  descripcion        String   @db.VarChar(500)
+  fecha              DateTime @db.Date
+  createdById        String   @map("created_by") @db.Uuid
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  contratoAjustado ContratoAjustado @relation(fields: [contratoAjustadoId], references: [id], onDelete: Cascade)
+  createdBy        User             @relation("ContratoAdendaCreatedBy", fields: [createdById], references: [id])
+
+  @@unique([contratoAjustadoId, number])
+  @@index([contratoAjustadoId])
+  @@map("contrato_ajustado_adendas")
 }
 
 model ContratoAjustadoPago {

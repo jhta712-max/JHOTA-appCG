@@ -8,6 +8,7 @@ const INCLUDE = {
   createdBy: { select: { id: true, name: true } },
   updatedBy: { select: { id: true, name: true } },
   pagos:    true,
+  adendas:  { orderBy: { number: 'asc' as const } },
   expenses: {
     where:  { status: { not: 'VOIDED' as const } },
     select: { id: true, amount: true, expenseDate: true, description: true, status: true },
@@ -15,14 +16,18 @@ const INCLUDE = {
 };
 
 function calcTotals(contrato: any) {
-  const pagado = contrato.expenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
-  const monto  = Number(contrato.montoContratado);
+  const pagado    = contrato.expenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
+  const montoBase = Number(contrato.montoContratado);
+  const sumAdendas = (contrato.adendas ?? []).reduce((s: number, a: any) => s + Number(a.monto), 0);
+  const monto     = montoBase + sumAdendas;
   return {
     ...contrato,
-    pagadoAcumulado: pagado,
-    balancePendiente: monto - pagado,
+    montoEfectivo:       monto,
+    sumAdendas,
+    pagadoAcumulado:     pagado,
+    balancePendiente:    monto - pagado,
     porcentajeEjecutado: monto > 0 ? (pagado / monto) * 100 : 0,
-    sobregirado: pagado > monto,
+    sobregirado:         pagado > monto,
   };
 }
 
@@ -232,4 +237,40 @@ export async function getAvailableExpenses(contratoId: string) {
     orderBy: { expenseDate: 'desc' },
     take: 100,
   });
+}
+
+export async function createAdenda(
+  contratoId: string,
+  data: { monto: number; descripcion: string; fecha: string },
+  userId: string,
+) {
+  const contrato = await prisma.contratoAjustado.findUnique({ where: { id: contratoId } });
+  if (!contrato) throw new AppError(404, 'Contrato no encontrado', 'NOT_FOUND');
+  if (contrato.estado === 'CANCELADO') throw new AppError(400, 'No se puede agregar adenda a un contrato cancelado', 'CONTRACT_CANCELLED');
+
+  const last = await prisma.contratoAjustadoAdenda.findFirst({
+    where:   { contratoAjustadoId: contratoId },
+    orderBy: { number: 'desc' },
+  });
+
+  await prisma.contratoAjustadoAdenda.create({
+    data: {
+      contratoAjustadoId: contratoId,
+      number:      (last?.number ?? 0) + 1,
+      monto:       data.monto,
+      descripcion: data.descripcion,
+      fecha:       new Date(data.fecha),
+      createdById: userId,
+    },
+  });
+  return getContratoById(contratoId);
+}
+
+export async function deleteAdenda(contratoId: string, adendaId: string) {
+  const adenda = await prisma.contratoAjustadoAdenda.findFirst({
+    where: { id: adendaId, contratoAjustadoId: contratoId },
+  });
+  if (!adenda) throw new AppError(404, 'Adenda no encontrada', 'NOT_FOUND');
+  await prisma.contratoAjustadoAdenda.delete({ where: { id: adendaId } });
+  return getContratoById(contratoId);
 }

@@ -577,6 +577,10 @@ export const contratosAjustadosApi = {
     api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/link-expense`, { expenseId }),
   unlinkExpense: (id: string, expenseId: string) =>
     api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/unlink-expense`, { expenseId }),
+  createAdenda: (id: string, data: { monto: number; descripcion: string; fecha: string }) =>
+    api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/adendas`, data),
+  deleteAdenda: (id: string, adendaId: string) =>
+    api.delete<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/adendas/${adendaId}`),
 };
 
 // ── Suscripciones de Servicios ────────────────────────────────
