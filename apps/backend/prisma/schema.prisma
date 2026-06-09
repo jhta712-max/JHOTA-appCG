@@ -711,6 +711,7 @@ model SupplierBankAccount {
   bank          String   @db.VarChar(100)
   accountType   String   @default("Cuenta de Ahorros") @map("account_type") @db.VarChar(30)
   accountNumber String   @map("account_number") @db.VarChar(50)
+  currency      String   @default("RD$") @db.VarChar(5)
   isDefault     Boolean  @default(false) @map("is_default")
   notes         String?  @db.VarChar(200)
   createdAt     DateTime @default(now()) @map("created_at")

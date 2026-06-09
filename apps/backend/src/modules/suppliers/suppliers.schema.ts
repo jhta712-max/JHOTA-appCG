@@ -18,10 +18,13 @@ export const createSupplierSchema = z.object({
 
 export const updateSupplierSchema = createSupplierSchema.partial();
 
+const CURRENCIES = ['RD$', 'US$', '€'] as const;
+
 export const createBankAccountSchema = z.object({
   bank:          z.string().min(2).max(100),
   accountType:   z.enum(ACCOUNT_TYPES).default('Cuenta de Ahorros'),
   accountNumber: z.string().min(4).max(50),
+  currency:      z.enum(CURRENCIES).default('RD$'),
   isDefault:     z.boolean().optional().default(false),
   notes:         z.string().max(200).optional().nullable(),
 });

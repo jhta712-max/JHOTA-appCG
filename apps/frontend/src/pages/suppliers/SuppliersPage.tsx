@@ -18,7 +18,7 @@ type SupplierForm = {
 };
 
 type BankForm = {
-  bank: string; accountType: string; accountNumber: string; notes: string; isDefault: boolean;
+  bank: string; accountType: string; accountNumber: string; currency: string; notes: string; isDefault: boolean;
 };
 
 const EMPTY_FORM: SupplierForm = {
@@ -26,7 +26,7 @@ const EMPTY_FORM: SupplierForm = {
 };
 
 const EMPTY_BANK: BankForm = {
-  bank: '', accountType: 'Cuenta de Ahorros', accountNumber: '', notes: '', isDefault: false,
+  bank: '', accountType: 'Cuenta de Ahorros', accountNumber: '', currency: 'RD$', notes: '', isDefault: false,
 };
 
 // ── Componente principal ──────────────────────────────────────
@@ -237,6 +237,7 @@ export default function SuppliersPage() {
       bank:          bankForm.bank.trim(),
       accountType:   bankForm.accountType,
       accountNumber: bankForm.accountNumber.trim(),
+      currency:      bankForm.currency,
       notes:         bankForm.notes.trim() || null,
       isDefault:     bankForm.isDefault,
     };
@@ -253,6 +254,7 @@ export default function SuppliersPage() {
       bank:          acc.bank,
       accountType:   acc.accountType,
       accountNumber: acc.accountNumber,
+      currency:      (acc as any).currency ?? 'RD$',
       notes:         acc.notes ?? '',
       isDefault:     acc.isDefault,
     });
@@ -538,6 +540,11 @@ export default function SuppliersPage() {
                             </div>
                             <p className="text-xs text-gray-500 mt-0.5">
                               {acc.accountType} · <span className="font-mono">{acc.accountNumber}</span>
+                              {(acc as any).currency && (acc as any).currency !== 'RD$' && (
+                                <span className={`ml-2 font-semibold ${(acc as any).currency === 'US$' ? 'text-green-600' : 'text-purple-600'}`}>
+                                  {(acc as any).currency}
+                                </span>
+                              )}
                             </p>
                             {acc.notes && <p className="text-xs text-gray-400 mt-0.5">{acc.notes}</p>}
                           </div>
@@ -612,6 +619,33 @@ export default function SuppliersPage() {
                             onChange={handleBankChange} placeholder="000-000000-0" maxLength={50} required />
                         </div>
                       </div>
+
+                      {/* Divisa */}
+                      <div>
+                        <label className="label text-xs">Divisa</label>
+                        <div className="flex items-center gap-3 mt-1">
+                          {(['RD$', 'US$', '€'] as const).map((cur) => (
+                            <label key={cur} className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
+                              bankForm.currency === cur
+                                ? cur === 'RD$' ? 'border-blue-400 bg-blue-50 text-blue-700'
+                                  : cur === 'US$' ? 'border-green-400 bg-green-50 text-green-700'
+                                  : 'border-purple-400 bg-purple-50 text-purple-700'
+                                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                            }`}>
+                              <input
+                                type="radio"
+                                name="currency"
+                                value={cur}
+                                checked={bankForm.currency === cur}
+                                onChange={handleBankChange}
+                                className="sr-only"
+                              />
+                              {cur}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
                       <div>
                         <label className="label text-xs">Notas (opcional)</label>
                         <input className="input-field text-sm" name="notes" value={bankForm.notes} onChange={handleBankChange}
