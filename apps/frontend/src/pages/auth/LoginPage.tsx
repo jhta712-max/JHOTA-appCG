@@ -94,7 +94,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Bienvenido</h1>
+          <h1 className="page-title mb-1" style={{ fontSize: '1.8rem' }}>Bienvenido</h1>
           <p className="text-gray-500 text-sm mb-8">Ingresa tus credenciales para continuar</p>
 
           {error && (

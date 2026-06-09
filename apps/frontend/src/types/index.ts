@@ -190,9 +190,11 @@ export interface PaymentOrder {
   status:        'PENDING' | 'PAID' | 'VOIDED';
   generatedText: string | null;
   notes?:        string | null;
-  paidAt?:       string | null;
-  paidBy?:       { id: string; name: string } | null;
-  payrollId?:    string | null;
+  paidAt?:            string | null;
+  paidBy?:            { id: string; name: string } | null;
+  paymentBank?:       string | null;
+  paymentReference?:  string | null;
+  payrollId?:         string | null;
   payroll?:      { id: string; number: number; type: string; totalAmount: number; periodStart: string; periodEnd: string; status: string } | null;
   expenseId?:    string | null;
   expense?:      { id: string; amount: number; expenseDate: string; description: string; status: string } | null;
@@ -209,6 +211,18 @@ export const PROJECT_STATUS_LABELS: Record<string, string> = {
 };
 
 // ── Suplidores (también actúan como beneficiarios de pagos) ────
+export interface SupplierBankAccount {
+  id:            string;
+  supplierId:    string;
+  bank:          string;
+  accountType:   string;
+  accountNumber: string;
+  isDefault:     boolean;
+  notes?:        string | null;
+  createdAt:     string;
+  updatedAt:     string;
+}
+
 export interface Supplier {
   id:             string;
   name:           string;
@@ -218,6 +232,7 @@ export interface Supplier {
   email?:         string | null;
   address?:       string | null;
   notes?:         string | null;
+  // Legacy single-account fields (kept for backwards compat)
   bank?:          string | null;
   accountType?:   string | null;
   accountNumber?: string | null;
@@ -225,6 +240,7 @@ export interface Supplier {
   createdBy:      { id: string; name: string };
   createdAt:      string;
   updatedAt:      string;
+  bankAccounts?:  SupplierBankAccount[];
 }
 
 export interface SupplierHistory {

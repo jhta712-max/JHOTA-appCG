@@ -142,7 +142,7 @@ export default function ResetPasswordPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">Resetear contraseña</h1>
+              <h1 className="page-title mb-1" style={{ fontSize: '1.6rem' }}>Resetear contraseña</h1>
               <p className="text-gray-500 text-sm mb-8">Ingresa tu nueva contraseña</p>
 
               {error && (

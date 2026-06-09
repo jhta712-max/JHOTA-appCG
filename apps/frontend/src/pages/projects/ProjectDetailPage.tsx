@@ -1,8 +1,10 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, FolderOpen, MapPin, User,
   Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight, Upload,
+  Sparkles, Loader2, RefreshCw, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { projectsApi, expensesApi, quotationsApi } from '../../api';
 import { useRole } from '../../hooks/useRole';
@@ -23,6 +25,26 @@ export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isSupervisor: canEdit } = useRole();
+
+  const [aiSummaryText,    setAiSummaryText]    = useState<string | null>(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  const [aiSummaryOpen,    setAiSummaryOpen]    = useState(false);
+  const [aiSummaryAt,      setAiSummaryAt]      = useState<string | null>(null);
+
+  const handleAiSummary = async () => {
+    if (!id) return;
+    setAiSummaryLoading(true);
+    setAiSummaryOpen(true);
+    try {
+      const res = await projectsApi.aiSummary(id);
+      setAiSummaryText(res.data.data.summary);
+      setAiSummaryAt(res.data.data.generatedAt);
+    } catch {
+      setAiSummaryText('No se pudo generar el resumen. Intenta de nuevo.');
+    } finally {
+      setAiSummaryLoading(false);
+    }
+  };
 
   const { data: summaryData, isLoading } = useQuery({
     queryKey: ['project-summary', id],
@@ -70,14 +92,25 @@ export default function ProjectDetailPage() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-gray-900 truncate">{project.name}</h1>
+            <h1 className="page-title truncate">{project.name}</h1>
             <span className={STATUS_BADGE[project.status]}>
               {PROJECT_STATUS_LABELS[project.status]}
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-0.5">{project.code}</p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <button
+            type="button"
+            onClick={handleAiSummary}
+            disabled={aiSummaryLoading}
+            className="btn-secondary text-sm"
+          >
+            {aiSummaryLoading
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando...</>
+              : <><Sparkles className="w-4 h-4 text-violet-500" /> Resumen IA</>
+            }
+          </button>
           {canEdit && (
             <>
               <Link to={`/projects/import-batches`}
@@ -142,6 +175,50 @@ export default function ProjectDetailPage() {
           {projectData.notes && (
             <p className="text-sm text-gray-500 mt-4 pt-4 border-t border-gray-100">{projectData.notes}</p>
           )}
+        </div>
+      )}
+
+      {/* Panel Resumen IA */}
+      {aiSummaryOpen && (
+        <div className="card border border-violet-200 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setAiSummaryOpen((o) => !o)}
+            className="w-full flex items-center justify-between px-5 py-3.5 bg-violet-50 hover:bg-violet-100 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-violet-600" />
+              <span className="font-semibold text-violet-800 text-sm">Resumen ejecutivo IA</span>
+              {aiSummaryAt && (
+                <span className="text-xs text-violet-400">
+                  — generado {new Date(aiSummaryAt).toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {!aiSummaryLoading && aiSummaryText && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleAiSummary(); }}
+                  className="text-violet-500 hover:text-violet-700 p-1 rounded-full hover:bg-violet-200"
+                  title="Regenerar"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {aiSummaryOpen ? <ChevronUp className="w-4 h-4 text-violet-500" /> : <ChevronDown className="w-4 h-4 text-violet-500" />}
+            </div>
+          </button>
+          <div className="px-5 py-4">
+            {aiSummaryLoading ? (
+              <div className="flex items-center gap-3 text-violet-600 py-2">
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                <p className="text-sm">Analizando datos del proyecto con IA...</p>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{aiSummaryText}</p>
+            )}
+          </div>
         </div>
       )}
 

@@ -23,8 +23,11 @@ router.get('/:id', ctrl.getOne);
 // GET  /api/v1/projects/:id/summary
 router.get('/:id/summary', ctrl.getSummary);
 
-// POST /api/v1/projects  — solo admin y supervisor
-router.post('/',    authorize('admin', 'supervisor'), validate(createProjectSchema), ctrl.create);
+// POST /api/v1/projects/:id/ai-summary
+router.post('/:id/ai-summary', ctrl.aiSummary);
+
+// POST /api/v1/projects  — admin, supervisor y auxiliar
+router.post('/',    authorize('admin', 'supervisor', 'auxiliar'), validate(createProjectSchema), ctrl.create);
 
 // PUT  /api/v1/projects/:id
 router.put('/:id',  authorize('admin', 'supervisor'), validate(updateProjectSchema), ctrl.update);

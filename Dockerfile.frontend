@@ -1,8 +1,19 @@
-# Build stage
+# Build stage - Frontend
 FROM node:24-alpine AS builder
+
+# Cache invalidation - forces fresh build every deployment
+ARG CACHE_BUST=default
+RUN echo "Cache bust: $CACHE_BUST"
+
 WORKDIR /app
+
+# Copy monorepo files
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY apps/frontend ./apps/frontend
+
+# Copy all apps (workspace needs all apps even if only building one)
+COPY apps ./apps
+
+# Install and build
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 WORKDIR /app/apps/frontend
 RUN pnpm run build

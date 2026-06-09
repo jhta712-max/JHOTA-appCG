@@ -112,9 +112,8 @@ export default function NotificationContactsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-primary-600" /> Contactos de Notificación
-          </h1>
+          <p className="module-label">ADMINISTRACIÓN / NOTIFICACIONES</p>
+          <h1 className="page-title">Contactos de Notificación</h1>
           <p className="text-sm text-gray-500">
             Personas externas que reciben alertas por WhatsApp y/o email
           </p>

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as service from './suppliers.service';
+import { createBankAccountSchema, updateBankAccountSchema } from './suppliers.schema';
 import type { CreateSupplierInput, UpdateSupplierInput } from './suppliers.schema';
 
 export async function list(req: Request, res: Response, next: NextFunction) {
@@ -40,6 +41,43 @@ export async function update(req: Request, res: Response, next: NextFunction) {
 export async function toggleActive(req: Request, res: Response, next: NextFunction) {
   try {
     const data = await service.toggleSupplierActive(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function listBankAccounts(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.listBankAccounts(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function addBankAccount(req: Request, res: Response, next: NextFunction) {
+  try {
+    const input = createBankAccountSchema.parse(req.body);
+    const data  = await service.addBankAccount(req.params.id, input);
+    res.status(201).json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function updateBankAccount(req: Request, res: Response, next: NextFunction) {
+  try {
+    const input = updateBankAccountSchema.parse(req.body);
+    const data  = await service.updateBankAccount(req.params.id, req.params.accountId, input);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function deleteBankAccount(req: Request, res: Response, next: NextFunction) {
+  try {
+    await service.deleteBankAccount(req.params.id, req.params.accountId);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+}
+
+export async function setDefaultBankAccount(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.setDefaultBankAccount(req.params.id, req.params.accountId);
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }

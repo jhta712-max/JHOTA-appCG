@@ -213,8 +213,9 @@ export default function QuotationFormPage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">
-            {isEdit ? 'Editar cotización' : 'Nueva cotización'}
+          <p className="module-label">MÓDULO / COTIZACIONES</p>
+          <h1 className="page-title">
+            {isEdit ? 'Editar Cotización' : 'Nueva Cotización'}
           </h1>
           <p className="text-sm text-gray-500">
             {isEdit ? 'Actualiza los datos de la cotización' : 'Registra una cotización o propuesta comercial'}

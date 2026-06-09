@@ -1,3 +1,4 @@
+import { execSync } from 'child_process';
 import { env } from './config/env';
 import { logger } from './utils/logger';
 import prisma from './config/database';
@@ -9,6 +10,17 @@ import { forceFlush } from './middlewares/requestLogger';
 
 async function start() {
   try {
+    try {
+      logger.info('Ejecutando migraciones de base de datos...');
+      execSync('./node_modules/.bin/prisma migrate deploy --schema ./prisma/schema.prisma', {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+      });
+      logger.info('Migraciones completadas.');
+    } catch (migrationErr) {
+      logger.error('Error ejecutando migraciones (continuando de todos modos):', migrationErr);
+    }
+
     await prisma.$connect();
     logger.info('Conectado a PostgreSQL correctamente');
 

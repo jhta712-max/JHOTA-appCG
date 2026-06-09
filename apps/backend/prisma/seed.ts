@@ -54,7 +54,7 @@ async function main() {
         description: 'Auxiliar administrativo — procesa órdenes de pago pendientes',
         permissions: {
           paymentOrders: { view: true, markPaid: true },
-          beneficiaries: { view: true },
+          suppliers: { view: true },
         },
       },
     }),

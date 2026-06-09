@@ -32,6 +32,20 @@ export async function getAvailableExpenses(req: Request, res: Response, next: Ne
   } catch (err) { next(err); }
 }
 
+export async function getAvailableContracts(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { projectId, supplierId } = z.object({ projectId: z.string().uuid(), supplierId: z.string().uuid() }).parse(req.query);
+    res.json({ success: true, data: await svc.getAvailableContracts(projectId, supplierId) });
+  } catch (err) { next(err); }
+}
+
+export async function getAvailableQuotations(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { projectId, supplierId } = z.object({ projectId: z.string().uuid(), supplierId: z.string().uuid() }).parse(req.query);
+    res.json({ success: true, data: await svc.getAvailableQuotations(projectId, supplierId) });
+  } catch (err) { next(err); }
+}
+
 export async function createPaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     const data = createPaymentOrderSchema.parse(req.body);
@@ -43,7 +57,8 @@ export async function createPaymentOrder(req: Request, res: Response, next: Next
 export async function updatePaymentOrder(req: Request, res: Response, next: NextFunction) {
   try {
     const data = updatePaymentOrderSchema.parse(req.body);
-    res.json({ success: true, data: await svc.updatePaymentOrder(req.params.id, data) });
+    const role = (req as any).user.role;
+    res.json({ success: true, data: await svc.updatePaymentOrder(req.params.id, data, role) });
   } catch (err) { next(err); }
 }
 
@@ -76,13 +91,21 @@ export async function unlinkPayroll(req: Request, res: Response, next: NextFunct
 
 export async function markAsPaid(req: Request, res: Response, next: NextFunction) {
   try {
-    res.json({ success: true, data: await svc.markAsPaid(req.params.id, (req as any).user.userId) });
+    const fiscalVoucher = req.body?.fiscalVoucher ?? null;
+    const paymentInfo   = req.body?.paymentInfo   ?? null;
+    res.json({ success: true, data: await svc.markAsPaid(req.params.id, (req as any).user.userId, fiscalVoucher, paymentInfo) });
   } catch (err) { next(err); }
 }
 
 export async function generateExpense(req: Request, res: Response, next: NextFunction) {
   try {
     res.json({ success: true, data: await svc.generateExpenseForOrder(req.params.id, (req as any).user.userId) });
+  } catch (err) { next(err); }
+}
+
+export async function revertToPending(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json({ success: true, data: await svc.revertToPending(req.params.id) });
   } catch (err) { next(err); }
 }
 
@@ -96,5 +119,17 @@ export async function hardDeletePaymentOrder(req: Request, res: Response, next: 
   try {
     await svc.hardDeletePaymentOrder(req.params.id);
     res.json({ success: true, message: 'Orden eliminada permanentemente' });
+  } catch (err) { next(err); }
+}
+
+export async function suggestConcept(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { orderType, supplierName, projectCode, projectName, amount, currency } = req.body;
+    if (!orderType) {
+      res.status(400).json({ success: false, error: 'orderType es requerido' });
+      return;
+    }
+    const data = await svc.suggestConcept({ orderType, supplierName, projectCode, projectName, amount, currency });
+    res.json({ success: true, data });
   } catch (err) { next(err); }
 }

@@ -8,8 +8,17 @@ export const createPaymentOrderSchema = z.object({
   amount:        z.coerce.number().positive(),
   currency:      z.enum(['RD$', 'US$', '€']).default('RD$'),
   concept:       z.string().min(3).max(2000),
-  notes:         z.string().max(500).optional(),
-  payrollId:     z.string().uuid().optional(),
+  notes:              z.string().max(500).optional(),
+  payrollId:          z.string().uuid().optional(),
+  bankAccountId:      z.string().uuid().optional(),
+  contratoAjustadoId: z.string().uuid().optional().nullable(),
+  quotationId:        z.string().uuid().optional().nullable(),
+  // Auto-create payroll data (only when orderType === 'PAYROLL')
+  payrollData: z.object({
+    periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    periodEnd:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    type:        z.enum(['LABOR', 'SERVICE']),
+  }).optional(),
 });
 
 export const updatePaymentOrderSchema = createPaymentOrderSchema.partial();

@@ -25,7 +25,9 @@ services:
     region: ohio
     runtime: docker
 
-    dockerfilePath: ./apps/backend/Dockerfile
+    dockerfilePath: ./Dockerfile.backend
+
+    preDeployCommand: null
 
     envVars:
       - key: NODE_ENV
@@ -73,7 +75,7 @@ services:
     region: ohio
     runtime: docker
 
-    dockerfilePath: ./apps/frontend/Dockerfile
+    dockerfilePath: ./Dockerfile.frontend
 
     buildCommand: null
     startCommand: null

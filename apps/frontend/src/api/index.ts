@@ -47,6 +47,8 @@ export const projectsApi = {
     api.post<{ success: boolean; data: Assignment }>(`/projects/${projectId}/assignments`, { userId }),
   unassignUser:    (projectId: string, userId: string) =>
     api.delete(`/projects/${projectId}/assignments/${userId}`),
+  aiSummary:       (projectId: string) =>
+    api.post<{ success: boolean; data: { summary: string; generatedAt: string } }>(`/projects/${projectId}/ai-summary`),
 };
 
 // ── Gastos ────────────────────────────────────────────────────
@@ -129,6 +131,20 @@ export interface PayrollLine {
   paymentBank:       string | null;
   paymentReference:  string | null;
   paidAt:            string | null;
+  contratoAjustadoId: string | null;
+  contratoAjustado?: {
+    id: string;
+    descripcionTrabajo: string;
+    montoContratado: number;
+  } | null;
+  expenseId?: string | null;
+  expense?: {
+    id: string;
+    amount: number;
+    expenseDate: string;
+    description: string;
+    status: string;
+  } | null;
   createdAt:         string;
   updatedAt:         string;
 }
@@ -190,10 +206,14 @@ export const payrollApi = {
   // Actions
   revertToDraft: (id: string) =>
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/revert-to-draft`),
+  revertToApproved: (id: string) =>
+    api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/revert-to-approved`),
   importFromOrders: (id: string) =>
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/import-from-orders`),
   recordLinePayment: (id: string, lineId: string, data: { paymentBank?: string; paymentReference?: string; paidAt?: string }) =>
     api.patch<{ success: boolean; data: PayrollLine }>(`/payrolls/${id}/lines/${lineId}/payment`, data),
+  updateLineContratoAjustado: (id: string, lineId: string, contratoAjustadoId: string | null) =>
+    api.patch<{ success: boolean; data: Payroll }>(`/payrolls/${id}/lines/${lineId}/contrato-ajustado`, { contratoAjustadoId }),
   approve: (id: string) =>
     api.post<{ success: boolean; data: Payroll }>(`/payrolls/${id}/approve`),
   pay:     (id: string, data: unknown) =>
@@ -382,6 +402,10 @@ export const paymentOrdersApi = {
     api.get<{ success: boolean; data: any[] }>('/payment-orders/available-payrolls', { params: { projectId } }),
   availableExpenses: (projectId: string) =>
     api.get<{ success: boolean; data: any[] }>('/payment-orders/available-expenses', { params: { projectId } }),
+  availableContracts: (projectId: string, supplierId: string) =>
+    api.get<{ success: boolean; data: any[] }>('/payment-orders/available-contracts', { params: { projectId, supplierId } }),
+  availableQuotations: (projectId: string, supplierId: string) =>
+    api.get<{ success: boolean; data: any[] }>('/payment-orders/available-quotations', { params: { projectId, supplierId } }),
   linkExpense: (id: string, expenseId: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-expense`, { expenseId }),
   unlinkExpense: (id: string) =>
@@ -390,14 +414,25 @@ export const paymentOrdersApi = {
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-payroll`, { payrollId }),
   unlinkPayroll: (id: string) =>
     api.delete<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/link-payroll`),
-  markAsPaid: (id: string) =>
-    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`),
+  markAsPaid: (
+    id: string,
+    fiscalVoucher?: { ncf: string; supplierRnc: string; supplierName: string; itbisAmount?: number } | null,
+    paymentInfo?:   { paymentBank?: string; paymentReference?: string } | null,
+  ) =>
+    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`, {
+      fiscalVoucher: fiscalVoucher ?? null,
+      paymentInfo:   paymentInfo   ?? null,
+    }),
   generateExpense: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/generate-expense`),
+  revertToPending: (id: string) =>
+    api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/revert-to-pending`),
   void: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/void`),
   hardDelete: (id: string) =>
     api.delete(`/payment-orders/${id}`),
+  suggestConcept: (data: { orderType: string; supplierName?: string; projectCode?: string; projectName?: string; amount?: number; currency?: string }) =>
+    api.post<{ success: boolean; data: { concept: string } }>('/payment-orders/suggest-concept', data),
 };
 
 // ── Gastos de Oficina ─────────────────────────────────────────
@@ -454,7 +489,7 @@ export const officeExpensesApi = {
 };
 
 // ── Suplidores ────────────────────────────────────────────────
-import type { Supplier, SupplierHistory } from '../types';
+import type { Supplier, SupplierHistory, SupplierBankAccount } from '../types';
 
 export const suppliersApi = {
   list:         (params?: { search?: string; onlyActive?: boolean }) =>
@@ -469,6 +504,17 @@ export const suppliersApi = {
     api.put<{ success: boolean; data: Supplier }>(`/suppliers/${id}`, data),
   toggleActive: (id: string) =>
     api.patch<{ success: boolean; data: Supplier }>(`/suppliers/${id}/toggle`),
+  // Cuentas bancarias
+  getBankAccounts:    (id: string) =>
+    api.get<{ success: boolean; data: SupplierBankAccount[] }>(`/suppliers/${id}/bank-accounts`),
+  addBankAccount:     (id: string, data: unknown) =>
+    api.post<{ success: boolean; data: SupplierBankAccount }>(`/suppliers/${id}/bank-accounts`, data),
+  updateBankAccount:  (id: string, accountId: string, data: unknown) =>
+    api.put<{ success: boolean; data: SupplierBankAccount }>(`/suppliers/${id}/bank-accounts/${accountId}`, data),
+  deleteBankAccount:  (id: string, accountId: string) =>
+    api.delete(`/suppliers/${id}/bank-accounts/${accountId}`),
+  setDefaultBankAccount: (id: string, accountId: string) =>
+    api.patch<{ success: boolean; data: SupplierBankAccount }>(`/suppliers/${id}/bank-accounts/${accountId}/set-default`),
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────
@@ -537,6 +583,10 @@ export const contratosAjustadosApi = {
     api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/link-expense`, { expenseId }),
   unlinkExpense: (id: string, expenseId: string) =>
     api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/unlink-expense`, { expenseId }),
+  createAdenda: (id: string, data: { monto: number; descripcion: string; fecha: string }) =>
+    api.post<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/adendas`, data),
+  deleteAdenda: (id: string, adendaId: string) =>
+    api.delete<{ success: boolean; data: any }>(`/contratos-ajustados/${id}/adendas/${adendaId}`),
 };
 
 // ── Suscripciones de Servicios ────────────────────────────────

@@ -129,3 +129,10 @@ export async function unassignUser(req: Request, res: Response, next: NextFuncti
     res.json({ success: true, message: 'Operador desasignado del proyecto' });
   } catch (err) { next(err); }
 }
+
+export async function aiSummary(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.generateAiSummary(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}

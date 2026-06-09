@@ -163,6 +163,7 @@ export default function PayrollDetailPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
+            <p className="module-label">NÓMINA</p>
             <div className="flex items-center gap-3 mb-1">
               <span className="font-mono font-bold text-lg text-gray-900">
                 NOM-{String(payroll.number).padStart(3, '0')}
@@ -174,7 +175,7 @@ export default function PayrollDetailPage() {
                 {TYPE_LABEL[payroll.type]}
               </span>
             </div>
-            <h1 className="text-base font-semibold text-gray-800 mt-1">{payroll.description}</h1>
+            <h1 className="page-title mt-0.5">{payroll.description}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
               {payroll.project.code} — {payroll.project.name}
             </p>

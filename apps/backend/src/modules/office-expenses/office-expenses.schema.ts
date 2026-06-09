@@ -34,13 +34,14 @@ export const createOfficeExpenseSchema = z.object({
 export const updateOfficeExpenseSchema = createOfficeExpenseSchema.partial();
 
 export const listOfficeExpensesSchema = z.object({
-  page:      z.coerce.number().default(1),
-  limit:     z.coerce.number().default(20),
-  category:  z.enum(OFFICE_EXPENSE_CATEGORIES).optional(),
-  from:      z.string().optional(),
-  to:        z.string().optional(),
-  orderBy:   z.enum(['expenseDate', 'amount', 'createdAt']).default('expenseDate'),
-  order:     z.enum(['asc', 'desc']).default('desc'),
+  page:         z.coerce.number().default(1),
+  limit:        z.coerce.number().default(20),
+  category:     z.enum(OFFICE_EXPENSE_CATEGORIES).optional(),
+  from:         z.string().optional(),
+  to:           z.string().optional(),
+  hasFiscalDoc: z.coerce.boolean().optional(),
+  orderBy:      z.enum(['expenseDate', 'amount', 'createdAt']).default('expenseDate'),
+  order:        z.enum(['asc', 'desc']).default('desc'),
 });
 
 export type CreateOfficeExpenseInput = z.infer<typeof createOfficeExpenseSchema>;

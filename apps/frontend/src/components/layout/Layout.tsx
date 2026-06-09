@@ -19,17 +19,17 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { to: '/',                icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/projects',        icon: FolderOpen,      label: 'Proyectos',        roles: ['admin', 'supervisor', 'operator', 'financiero'] },
-  { to: '/expenses',        icon: Receipt,         label: 'Gastos',           roles: ['admin', 'supervisor', 'operator', 'financiero'] },
-  { to: '/reports',         icon: BarChart3,       label: 'Reportes',         roles: ['admin', 'supervisor', 'financiero'] },
-  { to: '/payrolls',        icon: Wallet,          label: 'Nóminas',          roles: ['admin', 'supervisor', 'operator', 'auxiliar'] },
-  { to: '/quotations',      icon: FileText,        label: 'Cotizaciones',     roles: ['admin', 'supervisor', 'operator', 'financiero'] },
-  { to: '/suppliers',       icon: Building2,       label: 'Suplidores',       roles: ['admin', 'supervisor', 'operator', 'financiero'] },
-  { to: '/contratos-ajustados', icon: FileCheck,  label: 'Contratos Ajust.', roles: ['admin', 'supervisor', 'operator'] },
-  { to: '/pending-orders',  icon: Clock,           label: 'Pagos Pendientes', roles: ['admin', 'supervisor', 'auxiliar'] },
-  { to: '/export',          icon: Download,        label: 'Exportar Excel',   roles: ['admin', 'supervisor', 'financiero'] },
-  { to: '/office-expenses', icon: Receipt,         label: 'Gtos. Oficina',    roles: ['admin', 'supervisor', 'financiero'] },
-  { to: '/payment-orders',  icon: FileText,        label: 'Órd. de Pago',    roles: ['admin', 'supervisor'] },
+  { to: '/projects',        icon: FolderOpen,      label: 'Proyectos',        roles: ['admin', 'supervisor', 'operator', 'financiero', 'auxiliar'] },
+  { to: '/expenses',        icon: Receipt,         label: 'Gastos',           roles: ['admin', 'supervisor', 'operator', 'financiero', 'auxiliar'] },
+  { to: '/reports',         icon: BarChart3,       label: 'Reportes',         roles: ['admin', 'supervisor', 'financiero', 'auxiliar'] },
+  { to: '/payrolls',        icon: Wallet,          label: 'Nóminas',          roles: ['admin', 'supervisor', 'operator', 'auxiliar', 'financiero'] },
+  { to: '/quotations',      icon: FileText,        label: 'Cotizaciones',     roles: ['admin', 'supervisor', 'operator', 'financiero', 'auxiliar'] },
+  { to: '/suppliers',       icon: Building2,       label: 'Suplidores',       roles: ['admin', 'supervisor', 'operator', 'financiero', 'auxiliar'] },
+  { to: '/contratos-ajustados', icon: FileCheck,  label: 'Contratos Ajust.', roles: ['admin', 'supervisor', 'operator', 'auxiliar', 'financiero'] },
+  { to: '/pending-orders',  icon: Clock,           label: 'Pagos Pendientes', roles: ['admin', 'auxiliar', 'financiero'] },
+  { to: '/export',          icon: Download,        label: 'Exportar Excel',   roles: ['admin', 'supervisor', 'financiero', 'auxiliar'] },
+  { to: '/office-expenses', icon: Receipt,         label: 'Gtos. Oficina',    roles: ['admin', 'supervisor', 'financiero', 'auxiliar'] },
+  { to: '/payment-orders',  icon: FileText,        label: 'Órd. de Pago',    roles: ['admin', 'supervisor', 'auxiliar', 'financiero'] },
   { to: '/users',                 icon: Users,      label: 'Usuarios',         roles: ['admin'] },
   { to: '/notification-contacts', icon: Bell,       label: 'Contactos Notif.', roles: ['admin'] },
   { to: '/categories',            icon: Tag,        label: 'Categorías',       roles: ['admin'] },
@@ -190,7 +190,6 @@ export default function Layout() {
                 {isPreviewing ? `Admin · viendo como ${viewAsRole}` : userRole}
               </p>
             </div>
-            <NotificationBell />
             <button onClick={handleLogout}
               className="text-gray-500 hover:text-red-400 transition-colors" title="Cerrar sesión">
               <LogOut className="w-4 h-4" />

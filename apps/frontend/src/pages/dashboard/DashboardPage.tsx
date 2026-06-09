@@ -90,8 +90,8 @@ export default function DashboardPage() {
       {/* Saludo */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-            {greeting()}, {user?.name?.split(' ')[0]} 👋
+          <h1 className="page-title" style={{ fontSize: '1.6rem' }}>
+            {greeting()}, {user?.name?.split(' ')[0]}
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">Aquí está el resumen de hoy</p>
         </div>
@@ -147,31 +147,32 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-2 gap-5">
 
           {/* Gastos por mes */}
-          <div className="card p-5">
-            <h2 className="font-semibold text-gray-900 text-sm mb-4 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-amber-500" />
+          <div className="rounded-xl p-5" style={{ background: '#1C1C1C' }}>
+            <h2 className="font-semibold text-sm mb-4 flex items-center gap-2" style={{ color: '#F5C218' }}>
+              <TrendingUp className="w-4 h-4" />
               Gastos por mes
             </h2>
             {statsData.byMonth.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-10">Sin datos</p>
+              <p className="text-sm text-center py-10" style={{ color: '#555' }}>Sin datos</p>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={statsData.byMonth} barSize={28} margin={{ top: 0, right: 4, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2d2d2d" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
                   <YAxis
-                    tick={{ fontSize: 10, fill: '#9ca3af' }}
+                    tick={{ fontSize: 10, fill: '#6b7280' }}
                     axisLine={false} tickLine={false} width={52}
                     tickFormatter={(v) => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : v}
                   />
                   <Tooltip
-                    cursor={{ fill: '#fef3c7' }}
+                    cursor={{ fill: 'rgba(245,194,24,0.08)' }}
                     formatter={(v) => [fmt(Number(v)), 'Total']}
-                    contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
+                    contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #333', background: '#252525', color: '#fff' }}
+                    labelStyle={{ color: '#9ca3af' }}
                   />
                   <Bar dataKey="total" radius={[4, 4, 0, 0]}>
                     {statsData.byMonth.map((_, i) => (
-                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#F5C218' : '#fde68a'} />
+                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#F5C218' : '#a07c10'} />
                     ))}
                   </Bar>
                 </BarChart>

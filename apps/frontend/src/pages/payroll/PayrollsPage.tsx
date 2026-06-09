@@ -73,20 +73,14 @@ export default function PayrollsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Wallet className="w-5 h-5" style={{ color: '#F5C218' }} />
-            Nóminas
-          </h1>
+          <p className="module-label">MÓDULO / NÓMINAS</p>
+          <h1 className="page-title">Nóminas</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {total} nómina{total !== 1 ? 's' : ''} registrada{total !== 1 ? 's' : ''}
           </p>
         </div>
         {canCreatePayroll && (
-          <Link
-            to="/payrolls/new"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-900 transition-colors hover:opacity-90"
-            style={{ background: '#F5C218' }}
-          >
+          <Link to="/payrolls/new" className="smi-btn">
             <Plus className="w-4 h-4" />
             Nueva Nómina
           </Link>

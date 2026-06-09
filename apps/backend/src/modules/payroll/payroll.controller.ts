@@ -57,6 +57,13 @@ export const deleteLine = async (req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 };
 
+export const updateLineContratoAjustado = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await svc.updateLineContratoAjustado(req.params.id, req.params.lineId, req.body.contratoAjustadoId || null);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+};
+
 export const recordLinePayment = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await svc.recordLinePayment(req.params.id, req.params.lineId, req.body);
@@ -67,6 +74,13 @@ export const recordLinePayment = async (req: Request, res: Response, next: NextF
 export const revertToDraft = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await svc.revertToDraft(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+};
+
+export const revertToApproved = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await svc.revertToApproved(req.params.id);
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
