@@ -11,6 +11,7 @@ import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
 import { validateNCF } from '../../utils/fiscal';
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
+import { TransferPaymentForm } from '../../components/shared/TransferPaymentForm';
 
 // ── Tipos locales ─────────────────────────────────────────────
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
@@ -1204,28 +1205,15 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">No. de transacción</label>
-                  <input
-                    type="text"
-                    value={payInfoForm.paymentReference}
-                    onChange={(e) => setPayInfoForm((f) => ({ ...f, paymentReference: e.target.value }))}
-                    placeholder="ej. 123456789"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Banco emisor</label>
-                  <input
-                    type="text"
-                    value={payInfoForm.paymentBank}
-                    onChange={(e) => setPayInfoForm((f) => ({ ...f, paymentBank: e.target.value }))}
-                    placeholder="ej. BHD, BanReservas"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                  />
-                </div>
-              </div>
+              <TransferPaymentForm
+                value={{
+                  paymentMethod: 'TRANSFER',
+                  paymentBank: payInfoForm.paymentBank,
+                  paymentReference: payInfoForm.paymentReference,
+                }}
+                onChange={(next) => setPayInfoForm((f) => ({ ...f, paymentBank: next.paymentBank, paymentReference: next.paymentReference }))}
+                bankLabel="Banco emisor"
+              />
             </div>
 
             {fiscalErr && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{fiscalErr}</p>}
