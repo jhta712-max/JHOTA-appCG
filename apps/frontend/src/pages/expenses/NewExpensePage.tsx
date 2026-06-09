@@ -53,6 +53,9 @@ export default function NewExpensePage() {
   const cameraRef     = useRef<HTMLInputElement>(null);
 
   const [hasFiscal,      setHasFiscal]      = useState(false);
+  const [fiscalValues,   setFiscalValues]   = useState<FiscalVoucherValue>({
+    hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '',
+  });
   const [useForeign,     setUseForeign]     = useState(false);
   const [foreignCurrency, setForeignCurrency] = useState('USD');
   const [photo,       setPhoto]       = useState<File | null>(null);
@@ -112,6 +115,7 @@ export default function NewExpensePage() {
       setSuccess('Gasto registrado exitosamente');
       reset();
       setHasFiscal(false);
+      setFiscalValues({ hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '' });
       setPhoto(null);
       setPhotoPreview(null);
       setOcrResult(null);
@@ -147,12 +151,13 @@ export default function NewExpensePage() {
         payload.amount = Number(data.foreignAmount) * Number(data.exchangeRate);
       }
     }
-    if (hasFiscal) {
+    if (fiscalValues.hasFiscal) {
+      payload.hasFiscalDoc = true;
       payload.fiscalVoucher = {
-        ncf:          data.fiscalVoucher?.ncf?.toUpperCase(),
-        supplierRnc:  data.fiscalVoucher?.supplierRnc,
-        supplierName: data.fiscalVoucher?.supplierName,
-        itbisAmount:  Number(data.fiscalVoucher?.itbisAmount ?? 0),
+        ncf:          fiscalValues.ncf.toUpperCase(),
+        supplierRnc:  fiscalValues.supplierRnc,
+        supplierName: fiscalValues.supplierName,
+        itbisAmount:  Number(fiscalValues.itbisAmount ?? 0),
       };
     }
     mutation.mutate(payload);
@@ -221,23 +226,17 @@ export default function NewExpensePage() {
 
       // Comprobante fiscal
       if (data.ncf || data.supplierName || data.supplierRnc || data.itbisAmount !== null) {
-        setHasFiscal(true);
-        if (data.ncf) {
-          setValue('fiscalVoucher.ncf', data.ncf);
-          filled.add('ncf');
-        }
-        if (data.supplierName) {
-          setValue('fiscalVoucher.supplierName', data.supplierName);
-          filled.add('supplierName');
-        }
-        if (data.supplierRnc) {
-          setValue('fiscalVoucher.supplierRnc', data.supplierRnc);
-          filled.add('supplierRnc');
-        }
-        if (data.itbisAmount !== null) {
-          setValue('fiscalVoucher.itbisAmount', data.itbisAmount);
-          filled.add('itbisAmount');
-        }
+        setFiscalValues((v) => ({
+          hasFiscal:    true,
+          ncf:          data.ncf          ?? v.ncf,
+          supplierRnc:  data.supplierRnc  ?? v.supplierRnc,
+          supplierName: data.supplierName ?? v.supplierName,
+          itbisAmount:  data.itbisAmount != null ? String(data.itbisAmount) : v.itbisAmount,
+        }));
+        if (data.ncf)          filled.add('ncf');
+        if (data.supplierName) filled.add('supplierName');
+        if (data.supplierRnc)  filled.add('supplierRnc');
+        if (data.itbisAmount != null) filled.add('itbisAmount');
       }
 
       setAiFields(filled);
@@ -690,66 +689,18 @@ export default function NewExpensePage() {
             )}
           </h2>
 
-          <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => setHasFiscal(true)}
-              className={`p-4 rounded-xl border-2 text-center transition-all ${hasFiscal ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
-              <Receipt className={`w-6 h-6 mx-auto mb-1 ${hasFiscal ? 'text-primary-600' : 'text-gray-400'}`} />
-              <p className={`text-sm font-medium ${hasFiscal ? 'text-primary-700' : 'text-gray-600'}`}>Tiene NCF</p>
-            </button>
-            <button type="button" onClick={() => setHasFiscal(false)}
-              className={`p-4 rounded-xl border-2 text-center transition-all ${!hasFiscal ? 'border-gray-400 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
-              <span className="text-2xl block mb-1">—</span>
-              <p className={`text-sm font-medium ${!hasFiscal ? 'text-gray-700' : 'text-gray-400'}`}>No aplica</p>
-            </button>
-          </div>
-
-          {hasFiscal && (
-            <div className="space-y-3 pt-2 border-t border-gray-100">
-              <AiField label="NCF *" aiActive={aiFields.has('ncf')} onClear={() => clearAiField('ncf')}>
-                <input type="text" placeholder="B0100000001" maxLength={13}
-                  className={`input-field uppercase ${aiFields.has('ncf') ? 'ring-2 ring-violet-400' : ''}`}
-                  {...register('fiscalVoucher.ncf', {
-                    required: 'El NCF es requerido',
-                    validate: (v) =>
-                      NCF_REGEX.test(v?.toUpperCase() ?? '') || E_NCF_REGEX.test(v?.toUpperCase() ?? '')
-                        ? true : 'NCF inválido (B0100000001 o E310000000001)',
-                  })}
-                />
-                {(errors as any).fiscalVoucher?.ncf && (
-                  <p className="text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.ncf.message}</p>
-                )}
-              </AiField>
-              <div className="grid grid-cols-2 gap-3">
-                <AiField label="RNC Suplidor *" aiActive={aiFields.has('supplierRnc')} onClear={() => clearAiField('supplierRnc')}>
-                  <input type="text" placeholder="101234567" maxLength={11}
-                    className={`input-field ${aiFields.has('supplierRnc') ? 'ring-2 ring-violet-400' : ''}`}
-                    {...register('fiscalVoucher.supplierRnc', {
-                      required: 'RNC requerido',
-                      validate: (v) => RNC_REGEX.test(v ?? '') ? true : 'RNC inválido (9 u 11 dígitos)',
-                    })}
-                  />
-                  {(errors as any).fiscalVoucher?.supplierRnc && (
-                    <p className="text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.supplierRnc.message}</p>
-                  )}
-                </AiField>
-                <AiField label="ITBIS (RD$)" aiActive={aiFields.has('itbisAmount')} onClear={() => clearAiField('itbisAmount')}>
-                  <input type="number" step="0.01" min="0" placeholder="0.00"
-                    className={`input-field ${aiFields.has('itbisAmount') ? 'ring-2 ring-violet-400' : ''}`}
-                    {...register('fiscalVoucher.itbisAmount')}
-                  />
-                </AiField>
-              </div>
-              <AiField label="Nombre del suplidor *" aiActive={aiFields.has('supplierName')} onClear={() => clearAiField('supplierName')}>
-                <input type="text" placeholder="Empresa o persona que emitió la factura"
-                  className={`input-field ${aiFields.has('supplierName') ? 'ring-2 ring-violet-400' : ''}`}
-                  {...register('fiscalVoucher.supplierName', { required: 'Nombre requerido' })}
-                />
-                {(errors as any).fiscalVoucher?.supplierName && (
-                  <p className="text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.supplierName.message}</p>
-                )}
-              </AiField>
-            </div>
-          )}
+          <FiscalVoucherForm
+            value={fiscalValues}
+            onChange={(next) => {
+              setFiscalValues(next);
+              setHasFiscal(next.hasFiscal);
+              if (next.ncf)          setValue('fiscalVoucher.ncf',          next.ncf);
+              if (next.supplierRnc)  setValue('fiscalVoucher.supplierRnc',  next.supplierRnc);
+              if (next.supplierName) setValue('fiscalVoucher.supplierName', next.supplierName);
+              if (next.itbisAmount)  setValue('fiscalVoucher.itbisAmount',  Number(next.itbisAmount));
+            }}
+            aiFields={aiFields}
+          />
         </div>
 
         {/* Alerta si OCR no está validado */}
