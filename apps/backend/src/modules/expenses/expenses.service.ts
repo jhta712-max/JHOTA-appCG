@@ -1,9 +1,13 @@
 import prisma from '../../config/database';
+import Anthropic from '@anthropic-ai/sdk';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
 import { createNotification } from '../notifications/notifications.service';
+import { env } from '../../config/env';
 import type { CreateExpenseInput, UpdateExpenseInput, VoidExpenseInput, ExpenseQuery } from './expenses.schema';
+
+const aiClient = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null;
 
 const EXPENSE_INCLUDE = {
   project:      { select: { id: true, code: true, name: true } },
@@ -434,4 +438,35 @@ export async function getDashboardStats() {
       pct:   grandTotal > 0 ? Math.round((Number(c._sum.amount ?? 0) / grandTotal) * 100) : 0,
     })),
   };
+}
+
+const CATEGORY_NAMES = [
+  'Materiales', 'Servicios', 'Mano de obra', 'Equipos',
+  'Transporte', 'Combustible', 'Dietas', 'Otros',
+];
+
+export async function suggestCategory(description: string): Promise<{ categoryName: string | null; confidence: 'high' | 'medium' | 'low' }> {
+  if (!aiClient) return { categoryName: null, confidence: 'low' };
+
+  try {
+    const msg = await aiClient.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 50,
+      messages: [{
+        role: 'user',
+        content: `Clasifica este gasto de construcción en una sola de estas categorías: ${CATEGORY_NAMES.join(', ')}.
+Descripción: "${description}"
+Responde SOLO con el nombre exacto de la categoría y opcionalmente "alta", "media" o "baja" confianza, separados por |.
+Ejemplo: Materiales|alta`,
+      }],
+    });
+
+    const text = (msg.content[0] as any).text?.trim() ?? '';
+    const [rawCat, rawConf] = text.split('|').map((s: string) => s.trim());
+    const categoryName = CATEGORY_NAMES.find((c) => c.toLowerCase() === rawCat.toLowerCase()) ?? null;
+    const confidence = rawConf === 'alta' ? 'high' : rawConf === 'baja' ? 'low' : 'medium';
+    return { categoryName, confidence };
+  } catch {
+    return { categoryName: null, confidence: 'low' };
+  }
 }

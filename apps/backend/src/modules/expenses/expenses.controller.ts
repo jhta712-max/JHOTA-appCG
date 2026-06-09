@@ -85,3 +85,15 @@ export async function reject(req: Request, res: Response, next: NextFunction) {
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }
+
+export async function suggestCategory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { description } = req.body;
+    if (!description?.trim()) {
+      res.status(400).json({ success: false, error: 'description es requerido' });
+      return;
+    }
+    const data = await service.suggestCategory(description.trim());
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
