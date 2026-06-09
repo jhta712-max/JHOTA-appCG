@@ -7,16 +7,8 @@ import {
 } from 'lucide-react';
 import { payrollApi, projectsApi, type Payroll } from '../../api';
 import { useRole } from '../../hooks/useRole';
+import { PAYROLL_LIST_STATUS_LABEL as STATUS_LABEL, PAYROLL_LIST_STATUS_COLOR as STATUS_COLOR } from '../../utils/statusLabels';
 
-const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'Borrador', APPROVED: 'Aprobada', PAID: 'Pagada', VOIDED: 'Anulada',
-};
-const STATUS_COLOR: Record<string, string> = {
-  DRAFT:    'bg-gray-100 text-gray-700',
-  APPROVED: 'bg-blue-100 text-blue-700',
-  PAID:     'bg-green-100 text-green-700',
-  VOIDED:   'bg-red-100 text-red-700',
-};
 const TYPE_LABEL: Record<string, string> = { LABOR: 'Mano de obra', SERVICE: 'Servicios' };
 
 function StatusBadge({ status }: { status: string }) {

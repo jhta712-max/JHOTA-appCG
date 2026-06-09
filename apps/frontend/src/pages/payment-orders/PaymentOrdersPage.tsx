@@ -10,6 +10,7 @@ import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../a
 import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
 import { validateNCF } from '../../utils/fiscal';
+import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
 
 // ── Tipos locales ─────────────────────────────────────────────
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
@@ -130,7 +131,7 @@ export default function PaymentOrdersPage() {
   // Modal confirmar pago + comprobante fiscal
   const [payModal,     setPayModal]     = useState(false);
   const [payingOrder,  setPayingOrder]  = useState<PaymentOrder | null>(null);
-  const [fiscalForm,   setFiscalForm]   = useState({ hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '' });
+  const [fiscalForm,   setFiscalForm]   = useState<FiscalVoucherValue>({ hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '' });
   const [payInfoForm,  setPayInfoForm]  = useState({ paymentBank: '', paymentReference: '', exchangeRate: '' });
   const [fiscalErr,    setFiscalErr]    = useState('');
   const [conceptLoading, setConceptLoading] = useState(false);
@@ -1165,70 +1166,12 @@ export default function PaymentOrdersPage() {
             </div>
 
             {/* ¿Tiene comprobante fiscal? */}
-            <label className="flex items-center gap-3 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={fiscalForm.hasFiscal}
-                onChange={(e) => setFiscalForm((f) => ({ ...f, hasFiscal: e.target.checked, ncf: '', supplierRnc: payingOrder.supplier?.rnc ?? '', supplierName: payingOrder.supplier?.name ?? '' }))}
-                className="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400"
-              />
-              <span className="text-sm font-medium text-gray-700">Tiene comprobante fiscal (NCF / e-NCF)</span>
-            </label>
-
-            {/* Campos fiscales */}
-            {fiscalForm.hasFiscal && (
-              <div className="space-y-3 border-t border-gray-100 pt-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    NCF / e-NCF <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={fiscalForm.ncf}
-                    onChange={(e) => setFiscalForm((f) => ({ ...f, ncf: e.target.value.toUpperCase() }))}
-                    placeholder="B0100000001 o E310000000001"
-                    maxLength={13}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">NCF: 11 chars (ej. B0100000001) · e-NCF: 13 chars (ej. E310000000001)</p>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1">RNC del suplidor <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      value={fiscalForm.supplierRnc}
-                      onChange={(e) => setFiscalForm((f) => ({ ...f, supplierRnc: e.target.value }))}
-                      placeholder="101000000"
-                      maxLength={11}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre del suplidor <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      value={fiscalForm.supplierName}
-                      onChange={(e) => setFiscalForm((f) => ({ ...f, supplierName: e.target.value }))}
-                      placeholder="Razón social"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">ITBIS (RD$)</label>
-                  <input
-                    type="number"
-                    value={fiscalForm.itbisAmount}
-                    onChange={(e) => setFiscalForm((f) => ({ ...f, itbisAmount: e.target.value }))}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                  />
-                </div>
-              </div>
-            )}
+            <FiscalVoucherForm
+              value={fiscalForm}
+              onChange={setFiscalForm}
+              defaultRnc={payingOrder.supplier?.rnc ?? ''}
+              defaultName={payingOrder.supplier?.name ?? ''}
+            />
 
             {/* Información de transferencia */}
             <div className="space-y-3 border-t border-gray-100 pt-3">

@@ -7,17 +7,9 @@ import {
 } from 'lucide-react';
 import { payrollApi, paymentOrdersApi, type Payroll, type PayrollLine } from '../../api';
 import { useRole } from '../../hooks/useRole';
+import { PAYROLL_STATUS_LABEL as STATUS_LABEL, PAYROLL_STATUS_COLOR as STATUS_COLOR } from '../../utils/statusLabels';
 import api from '../../api/client';
 
-const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'Borrador', APPROVED: 'Aprobada', PAID: 'Pagada', VOIDED: 'Anulada',
-};
-const STATUS_COLOR: Record<string, string> = {
-  DRAFT:    'bg-yellow-100 text-yellow-800 border-yellow-300',
-  APPROVED: 'bg-blue-100 text-blue-800 border-blue-300',
-  PAID:     'bg-green-100 text-green-800 border-green-300',
-  VOIDED:   'bg-red-100 text-red-800 border-red-300',
-};
 const TYPE_LABEL: Record<string, string> = { LABOR: 'Mano de obra', SERVICE: 'Servicios' };
 
 interface LineForm {
