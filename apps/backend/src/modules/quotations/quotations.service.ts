@@ -481,7 +481,7 @@ export async function suggestQuotations(projectId: string, supplierName?: string
 // ── Helpers internos ───────────────────────────────────────────
 
 /** Auto-transición de estado según pagos y vínculos */
-async function autoUpdateStatus(quotationId: string): Promise<void> {
+export async function autoUpdateStatus(quotationId: string): Promise<void> {
   const q = await prisma.quotation.findUnique({
     where:   { id: quotationId },
     include: {

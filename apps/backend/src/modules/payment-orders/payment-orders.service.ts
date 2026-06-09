@@ -2,6 +2,7 @@ import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
+import { autoUpdateStatus as autoUpdateQuotationStatus } from '../quotations/quotations.service';
 import type { CreatePaymentOrderInput, UpdatePaymentOrderInput, PaymentOrderQuery } from './payment-orders.schema';
 
 interface FiscalVoucherInput {
@@ -417,7 +418,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
   if (po.status === 'PAID')   throw new AppError(400, 'La orden ya está marcada como pagada', 'ALREADY_PAID');
   if (po.status === 'VOIDED') throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     await tx.paymentOrder.update({
       where: { id },
       data: {
@@ -561,6 +562,13 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
 
     return tx.paymentOrder.findUniqueOrThrow({ where: { id }, include: INCLUDE });
   });
+
+  // Auto-update quotation status outside the transaction (needs fresh reads)
+  if ((po as any).quotationId) {
+    await autoUpdateQuotationStatus((po as any).quotationId).catch(() => {});
+  }
+
+  return result;
 }
 
 // ── Generar gasto retroactivo ─────────────────────────────────
