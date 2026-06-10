@@ -195,6 +195,11 @@ export interface PaymentOrder {
   paidBy?:            { id: string; name: string } | null;
   paymentBank?:       string | null;
   paymentReference?:  string | null;
+  paymentMethod?:           'CASH' | 'TRANSFER' | 'CARD' | 'CHECK' | 'OTHER' | null;
+  exchangeRate?:            number | null;
+  exchangeRateValidatedBy?: string | null;
+  exchangeRateValidatedAt?: string | null;
+  exchangeRateValidator?:   { id: string; name: string } | null;
   payrollId?:         string | null;
   payroll?:      { id: string; number: number; type: string; totalAmount: number; periodStart: string; periodEnd: string; status: string } | null;
   expenseId?:    string | null;
@@ -383,6 +388,15 @@ export interface ServiceSubscription {
   notes?:        string;
   createdAt:     string;
   updatedAt:     string;
+}
+
+export interface BcrdRateResult {
+  currency: string;
+  compra:   number | null;
+  venta:    number | null;
+  date:     string | null;
+  fallback: boolean;
+  source:   string;
 }
 
 export interface UpcomingPayment extends ServiceSubscription {

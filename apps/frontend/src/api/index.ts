@@ -386,7 +386,7 @@ export interface AiAnalysisResult {
   analyzedAt:      string;
 }
 
-import type { PaymentOrder } from '../types';
+import type { PaymentOrder, BcrdRateResult } from '../types';
 
 // ── Órdenes de Pago ───────────────────────────────────────────
 export const paymentOrdersApi = {
@@ -417,12 +417,14 @@ export const paymentOrdersApi = {
   markAsPaid: (
     id: string,
     fiscalVoucher?: { ncf: string; supplierRnc: string; supplierName: string; itbisAmount?: number } | null,
-    paymentInfo?:   { paymentBank?: string; paymentReference?: string } | null,
+    paymentInfo?:   { paymentBank?: string; paymentReference?: string; paymentMethod?: string; exchangeRate?: number | null; exchangeRateValidated?: boolean } | null,
   ) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/pay`, {
       fiscalVoucher: fiscalVoucher ?? null,
       paymentInfo:   paymentInfo   ?? null,
     }),
+  getBcrdRate: (currency = 'USD') =>
+    api.get<{ success: boolean; data: BcrdRateResult }>('/payment-orders/bcrd-rate', { params: { currency } }),
   generateExpense: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/generate-expense`),
   revertToPending: (id: string) =>
