@@ -920,6 +920,7 @@ export default function PaymentOrdersPage() {
                           orderType: t,
                           payrollId: '',
                           quotationId: '',
+                          contratoAjustadoId: '',
                           ...(!editingOrder ? { amount: '', concept: '' } : {}),
                         }))}
                         className={`p-3 rounded-xl border-2 text-left transition-all ${orderForm.orderType === t ? cfg.color + ' border-opacity-100' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
@@ -1046,8 +1047,8 @@ export default function PaymentOrdersPage() {
                 );
               })()}
 
-              {/* Contrato ajustado — solo si hay contratos activos para proyecto+suplidor */}
-              {availableContracts.length > 0 && (
+              {/* Contrato ajustado — solo si tipo=SERVICIO y hay contratos activos para proyecto+suplidor */}
+              {orderForm.orderType === 'SERVICIO' && availableContracts.length > 0 && (
                 <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-1">
                   <label className="block text-xs font-bold text-indigo-700 uppercase tracking-wide mb-1.5">
                     📋 Vincular a contrato ajustado <span className="font-normal text-indigo-500 normal-case">(opcional)</span>
