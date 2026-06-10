@@ -73,9 +73,10 @@ model User {
   paymentOrdersExchangeValidated PaymentOrder[]    @relation("PaymentOrderExchangeValidatedBy")
   officeExpenses            OfficeExpense[]        @relation("OfficeExpenseCreatedBy")
   suppliersCreated          Supplier[]             @relation("SupplierCreatedBy")
-  contratosAjustadosCreated ContratoAjustado[]       @relation("ContratoAjustadoCreatedBy")
-  contratosAjustadosUpdated ContratoAjustado[]       @relation("ContratoAjustadoUpdatedBy")
-  contratoAdendas           ContratoAjustadoAdenda[] @relation("ContratoAdendaCreatedBy")
+  contratosAjustadosCreated      ContratoAjustado[]       @relation("ContratoAjustadoCreatedBy")
+  contratosAjustadosUpdated      ContratoAjustado[]       @relation("ContratoAjustadoUpdatedBy")
+  contratoAdendas                ContratoAjustadoAdenda[] @relation("ContratoAdendaCreatedBy")
+  contratoAjustadoPagosCreadoPor ContratoAjustadoPago[]   @relation("ContratoAjustadoPagoCreadoPor")
 
   @@index([email])
   @@index([roleId])
@@ -276,7 +277,8 @@ model Expense {
   payrollLine        PayrollLine?          @relation("PayrollLineExpense")
   quotationPayment   QuotationPayment?     @relation("QuotationPaymentExpense")
   quotationLink      QuotationExpenseLink? @relation("QuotationExpenseLink")
-  paymentOrder       PaymentOrder?         @relation("PaymentOrderExpense")
+  paymentOrder          PaymentOrder?          @relation("PaymentOrderExpense")
+  contratoAjustadoPagos ContratoAjustadoPago[] @relation("ContratoAjustadoPagoGasto")
 
   @@index([projectId])
   @@index([expenseDate])
@@ -440,8 +442,9 @@ model Payroll {
   createdBy    User          @relation("PayrollCreatedBy", fields: [createdById], references: [id])
   approvedBy   User?         @relation("PayrollApprovedBy", fields: [approvedById], references: [id])
   voidedBy     User?         @relation("PayrollVoidedBy", fields: [voidedById], references: [id])
-  paymentOrder PaymentOrder?
-  lines        PayrollLine[]
+  paymentOrder          PaymentOrder?
+  lines                 PayrollLine[]
+  contratoAjustadoPagos ContratoAjustadoPago[] @relation("ContratoAjustadoPagoNomina")
 
   @@unique([projectId, number])
   @@index([projectId])
@@ -764,8 +767,9 @@ model PaymentOrder {
   exchangeRateValidator     User?          @relation("PaymentOrderExchangeValidatedBy", fields: [exchangeRateValidatedBy], references: [id])
   payroll          Payroll?          @relation(fields: [payrollId], references: [id])
   expense          Expense?          @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
-  contratoAjustado ContratoAjustado? @relation("PaymentOrderContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
-  quotation        Quotation?        @relation("PaymentOrderQuotation", fields: [quotationId], references: [id], onDelete: SetNull)
+  contratoAjustado          ContratoAjustado?      @relation("PaymentOrderContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
+  quotation                 Quotation?             @relation("PaymentOrderQuotation", fields: [quotationId], references: [id], onDelete: SetNull)
+  contratoAjustadoPagos     ContratoAjustadoPago[] @relation("ContratoAjustadoPagoOrdenPago")
 
   @@index([status])
   @@index([projectId])
@@ -990,9 +994,16 @@ model ContratoAjustadoPago {
   createdAt          DateTime @default(now()) @map("created_at")
 
   contratoAjustado ContratoAjustado @relation(fields: [contratoAjustadoId], references: [id], onDelete: Cascade)
+  ordenPago        PaymentOrder?    @relation("ContratoAjustadoPagoOrdenPago", fields: [ordenPagoId], references: [id], onDelete: SetNull)
+  nomina           Payroll?         @relation("ContratoAjustadoPagoNomina",    fields: [nominaId],    references: [id], onDelete: SetNull)
+  gasto            Expense?         @relation("ContratoAjustadoPagoGasto",     fields: [gastoId],     references: [id], onDelete: SetNull)
+  creadoPor        User             @relation("ContratoAjustadoPagoCreadoPor", fields: [creadoPorId], references: [id])
 
   @@index([contratoAjustadoId])
   @@index([gastoId])
+  @@index([ordenPagoId])
+  @@index([nominaId])
+  @@index([creadoPorId])
   @@map("contrato_ajustado_pagos")
 }
 
