@@ -68,19 +68,43 @@ export default function PayrollsPage() {
     : payrolls;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-0">
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Hero Header */}
+      <div
+        className="flex items-center justify-between px-6 py-5"
+        style={{ background: '#1C1C1C' }}
+      >
         <div>
-          <p className="module-label">MÓDULO / NÓMINAS</p>
-          <h1 className="page-title">Nóminas</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p
+            className="text-xs uppercase tracking-widest mb-1"
+            style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}
+          >
+            MÓDULO / NÓMINAS
+          </p>
+          <h1
+            className="text-3xl uppercase tracking-widest text-white leading-none"
+            style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+          >
+            Nóminas
+          </h1>
+          <p
+            className="text-sm mt-1"
+            style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
+          >
             {total} nómina{total !== 1 ? 's' : ''} registrada{total !== 1 ? 's' : ''}
           </p>
         </div>
         {canCreatePayroll && (
-          <Link to="/payrolls/new" className="smi-btn">
+          <Link
+            to="/payrolls/new"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold uppercase tracking-wide transition-opacity hover:opacity-80"
+            style={{
+              background: '#F5C218',
+              color: '#1C1C1C',
+              fontFamily: 'Barlow Condensed, sans-serif',
+            }}
+          >
             <Plus className="w-4 h-4" />
             Nueva Nómina
           </Link>
@@ -88,7 +112,7 @@ export default function PayrollsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+      <div className="border border-gray-200 bg-white p-4 space-y-3">
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -97,12 +121,18 @@ export default function PayrollsPage() {
               placeholder="Buscar por descripción, proyecto o número..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              style={{ borderRadius: 0, fontFamily: 'DM Sans, sans-serif' }}
             />
           </div>
           <button
             onClick={() => setShowFilters((v) => !v)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${showFilters ? 'bg-yellow-50 border-yellow-300 text-yellow-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+            className="flex items-center gap-2 px-3 py-2 border text-sm font-medium transition-colors"
+            style={
+              showFilters
+                ? { background: '#1C1C1C', color: '#F5C218', borderColor: '#1C1C1C', fontFamily: 'DM Sans, sans-serif', borderRadius: 0 }
+                : { background: 'white', color: '#374151', borderColor: '#D1D5DB', fontFamily: 'DM Sans, sans-serif', borderRadius: 0 }
+            }
           >
             <Filter className="w-4 h-4" />
             Filtros
@@ -112,11 +142,17 @@ export default function PayrollsPage() {
         {showFilters && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-gray-100">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Proyecto</label>
+              <label
+                className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+              >
+                Proyecto
+              </label>
               <select
                 value={projectId}
                 onChange={(e) => { setProjectId(e.target.value); setPage(1); }}
-                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                style={{ borderRadius: 0, fontFamily: 'DM Sans, sans-serif' }}
               >
                 <option value="">Todos los proyectos</option>
                 {projects.map((p: any) => (
@@ -125,11 +161,17 @@ export default function PayrollsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Estado</label>
+              <label
+                className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+              >
+                Estado
+              </label>
               <select
                 value={status}
                 onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                style={{ borderRadius: 0, fontFamily: 'DM Sans, sans-serif' }}
               >
                 <option value="">Todos los estados</option>
                 <option value="DRAFT">Borrador</option>
@@ -139,11 +181,17 @@ export default function PayrollsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Tipo</label>
+              <label
+                className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+              >
+                Tipo
+              </label>
               <select
                 value={type}
                 onChange={(e) => { setType(e.target.value); setPage(1); }}
-                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                style={{ borderRadius: 0, fontFamily: 'DM Sans, sans-serif' }}
               >
                 <option value="">Todos los tipos</option>
                 <option value="LABOR">Mano de obra</option>
@@ -155,15 +203,34 @@ export default function PayrollsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white border border-gray-200 border-t-0 overflow-hidden">
         {isLoading ? (
-          <div className="text-center py-12 text-gray-400 text-sm">Cargando nóminas…</div>
+          <div
+            className="text-center py-12 text-gray-400 text-sm"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Cargando nóminas…
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <Wallet className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No hay nóminas registradas</p>
+          <div className="text-center py-16">
+            <div
+              className="w-14 h-14 flex items-center justify-center mx-auto mb-4"
+              style={{ background: '#1C1C1C' }}
+            >
+              <Wallet className="w-7 h-7" style={{ color: '#F5C218' }} />
+            </div>
+            <p
+              className="text-xl uppercase tracking-widest text-gray-800 mb-1"
+              style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+            >
+              No hay nóminas registradas
+            </p>
             {canCreatePayroll && (
-              <Link to="/payrolls/new" className="mt-3 inline-flex items-center gap-1 text-sm font-medium" style={{ color: '#F5C218' }}>
+              <Link
+                to="/payrolls/new"
+                className="mt-4 inline-flex items-center gap-1 text-sm font-medium"
+                style={{ color: '#F5C218', fontFamily: 'DM Sans, sans-serif' }}
+              >
                 <Plus className="w-4 h-4" /> Crear primera nómina
               </Link>
             )}
@@ -172,41 +239,102 @@ export default function PayrollsPage() {
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead style={{ background: '#1C1C1C' }}>
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Número</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Proyecto</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Período</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipo</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Acción</th>
+                    <th
+                      className="px-4 py-3 text-left text-xs uppercase tracking-wider text-gray-300"
+                      style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      Número
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs uppercase tracking-wider text-gray-300"
+                      style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      Proyecto
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs uppercase tracking-wider text-gray-300"
+                      style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      Período
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs uppercase tracking-wider text-gray-300"
+                      style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      Tipo
+                    </th>
+                    <th
+                      className="px-4 py-3 text-right text-xs uppercase tracking-wider text-gray-300"
+                      style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      Total
+                    </th>
+                    <th
+                      className="px-4 py-3 text-center text-xs uppercase tracking-wider text-gray-300"
+                      style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      Estado
+                    </th>
+                    <th
+                      className="px-4 py-3 text-right text-xs uppercase tracking-wider text-gray-300"
+                      style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      Acción
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filtered.map((p) => (
                     <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
-                        <span className="font-mono font-semibold text-gray-800">
+                        <span
+                          className="font-bold text-sm"
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
+                        >
                           NOM-{String(p.number).padStart(3, '0')}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900 truncate max-w-[160px]">{p.project.name}</p>
-                        <p className="text-xs text-gray-400">{p.project.code}</p>
+                        <p
+                          className="font-medium text-gray-900 truncate max-w-[160px]"
+                          style={{ fontFamily: 'DM Sans, sans-serif' }}
+                        >
+                          {p.project.name}
+                        </p>
+                        <p
+                          className="text-xs text-gray-400"
+                          style={{ fontFamily: 'Space Mono, monospace' }}
+                        >
+                          {p.project.code}
+                        </p>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                        {p.periodStart.slice(0, 10)}
-                        <span className="text-gray-400 mx-1">→</span>
-                        {p.periodEnd.slice(0, 10)}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span
+                          className="text-xs text-gray-600"
+                          style={{ fontFamily: 'Space Mono, monospace' }}
+                        >
+                          {p.periodStart.slice(0, 10)}
+                          <span className="text-gray-400 mx-1">→</span>
+                          {p.periodEnd.slice(0, 10)}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                        <span
+                          className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700"
+                          style={{ fontFamily: 'DM Sans, sans-serif' }}
+                        >
                           {TYPE_LABEL[p.type]}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
-                        RD$ {Number(p.totalAmount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <span
+                          className="font-bold text-sm"
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
+                        >
+                          RD$ {Number(p.totalAmount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <StatusBadge status={p.status} />
@@ -214,13 +342,17 @@ export default function PayrollsPage() {
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center gap-2 justify-end">
                           {p.status === 'APPROVED' && (
-                            <span className="text-xs text-blue-600 font-medium hidden sm:inline">
+                            <span
+                              className="text-xs hidden sm:inline"
+                              style={{ color: '#F5C218', fontFamily: 'DM Sans, sans-serif' }}
+                            >
                               → Crear orden de pago
                             </span>
                           )}
                           <Link
                             to={`/payrolls/${p.id}`}
-                            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="text-xs px-3 py-1.5 border border-gray-200 text-gray-700 transition-colors hover:border-yellow-400 hover:text-gray-900"
+                            style={{ fontFamily: 'DM Sans, sans-serif', borderRadius: 0 }}
                           >
                             Ver detalle
                           </Link>
@@ -234,20 +366,27 @@ export default function PayrollsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
-                <span>Página {page} de {totalPages}</span>
+              <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                <span
+                  className="text-sm text-gray-500"
+                  style={{ fontFamily: 'Space Mono, monospace' }}
+                >
+                  Página {page} de {totalPages}
+                </span>
                 <div className="flex gap-2">
                   <button
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
-                    className="p-1.5 rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+                    className="p-1.5 border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                    style={{ borderRadius: 0 }}
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <button
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                    className="p-1.5 rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+                    className="p-1.5 border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                    style={{ borderRadius: 0 }}
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
