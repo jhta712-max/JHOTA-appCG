@@ -1,9 +1,5 @@
-# Build stage - Backend
+# Stage 1: Builder — install everything, generate Prisma, compile TypeScript
 FROM node:24-alpine AS builder
-
-# Cache invalidation - forces fresh build every deployment
-ARG CACHE_BUST=default
-RUN echo "Cache bust: $CACHE_BUST"
 
 WORKDIR /app
 
@@ -13,29 +9,41 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 # Copy all apps (workspace needs all apps even if only building one)
 COPY apps ./apps
 
-# Install and build
+# Install all dependencies (including devDependencies for build)
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
+
 WORKDIR /app/apps/backend
-RUN pnpm run db:generate
+
+# CACHE_BUST moved here so dependency layers above stay cached on code-only changes
+ARG CACHE_BUST=default
+RUN echo "Cache bust: $CACHE_BUST" && pnpm run db:generate
 RUN pnpm run build
 
-# Production stage
+# Stage 2: deps — production-only node_modules in a clean layer
+FROM node:24-alpine AS deps
+WORKDIR /app
+RUN npm install -g pnpm
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/backend/package.json ./apps/backend/package.json
+RUN pnpm install --frozen-lockfile --prod --filter backend
+
+# Stage 3: Production — minimal image with only what's needed at runtime
 FROM node:24-alpine
 WORKDIR /app
 
-# Install OpenSSL 1.1 required by Prisma
-RUN apk add --no-cache openssl
+# Explicit OpenSSL 3.x libraries for Prisma linux-musl-openssl-3.0.x binary target
+RUN apk add --no-cache openssl libssl3
 
-# Copy dependencies from builder (flattened structure for production)
-COPY --from=builder /app/apps/backend/node_modules ./node_modules
-
-# Copy compiled application
-COPY --from=builder /app/apps/backend/dist ./dist
+COPY --from=deps    /app/apps/backend/node_modules ./node_modules
+COPY --from=builder /app/apps/backend/dist         ./dist
 COPY --from=builder /app/apps/backend/package.json ./
-COPY --from=builder /app/apps/backend/prisma ./prisma
+COPY --from=builder /app/apps/backend/prisma       ./prisma
 
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD wget -qO- http://localhost:3001/health || exit 1
 
 EXPOSE 3001
 CMD ["/app/entrypoint.sh"]
