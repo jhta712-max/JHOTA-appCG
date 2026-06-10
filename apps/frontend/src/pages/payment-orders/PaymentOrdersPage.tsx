@@ -685,7 +685,7 @@ export default function PaymentOrdersPage() {
               )}
 
               {/* Comprobante de transferencia — solo cuando está PAID */}
-              {viewingOrder.status === 'PAID' && (viewingOrder.paymentReference || viewingOrder.paymentBank) && (
+              {viewingOrder.status === 'PAID' && (viewingOrder.paymentReference || viewingOrder.paymentBank || (viewingOrder as any).paymentMethod || (viewingOrder as any).exchangeRate) && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm space-y-1">
                   <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-1">Transferencia</p>
                   {viewingOrder.paymentReference && (
@@ -699,6 +699,26 @@ export default function PaymentOrdersPage() {
                       <span className="font-semibold text-gray-500">Banco emisor:</span>{' '}
                       {viewingOrder.paymentBank}
                     </p>
+                  )}
+                  {(viewingOrder as any)?.paymentMethod && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Método de pago</span>
+                      <span className="font-medium">
+                        {({'TRANSFER': 'Transferencia', 'CASH': 'Efectivo', 'CARD': 'Tarjeta', 'CHECK': 'Cheque', 'OTHER': 'Otro'} as Record<string,string>)[(viewingOrder as any).paymentMethod] ?? (viewingOrder as any).paymentMethod}
+                      </span>
+                    </div>
+                  )}
+                  {(viewingOrder as any)?.exchangeRate && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Tasa de cambio</span>
+                      <span className="font-medium font-mono">RD$ {Number((viewingOrder as any).exchangeRate).toFixed(4)}</span>
+                    </div>
+                  )}
+                  {(viewingOrder as any)?.exchangeRateValidator && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Tasa confirmada por</span>
+                      <span className="font-medium text-green-700">{(viewingOrder as any).exchangeRateValidator.name}</span>
+                    </div>
                   )}
                 </div>
               )}
@@ -1475,10 +1495,11 @@ function AlertBox({ msg }: { msg: string }) {
   );
 }
 
-function Modal({ title, onClose, wide = false, children }: { title: string; onClose: () => void; wide?: boolean; children: React.ReactNode }) {
+function Modal({ title, onClose, wide = false, size, children }: { title: string; onClose: () => void; wide?: boolean; size?: string; children: React.ReactNode }) {
+  const maxW = size === 'md' ? 'max-w-lg' : wide ? 'max-w-2xl' : 'max-w-md';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className={`bg-white rounded-2xl shadow-xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} p-6 max-h-[90vh] overflow-y-auto`}>
+      <div className={`bg-white rounded-2xl shadow-xl w-full ${maxW} p-6 max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-bold text-gray-900 text-base">{title}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
@@ -1489,11 +1510,11 @@ function Modal({ title, onClose, wide = false, children }: { title: string; onCl
   );
 }
 
-function ModalFooter({ onCancel, onSave, saving, label }: { onCancel: () => void; onSave: () => void; saving: boolean; label: string }) {
+function ModalFooter({ onCancel, onSave, saving, label, disabled }: { onCancel: () => void; onSave: () => void; saving: boolean; label: string; disabled?: boolean }) {
   return (
     <div className="flex gap-3 mt-2 justify-end">
       <button onClick={onCancel} className="btn-secondary">Cancelar</button>
-      <button onClick={onSave} disabled={saving} className="btn-primary">
+      <button onClick={onSave} disabled={saving || disabled} className="btn-primary">
         {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</> : <><CheckCircle className="w-4 h-4" /> {label}</>}
       </button>
     </div>
