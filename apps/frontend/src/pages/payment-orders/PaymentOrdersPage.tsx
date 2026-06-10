@@ -4,11 +4,11 @@ import {
   FileText, Plus, CheckCircle, AlertCircle, Loader2,
   Pencil, ClipboardCopy, X,
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
-  MessageCircle, Sparkles, Camera,
+  MessageCircle, Sparkles, Camera, RefreshCw,
 } from 'lucide-react';
 import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi, ocrApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
-import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
+import type { PaymentOrder, Supplier, SupplierBankAccount, BcrdRateResult } from '../../types';
 import { validateNCF } from '../../utils/fiscal';
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
 import { TransferPaymentForm } from '../../components/shared/TransferPaymentForm';
@@ -133,8 +133,17 @@ export default function PaymentOrdersPage() {
   const [payModal,     setPayModal]     = useState(false);
   const [payingOrder,  setPayingOrder]  = useState<PaymentOrder | null>(null);
   const [fiscalForm,   setFiscalForm]   = useState<FiscalVoucherValue>({ hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '' });
-  const [payInfoForm,  setPayInfoForm]  = useState({ paymentBank: '', paymentReference: '', exchangeRate: '' });
-  const [fiscalErr,    setFiscalErr]    = useState('');
+  const [payInfoForm,  setPayInfoForm]  = useState({
+    paymentBank:      '',
+    paymentReference: '',
+    paymentMethod:    'TRANSFER' as 'CASH' | 'TRANSFER' | 'CARD' | 'CHECK' | 'OTHER',
+    exchangeRate:     '',
+    rateConfirmed:    false,
+  });
+  const [bcrdRate,    setBcrdRate]    = useState<BcrdRateResult | null>(null);
+  const [bcrdLoading, setBcrdLoading] = useState(false);
+  const [bcrdError,   setBcrdError]   = useState('');
+  const [fiscalErr,   setFiscalErr]   = useState('');
   const [conceptLoading, setConceptLoading] = useState(false);
   const [ocrPayLoading, setOcrPayLoading] = useState(false);
   const [ocrPayError,   setOcrPayError]   = useState('');
@@ -145,7 +154,9 @@ export default function PaymentOrdersPage() {
     setOcrPayLoading(false);
     setPayingOrder(o);
     setFiscalForm({ hasFiscal: false, ncf: '', supplierRnc: o.supplier?.rnc ?? '', supplierName: o.supplier?.name ?? '', itbisAmount: '' });
-    setPayInfoForm({ paymentBank: '', paymentReference: '', exchangeRate: '' });
+    setPayInfoForm({ paymentBank: '', paymentReference: '', paymentMethod: 'TRANSFER', exchangeRate: '', rateConfirmed: false });
+    setBcrdRate(null);
+    setBcrdError('');
     setFiscalErr('');
     setPayModal(true);
   };
@@ -172,6 +183,28 @@ export default function PaymentOrdersPage() {
       setOcrPayError('Error al procesar la imagen. Intente de nuevo.');
     } finally {
       setOcrPayLoading(false);
+    }
+  };
+
+  const handleFetchBcrdRate = async () => {
+    if (!payingOrder) return;
+    const currencyMap: Record<string, string> = { 'US$': 'USD', '€': 'EUR', 'USD': 'USD', 'EUR': 'EUR' };
+    const iso = currencyMap[payingOrder.currency] ?? 'USD';
+    setBcrdLoading(true);
+    setBcrdError('');
+    try {
+      const res  = await paymentOrdersApi.getBcrdRate(iso);
+      const data = res.data.data;
+      setBcrdRate(data);
+      if (data.venta != null) {
+        setPayInfoForm((f) => ({ ...f, exchangeRate: String(data.venta), rateConfirmed: false }));
+      } else if (data.fallback) {
+        setBcrdError('El BCRD no respondió. Ingresa la tasa manualmente.');
+      }
+    } catch {
+      setBcrdError('No se pudo obtener la tasa del BCRD. Ingresa manualmente.');
+    } finally {
+      setBcrdLoading(false);
     }
   };
 
@@ -272,7 +305,7 @@ export default function PaymentOrdersPage() {
     mutationFn: ({ id, fiscalVoucher, paymentInfo }: {
       id: string;
       fiscalVoucher?: { ncf: string; supplierRnc: string; supplierName: string; itbisAmount?: number } | null;
-      paymentInfo?:   { paymentBank?: string; paymentReference?: string } | null;
+      paymentInfo?:   { paymentBank?: string; paymentReference?: string; paymentMethod?: string; exchangeRate?: number | null; exchangeRateValidated?: boolean } | null;
     }) => paymentOrdersApi.markAsPaid(id, fiscalVoucher, paymentInfo),
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); closePayModal(); flash('✅ Orden marcada como pagada'); },
     onError:   (e: any) => setFiscalErr(e.response?.data?.error || 'Error al confirmar pago'),
@@ -1233,30 +1266,116 @@ export default function PaymentOrdersPage() {
             {/* Información de transferencia */}
             <div className="space-y-3 border-t border-gray-100 pt-3">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Transferencia (opcional)</p>
+
+              {/* Método de pago */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-gray-700">
+                  Método de pago <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={payInfoForm.paymentMethod}
+                  onChange={(e) => setPayInfoForm((f) => ({
+                    ...f,
+                    paymentMethod: e.target.value as typeof f.paymentMethod,
+                    rateConfirmed: false,
+                  }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="TRANSFER">Transferencia bancaria</option>
+                  <option value="CASH">Efectivo</option>
+                  <option value="CARD">Tarjeta</option>
+                  <option value="CHECK">Cheque</option>
+                  <option value="OTHER">Otro</option>
+                </select>
+              </div>
+
               {/* Tasa de cambio — solo para divisas extranjeras */}
               {payingOrder.currency !== 'RD$' && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
-                  <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-                    💱 Orden en {payingOrder.currency} — Tasa de cambio requerida
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <label className="block text-xs font-semibold text-gray-600 shrink-0">
-                      1 {payingOrder.currency} = RD$
+                <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-blue-800">
+                      Tasa de cambio ({payingOrder.currency} → RD$)
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={handleFetchBcrdRate}
+                      disabled={bcrdLoading}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 border border-blue-300 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                    >
+                      {bcrdLoading ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      )}
+                      Obtener tasa BCRD
+                    </button>
+                  </div>
+
+                  {bcrdRate && !bcrdRate.fallback && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-white rounded-lg border border-blue-100 px-3 py-2">
+                        <p className="text-xs text-gray-500 font-medium">Compra (BCRD)</p>
+                        <p className="text-blue-800 font-bold">
+                          {bcrdRate.compra != null ? `RD$ ${bcrdRate.compra.toFixed(2)}` : '—'}
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg border border-blue-100 px-3 py-2">
+                        <p className="text-xs text-gray-500 font-medium">Venta (BCRD)</p>
+                        <p className="text-blue-800 font-bold">
+                          {bcrdRate.venta != null ? `RD$ ${bcrdRate.venta.toFixed(2)}` : '—'}
+                        </p>
+                      </div>
+                      {bcrdRate.date && (
+                        <p className="col-span-2 text-xs text-gray-400">
+                          Tasa oficial al {bcrdRate.date}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {bcrdError && (
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      {bcrdError}
+                    </p>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Tasa utilizada (1 {payingOrder.currency === 'US$' ? 'USD' : payingOrder.currency} = X RD$)
                     </label>
                     <input
                       type="number"
                       value={payInfoForm.exchangeRate}
-                      onChange={(e) => setPayInfoForm((f) => ({ ...f, exchangeRate: e.target.value }))}
-                      placeholder="ej. 60.50"
-                      min="0.01"
+                      onChange={(e) => setPayInfoForm((f) => ({ ...f, exchangeRate: e.target.value, rateConfirmed: false }))}
+                      placeholder="ej: 60.50"
+                      min="0"
                       step="0.01"
-                      className="flex-1 border border-amber-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    {payInfoForm.exchangeRate && Number(payInfoForm.exchangeRate) > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Equivalente: RD$ {(Number(payingOrder.amount ?? 0) * Number(payInfoForm.exchangeRate))
+                          .toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </p>
+                    )}
                   </div>
+
                   {payInfoForm.exchangeRate && Number(payInfoForm.exchangeRate) > 0 && (
-                    <p className="text-xs text-amber-700">
-                      Equivalente: RD$ {(Number(payingOrder.amount) * Number(payInfoForm.exchangeRate)).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
-                    </p>
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={payInfoForm.rateConfirmed}
+                        onChange={(e) => setPayInfoForm((f) => ({ ...f, rateConfirmed: e.target.checked }))}
+                        className="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-xs text-blue-900 leading-relaxed">
+                        Confirmo que la tasa de{' '}
+                        <strong>RD$ {Number(payInfoForm.exchangeRate).toFixed(2)}</strong> por{' '}
+                        <strong>{payingOrder.currency === 'US$' ? 'USD' : payingOrder.currency}</strong>{' '}
+                        es correcta a la fecha de{' '}
+                        <strong>{new Date().toLocaleDateString('es-DO', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>.
+                      </span>
+                    </label>
                   )}
                 </div>
               )}
@@ -1277,6 +1396,7 @@ export default function PaymentOrdersPage() {
 
           <ModalFooter
             onCancel={closePayModal}
+            disabled={markPaidMut.isPending || (payingOrder.currency !== 'RD$' && !!payInfoForm.exchangeRate && !payInfoForm.rateConfirmed)}
             onSave={() => {
               setFiscalErr('');
               const isForeignOrder = payingOrder.currency !== 'RD$';
@@ -1284,10 +1404,16 @@ export default function PaymentOrdersPage() {
                 setFiscalErr(`Debe ingresar la tasa de cambio para órdenes en ${payingOrder.currency}`);
                 return;
               }
+              if (isForeignOrder && payInfoForm.exchangeRate && !payInfoForm.rateConfirmed) {
+                setFiscalErr('Debe confirmar que la tasa de cambio ingresada es correcta antes de continuar.');
+                return;
+              }
               const pi = {
-                paymentReference: payInfoForm.paymentReference.trim() || undefined,
-                paymentBank:      payInfoForm.paymentBank.trim()      || undefined,
-                exchangeRate:     payInfoForm.exchangeRate ? Number(payInfoForm.exchangeRate) : undefined,
+                paymentReference:      payInfoForm.paymentReference.trim() || undefined,
+                paymentBank:           payInfoForm.paymentBank.trim()      || undefined,
+                paymentMethod:         payInfoForm.paymentMethod,
+                exchangeRate:          payInfoForm.exchangeRate ? Number(payInfoForm.exchangeRate) : undefined,
+                exchangeRateValidated: payInfoForm.rateConfirmed,
               };
               if (fiscalForm.hasFiscal) {
                 if (!fiscalForm.ncf)          { setFiscalErr('El NCF es obligatorio cuando hay comprobante fiscal'); return; }
