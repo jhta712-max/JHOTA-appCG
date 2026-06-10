@@ -12,7 +12,7 @@ import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
 import { TransferPaymentForm } from '../../components/shared/TransferPaymentForm';
 
-type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
+type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS' | 'PETTY_CASH';
 type ModalView = 'form' | 'success';
 
 type OrderForm = {
@@ -34,9 +34,10 @@ const E_NCF_REGEX = /^E\d{12}$/;
 const validateNcf = (v: string) => NCF_REGEX.test(v) || E_NCF_REGEX.test(v);
 
 const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; desc: string; dark: string }> = {
-  SERVICIO:  { label: 'Servicio',   icon: <FileText className="w-4 h-4" />,     desc: 'Pago por servicios',                   dark: 'border-purple-500' },
-  PAYROLL:   { label: 'Nómina',     icon: <Wallet className="w-4 h-4" />,       desc: 'Pago de mano de obra',                  dark: 'border-blue-400' },
-  MATERIALS: { label: 'Materiales', icon: <ShoppingCart className="w-4 h-4" />, desc: 'Compra de insumos por transferencia',   dark: 'border-[#F5C218]' },
+  SERVICIO:   { label: 'Servicio',    icon: <FileText className="w-4 h-4" />,     desc: 'Pago por servicios',                 dark: 'border-purple-500' },
+  PAYROLL:    { label: 'Nómina',      icon: <Wallet className="w-4 h-4" />,       desc: 'Pago de mano de obra',               dark: 'border-blue-400'   },
+  MATERIALS:  { label: 'Materiales',  icon: <ShoppingCart className="w-4 h-4" />, desc: 'Compra de insumos por transferencia',dark: 'border-[#F5C218]'  },
+  PETTY_CASH: { label: 'Caja chica',  icon: <Sparkles className="w-4 h-4" />,     desc: 'Pagos menores en efectivo',          dark: 'border-green-500'  },
 };
 
 const STATUS_CFG = {
@@ -90,11 +91,12 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function TypeBadge({ type }: { type: any }) {
-  const normalized: OrderType = ['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type) ? type : 'SERVICIO';
+  const normalized: OrderType = ['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'].includes(type) ? type : 'SERVICIO';
   const cls: Record<OrderType, string> = {
-    SERVICIO:  'bg-purple-100 text-purple-700',
-    PAYROLL:   'bg-blue-100 text-blue-700',
-    MATERIALS: 'bg-amber-100 text-amber-700',
+    SERVICIO:   'bg-purple-100 text-purple-700',
+    PAYROLL:    'bg-blue-100 text-blue-700',
+    MATERIALS:  'bg-amber-100 text-amber-700',
+    PETTY_CASH: 'bg-green-100 text-green-700',
   };
   return <span className={`inline-flex px-2 py-0.5 text-xs font-bold uppercase tracking-wide ${cls[normalized]}`}>{ORDER_TYPE_CFG[normalized].label}</span>;
 }
@@ -352,7 +354,7 @@ export default function PaymentOrdersPage() {
 
   const normalizeOrderType = (type: any): OrderType => {
     if (type === 'GENERAL') return 'SERVICIO';
-    if (['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(type)) return type;
+    if (['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'].includes(type)) return type;
     return 'SERVICIO';
   };
 
@@ -473,7 +475,7 @@ export default function PaymentOrdersPage() {
             </button>
           ))}
           <div className="w-px bg-gray-200 mx-1 self-stretch" />
-          {(['', 'SERVICIO', 'PAYROLL', 'MATERIALS'] as const).map((t) => (
+          {(['', 'SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'] as const).map((t) => (
             <button key={t} onClick={() => setFilterType(t)}
               className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide border transition-all ${
                 filterType === t

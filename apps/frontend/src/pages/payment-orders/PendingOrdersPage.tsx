@@ -8,17 +8,19 @@ import { paymentOrdersApi, projectsApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder } from '../../types';
 
-type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS';
+type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS' | 'PETTY_CASH';
 
 const TYPE_CFG: Record<OrderType, { label: string; cls: string }> = {
-  SERVICIO:  { label: 'Servicio',   cls: 'bg-purple-100 text-purple-700' },
-  PAYROLL:   { label: 'Nómina',     cls: 'bg-blue-100 text-blue-700' },
-  MATERIALS: { label: 'Materiales', cls: 'bg-amber-100 text-amber-700' },
+  SERVICIO:   { label: 'Servicio',   cls: 'bg-purple-100 text-purple-700' },
+  PAYROLL:    { label: 'Nómina',     cls: 'bg-blue-100 text-blue-700'    },
+  MATERIALS:  { label: 'Materiales', cls: 'bg-amber-100 text-amber-700'  },
+  PETTY_CASH: { label: 'Caja chica', cls: 'bg-green-100 text-green-700'  },
 };
 const TYPE_ICON: Record<OrderType, JSX.Element> = {
-  SERVICIO:  <FileText className="w-3.5 h-3.5" />,
-  PAYROLL:   <Wallet className="w-3.5 h-3.5" />,
-  MATERIALS: <ShoppingCart className="w-3.5 h-3.5" />,
+  SERVICIO:   <FileText className="w-3.5 h-3.5" />,
+  PAYROLL:    <Wallet className="w-3.5 h-3.5" />,
+  MATERIALS:  <ShoppingCart className="w-3.5 h-3.5" />,
+  PETTY_CASH: <Wallet className="w-3.5 h-3.5" />,
 };
 
 function fmtMonto(amount: number | string, currency: string) {
@@ -157,6 +159,7 @@ export default function PendingOrdersPage() {
               <option value="SERVICIO">Servicio</option>
               <option value="PAYROLL">Nómina</option>
               <option value="MATERIALS">Materiales</option>
+              <option value="PETTY_CASH">Caja chica</option>
             </select>
           </div>
         </div>
@@ -191,7 +194,7 @@ export default function PendingOrdersPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {orders.map((o) => {
-                  const type = ((['SERVICIO', 'PAYROLL', 'MATERIALS'].includes(o.orderType) ? o.orderType : 'SERVICIO') as OrderType);
+                  const type = ((['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'].includes(o.orderType) ? o.orderType : 'SERVICIO') as OrderType);
                   const cfg  = TYPE_CFG[type];
                   return (
                     <tr key={o.id} className="hover:bg-gray-50 transition-colors">
