@@ -70,6 +70,7 @@ model User {
   quotationAttachments      QuotationAttachment[]
   paymentOrdersCreated      PaymentOrder[]         @relation("PaymentOrderCreatedBy")
   paymentOrdersPaid         PaymentOrder[]         @relation("PaymentOrderPaidBy")
+  paymentOrdersExchangeValidated PaymentOrder[]    @relation("PaymentOrderExchangeValidatedBy")
   officeExpenses            OfficeExpense[]        @relation("OfficeExpenseCreatedBy")
   suppliersCreated          Supplier[]             @relation("SupplierCreatedBy")
   contratosAjustadosCreated ContratoAjustado[]       @relation("ContratoAjustadoCreatedBy")
@@ -743,6 +744,10 @@ model PaymentOrder {
   paidById          String?   @map("paid_by_id") @db.Uuid
   paymentBank       String?   @map("payment_bank")      @db.VarChar(100) // Banco emisor
   paymentReference  String?   @map("payment_reference") @db.VarChar(100) // No. de transacción
+  paymentMethod             PaymentMethod? @map("payment_method")
+  exchangeRate              Decimal?       @map("exchange_rate")              @db.Decimal(10, 4)
+  exchangeRateValidatedBy   String?        @map("exchange_rate_validated_by") @db.Uuid
+  exchangeRateValidatedAt   DateTime?      @map("exchange_rate_validated_at")
   // Vínculos opcionales
   payrollId          String?   @unique @map("payroll_id") @db.Uuid
   expenseId          String?   @unique @map("expense_id") @db.Uuid
@@ -756,6 +761,7 @@ model PaymentOrder {
   project          Project           @relation(fields: [projectId], references: [id])
   createdBy        User              @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
   paidBy           User?             @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
+  exchangeRateValidator     User?          @relation("PaymentOrderExchangeValidatedBy", fields: [exchangeRateValidatedBy], references: [id])
   payroll          Payroll?          @relation(fields: [payrollId], references: [id])
   expense          Expense?          @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
   contratoAjustado ContratoAjustado? @relation("PaymentOrderContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
