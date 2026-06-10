@@ -25,6 +25,9 @@ const ROLE_LABEL: Record<string, string> = {
   operator:   'Operador',
 };
 
+const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white";
+const labelCls = "block text-xs font-semibold uppercase tracking-wide text-gray-500 font-['Barlow_Condensed'] mb-1";
+
 // ─── Componente ───────────────────────────────────────────────────────────────
 
 export default function UsersPage() {
@@ -163,70 +166,95 @@ export default function UsersPage() {
   return (
     <div className="space-y-5 max-w-3xl mx-auto">
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="module-label">ADMINISTRACIÓN / USUARIOS</p>
-          <h1 className="page-title">Usuarios</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{users?.length ?? 0} usuarios activos</p>
+      {/* Hero header */}
+      <div className="px-5 py-6" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-gray-400 mb-1">
+              ADMINISTRACIÓN / USUARIOS
+            </p>
+            <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl text-white">
+              Usuarios
+            </h1>
+            <p className="font-['DM_Sans'] text-sm text-gray-400 mt-1">
+              {users?.length ?? 0} usuarios registrados
+            </p>
+          </div>
+          {canManage && (
+            <button
+              onClick={openInvite}
+              className="flex items-center gap-2 px-4 py-2.5 font-['Barlow_Condensed'] uppercase tracking-wide text-sm font-bold shrink-0"
+              style={{ background: '#F5C218', color: '#1C1C1C' }}
+            >
+              <UserPlus className="w-4 h-4" /> Invitar usuario
+            </button>
+          )}
         </div>
-        {canManage && (
-          <button onClick={openInvite} className="smi-btn">
-            <UserPlus className="w-4 h-4" /> Invitar usuario
-          </button>
-        )}
       </div>
 
-      {/* Feedback global */}
+      {/* Success */}
       {apiOk && (
-        <div className="flex items-start gap-2 bg-green-50 border border-green-200 text-green-700 rounded-xl p-3 text-sm">
-          <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" />
+        <div className="border-l-4 border-green-500 bg-green-50 px-4 py-3 flex items-start gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <span>{apiOk}</span>
+            <span className="font-['DM_Sans'] text-sm text-green-700">{apiOk}</span>
             {inviteLink && (
-              <div className="mt-2 bg-white border border-green-200 rounded-lg p-2 flex items-center gap-2">
-                <span className="text-xs text-gray-600 truncate flex-1 font-mono">{inviteLink}</span>
-                <button onClick={copyLink}
-                  className="text-xs text-green-700 hover:text-green-800 flex items-center gap-1 shrink-0">
-                  <Copy className="w-3 h-3" /> {copied ? '¡Copiado!' : 'Copiar'}
+              <div className="mt-2 bg-white border border-green-200 px-3 py-2 flex items-center gap-2">
+                <span className="font-['Space_Mono'] text-xs text-gray-600 truncate flex-1">{inviteLink}</span>
+                <button
+                  onClick={copyLink}
+                  className="text-xs font-['Barlow_Condensed'] uppercase font-bold shrink-0 px-2 py-1"
+                  style={{ color: '#1C1C1C' }}
+                >
+                  <Copy className="w-3 h-3 inline mr-1" />
+                  {copied ? '¡Copiado!' : 'Copiar'}
                 </button>
               </div>
             )}
           </div>
-          <button onClick={() => { setApiOk(''); setInviteLink(''); }}><X className="w-3.5 h-3.5" /></button>
+          <button onClick={() => { setApiOk(''); setInviteLink(''); }} className="text-green-500 hover:text-green-700">
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
+      {/* Error */}
       {apiError && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{apiError}</span>
-          <button onClick={() => setApiError('')} className="ml-auto"><X className="w-3.5 h-3.5" /></button>
+        <div className="border-l-4 border-red-500 bg-red-50 px-4 py-3 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+          <span className="font-['DM_Sans'] text-sm text-red-700 flex-1">{apiError}</span>
+          <button onClick={() => setApiError('')} className="text-red-400 hover:text-red-600">
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
-      {/* Lista de usuarios */}
+      {/* Users list */}
       {isLoading ? (
-        <div className="text-center py-12 text-gray-400">Cargando usuarios...</div>
+        <div className="text-center py-12 font-['DM_Sans'] text-gray-400">Cargando usuarios...</div>
       ) : (
-        <div className="card divide-y divide-gray-50">
+        <div className="border border-gray-200 divide-y divide-gray-100">
           {(users ?? []).map((u: any) => (
-            <div key={u.id} className="flex items-center gap-3 px-5 py-4">
-              <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
-                <span className="text-sm font-bold text-primary-700">{u.name.charAt(0).toUpperCase()}</span>
+            <div key={u.id} className="flex items-center gap-4 px-5 py-4">
+              <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: '#1C1C1C' }}>
+                <span className="font-['Barlow_Condensed'] text-lg font-bold text-white">
+                  {u.name.charAt(0).toUpperCase()}
+                </span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm font-medium text-gray-900">{u.name}</p>
-                  {u.id === self?.id && <span className="text-xs text-gray-400">(tú)</span>}
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_BADGE[u.role?.name] ?? 'bg-gray-100 text-gray-600'}`}>
+                  <p className="font-['DM_Sans'] text-sm font-semibold text-gray-900">{u.name}</p>
+                  {u.id === self?.id && <span className="font-['DM_Sans'] text-xs text-gray-400">(tú)</span>}
+                  <span className={`text-xs px-2 py-0.5 font-semibold font-['Barlow_Condensed'] uppercase ${ROLE_BADGE[u.role?.name] ?? 'bg-gray-100 text-gray-600'}`}>
                     {ROLE_LABEL[u.role?.name] ?? u.role?.name}
                   </span>
                   {!u.isActive && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-medium">Inactivo</span>
+                    <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 font-semibold font-['Barlow_Condensed'] uppercase">
+                      Inactivo
+                    </span>
                   )}
                 </div>
-                <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                <p className="font-['Space_Mono'] text-xs text-gray-400 truncate mt-0.5">{u.email}</p>
               </div>
 
               {isAdmin && u.id !== self?.id && (
@@ -234,16 +262,22 @@ export default function UsersPage() {
                   <button
                     title={u.whatsappOptIn ? 'WhatsApp activo — click para desactivar' : 'Activar notificaciones WhatsApp'}
                     onClick={() => whatsappToggle.mutate({ id: u.id, whatsappOptIn: !u.whatsappOptIn })}
-                    className={`p-1.5 rounded-lg transition-colors ${u.whatsappOptIn ? 'text-green-600 bg-green-50 hover:bg-green-100' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`}>
+                    className={`p-1.5 transition-colors ${u.whatsappOptIn ? 'text-green-600 bg-green-50 hover:bg-green-100' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`}
+                  >
                     <MessageCircle className="w-4 h-4" />
                   </button>
-                  <button onClick={() => toggleMutation.mutate({ id: u.id, isActive: !u.isActive })}
-                    className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-colors
-                      ${u.isActive ? 'border-gray-200 text-gray-500 hover:bg-gray-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}>
+                  <button
+                    onClick={() => toggleMutation.mutate({ id: u.id, isActive: !u.isActive })}
+                    className={`text-xs px-2.5 py-1 border font-['Barlow_Condensed'] uppercase font-medium transition-colors ${
+                      u.isActive ? 'border-gray-200 text-gray-500 hover:bg-gray-50' : 'border-green-200 text-green-600 hover:bg-green-50'
+                    }`}
+                  >
                     {u.isActive ? 'Desactivar' : 'Activar'}
                   </button>
-                  <button onClick={() => openEdit(u)}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                  <button
+                    onClick={() => openEdit(u)}
+                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
                     <Edit className="w-4 h-4" />
                   </button>
                 </div>
@@ -253,27 +287,29 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Invitaciones pendientes */}
+      {/* Pending invitations */}
       {canManage && (pendingInvites ?? []).length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+          <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-gray-500 mb-3 flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" /> Invitaciones pendientes
           </p>
-          <div className="card divide-y divide-gray-50">
+          <div className="border border-gray-200 divide-y divide-gray-100">
             {(pendingInvites ?? []).map((inv: any) => (
               <div key={inv.id} className="flex items-center gap-3 px-5 py-3.5">
-                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                  <Mail className="w-4 h-4 text-amber-600" />
+                <div className="w-8 h-8 flex items-center justify-center shrink-0" style={{ background: '#F5C218' }}>
+                  <Mail className="w-4 h-4" style={{ color: '#1C1C1C' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{inv.email}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="font-['Space_Mono'] text-sm text-gray-800 truncate">{inv.email}</p>
+                  <p className="font-['DM_Sans'] text-xs text-gray-400">
                     {ROLE_LABEL[inv.role?.name] ?? inv.role?.name} · Expira {new Date(inv.expiresAt).toLocaleDateString('es-DO')}
                     {inv.invitedBy && ` · Invitado por ${inv.invitedBy.name}`}
                   </p>
                 </div>
-                <button onClick={() => revokeMutation.mutate(inv.id.toString())}
-                  className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
+                <button
+                  onClick={() => revokeMutation.mutate(inv.id.toString())}
+                  className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -282,64 +318,73 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Nota de roles */}
-      <div className="card p-4 flex items-start gap-3 bg-blue-50 border border-blue-100">
-        <ShieldCheck className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-        <div className="text-xs text-blue-600 space-y-1">
-          <p><strong>Admin:</strong> acceso total, gestión de usuarios y categorías.</p>
-          <p><strong>Supervisor:</strong> crea/edita proyectos, anula gastos, puede invitar usuarios.</p>
-          <p><strong>Operador:</strong> registra gastos y los edita dentro de las primeras 24 horas.</p>
+      {/* Roles info */}
+      <div className="border-l-4 border-[#F5C218] bg-amber-50 p-4 flex items-start gap-3">
+        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="font-['DM_Sans'] text-xs text-amber-800 space-y-1">
+          <p><strong className="font-['Barlow_Condensed'] uppercase">Admin:</strong> acceso total, gestión de usuarios y categorías.</p>
+          <p><strong className="font-['Barlow_Condensed'] uppercase">Supervisor:</strong> crea/edita proyectos, anula gastos, puede invitar usuarios.</p>
+          <p><strong className="font-['Barlow_Condensed'] uppercase">Operador:</strong> registra gastos y los edita dentro de las primeras 24 horas.</p>
         </div>
       </div>
 
-      {/* ── Modal Invitar ── */}
+      {/* Modal Invitar */}
       {modal === 'invite' && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-primary-600" /> Invitar nuevo usuario
+          <div className="bg-white w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4" style={{ background: '#1C1C1C' }}>
+              <h3 className="font-['Barlow_Condensed'] uppercase tracking-wide text-white flex items-center gap-2">
+                <UserPlus className="w-4 h-4" style={{ color: '#F5C218' }} /> Invitar nuevo usuario
               </h3>
-              <button onClick={closeModal} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+              <button onClick={closeModal} className="p-1 text-gray-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={inviteForm.handleSubmit(onInviteSubmit)} className="p-6 space-y-4">
               {apiError && (
-                <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
-                  <AlertCircle className="w-4 h-4 shrink-0" /><span>{apiError}</span>
+                <div className="border-l-4 border-red-500 bg-red-50 px-3 py-2 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span className="font-['DM_Sans'] text-sm text-red-700">{apiError}</span>
                 </div>
               )}
-              <p className="text-sm text-gray-600">
+              <p className="font-['DM_Sans'] text-sm text-gray-600">
                 Se enviará un correo con un enlace de activación. El usuario podrá crear su propia contraseña.
               </p>
               <div>
-                <label className="label">Correo electrónico *</label>
-                <input type="email" className={`input-field ${inviteForm.formState.errors.email ? 'input-error' : ''}`}
+                <label className={labelCls}>Correo electrónico *</label>
+                <input type="email"
+                  className={`${inputCls} ${inviteForm.formState.errors.email ? 'border-red-400' : ''}`}
                   placeholder="correo@empresa.com"
                   {...inviteForm.register('email', { required: 'El correo es requerido' })} />
                 {inviteForm.formState.errors.email && (
-                  <p className="text-red-500 text-xs mt-1">{inviteForm.formState.errors.email.message}</p>
+                  <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{inviteForm.formState.errors.email.message}</p>
                 )}
               </div>
               <div>
-                <label className="label">Rol *</label>
-                <select className={`input-field ${inviteForm.formState.errors.roleId ? 'input-error' : ''}`}
-                  {...inviteForm.register('roleId', { required: 'Selecciona un rol' })}>
+                <label className={labelCls}>Rol *</label>
+                <select
+                  className={`${inputCls} ${inviteForm.formState.errors.roleId ? 'border-red-400' : ''}`}
+                  {...inviteForm.register('roleId', { required: 'Selecciona un rol' })}
+                >
                   <option value="">— Selecciona un rol —</option>
                   {(roles ?? []).map((r: any) => (
                     <option key={r.id} value={r.id}>{ROLE_LABEL[r.name] ?? r.name}</option>
                   ))}
                 </select>
                 {inviteForm.formState.errors.roleId && (
-                  <p className="text-red-500 text-xs mt-1">{inviteForm.formState.errors.roleId.message}</p>
+                  <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{inviteForm.formState.errors.roleId.message}</p>
                 )}
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={closeModal} className="btn-secondary flex-1">Cancelar</button>
-                <button type="submit" disabled={inviteMutation.isPending} className="btn-primary flex-1">
+                <button type="button" onClick={closeModal}
+                  className="flex-1 py-2.5 border border-gray-300 font-['Barlow_Condensed'] uppercase text-sm text-gray-700 hover:bg-gray-50">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={inviteMutation.isPending}
+                  className="flex-1 py-2.5 font-['Barlow_Condensed'] uppercase text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{ background: '#F5C218', color: '#1C1C1C' }}>
                   {inviteMutation.isPending
-                    ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Enviando...</>
+                    ? <><span className="w-4 h-4 border-2 border-gray-800 border-t-transparent rounded-full animate-spin" /> Enviando...</>
                     : <><Mail className="w-4 h-4" /> Enviar invitación</>
                   }
                 </button>
@@ -349,40 +394,40 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* ── Modal Editar ── */}
+      {/* Modal Editar */}
       {modal === 'edit' && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
-              <h3 className="font-bold text-gray-900">Editar usuario</h3>
-              <button onClick={closeModal} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+          <div className="bg-white w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4" style={{ background: '#1C1C1C' }}>
+              <h3 className="font-['Barlow_Condensed'] uppercase tracking-wide text-white">Editar usuario</h3>
+              <button onClick={closeModal} className="p-1 text-gray-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="p-6 space-y-4">
               {apiError && (
-                <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
-                  <AlertCircle className="w-4 h-4 shrink-0" /><span>{apiError}</span>
+                <div className="border-l-4 border-red-500 bg-red-50 px-3 py-2 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span className="font-['DM_Sans'] text-sm text-red-700">{apiError}</span>
                 </div>
               )}
               <div>
-                <label className="label">Nombre *</label>
-                <input className={`input-field ${editForm.formState.errors.name ? 'input-error' : ''}`}
+                <label className={labelCls}>Nombre *</label>
+                <input className={`${inputCls} ${editForm.formState.errors.name ? 'border-red-400' : ''}`}
                   {...editForm.register('name', { required: 'Requerido' })} />
               </div>
               <div>
-                <label className="label">Email *</label>
-                <input type="email" className={`input-field ${editForm.formState.errors.email ? 'input-error' : ''}`}
+                <label className={labelCls}>Email *</label>
+                <input type="email" className={`${inputCls} ${editForm.formState.errors.email ? 'border-red-400' : ''}`}
                   {...editForm.register('email', { required: 'Requerido' })} />
               </div>
               <div>
-                <label className="label">Teléfono</label>
-                <input className="input-field" {...editForm.register('phone')} />
+                <label className={labelCls}>Teléfono</label>
+                <input className={inputCls} {...editForm.register('phone')} />
               </div>
               <div>
-                <label className="label">Rol *</label>
-                <select className="input-field"
-                  {...editForm.register('roleId', { required: 'Requerido' })}>
+                <label className={labelCls}>Rol *</label>
+                <select className={inputCls} {...editForm.register('roleId', { required: 'Requerido' })}>
                   <option value="">— Rol —</option>
                   {(roles ?? []).map((r: any) => (
                     <option key={r.id} value={r.id}>{ROLE_LABEL[r.name] ?? r.name}</option>
@@ -390,10 +435,15 @@ export default function UsersPage() {
                 </select>
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={closeModal} className="btn-secondary flex-1">Cancelar</button>
-                <button type="submit" disabled={updateMutation.isPending} className="btn-primary flex-1">
+                <button type="button" onClick={closeModal}
+                  className="flex-1 py-2.5 border border-gray-300 font-['Barlow_Condensed'] uppercase text-sm text-gray-700 hover:bg-gray-50">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={updateMutation.isPending}
+                  className="flex-1 py-2.5 font-['Barlow_Condensed'] uppercase text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{ background: '#F5C218', color: '#1C1C1C' }}>
                   {updateMutation.isPending
-                    ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Guardando...</>
+                    ? <><span className="w-4 h-4 border-2 border-gray-800 border-t-transparent rounded-full animate-spin" /> Guardando...</>
                     : <><CheckCircle className="w-4 h-4" /> Guardar</>
                   }
                 </button>
