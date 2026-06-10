@@ -12,7 +12,6 @@ function formatCurrency(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
 }
 
-// ── CSV parser ────────────────────────────────────────────────
 function parseCSV(text: string) {
   const lines = text.trim().split('\n');
   const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
@@ -39,7 +38,6 @@ export default function ExpensesPage() {
   const [dateTo,      setDateTo]      = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Import state
   const fileRef = useRef<HTMLInputElement>(null);
   const [importRows,   setImportRows]   = useState<any[]>([]);
   const [importModal,  setImportModal]  = useState(false);
@@ -67,21 +65,18 @@ export default function ExpensesPage() {
     e.target.value = '';
   }
 
-  // Proyectos para tabs
   const { data: projectsData } = useQuery({
     queryKey: ['projects', 'select'],
     queryFn:  () => projectsApi.list({ limit: 100 }),
     select:   (r) => r.data.data,
   });
 
-  // Categorías para filtro
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn:  () => categoriesApi.list(),
     select:   (r) => r.data.data,
   });
 
-  // Gastos filtrados
   const { data, isLoading } = useQuery({
     queryKey: ['expenses', search, selectedProjectId, status, page, orderBy, order, categoryId, hasFiscalDoc, dateFrom, dateTo],
     queryFn:  () => expensesApi.list({
@@ -110,272 +105,558 @@ export default function ExpensesPage() {
   const pagination = data?.pagination;
   const projects   = projectsData ?? [];
 
-  // Total del proyecto seleccionado (para mostrar en tab)
   const tabTotal = expenses.reduce((s, e) => s + Number(e.amount), 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-0">
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Hero header band */}
+      <div
+        className="flex items-center justify-between px-6 py-5"
+        style={{ background: '#1C1C1C' }}
+      >
         <div>
-          <p className="module-label">MÓDULO / GASTOS</p>
-          <h1 className="page-title">Gastos</h1>
-          <p className="text-sm text-gray-500">{pagination?.total ?? 0} gastos registrados</p>
+          <p
+            className="text-xs tracking-widest uppercase mb-1"
+            style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}
+          >
+            MÓDULO / GASTOS
+          </p>
+          <h1
+            className="text-3xl uppercase tracking-widest text-white leading-none"
+            style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+          >
+            Gastos
+          </h1>
+          <p
+            className="text-sm mt-1"
+            style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
+          >
+            {pagination?.total ?? 0} gastos registrados
+          </p>
         </div>
         {canCreateExpense && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleFileChange} />
-            <button onClick={() => fileRef.current?.click()} className="btn-secondary text-sm">
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-2 px-3 py-2 border transition-colors"
+              style={{ fontFamily: 'DM Sans, sans-serif', borderColor: '#4b5563', color: '#d1d5db', fontSize: '0.875rem' }}
+              onMouseEnter={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#F5C218'; (ev.currentTarget as HTMLButtonElement).style.color = '#F5C218'; }}
+              onMouseLeave={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#4b5563'; (ev.currentTarget as HTMLButtonElement).style.color = '#d1d5db'; }}
+            >
               <Upload className="w-4 h-4" /> Importar CSV
             </button>
-            <Link to="/expenses/new" className="smi-btn text-sm">
+            <Link
+              to="/expenses/new"
+              className="flex items-center gap-2 px-4 py-2 font-bold uppercase tracking-wide transition-opacity hover:opacity-90"
+              style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}
+            >
               <Plus className="w-4 h-4" /> Nuevo Gasto
             </Link>
           </div>
         )}
       </div>
 
-      {/* Tabs por proyecto */}
-      <div className="flex gap-1 flex-wrap border-b border-gray-200 pb-0">
-        <button
-          onClick={() => { setSelectedProjectId('all'); setPage(1); }}
-          className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
-            selectedProjectId === 'all'
-              ? 'border-primary-600 text-primary-700 bg-primary-50'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          }`}
-        >
-          Todos
-        </button>
-        {projects.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => { setSelectedProjectId(p.id); setPage(1); }}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors max-w-[200px] truncate ${
-              selectedProjectId === p.id
-                ? 'border-primary-600 text-primary-700 bg-primary-50'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-            title={p.name}
-          >
-            {p.code}
-          </button>
-        ))}
-      </div>
+      <div className="space-y-4 mt-5 px-0">
 
-      {/* Info del proyecto seleccionado */}
-      {selectedProjectId !== 'all' && (() => {
-        const p = projects.find((x) => x.id === selectedProjectId);
-        return p ? (
-          <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-blue-900">{p.name}</p>
-              <p className="text-xs text-blue-600">{p.code} · {p.client ?? 'Sin cliente'}</p>
+        {/* Tabs por proyecto */}
+        <div className="flex gap-0 flex-wrap border-b border-gray-200">
+          <button
+            onClick={() => { setSelectedProjectId('all'); setPage(1); }}
+            className="px-4 py-2 border-b-2 transition-colors"
+            style={
+              selectedProjectId === 'all'
+                ? { borderColor: '#F5C218', color: '#1C1C1C', fontWeight: 600, fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
+                : { borderColor: 'transparent', color: '#6b7280', fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
+            }
+          >
+            TODOS
+          </button>
+          {projects.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => { setSelectedProjectId(p.id); setPage(1); }}
+              className="px-4 py-2 border-b-2 transition-colors max-w-[200px] truncate"
+              title={p.name}
+              style={
+                selectedProjectId === p.id
+                  ? { borderColor: '#F5C218', color: '#1C1C1C', fontWeight: 600, fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
+                  : { borderColor: 'transparent', color: '#6b7280', fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
+              }
+            >
+              {p.code}
+            </button>
+          ))}
+        </div>
+
+        {/* Info proyecto seleccionado */}
+        {selectedProjectId !== 'all' && (() => {
+          const p = projects.find((x) => x.id === selectedProjectId);
+          return p ? (
+            <div
+              className="border-l-4 bg-amber-50 px-4 py-3 flex items-center justify-between"
+              style={{ borderLeftColor: '#F5C218' }}
+            >
+              <div>
+                <p
+                  className="font-semibold text-sm"
+                  style={{ fontFamily: 'DM Sans, sans-serif', color: '#1C1C1C' }}
+                >
+                  {p.name}
+                </p>
+                <p
+                  className="text-xs text-gray-500 mt-0.5"
+                  style={{ fontFamily: 'Space Mono, monospace' }}
+                >
+                  {p.code} · {p.client ?? 'Sin cliente'}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-500 mb-0.5" style={{ fontFamily: 'DM Sans, sans-serif' }}>Total en vista</p>
+                <p
+                  className="font-bold text-sm"
+                  style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
+                >
+                  {formatCurrency(tabTotal)}
+                </p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-blue-500">Total en vista</p>
-              <p className="text-sm font-bold text-blue-900">{formatCurrency(tabTotal)}</p>
+          ) : null;
+        })()}
+
+        {/* Filtros principales */}
+        <div className="flex gap-3 flex-wrap items-center">
+          <div className="relative flex-1 min-w-48">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              className="w-full border border-gray-300 rounded-none pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218] focus:border-[#F5C218]"
+              style={{ fontFamily: 'DM Sans, sans-serif' }}
+              placeholder="Buscar descripción..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
+          </div>
+
+          <select
+            className="border border-gray-300 rounded-none px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218] focus:border-[#F5C218] w-auto"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            value={status}
+            onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+          >
+            <option value="">Todos los estados</option>
+            <option value="ACTIVE">Activos</option>
+            <option value="PENDING_APPROVAL">Pendientes de aprobación</option>
+            <option value="VOIDED">Anulados</option>
+          </select>
+
+          <div
+            className="flex items-center gap-1.5 border border-gray-300 px-3 py-2"
+            title="Ordenar por campo y dirección"
+          >
+            <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <select
+              className="text-sm bg-transparent border-none outline-none cursor-pointer"
+              style={{ fontFamily: 'DM Sans, sans-serif', color: '#374151' }}
+              value={orderBy}
+              onChange={(e) => { setOrderBy(e.target.value as any); setPage(1); }}
+            >
+              <option value="expenseDate">Fecha de factura</option>
+              <option value="createdAt">Fecha de ingreso al sistema</option>
+              <option value="amount">Monto</option>
+            </select>
+            <select
+              className="text-sm bg-transparent border-none outline-none cursor-pointer"
+              style={{ fontFamily: 'DM Sans, sans-serif', color: '#374151' }}
+              value={order}
+              onChange={(e) => { setOrder(e.target.value as any); setPage(1); }}
+            >
+              <option value="desc">↓ Más recientes primero</option>
+              <option value="asc">↑ Más antiguos primero</option>
+            </select>
+          </div>
+
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-1.5 px-3 py-2 border text-sm font-medium transition-colors"
+            style={
+              showFilters || activeFilterCount > 0
+                ? { background: '#F5C218', color: '#1C1C1C', borderColor: '#F5C218', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }
+                : { background: 'white', color: '#4b5563', borderColor: '#d1d5db', fontFamily: 'DM Sans, sans-serif' }
+            }
+          >
+            <Filter className="w-3.5 h-3.5" />
+            Filtros
+            {activeFilterCount > 0 && (
+              <span
+                className="text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold"
+                style={{ background: '#1C1C1C', color: 'white' }}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Filtros avanzados */}
+        {showFilters && (
+          <div className="bg-white border border-gray-200 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p
+                className="text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}
+              >
+                Filtros avanzados
+              </p>
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={resetFilters}
+                  className="text-xs text-red-500 hover:text-red-700 font-medium"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                >
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  Categoría
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218]"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  value={categoryId}
+                  onChange={(e) => { setCategoryId(e.target.value); setPage(1); }}
+                >
+                  <option value="">Todas</option>
+                  {(categories ?? []).map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  Comprobante (NCF)
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218]"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  value={hasFiscalDoc}
+                  onChange={(e) => { setHasFiscalDoc(e.target.value); setPage(1); }}
+                >
+                  <option value="">Todos</option>
+                  <option value="true">Con NCF</option>
+                  <option value="false">Sin NCF</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  className="block text-xs font-medium text-gray-600 mb-1"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  title="Filtro por fecha de factura (no de ingreso)"
+                >
+                  Desde (factura)
+                </label>
+                <input
+                  type="date"
+                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218]"
+                  style={{ fontFamily: 'Space Mono, monospace' }}
+                  value={dateFrom}
+                  onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+                />
+              </div>
+              <div>
+                <label
+                  className="block text-xs font-medium text-gray-600 mb-1"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  title="Filtro por fecha de factura (no de ingreso)"
+                >
+                  Hasta (factura)
+                </label>
+                <input
+                  type="date"
+                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218]"
+                  style={{ fontFamily: 'Space Mono, monospace' }}
+                  value={dateTo}
+                  onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+                />
+              </div>
             </div>
           </div>
-        ) : null;
-      })()}
+        )}
 
-      {/* Filtros principales */}
-      <div className="flex gap-3 flex-wrap items-center">
-        <div className="relative flex-1 min-w-48">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input className="input-field pl-9" placeholder="Buscar descripción..." value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
-        </div>
-
-        <select className="input-field w-auto" value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
-          <option value="">Todos los estados</option>
-          <option value="ACTIVE">Activos</option>
-          <option value="PENDING_APPROVAL">Pendientes de aprobación</option>
-          <option value="VOIDED">Anulados</option>
-        </select>
-
-        {/* Orden */}
-        <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-2" title="Ordenar por campo y dirección">
-          <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-          <select className="text-sm text-gray-700 bg-transparent border-none outline-none cursor-pointer"
-            value={orderBy} onChange={(e) => { setOrderBy(e.target.value as any); setPage(1); }} title="Seleccionar campo para ordenar">
-            <option value="expenseDate">Fecha de factura</option>
-            <option value="createdAt">Fecha de ingreso al sistema</option>
-            <option value="amount">Monto</option>
-          </select>
-          <select className="text-sm text-gray-700 bg-transparent border-none outline-none cursor-pointer"
-            value={order} onChange={(e) => { setOrder(e.target.value as any); setPage(1); }} title="Seleccionar sentido de ordenamiento">
-            <option value="desc">↓ Más recientes primero</option>
-            <option value="asc">↑ Más antiguos primero</option>
-          </select>
-        </div>
-
-        {/* Botón filtros avanzados */}
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-            showFilters || activeFilterCount > 0
-              ? 'bg-brand-yellow/10 border-brand-yellow text-brand-dark'
-              : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-          }`}
-        >
-          <Filter className="w-3.5 h-3.5" />
-          Filtros
-          {activeFilterCount > 0 && (
-            <span className="bg-brand-dark text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Filtros avanzados (expandibles) */}
-      {showFilters && (
-        <div className="card p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filtros avanzados</p>
-            {activeFilterCount > 0 && (
-              <button onClick={resetFilters} className="text-xs text-red-500 hover:text-red-700 font-medium">
-                Limpiar filtros
-              </button>
+        {/* Lista */}
+        {isLoading ? (
+          <div
+            className="text-center py-12 text-gray-400"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Cargando gastos...
+          </div>
+        ) : expenses.length === 0 ? (
+          <div className="p-12 text-center border border-gray-100">
+            <div
+              className="w-14 h-14 flex items-center justify-center mx-auto mb-4"
+              style={{ background: '#1C1C1C' }}
+            >
+              <Receipt className="w-7 h-7" style={{ color: '#F5C218' }} />
+            </div>
+            <p
+              className="text-xl uppercase tracking-widest mb-1"
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1C1C1C' }}
+            >
+              Sin gastos registrados
+            </p>
+            <p className="text-sm text-gray-400 mb-4" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+              No hay resultados para los filtros actuales
+            </p>
+            {canCreateExpense && (
+              <Link
+                to="/expenses/new"
+                className="inline-flex items-center gap-2 px-4 py-2 font-bold uppercase tracking-wide text-sm"
+                style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif' }}
+              >
+                <Plus className="w-4 h-4" /> Registrar primer gasto
+              </Link>
             )}
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div>
-              <label className="label">Categoría</label>
-              <select className="input-field" value={categoryId}
-                onChange={(e) => { setCategoryId(e.target.value); setPage(1); }}>
-                <option value="">Todas</option>
-                {(categories ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+        ) : (
+          <>
+            <div className="space-y-2">
+              {expenses.map((e) => (
+                <Link
+                  key={e.id}
+                  to={`/expenses/${e.id}`}
+                  className="bg-white border border-gray-100 hover:border-[#F5C218] p-4 flex items-center gap-3 group transition-colors"
+                >
+                  <div
+                    className="w-1 self-stretch shrink-0"
+                    style={{ background: e.status === 'VOIDED' ? '#ef4444' : '#22c55e' }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-medium truncate"
+                      style={{ fontFamily: 'DM Sans, sans-serif', color: '#1C1C1C' }}
+                    >
+                      {e.description}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      {selectedProjectId === 'all' && (
+                        <span
+                          className="font-medium mr-1"
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
+                        >
+                          {e.project.code} ·
+                        </span>
+                      )}
+                      {e.category.name} · {PAYMENT_METHOD_LABELS[e.paymentMethod]}
+                      {e.hasFiscalDoc && e.fiscalVoucher && (
+                        <span
+                          className="ml-1"
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#2563eb', fontSize: '0.75rem' }}
+                        >
+                          · {e.fiscalVoucher.ncf}
+                        </span>
+                      )}
+                      {e.hasFiscalDoc && !e.fiscalVoucher && (
+                        <span
+                          className="ml-1"
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#3b82f6', fontSize: '0.75rem' }}
+                        >
+                          · NCF
+                        </span>
+                      )}
+                      {e.paymentOrder?.paymentBank && (
+                        <span
+                          className="ml-1"
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#6b7280', fontSize: '0.75rem' }}
+                        >
+                          · {e.paymentOrder.paymentBank}
+                        </span>
+                      )}
+                      {e.paymentOrder?.paymentReference && (
+                        <span
+                          className="ml-1"
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#9ca3af', fontSize: '0.75rem' }}
+                        >
+                          #{e.paymentOrder.paymentReference}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p
+                      className="font-bold text-sm"
+                      style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
+                    >
+                      {formatCurrency(Number(e.amount))}
+                    </p>
+                    <p
+                      className="text-xs text-gray-400 mt-0.5"
+                      style={{ fontFamily: 'Space Mono, monospace' }}
+                    >
+                      {fmtDate(e.expenseDate)}
+                    </p>
+                  </div>
+                  {e.status === 'VOIDED' && (
+                    <span
+                      className="shrink-0 px-2 py-0.5 text-xs font-bold uppercase tracking-wide"
+                      style={{ background: '#fee2e2', color: '#dc2626', fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      Anulado
+                    </span>
+                  )}
+                </Link>
+              ))}
             </div>
-            <div>
-              <label className="label">Comprobante (NCF)</label>
-              <select className="input-field" value={hasFiscalDoc}
-                onChange={(e) => { setHasFiscalDoc(e.target.value); setPage(1); }}>
-                <option value="">Todos</option>
-                <option value="true">Con NCF</option>
-                <option value="false">Sin NCF</option>
-              </select>
-            </div>
-            <div>
-              <label className="label" title="Filtro por fecha de factura (no de ingreso)">Desde (factura)</label>
-              <input type="date" className="input-field" value={dateFrom}
-                onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} title="Fecha de factura desde" />
-            </div>
-            <div>
-              <label className="label" title="Filtro por fecha de factura (no de ingreso)">Hasta (factura)</label>
-              <input type="date" className="input-field" value={dateTo}
-                onChange={(e) => { setDateTo(e.target.value); setPage(1); }} title="Fecha de factura hasta" />
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Lista */}
-      {isLoading ? (
-        <div className="text-center py-12 text-gray-400">Cargando gastos...</div>
-      ) : expenses.length === 0 ? (
-        <div className="card p-12 text-center">
-          <Receipt className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">No hay gastos registrados</p>
-          {canCreateExpense && <Link to="/expenses/new" className="btn-primary mt-4 inline-flex">Registrar primer gasto</Link>}
-        </div>
-      ) : (
-        <>
-          <div className="space-y-2">
-            {expenses.map((e) => (
-              <Link key={e.id} to={`/expenses/${e.id}`}
-                className="card p-4 flex items-center gap-3 hover:border-primary-200 hover:shadow-sm transition-all group">
-                <div className={`w-2 h-10 rounded-full shrink-0 ${e.status === 'VOIDED' ? 'bg-red-300' : 'bg-green-400'}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate group-hover:text-primary-700">{e.description}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {selectedProjectId === 'all' && <span className="font-medium text-gray-500">{e.project.code} · </span>}
-                    {e.category.name} · {PAYMENT_METHOD_LABELS[e.paymentMethod]}
-                    {e.hasFiscalDoc && e.fiscalVoucher && (
-                      <span className="ml-1 text-blue-600 font-mono">· {e.fiscalVoucher.ncf}</span>
-                    )}
-                    {e.hasFiscalDoc && !e.fiscalVoucher && (
-                      <span className="ml-1 text-blue-500">· NCF</span>
-                    )}
-                    {e.paymentOrder?.paymentBank && (
-                      <span className="ml-1 text-gray-500">· {e.paymentOrder.paymentBank}</span>
-                    )}
-                    {e.paymentOrder?.paymentReference && (
-                      <span className="ml-1 font-mono text-gray-400">#{e.paymentOrder.paymentReference}</span>
-                    )}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-bold text-gray-900">{formatCurrency(Number(e.amount))}</p>
-                  <p className="text-xs text-gray-400">{fmtDate(e.expenseDate)}</p>
-                </div>
-                {e.status === 'VOIDED' && <span className="badge-voided shrink-0">Anulado</span>}
-              </Link>
-            ))}
-          </div>
-
-          {/* Paginación */}
-          {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3">
-              <button className="btn-secondary text-sm px-3 py-2" disabled={!pagination.hasPrevPage}
-                onClick={() => setPage(p => p - 1)}>Anterior</button>
-              <span className="text-sm text-gray-600">Página {pagination.page} de {pagination.totalPages}</span>
-              <button className="btn-secondary text-sm px-3 py-2" disabled={!pagination.hasNextPage}
-                onClick={() => setPage(p => p + 1)}>Siguiente</button>
-            </div>
-          )}
-        </>
-      )}
+            {/* Paginación */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <button
+                  className="border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 transition-colors hover:border-[#F5C218]"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  disabled={!pagination.hasPrevPage}
+                  onClick={() => setPage(p => p - 1)}
+                >
+                  Anterior
+                </button>
+                <span
+                  className="px-3 py-1.5 text-sm font-bold"
+                  style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Space Mono, monospace' }}
+                >
+                  {pagination.page} / {pagination.totalPages}
+                </span>
+                <button
+                  className="border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 transition-colors hover:border-[#F5C218]"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  disabled={!pagination.hasNextPage}
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  Siguiente
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* MODAL IMPORTACIÓN CSV */}
       {importModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+            {/* Modal header */}
+            <div
+              className="flex items-center justify-between px-5 py-4"
+              style={{ background: '#1C1C1C' }}
+            >
               <div>
-                <h2 className="font-bold text-gray-900 text-lg">Importar gastos desde CSV</h2>
-                <p className="text-sm text-gray-500">{importRows.length} registros detectados</p>
+                <h2
+                  className="text-lg uppercase tracking-widest text-white"
+                  style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+                >
+                  Importar gastos desde CSV
+                </h2>
+                <p
+                  className="text-xs mt-0.5"
+                  style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
+                >
+                  {importRows.length} registros detectados
+                </p>
               </div>
-              <button onClick={() => { setImportModal(false); setImportResult(null); }}
-                className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              <button
+                onClick={() => { setImportModal(false); setImportResult(null); }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
+
             {importResult && (
-              <div className={`mx-5 mt-4 p-3 rounded-xl text-sm flex items-center gap-2 ${
-                importResult.err === 0 ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-              }`}>
+              <div
+                className={`mx-5 mt-4 p-3 text-sm flex items-center gap-2 ${
+                  importResult.err === 0 ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
+                }`}
+                style={{ fontFamily: 'DM Sans, sans-serif' }}
+              >
                 {importResult.err === 0
-                  ? <><CheckCircle className="w-4 h-4 shrink-0" /> {importResult.ok} gastos importados.</>
+                  ? <><CheckCircle className="w-4 h-4 shrink-0" /> {importResult.ok} gastos importados correctamente.</>
                   : <><AlertCircle className="w-4 h-4 shrink-0" /> {importResult.ok} importados, {importResult.err} con error.</>
                 }
               </div>
             )}
+
             {!importResult && (
               <div className="overflow-auto flex-1 px-5 py-4">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="bg-gray-50">
-                      <th className="text-left px-2 py-2 font-semibold text-gray-600">Fecha</th>
-                      <th className="text-left px-2 py-2 font-semibold text-gray-600">Proveedor</th>
-                      <th className="text-left px-2 py-2 font-semibold text-gray-600">Descripción</th>
-                      <th className="text-left px-2 py-2 font-semibold text-gray-600">Categoría</th>
-                      <th className="text-right px-2 py-2 font-semibold text-gray-600">Monto</th>
+                    <tr style={{ background: '#1C1C1C' }}>
+                      <th
+                        className="text-left px-3 py-2 font-semibold"
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
+                      >
+                        FECHA
+                      </th>
+                      <th
+                        className="text-left px-3 py-2 font-semibold"
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
+                      >
+                        PROVEEDOR
+                      </th>
+                      <th
+                        className="text-left px-3 py-2 font-semibold"
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
+                      >
+                        DESCRIPCIÓN
+                      </th>
+                      <th
+                        className="text-left px-3 py-2 font-semibold"
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
+                      >
+                        CATEGORÍA
+                      </th>
+                      <th
+                        className="text-right px-3 py-2 font-semibold"
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
+                      >
+                        MONTO
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {importRows.slice(0, 20).map((r, i) => (
                       <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
-                        <td className="px-2 py-1.5 text-gray-700">{r.fecha}</td>
-                        <td className="px-2 py-1.5 text-gray-700 max-w-[120px] truncate">{r.proveedor}</td>
-                        <td className="px-2 py-1.5 text-gray-700 max-w-[160px] truncate">{r.descripcion}</td>
-                        <td className="px-2 py-1.5"><span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-xs">{r.categoria}</span></td>
-                        <td className="px-2 py-1.5 text-right font-medium text-gray-900">
+                        <td
+                          className="px-3 py-1.5 text-gray-700"
+                          style={{ fontFamily: 'Space Mono, monospace' }}
+                        >
+                          {r.fecha}
+                        </td>
+                        <td
+                          className="px-3 py-1.5 text-gray-700 max-w-[120px] truncate"
+                          style={{ fontFamily: 'DM Sans, sans-serif' }}
+                        >
+                          {r.proveedor}
+                        </td>
+                        <td
+                          className="px-3 py-1.5 text-gray-700 max-w-[160px] truncate"
+                          style={{ fontFamily: 'DM Sans, sans-serif' }}
+                        >
+                          {r.descripcion}
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <span
+                            className="px-1.5 py-0.5 text-xs font-medium"
+                            style={{ background: '#eff6ff', color: '#1d4ed8', fontFamily: 'DM Sans, sans-serif' }}
+                          >
+                            {r.categoria}
+                          </span>
+                        </td>
+                        <td
+                          className="px-3 py-1.5 text-right font-bold"
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
+                        >
                           {new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(r.monto)}
                         </td>
                       </tr>
@@ -383,18 +664,38 @@ export default function ExpensesPage() {
                   </tbody>
                 </table>
                 {importRows.length > 20 && (
-                  <p className="text-xs text-gray-400 text-center mt-2">Mostrando 20 de {importRows.length} — todos serán importados</p>
+                  <p
+                    className="text-xs text-gray-400 text-center mt-3"
+                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  >
+                    Mostrando 20 de {importRows.length} — todos serán importados
+                  </p>
                 )}
               </div>
             )}
+
             <div className="p-5 border-t border-gray-100 flex justify-between items-center">
-              <p className="text-xs text-gray-400">Las categorías nuevas se crean automáticamente</p>
+              <p
+                className="text-xs text-gray-400"
+                style={{ fontFamily: 'DM Sans, sans-serif' }}
+              >
+                Las categorías nuevas se crean automáticamente
+              </p>
               <div className="flex gap-3">
-                <button onClick={() => { setImportModal(false); setImportResult(null); }} className="btn-secondary">
+                <button
+                  onClick={() => { setImportModal(false); setImportResult(null); }}
+                  className="border border-gray-300 px-4 py-2 text-sm transition-colors hover:border-gray-400"
+                  style={{ fontFamily: 'DM Sans, sans-serif', color: '#374151' }}
+                >
                   {importResult ? 'Cerrar' : 'Cancelar'}
                 </button>
                 {!importResult && (
-                  <button onClick={() => importMut.mutate(importRows)} disabled={importMut.isPending} className="btn-primary">
+                  <button
+                    onClick={() => importMut.mutate(importRows)}
+                    disabled={importMut.isPending}
+                    className="px-4 py-2 text-sm font-bold uppercase tracking-wide disabled:opacity-60 transition-opacity hover:opacity-90"
+                    style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif' }}
+                  >
                     {importMut.isPending ? 'Importando...' : `Importar ${importRows.length} gastos`}
                   </button>
                 )}
