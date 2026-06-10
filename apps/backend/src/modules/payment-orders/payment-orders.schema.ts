@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createPaymentOrderSchema = z.object({
-  orderType:     z.enum(['SERVICIO', 'PAYROLL', 'MATERIALS']).default('SERVICIO'),
+  orderType:     z.enum(['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH']).default('SERVICIO'),
   payingCompany: z.string().min(2).max(200),
   supplierId:    z.string().uuid(),
   projectId:     z.string().uuid(),
@@ -27,7 +27,7 @@ export const querySchema = z.object({
   page:       z.coerce.number().min(1).default(1),
   limit:      z.coerce.number().min(1).max(100).default(20),
   status:     z.enum(['PENDING', 'PAID']).optional(),
-  orderType:  z.enum(['SERVICIO', 'PAYROLL', 'MATERIALS']).optional(),
+  orderType:  z.enum(['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH']).optional(),
   projectId:  z.string().uuid().optional(),
   supplierId: z.string().uuid().optional(),
   search:     z.string().optional(),

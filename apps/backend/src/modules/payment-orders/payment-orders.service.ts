@@ -498,7 +498,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
     }
 
     if (!po.expenseId && po.orderType !== 'PAYROLL') {
-      const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : 'Servicios';
+      const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : po.orderType === 'PETTY_CASH' ? 'Caja Chica' : 'Servicios';
       const category = await tx.expenseCategory.upsert({
         where:  { name: categoryName },
         update: { isActive: true },
@@ -629,7 +629,7 @@ export async function generateExpenseForOrder(id: string, userId: string) {
   if (po.expenseId)               throw new AppError(409, 'Esta orden ya tiene un gasto vinculado', 'ALREADY_HAS_EXPENSE');
   if (po.orderType === 'PAYROLL') throw new AppError(400, 'Las órdenes de nómina no generan gasto individual', 'PAYROLL_NO_EXPENSE');
 
-  const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : 'Servicios';
+  const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : po.orderType === 'PETTY_CASH' ? 'Caja Chica' : 'Servicios';
   const category = await prisma.expenseCategory.upsert({
     where:  { name: categoryName },
     update: { isActive: true },
@@ -716,7 +716,7 @@ export async function suggestConcept(input: {
   const fallback = buildFallbackConcept(input);
   if (!aiClient) return { concept: fallback };
 
-  const typeLabel = input.orderType === 'SERVICIO' ? 'servicio' : input.orderType === 'MATERIALS' ? 'materiales/insumos' : 'nómina';
+  const typeLabel = input.orderType === 'SERVICIO' ? 'servicio' : input.orderType === 'MATERIALS' ? 'materiales/insumos' : input.orderType === 'PETTY_CASH' ? 'caja chica' : 'nómina';
 
   try {
     const msg = await aiClient.messages.create({
@@ -741,7 +741,7 @@ Solo el texto del concepto, sin comillas ni explicaciones. Ejemplo: "Pago por su
 }
 
 function buildFallbackConcept(input: { orderType: string; supplierName?: string | null; projectCode?: string | null; projectName?: string | null }) {
-  const type = input.orderType === 'SERVICIO' ? 'Pago por servicios' : input.orderType === 'MATERIALS' ? 'Pago por materiales' : 'Pago de nómina';
+  const type = input.orderType === 'SERVICIO' ? 'Pago por servicios' : input.orderType === 'MATERIALS' ? 'Pago por materiales' : input.orderType === 'PETTY_CASH' ? 'Pago de caja chica' : 'Pago de nómina';
   const parts = [type];
   if (input.supplierName) parts.push(`a ${input.supplierName}`);
   if (input.projectCode)  parts.push(`— Proyecto ${input.projectCode}`);
