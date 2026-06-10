@@ -85,7 +85,7 @@ export default function DashboardPage() {
   const totalPendingAmount = pendingOrders.reduce((s: number, o: any) => s + Number(o.amount), 0);
 
   return (
-    <div className="space-y-0">
+    <div>
 
       {/* ── Hero Header ─────────────────────────────────────────── */}
       <div className="bg-[#1C1C1C] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-8 pb-6 mb-8 relative overflow-hidden">
