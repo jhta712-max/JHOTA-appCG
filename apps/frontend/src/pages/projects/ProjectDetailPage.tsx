@@ -386,7 +386,18 @@ export default function ProjectDetailPage() {
                   <p className="text-sm font-medium text-gray-900 truncate group-hover:text-primary-700">{e.description}</p>
                   <p className="text-xs text-gray-400">
                     {e.category.name} · {PAYMENT_METHOD_LABELS[e.paymentMethod]}
-                    {e.hasFiscalDoc && <span className="text-blue-500 ml-1">· NCF</span>}
+                    {e.hasFiscalDoc && e.fiscalVoucher && (
+                      <span className="text-blue-600 font-mono ml-1">· {e.fiscalVoucher.ncf}</span>
+                    )}
+                    {e.hasFiscalDoc && !e.fiscalVoucher && (
+                      <span className="text-blue-500 ml-1">· NCF</span>
+                    )}
+                    {e.paymentOrder?.paymentBank && (
+                      <span className="ml-1 text-gray-500">· {e.paymentOrder.paymentBank}</span>
+                    )}
+                    {e.paymentOrder?.paymentReference && (
+                      <span className="ml-1 font-mono text-gray-400">#{e.paymentOrder.paymentReference}</span>
+                    )}
                   </p>
                 </div>
                 <div className="text-right shrink-0">

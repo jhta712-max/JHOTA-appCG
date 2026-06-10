@@ -298,7 +298,18 @@ export default function ExpensesPage() {
                   <p className="text-xs text-gray-400 mt-0.5">
                     {selectedProjectId === 'all' && <span className="font-medium text-gray-500">{e.project.code} · </span>}
                     {e.category.name} · {PAYMENT_METHOD_LABELS[e.paymentMethod]}
-                    {e.hasFiscalDoc && <span className="ml-1 text-blue-500">· NCF</span>}
+                    {e.hasFiscalDoc && e.fiscalVoucher && (
+                      <span className="ml-1 text-blue-600 font-mono">· {e.fiscalVoucher.ncf}</span>
+                    )}
+                    {e.hasFiscalDoc && !e.fiscalVoucher && (
+                      <span className="ml-1 text-blue-500">· NCF</span>
+                    )}
+                    {e.paymentOrder?.paymentBank && (
+                      <span className="ml-1 text-gray-500">· {e.paymentOrder.paymentBank}</span>
+                    )}
+                    {e.paymentOrder?.paymentReference && (
+                      <span className="ml-1 font-mono text-gray-400">#{e.paymentOrder.paymentReference}</span>
+                    )}
                   </p>
                 </div>
                 <div className="text-right shrink-0">

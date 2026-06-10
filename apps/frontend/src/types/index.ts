@@ -69,6 +69,7 @@ export interface Expense {
   companyCardId?: number;
   companyCard?: { id: number; holderName: string; lastFour: string; cardType: string; bank: string } | null;
   fiscalVoucher?: FiscalVoucher;
+  paymentOrder?: { id: string; paymentBank: string | null; paymentReference: string | null; paidAt: string | null } | null;
   attachments: Attachment[];
   createdAt: string;
   voidedAt?: string;
