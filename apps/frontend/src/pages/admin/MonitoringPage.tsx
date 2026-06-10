@@ -15,15 +15,15 @@ import { Navigate } from 'react-router-dom';
 
 // ─── Helpers ─────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  healthy:   { label: 'Saludable',  color: 'text-green-700',  bg: 'bg-green-50',  border: 'border-green-200', dot: 'bg-green-500'  },
-  degraded:  { label: 'Degradado', color: 'text-yellow-700', bg: 'bg-yellow-50', border: 'border-yellow-200', dot: 'bg-yellow-500' },
-  unhealthy: { label: 'CAÍDO',     color: 'text-red-700',    bg: 'bg-red-50',    border: 'border-red-200',    dot: 'bg-red-500'    },
+  healthy:   { label: 'Saludable',  color: 'text-green-400',  bg: 'bg-green-950/40',  border: 'border-green-800', dot: 'bg-green-400'  },
+  degraded:  { label: 'Degradado', color: 'text-yellow-400', bg: 'bg-yellow-950/40', border: 'border-yellow-800', dot: 'bg-yellow-400' },
+  unhealthy: { label: 'CAÍDO',     color: 'text-red-400',    bg: 'bg-red-950/40',    border: 'border-red-800',    dot: 'bg-red-400'    },
 };
 
 const LOG_CONFIG = {
-  error: { icon: XCircle,       color: 'text-red-600',    bg: 'bg-red-50',     border: 'border-red-100'    },
-  warn:  { icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-50',  border: 'border-yellow-100' },
-  info:  { icon: Info,          color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-100'   },
+  error: { icon: XCircle,       color: 'text-red-400',    bg: 'bg-red-950/30',     border: 'border-red-900/50'    },
+  warn:  { icon: AlertTriangle, color: 'text-yellow-400', bg: 'bg-yellow-950/20',  border: 'border-yellow-900/40' },
+  info:  { icon: Info,          color: 'text-blue-400',   bg: 'bg-[#111]',         border: 'border-[#222]'        },
 };
 
 function fmt(n: number) { return n.toLocaleString('es-DO'); }
@@ -44,18 +44,18 @@ function timeAgo(iso: string) {
 
 // ─── Stat Card ────────────────────────────────────────────────
 function StatCard({
-  icon: Icon, label, value, sub, color = 'text-gray-900',
+  icon: Icon, label, value, sub, color = 'text-[#F5C218]',
 }: { icon: any; label: string; value: string | number; sub?: string; color?: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4">
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-gray-50">
-          <Icon className="w-5 h-5 text-gray-400" />
+    <div className="bg-[#1C1C1C] rounded-xl border border-[#2a2a2a] p-4 hover:border-[#F5C218]/40 transition-colors group">
+      <div className="flex items-start gap-3">
+        <div className="p-2 rounded-lg bg-[#111] mt-0.5">
+          <Icon className="w-4 h-4 text-gray-600 group-hover:text-[#F5C218]/60 transition-colors" />
         </div>
-        <div>
-          <p className="text-xs text-gray-400">{label}</p>
-          <p className={`text-xl font-bold ${color}`}>{value}</p>
-          {sub && <p className="text-xs text-gray-400">{sub}</p>}
+        <div className="min-w-0">
+          <p className="font-['DM_Sans'] text-xs text-gray-500 uppercase tracking-wide">{label}</p>
+          <p className={`font-['Space_Mono'] text-xl font-bold mt-0.5 ${color}`}>{value}</p>
+          {sub && <p className="font-['DM_Sans'] text-xs text-gray-600 mt-0.5">{sub}</p>}
         </div>
       </div>
     </div>
@@ -64,7 +64,7 @@ function StatCard({
 
 // ─── Mini bar chart ───────────────────────────────────────────
 function MiniBarChart({ data }: { data: { hour: string; requests: number; errors: number }[] }) {
-  if (!data.length) return <p className="text-xs text-gray-400 py-4 text-center">Sin datos</p>;
+  if (!data.length) return <p className="font-['DM_Sans'] text-xs text-gray-600 py-4 text-center">Sin datos</p>;
   const maxVal = Math.max(...data.map(d => d.requests), 1);
   return (
     <div className="flex items-end gap-0.5 h-16">
@@ -75,18 +75,18 @@ function MiniBarChart({ data }: { data: { hour: string; requests: number; errors
         return (
           <div key={d.hour} className="flex-1 flex flex-col items-center gap-0.5 group relative">
             <div className="w-full flex flex-col justify-end" style={{ height: '52px' }}>
-              <div style={{ height: `${reqH}%` }} className="w-full bg-blue-200 rounded-t-sm relative">
+              <div style={{ height: `${reqH}%` }} className="w-full bg-[#F5C218]/40 rounded-t-sm relative">
                 {errH > 0 && (
                   <div
                     style={{ height: `${(d.errors / d.requests) * 100}%` }}
-                    className="w-full bg-red-400 absolute bottom-0 rounded-t-sm"
+                    className="w-full bg-red-500 absolute bottom-0 rounded-t-sm"
                   />
                 )}
               </div>
             </div>
-            <span className="text-[9px] text-gray-400 leading-none">{label}</span>
+            <span className="font-['Space_Mono'] text-[8px] text-gray-600 leading-none">{label}</span>
             {/* Tooltip */}
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-gray-800 text-white text-[10px] rounded px-1.5 py-0.5 whitespace-nowrap z-10">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-[#F5C218] text-[#1C1C1C] text-[10px] font-['Space_Mono'] rounded px-1.5 py-0.5 whitespace-nowrap z-10 font-bold">
               {d.requests} req / {d.errors} err
             </div>
           </div>
@@ -101,29 +101,29 @@ function LogRow({ log }: { log: SystemLog }) {
   const cfg = LOG_CONFIG[log.level] ?? LOG_CONFIG.info;
   const Icon = cfg.icon;
   return (
-    <div className={`flex items-start gap-3 px-4 py-2.5 border-b last:border-0 ${cfg.border}`}>
+    <div className={`flex items-start gap-3 px-4 py-2.5 border-b last:border-0 ${cfg.bg} ${cfg.border}`}>
       <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${cfg.color}`} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-gray-800 truncate">{log.message}</p>
-        <div className="flex items-center gap-3 mt-0.5">
-          <span className="text-[11px] text-gray-400">{timeAgo(log.createdAt)}</span>
+        <p className="font-['DM_Sans'] text-sm text-gray-300 truncate">{log.message}</p>
+        <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+          <span className="font-['Space_Mono'] text-[10px] text-gray-600">{timeAgo(log.createdAt)}</span>
           {log.endpoint && (
-            <span className="text-[11px] font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+            <span className="font-['Space_Mono'] text-[10px] text-[#F5C218]/70 bg-[#1C1C1C] px-1.5 py-0.5 rounded border border-[#2a2a2a]">
               {log.method} {log.endpoint}
             </span>
           )}
           {log.statusCode && (
-            <span className={`text-[11px] px-1.5 py-0.5 rounded ${log.statusCode >= 500 ? 'bg-red-100 text-red-600' : log.statusCode >= 400 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'}`}>
+            <span className={`font-['Space_Mono'] text-[10px] px-1.5 py-0.5 rounded ${log.statusCode >= 500 ? 'bg-red-950/50 text-red-400' : log.statusCode >= 400 ? 'bg-yellow-950/40 text-yellow-400' : 'bg-[#1C1C1C] text-gray-500'}`}>
               {log.statusCode}
             </span>
           )}
-          <span className={`text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-400`}>
+          <span className="font-['Space_Mono'] text-[10px] px-1.5 py-0.5 rounded bg-[#1C1C1C] text-gray-600 border border-[#2a2a2a]">
             {log.category}
           </span>
         </div>
       </div>
       {log.duration != null && (
-        <span className="text-[11px] text-gray-400 whitespace-nowrap">{log.duration}ms</span>
+        <span className="font-['Space_Mono'] text-[10px] text-gray-600 whitespace-nowrap">{log.duration}ms</span>
       )}
     </div>
   );
@@ -131,10 +131,10 @@ function LogRow({ log }: { log: SystemLog }) {
 
 // ─── Urgency Badge ────────────────────────────────────────────
 function UrgencyBadge({ days }: { days: number }) {
-  if (days === 0) return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">HOY</span>;
-  if (days === 1) return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700">MAÑANA</span>;
-  if (days <= 3)  return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">{days} días</span>;
-  return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600">{days} días</span>;
+  if (days === 0) return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-red-950/60 text-red-400 border border-red-800">HOY</span>;
+  if (days === 1) return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-yellow-950/60 text-yellow-400 border border-yellow-800">MAÑANA</span>;
+  if (days <= 3)  return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-[#F5C218]/10 text-[#F5C218] border border-[#F5C218]/30">{days} días</span>;
+  return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-[#1C1C1C] text-gray-500 border border-[#2a2a2a]">{days} días</span>;
 }
 
 // ─── Empty form state ─────────────────────────────────────────
@@ -270,7 +270,7 @@ function SubscriptionsTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <CreditCard className="w-7 h-7 animate-pulse text-yellow-500 mx-auto" />
+        <CreditCard className="w-7 h-7 animate-pulse mx-auto" style={{ color: '#F5C218' }} />
       </div>
     );
   }
@@ -279,14 +279,14 @@ function SubscriptionsTab() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+        <h2 className="font-['Barlow_Condensed'] text-lg font-bold tracking-wide uppercase text-white flex items-center gap-2">
           <CreditCard className="w-4 h-4" style={{ color: '#F5C218' }} />
           Suscripciones de Servicios
         </h2>
         {isAdmin && (
           <button
             onClick={openCreate}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg font-['DM_Sans']"
             style={{ background: '#F5C218', color: '#1C1C1C' }}
           >
             <Plus className="w-4 h-4" />
@@ -297,23 +297,23 @@ function SubscriptionsTab() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-xs text-gray-400">Costo mensual total</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">
+        <div className="bg-[#1C1C1C] rounded-xl border border-[#2a2a2a] p-4">
+          <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-widest">Costo mensual total</p>
+          <p className="font-['Space_Mono'] text-2xl font-bold mt-1" style={{ color: '#F5C218' }}>
             ${totalMonthly.toFixed(2)}
-            <span className="text-sm font-normal text-gray-400 ml-1">USD</span>
+            <span className="font-['DM_Sans'] text-sm font-normal text-gray-500 ml-1">USD</span>
           </p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-xs text-gray-400">Servicios activos</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{activeSubs.length}</p>
+        <div className="bg-[#1C1C1C] rounded-xl border border-[#2a2a2a] p-4">
+          <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-widest">Servicios activos</p>
+          <p className="font-['Space_Mono'] text-2xl font-bold text-white mt-1">{activeSubs.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-xs text-gray-400">Proximos 7 dias</p>
+        <div className="bg-[#1C1C1C] rounded-xl border border-[#2a2a2a] p-4">
+          <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-widest">Proximos 7 dias</p>
           <div className="flex items-center gap-2 mt-1">
-            <p className="text-2xl font-bold text-gray-900">{upcoming.length}</p>
+            <p className="font-['Space_Mono'] text-2xl font-bold text-white">{upcoming.length}</p>
             {upcoming.length > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700">
+              <span className="font-['DM_Sans'] px-2 py-0.5 rounded text-xs font-bold bg-[#F5C218]/10 text-[#F5C218] border border-[#F5C218]/30">
                 {upcoming.length} pago{upcoming.length !== 1 ? 's' : ''}
               </span>
             )}
@@ -323,24 +323,24 @@ function SubscriptionsTab() {
 
       {/* Upcoming payments */}
       {upcoming.length > 0 && (
-        <div className="bg-white rounded-xl border border-orange-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-orange-100 bg-orange-50">
-            <h3 className="text-sm font-semibold text-orange-700 flex items-center gap-2">
+        <div className="bg-[#1C1C1C] rounded-xl border border-[#F5C218]/20 overflow-hidden">
+          <div className="px-4 py-3 border-b border-[#F5C218]/10 bg-[#F5C218]/5">
+            <h3 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-[#F5C218] flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               Pagos proximos (7 dias)
             </h3>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-[#222]">
             {upcoming.map(item => (
               <div key={item.id} className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-3">
                   <UrgencyBadge days={item.daysUntil} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{item.name}</p>
-                    <p className="text-xs text-gray-400">{item.provider} · dia {item.billingDay}</p>
+                    <p className="font-['DM_Sans'] text-sm font-medium text-gray-200">{item.name}</p>
+                    <p className="font-['DM_Sans'] text-xs text-gray-600">{item.provider} · dia {item.billingDay}</p>
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-gray-700">
+                <span className="font-['Space_Mono'] text-sm font-semibold text-[#F5C218]">
                   ${Number(item.monthlyCost).toFixed(2)} {item.currency}
                 </span>
               </div>
@@ -352,10 +352,10 @@ function SubscriptionsTab() {
       {/* Full subscriptions table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-700">Todos los servicios</h3>
+          <h3 className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-widest text-gray-700">Todos los servicios</h3>
           <button
             onClick={handleExportCsv}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600"
+            className="font-['DM_Sans'] flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600"
           >
             <Download className="w-3.5 h-3.5" />
             Descargar CSV
@@ -365,11 +365,11 @@ function SubscriptionsTab() {
         {allSubs.length === 0 ? (
           <div className="px-4 py-10 text-center text-gray-400">
             <CreditCard className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No hay servicios registrados.</p>
+            <p className="font-['DM_Sans'] text-sm">No hay servicios registrados.</p>
             {isAdmin && (
               <button
                 onClick={openCreate}
-                className="mt-3 text-sm font-medium underline"
+                className="font-['DM_Sans'] mt-3 text-sm font-medium underline"
                 style={{ color: '#F5C218' }}
               >
                 Agregar el primero
@@ -382,14 +382,14 @@ function SubscriptionsTab() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500">Servicio</th>
-                    <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500">Proveedor</th>
-                    <th className="text-right px-4 py-2.5 text-xs font-semibold text-gray-500">Costo/mes</th>
-                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-gray-500">Dia cobro</th>
-                    <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500">Metodo pago</th>
-                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-gray-500">Estado</th>
+                    <th className="font-['Barlow_Condensed'] text-left px-4 py-2.5 text-xs font-semibold tracking-widest uppercase text-gray-500">Servicio</th>
+                    <th className="font-['Barlow_Condensed'] text-left px-4 py-2.5 text-xs font-semibold tracking-widest uppercase text-gray-500">Proveedor</th>
+                    <th className="font-['Barlow_Condensed'] text-right px-4 py-2.5 text-xs font-semibold tracking-widest uppercase text-gray-500">Costo/mes</th>
+                    <th className="font-['Barlow_Condensed'] text-center px-4 py-2.5 text-xs font-semibold tracking-widest uppercase text-gray-500">Dia cobro</th>
+                    <th className="font-['Barlow_Condensed'] text-left px-4 py-2.5 text-xs font-semibold tracking-widest uppercase text-gray-500">Metodo pago</th>
+                    <th className="font-['Barlow_Condensed'] text-center px-4 py-2.5 text-xs font-semibold tracking-widest uppercase text-gray-500">Estado</th>
                     {(isSupervisor || isAdmin) && (
-                      <th className="text-center px-4 py-2.5 text-xs font-semibold text-gray-500">Acciones</th>
+                      <th className="font-['Barlow_Condensed'] text-center px-4 py-2.5 text-xs font-semibold tracking-widest uppercase text-gray-500">Acciones</th>
                     )}
                   </tr>
                 </thead>
@@ -398,15 +398,15 @@ function SubscriptionsTab() {
                     <tr key={item.id} className={`hover:bg-gray-50 transition-colors ${!item.isActive ? 'opacity-50' : ''}`}>
                       <td className="px-4 py-3">
                         <div>
-                          <p className={`font-medium text-gray-900 ${!item.isActive ? 'line-through' : ''}`}>
+                          <p className={`font-['DM_Sans'] font-medium text-gray-900 ${!item.isActive ? 'line-through' : ''}`}>
                             {item.name}
                           </p>
                           {item.description && (
-                            <p className="text-xs text-gray-400 truncate max-w-[200px]">{item.description}</p>
+                            <p className="font-['DM_Sans'] text-xs text-gray-400 truncate max-w-[200px]">{item.description}</p>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td className="px-4 py-3 text-gray-600 font-['DM_Sans']">
                         {item.url ? (
                           <a
                             href={item.url}
@@ -421,21 +421,21 @@ function SubscriptionsTab() {
                           item.provider
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-900">
+                      <td className="px-4 py-3 text-right font-['Space_Mono'] font-semibold text-gray-900">
                         ${Number(item.monthlyCost).toFixed(2)}
-                        <span className="text-xs text-gray-400 ml-1">{item.currency}</span>
+                        <span className="font-['DM_Sans'] text-xs text-gray-400 ml-1">{item.currency}</span>
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-600">
+                      <td className="px-4 py-3 text-center font-['Space_Mono'] text-gray-600">
                         {item.billingDay}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">
+                      <td className="px-4 py-3 font-['DM_Sans'] text-gray-500 text-xs">
                         {item.paymentMethod ?? '—'}
                       </td>
                       <td className="px-4 py-3 text-center">
                         {item.isActive ? (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Activo</span>
+                          <span className="font-['DM_Sans'] px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Activo</span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactivo</span>
+                          <span className="font-['DM_Sans'] px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactivo</span>
                         )}
                       </td>
                       {(isSupervisor || isAdmin) && (
@@ -466,7 +466,7 @@ function SubscriptionsTab() {
                 <tfoot>
                   <tr className="border-t border-gray-200 bg-gray-50">
                     <td colSpan={(isSupervisor || isAdmin) ? 7 : 6} className="px-4 py-2.5">
-                      <span className="text-xs font-semibold text-gray-600">
+                      <span className="font-['Barlow_Condensed'] text-xs font-semibold tracking-wide uppercase text-gray-600">
                         Total activos: ${totalMonthly.toFixed(2)} USD/mes
                       </span>
                     </td>
@@ -480,21 +480,21 @@ function SubscriptionsTab() {
 
       {/* Delete confirm modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
-            <h3 className="text-base font-semibold text-gray-900 mb-2">Confirmar eliminacion</h3>
-            <p className="text-sm text-gray-500 mb-4">Esta accion no se puede deshacer. El servicio sera eliminado permanentemente.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm mx-4">
+            <h3 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-900 mb-2">Confirmar eliminacion</h3>
+            <p className="font-['DM_Sans'] text-sm text-gray-500 mb-4">Esta accion no se puede deshacer. El servicio sera eliminado permanentemente.</p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50"
+                className="font-['DM_Sans'] px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={() => removeMut.mutate(deleteConfirm)}
                 disabled={removeMut.isPending}
-                className="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                className="font-['DM_Sans'] px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
               >
                 {removeMut.isPending ? 'Eliminando...' : 'Eliminar'}
               </button>
@@ -505,10 +505,10 @@ function SubscriptionsTab() {
 
       {/* Create / Edit modal */}
       {formModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto py-8">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 overflow-y-auto py-8">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h3 className="text-base font-semibold text-gray-900">
+              <h3 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-900">
                 {editingItem ? 'Editar servicio' : 'Nuevo servicio'}
               </h3>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-700">
@@ -518,7 +518,7 @@ function SubscriptionsTab() {
 
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               {formErr && (
-                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 font-['DM_Sans'] text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   {formErr}
                 </div>
@@ -526,7 +526,7 @@ function SubscriptionsTab() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="font-['DM_Sans'] block text-xs font-medium text-gray-700 mb-1">
                     Nombre <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -534,12 +534,12 @@ function SubscriptionsTab() {
                     value={form.name}
                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                     placeholder="ej. Backend API"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="font-['DM_Sans'] w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="font-['DM_Sans'] block text-xs font-medium text-gray-700 mb-1">
                     Proveedor <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -547,26 +547,26 @@ function SubscriptionsTab() {
                     value={form.provider}
                     onChange={e => setForm(f => ({ ...f, provider: e.target.value }))}
                     placeholder="ej. Render, GitHub"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="font-['DM_Sans'] w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Descripcion</label>
+                <label className="font-['DM_Sans'] block text-xs font-medium text-gray-700 mb-1">Descripcion</label>
                 <input
                   type="text"
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="Descripcion breve del servicio"
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  className="font-['DM_Sans'] w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="font-['DM_Sans'] block text-xs font-medium text-gray-700 mb-1">
                     Costo mensual <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -576,23 +576,23 @@ function SubscriptionsTab() {
                     value={form.monthlyCost}
                     onChange={e => setForm(f => ({ ...f, monthlyCost: e.target.value }))}
                     placeholder="0.00"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="font-['Space_Mono'] w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Moneda</label>
+                  <label className="font-['DM_Sans'] block text-xs font-medium text-gray-700 mb-1">Moneda</label>
                   <select
                     value={form.currency}
                     onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="font-['DM_Sans'] w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                   >
                     <option value="USD">USD</option>
                     <option value="DOP">DOP</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="font-['DM_Sans'] block text-xs font-medium text-gray-700 mb-1">
                     Dia de cobro <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -601,42 +601,42 @@ function SubscriptionsTab() {
                     max="31"
                     value={form.billingDay}
                     onChange={e => setForm(f => ({ ...f, billingDay: e.target.value }))}
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="font-['Space_Mono'] w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Metodo de pago</label>
+                <label className="font-['DM_Sans'] block text-xs font-medium text-gray-700 mb-1">Metodo de pago</label>
                 <input
                   type="text"
                   value={form.paymentMethod}
                   onChange={e => setForm(f => ({ ...f, paymentMethod: e.target.value }))}
                   placeholder="ej. Tarjeta de credito"
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  className="font-['DM_Sans'] w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">URL del servicio</label>
+                <label className="font-['DM_Sans'] block text-xs font-medium text-gray-700 mb-1">URL del servicio</label>
                 <input
                   type="url"
                   value={form.url}
                   onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
                   placeholder="https://dashboard.render.com"
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  className="font-['DM_Sans'] w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Notas</label>
+                <label className="font-['DM_Sans'] block text-xs font-medium text-gray-700 mb-1">Notas</label>
                 <textarea
                   value={form.notes}
                   onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                   rows={2}
                   placeholder="Notas adicionales..."
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 resize-none"
+                  className="font-['DM_Sans'] w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 resize-none"
                 />
               </div>
 
@@ -648,7 +648,7 @@ function SubscriptionsTab() {
                     onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
                     className="w-4 h-4 rounded accent-yellow-400"
                   />
-                  <span className="text-sm text-gray-700">Servicio activo</span>
+                  <span className="font-['DM_Sans'] text-sm text-gray-700">Servicio activo</span>
                 </label>
               )}
 
@@ -656,14 +656,14 @@ function SubscriptionsTab() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50"
+                  className="font-['DM_Sans'] px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={createMut.isPending || updateMut.isPending}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg disabled:opacity-50"
+                  className="font-['DM_Sans'] px-4 py-2 text-sm font-semibold rounded-lg disabled:opacity-50"
                   style={{ background: '#F5C218', color: '#1C1C1C' }}
                 >
                   {createMut.isPending || updateMut.isPending ? 'Guardando...' : editingItem ? 'Guardar cambios' : 'Crear servicio'}
@@ -772,53 +772,60 @@ export default function MonitoringPage() {
   return (
     <div className="space-y-5 max-w-6xl">
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="module-label">ADMINISTRACIÓN / SISTEMA</p>
-          <h1 className="page-title">Monitoreo del Sistema</h1>
-          {dashData && (
-            <p className="text-sm text-gray-400 mt-0.5">
-              Última actualización: {new Date(dashData.generatedAt).toLocaleTimeString('es-DO')}
+      {/* Hero header band */}
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 mb-2" style={{ background: '#1C1C1C' }}>
+        <div className="max-w-6xl flex items-start justify-between gap-4">
+          <div>
+            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.25em] uppercase mb-1" style={{ color: '#F5C218' }}>
+              ADMINISTRACIÓN / SISTEMA
             </p>
-          )}
-        </div>
-        <div className="flex gap-2">
-          {isAdmin && activeTab === 'dashboard' && (
-            <button
-              onClick={handleBackup}
-              disabled={backupLoading}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold border-2 border-green-400 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 disabled:opacity-50"
-              title="Descargar backup completo de la base de datos"
-            >
-              {backupLoading ? '⏳ Generando...' : '💾 Backup BD'}
-            </button>
-          )}
-          {activeTab === 'dashboard' && (
-            <button
-              onClick={() => refetch()}
-              disabled={isFetching}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-              Actualizar
-            </button>
-          )}
+            <h1 className="font-['Barlow_Condensed'] text-4xl font-bold tracking-tight text-white uppercase">
+              Monitoreo del Sistema
+            </h1>
+            {dashData && (
+              <p className="font-['DM_Sans'] text-sm text-gray-500 mt-1">
+                Última actualización: {new Date(dashData.generatedAt).toLocaleTimeString('es-DO')}
+              </p>
+            )}
+            <div className="mt-2 w-12 h-0.5" style={{ background: '#F5C218' }} />
+          </div>
+          <div className="flex gap-2 shrink-0 mt-1">
+            {isAdmin && activeTab === 'dashboard' && (
+              <button
+                onClick={handleBackup}
+                disabled={backupLoading}
+                className="font-['DM_Sans'] flex items-center gap-1.5 px-3 py-2 text-sm font-semibold border-2 border-green-500 text-green-400 rounded-lg hover:bg-green-950/40 disabled:opacity-50 transition-colors"
+                title="Descargar backup completo de la base de datos"
+              >
+                {backupLoading ? '⏳ Generando...' : '💾 Backup BD'}
+              </button>
+            )}
+            {activeTab === 'dashboard' && (
+              <button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="font-['DM_Sans'] flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-[#333] text-gray-400 rounded-lg hover:border-[#444] hover:text-gray-200 disabled:opacity-50 transition-colors"
+              >
+                <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+                Actualizar
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-0 border-b border-[#2a2a2a] bg-[#1C1C1C] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              className={`font-['Barlow_Condensed'] flex items-center gap-1.5 px-5 py-3 text-sm font-bold tracking-widest uppercase border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-yellow-400 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-[#F5C218] text-[#F5C218]'
+                  : 'border-transparent text-gray-600 hover:text-gray-400 hover:border-[#444]'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -837,21 +844,21 @@ export default function MonitoringPage() {
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
-                <Activity className="w-8 h-8 animate-pulse text-yellow-500 mx-auto mb-2" />
-                <p className="text-sm text-gray-400">Cargando datos del sistema…</p>
+                <Activity className="w-8 h-8 animate-pulse mx-auto mb-2" style={{ color: '#F5C218' }} />
+                <p className="font-['DM_Sans'] text-sm text-gray-600">Cargando datos del sistema…</p>
               </div>
             </div>
           ) : isError || !dashData ? (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex items-start gap-3">
-              <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <div className="bg-red-950/30 border border-red-800 rounded-xl p-6 flex items-start gap-3">
+              <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-red-700">No se pudo cargar el dashboard</p>
-                <p className="text-sm text-red-600 mt-1">
+                <p className="font-['Barlow_Condensed'] font-bold text-red-400 tracking-wide uppercase">No se pudo cargar el dashboard</p>
+                <p className="font-['DM_Sans'] text-sm text-red-500/80 mt-1">
                   {(error as any)?.response?.data?.error ?? 'Error al conectar con el backend. Verifica que el servidor esté corriendo.'}
                 </p>
                 <button
                   onClick={() => refetch()}
-                  className="mt-3 flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-100"
+                  className="font-['DM_Sans'] mt-3 flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border border-red-800 text-red-400 hover:bg-red-950/40"
                 >
                   <RefreshCw className="w-3.5 h-3.5" /> Reintentar
                 </button>
@@ -864,20 +871,20 @@ export default function MonitoringPage() {
               <>
                 {/* Status banner */}
                 <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${statusCfg.bg} ${statusCfg.border}`}>
-                  <div className={`w-2.5 h-2.5 rounded-full ${statusCfg.dot} ${d.health.status !== 'healthy' ? 'animate-pulse' : ''}`} />
+                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusCfg.dot} ${d.health.status !== 'healthy' ? 'animate-pulse' : ''}`} />
                   <div className="flex-1">
-                    <span className={`font-semibold text-sm ${statusCfg.color}`}>
+                    <span className={`font-['Barlow_Condensed'] font-bold text-sm tracking-wide uppercase ${statusCfg.color}`}>
                       Sistema {statusCfg.label}
                     </span>
-                    <span className="text-sm text-gray-500 ml-3">
+                    <span className="font-['DM_Sans'] text-sm text-gray-500 ml-3">
                       DB: {d.health.dbOk ? '✅ Conectada' : '❌ Sin conexión'} &nbsp;·&nbsp;
-                      Uptime: {fmtUptime(d.health.uptimeSeconds)} &nbsp;·&nbsp;
-                      Memoria: {d.health.memoryUsedPct.toFixed(1)}% &nbsp;·&nbsp;
-                      Disponibilidad (1h): {d.uptimePct.toFixed(2)}%
+                      Uptime: <span className="font-['Space_Mono'] text-[#F5C218]">{fmtUptime(d.health.uptimeSeconds)}</span> &nbsp;·&nbsp;
+                      Memoria: <span className="font-['Space_Mono']">{d.health.memoryUsedPct.toFixed(1)}%</span> &nbsp;·&nbsp;
+                      Disponibilidad (1h): <span className="font-['Space_Mono'] text-[#F5C218]">{d.uptimePct.toFixed(2)}%</span>
                     </span>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${statusCfg.bg} ${statusCfg.color} ${statusCfg.border}`}>
-                    {d.health.responseTime}ms resp.
+                  <span className={`font-['Space_Mono'] text-xs px-2 py-0.5 rounded font-medium border ${statusCfg.border} ${statusCfg.color}`}>
+                    {d.health.responseTime}ms
                   </span>
                 </div>
 
@@ -885,12 +892,12 @@ export default function MonitoringPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <StatCard icon={Zap}       label="Requests (24h)"     value={fmt(d.metrics.totalRequests)} />
                   <StatCard icon={AlertOctagon} label="Errores (24h)"   value={d.metrics.errorCount}
-                    color={d.metrics.errorCount > 20 ? 'text-red-600' : 'text-gray-900'}
+                    color={d.metrics.errorCount > 20 ? 'text-red-400' : 'text-[#F5C218]'}
                     sub={`${d.metrics.errorRate.toFixed(1)}% tasa`} />
                   <StatCard icon={Clock}     label="Resp. promedio"      value={`${d.metrics.avgResponseMs.toFixed(0)}ms`}
-                    color={d.metrics.avgResponseMs > 1000 ? 'text-yellow-600' : 'text-gray-900'} />
+                    color={d.metrics.avgResponseMs > 1000 ? 'text-yellow-400' : 'text-[#F5C218]'} />
                   <StatCard icon={Cpu}       label="Memoria usada"       value={`${d.health.memoryUsedPct.toFixed(1)}%`}
-                    color={d.health.memoryUsedPct > 85 ? 'text-red-600' : 'text-gray-900'} />
+                    color={d.health.memoryUsedPct > 85 ? 'text-red-400' : 'text-[#F5C218]'} />
                   <StatCard icon={Wallet}    label="Nóminas hoy"         value={d.businessStats.payrolls} />
                   <StatCard icon={FileText}  label="Gastos hoy"          value={d.businessStats.expenses} />
                   <StatCard icon={Users}     label="Usuarios activos"    value={d.businessStats.activeUsers} sub="últimas 24h" />
@@ -901,26 +908,26 @@ export default function MonitoringPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                   {/* Tráfico por hora */}
-                  <div className="md:col-span-2 bg-white rounded-xl border border-gray-200 p-4">
-                    <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-blue-400" />
+                  <div className="md:col-span-2 bg-[#111] rounded-xl border border-[#2a2a2a] p-4">
+                    <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" style={{ color: '#F5C218' }} />
                       Tráfico por hora (últimas 24h)
-                      <span className="ml-auto text-xs text-gray-400 font-normal">
-                        <span className="inline-block w-2 h-2 bg-blue-200 rounded-sm mr-1" />requests
-                        <span className="inline-block w-2 h-2 bg-red-400 rounded-sm mr-1 ml-2" />errores
+                      <span className="ml-auto font-['DM_Sans'] text-xs text-gray-600 font-normal normal-case tracking-normal">
+                        <span className="inline-block w-2 h-2 rounded-sm mr-1" style={{ background: 'rgba(245,194,24,0.4)' }} />requests
+                        <span className="inline-block w-2 h-2 bg-red-500 rounded-sm mr-1 ml-2" />errores
                       </span>
                     </h2>
                     <MiniBarChart data={d.metrics.hourlyData} />
                   </div>
 
                   {/* Top endpoints */}
-                  <div className="bg-white rounded-xl border border-gray-200 p-4">
-                    <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-purple-400" />
+                  <div className="bg-[#111] rounded-xl border border-[#2a2a2a] p-4">
+                    <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3 flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-gray-600" />
                       Endpoints top
                     </h2>
                     {d.metrics.topEndpoints.length === 0 ? (
-                      <p className="text-xs text-gray-400 py-4 text-center">Sin datos</p>
+                      <p className="font-['DM_Sans'] text-xs text-gray-600 py-4 text-center">Sin datos</p>
                     ) : (
                       <div className="space-y-2">
                         {d.metrics.topEndpoints.slice(0, 8).map((e, i) => {
@@ -928,12 +935,12 @@ export default function MonitoringPage() {
                           const pct      = (e.count / maxCount) * 100;
                           return (
                             <div key={i}>
-                              <div className="flex justify-between text-xs text-gray-600 mb-0.5">
-                                <span className="font-mono truncate max-w-[140px]">{e.endpoint.replace('/api/v1', '')}</span>
-                                <span className="font-semibold ml-2">{e.count}</span>
+                              <div className="flex justify-between text-xs mb-0.5">
+                                <span className="font-['Space_Mono'] truncate max-w-[140px]" style={{ color: '#F5C218' }}>{e.endpoint.replace('/api/v1', '')}</span>
+                                <span className="font-['Space_Mono'] font-semibold text-white ml-2">{e.count}</span>
                               </div>
-                              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div style={{ width: `${pct}%` }} className="h-full bg-purple-400 rounded-full" />
+                              <div className="h-1 bg-[#222] rounded-full overflow-hidden">
+                                <div style={{ width: `${pct}%`, background: '#F5C218' }} className="h-full rounded-full opacity-60" />
                               </div>
                             </div>
                           );
@@ -944,41 +951,45 @@ export default function MonitoringPage() {
                 </div>
 
                 {/* Status codes */}
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <h2 className="text-sm font-semibold text-gray-700 mb-3">Distribución de códigos de respuesta (24h)</h2>
-                  <div className="flex gap-4 flex-wrap">
+                <div className="bg-[#111] rounded-xl border border-[#2a2a2a] p-4">
+                  <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3">Distribución de códigos de respuesta (24h)</h2>
+                  <div className="flex gap-3 flex-wrap">
                     {Object.entries(d.metrics.statusCodes).map(([code, count]) => {
                       const colorMap: Record<string, string> = {
-                        '2xx': 'bg-green-100 text-green-700 border-green-200',
-                        '3xx': 'bg-blue-100 text-blue-700 border-blue-200',
-                        '4xx': 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                        '5xx': 'bg-red-100 text-red-700 border-red-200',
+                        '2xx': 'bg-green-950/60 text-green-400 border-green-800',
+                        '3xx': 'bg-blue-950/60 text-blue-400 border-blue-800',
+                        '4xx': 'bg-yellow-950/60 text-yellow-400 border-yellow-800',
+                        '5xx': 'bg-red-950/60 text-red-400 border-red-800',
                       };
                       return (
-                        <div key={code} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${colorMap[code] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                          <span className="font-mono font-bold">{code}</span>
-                          <span className="font-semibold">{fmt(count as number)}</span>
+                        <div key={code} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${colorMap[code] ?? 'bg-[#1C1C1C] text-gray-500 border-[#2a2a2a]'}`}>
+                          <span className="font-['Space_Mono'] font-bold">{code}</span>
+                          <span className="font-['Space_Mono'] font-semibold">{fmt(count as number)}</span>
                         </div>
                       );
                     })}
                     {Object.keys(d.metrics.statusCodes).length === 0 && (
-                      <p className="text-xs text-gray-400">Sin datos en las últimas 24h</p>
+                      <p className="font-['DM_Sans'] text-xs text-gray-600">Sin datos en las últimas 24h</p>
                     )}
                   </div>
                 </div>
 
                 {/* ── Asistente IA ─────────────────────────────────────── */}
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <div className="bg-[#0D0D0D] rounded-xl border overflow-hidden" style={{ borderColor: 'rgba(245,194,24,0.3)' }}>
+                  <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: 'rgba(245,194,24,0.15)' }}>
+                    <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-300 flex items-center gap-2">
                       <Bot className="w-4 h-4" style={{ color: '#F5C218' }} />
                       Asistente IA — Análisis del sistema
                     </h2>
                     <button
                       onClick={handleAiAnalyze}
                       disabled={aiLoading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition disabled:opacity-60"
-                      style={{ background: '#F5C218', color: '#1a1a1a' }}
+                      className="font-['DM_Sans'] flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition disabled:opacity-60"
+                      style={{
+                        background: '#F5C218',
+                        color: '#1C1C1C',
+                        boxShadow: '0 0 20px rgba(245,194,24,0.3)',
+                      }}
                     >
                       {aiLoading
                         ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Analizando…</>
@@ -988,44 +999,44 @@ export default function MonitoringPage() {
                   </div>
 
                   {!aiResult && !aiLoading && !aiError && (
-                    <div className="px-4 py-8 text-center text-gray-400">
-                      <Bot className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                      <p className="text-sm">Presiona <strong>Analizar con IA</strong> para obtener un diagnóstico en lenguaje natural del estado actual del sistema.</p>
+                    <div className="px-4 py-10 text-center">
+                      <Bot className="w-8 h-8 mx-auto mb-2 opacity-20" style={{ color: '#F5C218' }} />
+                      <p className="font-['DM_Sans'] text-sm text-gray-600">Presiona <strong className="text-gray-400">Analizar con IA</strong> para obtener un diagnóstico en lenguaje natural del estado actual del sistema.</p>
                     </div>
                   )}
 
                   {aiLoading && (
-                    <div className="px-4 py-10 text-center text-gray-400">
+                    <div className="px-4 py-10 text-center">
                       <div className="flex items-center justify-center gap-2 mb-2">
                         <Bot className="w-5 h-5 animate-pulse" style={{ color: '#F5C218' }} />
-                        <span className="text-sm font-medium text-gray-600">Claude está analizando el sistema…</span>
+                        <span className="font-['DM_Sans'] text-sm font-medium text-gray-400">Claude está analizando el sistema…</span>
                       </div>
-                      <p className="text-xs text-gray-400">Esto puede tomar unos segundos</p>
+                      <p className="font-['DM_Sans'] text-xs text-gray-600">Esto puede tomar unos segundos</p>
                     </div>
                   )}
 
                   {aiError && !aiLoading && (
-                    <div className="px-4 py-4 flex items-start gap-2 text-red-600">
+                    <div className="px-4 py-4 flex items-start gap-2 text-red-400">
                       <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                      <p className="text-sm">{aiError}</p>
+                      <p className="font-['DM_Sans'] text-sm">{aiError}</p>
                     </div>
                   )}
 
                   {aiResult && !aiLoading && (() => {
                     const AI_STATUS: Record<string, { label: string; bg: string; text: string; border: string }> = {
-                      healthy:  { label: 'Sistema saludable',  bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200'  },
-                      warning:  { label: 'Atención requerida', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
-                      critical: { label: 'Estado crítico',     bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200'    },
+                      healthy:  { label: 'Sistema saludable',  bg: 'bg-green-950/40',  text: 'text-green-400',  border: 'border-green-800'  },
+                      warning:  { label: 'Atención requerida', bg: 'bg-yellow-950/40', text: 'text-yellow-400', border: 'border-yellow-800' },
+                      critical: { label: 'Estado crítico',     bg: 'bg-red-950/40',    text: 'text-red-400',    border: 'border-red-800'    },
                     };
                     const SEVERITY_BADGE: Record<string, string> = {
-                      high:   'bg-red-100 text-red-700 border-red-200',
-                      medium: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                      low:    'bg-blue-100 text-blue-700 border-blue-200',
+                      high:   'bg-red-950/60 text-red-400 border-red-800',
+                      medium: 'bg-yellow-950/60 text-yellow-400 border-yellow-800',
+                      low:    'bg-blue-950/60 text-blue-400 border-blue-800',
                     };
                     const PRIORITY_BADGE: Record<string, string> = {
-                      urgent:   'bg-red-100 text-red-700 border-red-200',
-                      normal:   'bg-yellow-100 text-yellow-700 border-yellow-200',
-                      optional: 'bg-gray-100 text-gray-600 border-gray-200',
+                      urgent:   'bg-red-950/60 text-red-400 border-red-800',
+                      normal:   'bg-yellow-950/60 text-yellow-400 border-yellow-800',
+                      optional: 'bg-[#1C1C1C] text-gray-500 border-[#2a2a2a]',
                     };
                     const SEVERITY_LABEL: Record<string, string> = { high: 'Alta', medium: 'Media', low: 'Baja' };
                     const PRIORITY_LABEL: Record<string, string> = { urgent: 'Urgente', normal: 'Normal', optional: 'Opcional' };
@@ -1037,26 +1048,26 @@ export default function MonitoringPage() {
                         <div className={`flex items-start gap-3 px-4 py-3 rounded-xl border ${sc.bg} ${sc.border}`}>
                           <CheckCircle className={`w-5 h-5 shrink-0 mt-0.5 ${sc.text}`} />
                           <div>
-                            <p className={`text-sm font-semibold mb-1 ${sc.text}`}>{sc.label}</p>
-                            <p className="text-sm text-gray-700 leading-relaxed">{aiResult.summary}</p>
+                            <p className={`font-['Barlow_Condensed'] text-sm font-bold tracking-wide uppercase mb-1 ${sc.text}`}>{sc.label}</p>
+                            <p className="font-['DM_Sans'] text-sm text-gray-400 leading-relaxed">{aiResult.summary}</p>
                           </div>
                         </div>
 
                         {aiResult.issues.length > 0 && (
                           <div>
-                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                            <h3 className="font-['Barlow_Condensed'] text-xs font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                               <AlertCircle className="w-3.5 h-3.5 text-red-400" /> Problemas detectados
                             </h3>
                             <div className="space-y-2">
                               {aiResult.issues.map((issue, i) => (
-                                <div key={i} className="bg-gray-50 rounded-lg px-3 py-2.5 border border-gray-100">
+                                <div key={i} className="bg-[#1C1C1C] rounded-lg px-3 py-2.5 border border-[#2a2a2a]">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${SEVERITY_BADGE[issue.severity] ?? SEVERITY_BADGE.low}`}>
+                                    <span className={`font-['Space_Mono'] text-[10px] font-semibold px-2 py-0.5 rounded border ${SEVERITY_BADGE[issue.severity] ?? SEVERITY_BADGE.low}`}>
                                       {SEVERITY_LABEL[issue.severity] ?? issue.severity}
                                     </span>
-                                    <span className="text-sm font-semibold text-gray-800">{issue.title}</span>
+                                    <span className="font-['DM_Sans'] text-sm font-semibold text-gray-300">{issue.title}</span>
                                   </div>
-                                  <p className="text-xs text-gray-600 leading-relaxed">{issue.detail}</p>
+                                  <p className="font-['DM_Sans'] text-xs text-gray-500 leading-relaxed">{issue.detail}</p>
                                 </div>
                               ))}
                             </div>
@@ -1065,19 +1076,19 @@ export default function MonitoringPage() {
 
                         {aiResult.recommendations.length > 0 && (
                           <div>
-                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                              <Lightbulb className="w-3.5 h-3.5 text-yellow-400" /> Recomendaciones
+                            <h3 className="font-['Barlow_Condensed'] text-xs font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                              <Lightbulb className="w-3.5 h-3.5" style={{ color: '#F5C218' }} /> Recomendaciones
                             </h3>
                             <div className="space-y-2">
                               {aiResult.recommendations.map((rec, i) => (
-                                <div key={i} className="bg-gray-50 rounded-lg px-3 py-2.5 border border-gray-100">
+                                <div key={i} className="bg-[#1C1C1C] rounded-lg px-3 py-2.5 border border-[#2a2a2a]">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${PRIORITY_BADGE[rec.priority] ?? PRIORITY_BADGE.normal}`}>
+                                    <span className={`font-['Space_Mono'] text-[10px] font-semibold px-2 py-0.5 rounded border ${PRIORITY_BADGE[rec.priority] ?? PRIORITY_BADGE.normal}`}>
                                       {PRIORITY_LABEL[rec.priority] ?? rec.priority}
                                     </span>
-                                    <span className="text-sm font-semibold text-gray-800">{rec.action}</span>
+                                    <span className="font-['DM_Sans'] text-sm font-semibold text-gray-300">{rec.action}</span>
                                   </div>
-                                  <p className="text-xs text-gray-600 leading-relaxed">{rec.reason}</p>
+                                  <p className="font-['DM_Sans'] text-xs text-gray-500 leading-relaxed">{rec.reason}</p>
                                 </div>
                               ))}
                             </div>
@@ -1086,12 +1097,12 @@ export default function MonitoringPage() {
 
                         {aiResult.positives.length > 0 && (
                           <div>
-                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                            <h3 className="font-['Barlow_Condensed'] text-xs font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                               <ThumbsUp className="w-3.5 h-3.5 text-green-400" /> Aspectos positivos
                             </h3>
                             <ul className="space-y-1">
                               {aiResult.positives.map((pos, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                                <li key={i} className="flex items-start gap-2 font-['DM_Sans'] text-sm text-gray-400">
                                   <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
                                   {pos}
                                 </li>
@@ -1100,7 +1111,7 @@ export default function MonitoringPage() {
                           </div>
                         )}
 
-                        <p className="text-[11px] text-gray-400 text-right">
+                        <p className="font-['Space_Mono'] text-[10px] text-gray-600 text-right">
                           Analizado por Claude AI · {new Date(aiResult.analyzedAt).toLocaleString('es-DO')}
                         </p>
                       </div>
@@ -1109,17 +1120,17 @@ export default function MonitoringPage() {
                 </div>
 
                 {/* Logs recientes */}
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <div className="bg-[#111] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                  <div className="px-4 py-3 border-b border-[#222] flex items-center justify-between">
+                    <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 text-yellow-500" />
                       Eventos recientes (errores y advertencias)
                     </h2>
-                    <span className="text-xs text-gray-400">{d.recentLogs.length} eventos en 24h</span>
+                    <span className="font-['Space_Mono'] text-xs text-gray-600">{d.recentLogs.length} eventos en 24h</span>
                   </div>
-                  <div className="divide-y divide-gray-50 max-h-64 overflow-y-auto">
+                  <div className="divide-y divide-[#1a1a1a] max-h-64 overflow-y-auto">
                     {d.recentLogs.length === 0 ? (
-                      <div className="flex items-center gap-2 px-4 py-6 text-sm text-green-600">
+                      <div className="flex items-center gap-2 px-4 py-6 font-['DM_Sans'] text-sm text-green-400">
                         <CheckCircle className="w-4 h-4" />
                         Sin errores en las últimas 24 horas. ¡Todo marcha bien!
                       </div>
@@ -1130,14 +1141,14 @@ export default function MonitoringPage() {
                 </div>
 
                 {/* Logs completos con filtros */}
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <h2 className="text-sm font-semibold text-gray-700 mb-2">Logs del sistema</h2>
+                <div className="bg-[#111] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                  <div className="px-4 py-3 border-b border-[#222]">
+                    <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3">Logs del sistema</h2>
                     <div className="flex gap-2 flex-wrap">
                       <select
                         value={logLevel}
                         onChange={e => { setLogLevel(e.target.value); setLogPage(1); }}
-                        className="text-xs border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-yellow-400"
+                        className="font-['DM_Sans'] text-xs bg-[#1C1C1C] border border-[#333] text-gray-400 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-yellow-400"
                       >
                         <option value="">Todos los niveles</option>
                         <option value="error">Error</option>
@@ -1147,7 +1158,7 @@ export default function MonitoringPage() {
                       <select
                         value={logCat}
                         onChange={e => { setLogCat(e.target.value); setLogPage(1); }}
-                        className="text-xs border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-yellow-400"
+                        className="font-['DM_Sans'] text-xs bg-[#1C1C1C] border border-[#333] text-gray-400 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-yellow-400"
                       >
                         <option value="">Todas las categorías</option>
                         <option value="api">API</option>
@@ -1159,28 +1170,28 @@ export default function MonitoringPage() {
                     </div>
                   </div>
 
-                  <div className="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+                  <div className="divide-y divide-[#1a1a1a] max-h-96 overflow-y-auto">
                     {(logsData?.data ?? []).length === 0 ? (
-                      <p className="px-4 py-6 text-sm text-gray-400 text-center">No hay logs con los filtros seleccionados.</p>
+                      <p className="font-['DM_Sans'] px-4 py-6 text-sm text-gray-600 text-center">No hay logs con los filtros seleccionados.</p>
                     ) : (
                       (logsData?.data ?? []).map(log => <LogRow key={log.id} log={log} />)
                     )}
                   </div>
 
                   {logsData?.pagination && logsData.pagination.totalPages > 1 && (
-                    <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                      <span>{logsData.pagination.total} logs totales</span>
+                    <div className="px-4 py-3 border-t border-[#222] flex items-center justify-between">
+                      <span className="font-['Space_Mono'] text-xs text-gray-600">{logsData.pagination.total} logs totales</span>
                       <div className="flex gap-1">
                         <button
                           disabled={logPage <= 1}
                           onClick={() => setLogPage(p => p - 1)}
-                          className="px-2 py-1 border border-gray-200 rounded disabled:opacity-40 hover:bg-gray-50"
+                          className="font-['Space_Mono'] text-xs px-2 py-1 border border-[#333] text-gray-500 rounded disabled:opacity-40 hover:bg-[#1C1C1C]"
                         >←</button>
-                        <span className="px-2 py-1">Pág. {logPage} / {logsData.pagination.totalPages}</span>
+                        <span className="font-['Space_Mono'] text-xs px-2 py-1 text-gray-600">Pág. {logPage} / {logsData.pagination.totalPages}</span>
                         <button
                           disabled={logPage >= logsData.pagination.totalPages}
                           onClick={() => setLogPage(p => p + 1)}
-                          className="px-2 py-1 border border-gray-200 rounded disabled:opacity-40 hover:bg-gray-50"
+                          className="font-['Space_Mono'] text-xs px-2 py-1 border border-[#333] text-gray-500 rounded disabled:opacity-40 hover:bg-[#1C1C1C]"
                         >→</button>
                       </div>
                     </div>
@@ -1188,16 +1199,16 @@ export default function MonitoringPage() {
                 </div>
 
                 {/* Info del servidor */}
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    <Server className="w-4 h-4 text-gray-400" />
+                <div className="bg-[#111] rounded-xl border border-[#2a2a2a] p-4">
+                  <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3 flex items-center gap-2">
+                    <Server className="w-4 h-4 text-gray-600" />
                     Información del servidor
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                     {Object.entries(d.health.details ?? {}).map(([key, val]) => (
-                      <div key={key} className="bg-gray-50 rounded-lg px-3 py-2">
-                        <p className="text-xs text-gray-400 mb-0.5">{key}</p>
-                        <p className="font-medium text-gray-700 text-xs truncate">{String(val)}</p>
+                      <div key={key} className="bg-[#0D0D0D] rounded-lg px-3 py-2 border border-[#1a1a1a]">
+                        <p className="font-['Barlow_Condensed'] text-[10px] text-gray-600 uppercase tracking-widest mb-0.5">{key}</p>
+                        <p className="font-['Space_Mono'] text-xs text-gray-400 truncate">{String(val)}</p>
                       </div>
                     ))}
                   </div>
