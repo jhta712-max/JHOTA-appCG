@@ -196,9 +196,11 @@ export default function PaymentOrdersPage() {
       const res  = await paymentOrdersApi.getBcrdRate(iso);
       const data = res.data.data;
       setBcrdRate(data);
-      if (data.venta != null) {
+      if (data.source === 'unavailable') {
+        setBcrdError('No se pudo obtener la tasa. BCRD y fuentes alternativas no respondieron. Ingresa manualmente.');
+      } else if (data.venta != null) {
         setPayInfoForm((f) => ({ ...f, exchangeRate: String(data.venta), rateConfirmed: false }));
-      } else if (data.fallback) {
+      } else {
         setBcrdError('El BCRD no respondió. Ingresa la tasa manualmente.');
       }
     } catch {
@@ -1347,7 +1349,23 @@ export default function PaymentOrdersPage() {
                       </div>
                       {bcrdRate.date && (
                         <p className="col-span-2 text-xs text-gray-400">
-                          Tasa oficial al {bcrdRate.date}
+                          Tasa oficial BCRD al {bcrdRate.date}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {bcrdRate && bcrdRate.fallback && bcrdRate.source === 'fallback' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-white rounded-lg border border-amber-100 px-3 py-2 col-span-2">
+                        <p className="text-xs text-amber-600 font-medium">Tasa de referencia (fuente alternativa)</p>
+                        <p className="text-amber-800 font-bold">
+                          {bcrdRate.venta != null ? `RD$ ${bcrdRate.venta.toFixed(2)}` : '—'}
+                        </p>
+                      </div>
+                      {bcrdRate.date && (
+                        <p className="col-span-2 text-xs text-amber-600">
+                          Tasa de referencia al {bcrdRate.date} — verifica con tu banco. El BCRD no respondió.
                         </p>
                       )}
                     </div>

@@ -4,7 +4,7 @@ export interface BcrdRateResult {
   venta:    number | null;
   date:     string | null;
   fallback: boolean;
-  source:   string;
+  source:   'bcrd' | 'fallback' | 'unavailable';
 }
 
 const BCRD_API_BASE = 'https://estadisticas.bcrd.gov.do/api/';
@@ -35,6 +35,35 @@ async function fetchSeries(seriesCode: string): Promise<{ value: number; date: s
   }
 }
 
+/** Fallback: exchangerate-api.com (free tier, no auth required) */
+async function fetchFallbackRate(currency: string): Promise<{ rate: number; date: string } | null> {
+  try {
+    // Returns how many units of target currency per 1 USD
+    const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD', {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const json = await res.json() as any;
+    const date  = String(json?.date ?? new Date().toISOString().slice(0, 10));
+
+    if (currency === 'USD') {
+      const dop = Number(json?.rates?.DOP);
+      if (!isFinite(dop) || dop <= 0) return null;
+      return { rate: dop, date };
+    } else if (currency === 'EUR') {
+      // Convert: EUR→USD rate then USD→DOP
+      const eurPerUsd = Number(json?.rates?.EUR);
+      const dopPerUsd = Number(json?.rates?.DOP);
+      if (!isFinite(eurPerUsd) || eurPerUsd <= 0 || !isFinite(dopPerUsd) || dopPerUsd <= 0) return null;
+      const dopPerEur = dopPerUsd / eurPerUsd;
+      return { rate: dopPerEur, date };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getBcrdRate(currency = 'USD'): Promise<BcrdRateResult> {
   const series = SERIES[currency.toUpperCase()] ?? SERIES['USD'];
   const cur    = currency.toUpperCase() in SERIES ? currency.toUpperCase() : 'USD';
@@ -44,18 +73,31 @@ export async function getBcrdRate(currency = 'USD'): Promise<BcrdRateResult> {
     fetchSeries(series.venta),
   ]);
 
-  if (!compraResult && !ventaResult) {
-    return { currency: cur, compra: null, venta: null, date: null, fallback: true, source: 'bcrd' };
+  if (compraResult || ventaResult) {
+    const date = ventaResult?.date ?? compraResult?.date ?? new Date().toISOString().slice(0, 10);
+    return {
+      currency: cur,
+      compra:   compraResult?.value ?? null,
+      venta:    ventaResult?.value  ?? null,
+      date,
+      fallback: false,
+      source:   'bcrd',
+    };
   }
 
-  const date = ventaResult?.date ?? compraResult?.date ?? new Date().toISOString().slice(0, 10);
+  // BCRD unavailable — try exchangerate-api.com fallback
+  const fallback = await fetchFallbackRate(cur);
+  if (fallback) {
+    return {
+      currency: cur,
+      compra:   fallback.rate,
+      venta:    fallback.rate,
+      date:     fallback.date,
+      fallback: true,
+      source:   'fallback',
+    };
+  }
 
-  return {
-    currency: cur,
-    compra:   compraResult?.value ?? null,
-    venta:    ventaResult?.value  ?? null,
-    date,
-    fallback: false,
-    source:   'bcrd',
-  };
+  // Both sources failed
+  return { currency: cur, compra: null, venta: null, date: null, fallback: true, source: 'unavailable' };
 }

@@ -396,7 +396,7 @@ export interface BcrdRateResult {
   venta:    number | null;
   date:     string | null;
   fallback: boolean;
-  source:   string;
+  source:   'bcrd' | 'fallback' | 'unavailable';
 }
 
 export interface UpcomingPayment extends ServiceSubscription {
