@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import * as svc from './payment-orders.service';
+import { getBcrdRate } from './bcrd-rate';
 import { createPaymentOrderSchema, updatePaymentOrderSchema, querySchema } from './payment-orders.schema';
 import { z } from 'zod';
 
@@ -119,6 +120,18 @@ export async function hardDeletePaymentOrder(req: Request, res: Response, next: 
   try {
     await svc.hardDeletePaymentOrder(req.params.id);
     res.json({ success: true, message: 'Orden eliminada permanentemente' });
+  } catch (err) { next(err); }
+}
+
+export async function getBcrdRateHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const currency = (req.query.currency as string) ?? 'USD';
+    if (!['USD', 'EUR'].includes(currency.toUpperCase())) {
+      res.status(400).json({ success: false, error: 'currency must be USD or EUR' });
+      return;
+    }
+    const data = await getBcrdRate(currency);
+    res.json({ success: true, data });
   } catch (err) { next(err); }
 }
 

@@ -9,6 +9,7 @@ import {
   linkPayroll, unlinkPayroll,
   markAsPaid, revertToPending, voidPaymentOrder,
   generateExpense, hardDeletePaymentOrder, suggestConcept,
+  getBcrdRateHandler,
 } from './payment-orders.controller';
 
 const router = Router();
@@ -21,6 +22,7 @@ router.get('/available-payrolls',     getAvailablePayrolls);
 router.get('/available-expenses',     getAvailableExpenses);
 router.get('/available-contracts',    getAvailableContracts);
 router.get('/available-quotations',   getAvailableQuotations);
+router.get('/bcrd-rate',              getBcrdRateHandler);
 router.get('/:id',                    getPaymentOrder);
 router.post('/suggest-concept',       suggestConcept);
 router.post('/',                      createPaymentOrder);

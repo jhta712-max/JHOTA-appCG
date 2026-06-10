@@ -53,19 +53,22 @@ interface FiscalVoucherInput {
 }
 
 interface PaymentInfoInput {
-  paymentBank?:      string | null;
-  paymentReference?: string | null;
-  exchangeRate?:     number | null; // Required when currency != 'RD$'
+  paymentBank?:           string | null;
+  paymentReference?:      string | null;
+  paymentMethod?:         string | null;
+  exchangeRate?:          number | null;
+  exchangeRateValidated?: boolean;
 }
 
 const INCLUDE = {
-  supplier:         true,
-  project:          { select: { id: true, code: true, name: true } },
-  createdBy:        { select: { id: true, name: true } },
-  paidBy:           { select: { id: true, name: true } },
-  payroll:          { select: { id: true, number: true, type: true, totalAmount: true, periodStart: true, periodEnd: true, status: true } },
-  expense:          { select: { id: true, amount: true, expenseDate: true, description: true, status: true } },
-  contratoAjustado: { select: { id: true, descripcionTrabajo: true, montoContratado: true, estado: true } },
+  supplier:               true,
+  project:                { select: { id: true, code: true, name: true } },
+  createdBy:              { select: { id: true, name: true } },
+  paidBy:                 { select: { id: true, name: true } },
+  exchangeRateValidator:  { select: { id: true, name: true } },
+  payroll:                { select: { id: true, number: true, type: true, totalAmount: true, periodStart: true, periodEnd: true, status: true } },
+  expense:                { select: { id: true, amount: true, expenseDate: true, description: true, status: true } },
+  contratoAjustado:       { select: { id: true, descripcionTrabajo: true, montoContratado: true, estado: true } },
 } as const;
 
 // ── Listar con filtros y paginación ───────────────────────────
@@ -462,11 +465,17 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
     await tx.paymentOrder.update({
       where: { id },
       data: {
-        status:           'PAID',
-        paidAt:           new Date(),
-        paidById:         userId,
-        paymentBank:      paymentInfo?.paymentBank      ?? null,
-        paymentReference: paymentInfo?.paymentReference ?? null,
+        status:                  'PAID',
+        paidAt:                  new Date(),
+        paidById:                userId,
+        paymentBank:             paymentInfo?.paymentBank      ?? null,
+        paymentReference:        paymentInfo?.paymentReference ?? null,
+        paymentMethod:           (paymentInfo?.paymentMethod ?? 'TRANSFER') as any,
+        exchangeRate:            paymentInfo?.exchangeRate ?? null,
+        exchangeRateValidatedBy: (paymentInfo?.exchangeRate != null && paymentInfo?.exchangeRateValidated)
+                                   ? userId : null,
+        exchangeRateValidatedAt: (paymentInfo?.exchangeRate != null && paymentInfo?.exchangeRateValidated)
+                                   ? new Date() : null,
       },
     });
 
@@ -517,6 +526,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
             expenseDate:        new Date(),
             amount:             amountDOP,
             description:        `[${opRef}] ${po.concept}`,
+            paymentMethod:      paymentInfo?.paymentMethod ?? 'TRANSFER',
             hasFiscalDoc:       hasFiscal,
             notes:              `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.${isForeign ? ` Divisa original: ${po.currency} ${Number(po.amount).toFixed(2)}${exchangeRate ? ` (TC: ${exchangeRate})` : ''}.` : ''}`,
             contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
