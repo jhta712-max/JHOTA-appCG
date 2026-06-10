@@ -29,6 +29,26 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: 'CANCELLED',       label: 'Cancelada' },
 ];
 
+function statusBadgeClass(status: string): string {
+  switch (status) {
+    case 'PAID':      return 'bg-green-900 text-green-300 border border-green-700';
+    case 'APPROVED':  return 'bg-green-900 text-green-300 border border-green-700';
+    case 'CANCELLED': return 'bg-red-900 text-red-300 border border-red-700';
+    case 'PENDING':   return 'bg-[#F5C218]/20 text-[#F5C218] border border-[#F5C218]/40';
+    default:          return 'bg-zinc-700 text-zinc-200 border border-zinc-600';
+  }
+}
+
+function statusBarClass(status: string): string {
+  switch (status) {
+    case 'PAID':      return 'bg-green-400';
+    case 'APPROVED':  return 'bg-green-400';
+    case 'CANCELLED': return 'bg-red-400';
+    case 'PENDING':   return 'bg-[#F5C218]';
+    default:          return 'bg-amber-400';
+  }
+}
+
 export default function QuotationsPage() {
   const { canCreateQuotation } = useRole();
   const [search,    setSearch]    = useState('');
@@ -60,35 +80,52 @@ export default function QuotationsPage() {
   const pagination = data?.pagination;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-0 font-['DM_Sans']">
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="module-label">MÓDULO / COTIZACIONES</p>
-          <h1 className="page-title">Cotizaciones</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{pagination?.total ?? 0} cotizaciones registradas</p>
+      {/* Hero Header */}
+      <div className="bg-[#1C1C1C] px-6 py-8 -mx-4 sm:-mx-6 lg:-mx-8 mb-6">
+        <div className="max-w-full">
+          <p className="font-['Barlow_Condensed'] text-[#F5C218] text-xs font-semibold tracking-[0.2em] uppercase mb-1">
+            MÓDULO / COTIZACIONES
+          </p>
+          <div className="flex items-end justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="font-['Barlow_Condensed'] text-white text-5xl font-bold tracking-tight leading-none uppercase">
+                COTIZACIONES
+              </h1>
+              <p className="text-zinc-400 text-sm mt-2 font-['DM_Sans']">
+                <span className="font-['Space_Mono'] text-[#F5C218]">{pagination?.total ?? 0}</span>
+                {' '}cotizaciones registradas
+              </p>
+            </div>
+            {canCreateQuotation && (
+              <Link
+                to="/quotations/new"
+                className="inline-flex items-center gap-2 bg-[#F5C218] hover:bg-yellow-400 text-[#1C1C1C] font-['Barlow_Condensed'] font-bold text-sm tracking-wider uppercase px-5 py-2.5 transition-colors shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                NUEVA COTIZACIÓN
+              </Link>
+            )}
+          </div>
         </div>
-        {canCreateQuotation && (
-          <Link to="/quotations/new" className="smi-btn text-sm">
-            <Plus className="w-4 h-4" /> Nueva
-          </Link>
-        )}
       </div>
 
       {/* Filtros */}
-      <div className="card p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
-            <Filter className="w-4 h-4" /> Filtros
+      <div className="bg-white border border-zinc-200 p-5 mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-zinc-400" />
+            <span className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.15em] text-zinc-500 uppercase">
+              FILTROS
+            </span>
           </div>
-          {/* Filtro rápido: vencidas sin respuesta */}
           <button
             onClick={() => { setOverdue(v => !v); setStatus(''); setPage(1); }}
-            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 border transition-colors font-['DM_Sans'] ${
               overdue
-                ? 'bg-red-50 border-red-300 text-red-700'
-                : 'bg-white border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-600'
+                ? 'bg-red-50 border-red-400 text-red-700'
+                : 'bg-white border-zinc-200 text-zinc-500 hover:border-red-300 hover:text-red-600'
             }`}
           >
             <AlertCircle className="w-3.5 h-3.5" />
@@ -97,28 +134,37 @@ export default function QuotationsPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input className="input-field pl-9" placeholder="Buscar suplidor, número..."
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <input
+              className="w-full border border-zinc-200 pl-9 pr-3 py-2.5 text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-[#F5C218] font-['DM_Sans'] transition-colors"
+              placeholder="Buscar suplidor, número..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
           </div>
-          <select className="input-field" value={projectId}
-            onChange={(e) => { setProjectId(e.target.value); setPage(1); }}>
+          <select
+            className="w-full border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-[#F5C218] font-['DM_Sans'] bg-white transition-colors"
+            value={projectId}
+            onChange={(e) => { setProjectId(e.target.value); setPage(1); }}
+          >
             <option value="">Todos los proyectos</option>
             {(projectsData ?? []).map((p) => (
               <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
             ))}
           </select>
-          <select className="input-field" value={overdue ? '' : status}
+          <select
+            className="w-full border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-[#F5C218] font-['DM_Sans'] bg-white transition-colors disabled:opacity-50"
+            value={overdue ? '' : status}
             disabled={overdue}
-            onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
+            onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+          >
             {STATUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
         </div>
         {overdue && (
-          <p className="text-xs text-red-600 flex items-center gap-1">
+          <p className="text-xs text-red-600 flex items-center gap-1 mt-3 font-['DM_Sans']">
             <AlertCircle className="w-3 h-3 shrink-0" />
             Mostrando cotizaciones con fecha de validez vencida que aún están en estado abierto.
           </p>
@@ -127,15 +173,36 @@ export default function QuotationsPage() {
 
       {/* Lista */}
       {isLoading ? (
-        <div className="text-center py-12 text-gray-400">Cargando cotizaciones...</div>
+        <div className="py-16 text-center">
+          <div className="inline-flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-3 h-3 bg-[#F5C218] rounded-full animate-pulse"
+                style={{ animationDelay: `${i * 150}ms` }}
+              />
+            ))}
+          </div>
+          <p className="text-zinc-400 text-sm mt-3 font-['DM_Sans']">Cargando cotizaciones...</p>
+        </div>
       ) : quotations.length === 0 ? (
-        <div className="card p-12 text-center">
-          <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">No hay cotizaciones registradas</p>
-          <p className="text-sm text-gray-400 mt-1">Crea la primera cotización para comenzar</p>
-          {canCreateQuotation && (
-            <Link to="/quotations/new" className="btn-primary mt-4 inline-flex">
-              <Plus className="w-4 h-4" /> Nueva cotización
+        <div className="bg-white border border-zinc-200 py-16 px-6 text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-[#F5C218]/10 border border-[#F5C218]/30 mb-4">
+            <FileText className="w-7 h-7 text-[#F5C218]" />
+          </div>
+          <p className="font-['Barlow_Condensed'] text-zinc-800 text-xl font-bold uppercase tracking-wide mb-1">
+            Sin cotizaciones
+          </p>
+          <p className="text-zinc-400 text-sm font-['DM_Sans']">
+            {overdue ? 'No hay cotizaciones vencidas sin respuesta.' : 'Crea la primera cotización para comenzar.'}
+          </p>
+          {canCreateQuotation && !overdue && (
+            <Link
+              to="/quotations/new"
+              className="inline-flex items-center gap-2 mt-5 bg-[#F5C218] hover:bg-yellow-400 text-[#1C1C1C] font-['Barlow_Condensed'] font-bold text-sm tracking-wider uppercase px-5 py-2.5 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              NUEVA COTIZACIÓN
             </Link>
           )}
         </div>
@@ -143,68 +210,91 @@ export default function QuotationsPage() {
         <>
           <div className="space-y-2">
             {quotations.map((q) => (
-              <Link key={q.id} to={`/quotations/${q.id}`}
-                className="card p-4 flex items-center gap-3 hover:border-primary-200 hover:shadow-sm transition-all group">
+              <Link
+                key={q.id}
+                to={`/quotations/${q.id}`}
+                className="bg-white border border-zinc-200 hover:border-[#F5C218]/60 hover:shadow-sm flex items-center gap-0 transition-all group block"
+              >
+                {/* Status bar */}
+                <div className={`w-1 self-stretch shrink-0 ${statusBarClass(q.status)}`} />
 
-                {/* Indicador estado */}
-                <div className={`w-2 h-12 rounded-full shrink-0 ${
-                  q.status === 'PAID'      ? 'bg-green-400' :
-                  q.status === 'CANCELLED' ? 'bg-red-300'   :
-                  q.status === 'PENDING'   ? 'bg-gray-300'  :
-                  'bg-amber-400'
-                }`} />
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary-700">
-                      {q.supplierName}
-                    </p>
-                    {q.quotationNumber && (
-                      <span className="text-xs text-gray-400 font-mono">#{q.quotationNumber}</span>
+                <div className="flex items-center gap-4 flex-1 min-w-0 px-5 py-4">
+                  {/* Quotation number badge */}
+                  <div className="shrink-0">
+                    {q.quotationNumber ? (
+                      <span className="inline-flex items-center bg-[#1C1C1C] px-2.5 py-1 font-['Space_Mono'] text-[#F5C218] text-xs tracking-wider">
+                        #{q.quotationNumber}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center bg-zinc-100 px-2.5 py-1 font-['Space_Mono'] text-zinc-400 text-xs">
+                        —
+                      </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-0.5 truncate">
-                    {q.project.code} · {q.description.slice(0, 60)}{q.description.length > 60 ? '…' : ''}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {fmtDate(q.quotationDate)}
-                    {q._count && q._count.payments > 0 && (
-                      <span className="ml-2 text-amber-600">{q._count.payments} pago(s)</span>
-                    )}
-                    {q._count && q._count.expenseLinks > 0 && (
-                      <span className="ml-2 text-blue-500">{q._count.expenseLinks} factura(s)</span>
-                    )}
-                  </p>
+
+                  {/* Main info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-['Barlow_Condensed'] text-lg font-bold text-zinc-900 leading-tight group-hover:text-[#1C1C1C] truncate tracking-wide">
+                      {q.supplierName}
+                    </p>
+                    <p className="text-xs text-zinc-400 mt-0.5 truncate font-['DM_Sans']">
+                      <span className="font-['Space_Mono'] text-zinc-500">{q.project.code}</span>
+                      {' · '}
+                      {q.description.slice(0, 60)}{q.description.length > 60 ? '…' : ''}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-xs text-zinc-400 font-['DM_Sans']">{fmtDate(q.quotationDate)}</span>
+                      {q._count && q._count.payments > 0 && (
+                        <span className="text-xs text-amber-600 font-['DM_Sans']">
+                          {q._count.payments} pago(s)
+                        </span>
+                      )}
+                      {q._count && q._count.expenseLinks > 0 && (
+                        <span className="text-xs text-blue-500 font-['DM_Sans']">
+                          {q._count.expenseLinks} factura(s)
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="text-right shrink-0 space-y-1">
-                  <p className="text-sm font-bold text-gray-900">
+                {/* Amount + status */}
+                <div className="shrink-0 text-right px-5 py-4 border-l border-zinc-100">
+                  <p className="font-['Space_Mono'] text-base font-bold text-zinc-900 leading-tight">
                     {fmt(Number(q.total), q.currency)}
                   </p>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                    QUOTATION_STATUS_COLORS[q.status as QuotationStatus]
-                  }`}>
+                  <span className={`inline-flex items-center mt-1.5 px-2 py-0.5 text-xs font-['Barlow_Condensed'] font-semibold tracking-wide uppercase ${statusBadgeClass(q.status)}`}>
                     {QUOTATION_STATUS_LABELS[q.status as QuotationStatus]}
                   </span>
                 </div>
 
-                <ChevronRight className="w-4 h-4 text-gray-300 shrink-0 group-hover:text-gray-400" />
+                <div className="px-3 shrink-0">
+                  <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-[#F5C218] transition-colors" />
+                </div>
               </Link>
             ))}
           </div>
 
           {/* Paginación */}
           {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3">
-              <button className="btn-secondary text-sm px-3 py-2"
+            <div className="flex items-center justify-center gap-4 pt-6">
+              <button
+                className="font-['Barlow_Condensed'] text-sm font-bold tracking-wider uppercase px-5 py-2 border border-zinc-300 text-zinc-600 hover:border-[#1C1C1C] hover:bg-[#1C1C1C] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 disabled={!pagination.hasPrevPage}
-                onClick={() => setPage(p => p - 1)}>Anterior</button>
-              <span className="text-sm text-gray-600">
-                Página {pagination.page} de {pagination.totalPages}
+                onClick={() => setPage(p => p - 1)}
+              >
+                ← ANTERIOR
+              </button>
+              <span className="font-['Space_Mono'] text-sm text-zinc-500">
+                {pagination.page} / {pagination.totalPages}
               </span>
-              <button className="btn-secondary text-sm px-3 py-2"
+              <button
+                className="font-['Barlow_Condensed'] text-sm font-bold tracking-wider uppercase px-5 py-2 border border-zinc-300 text-zinc-600 hover:border-[#1C1C1C] hover:bg-[#1C1C1C] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 disabled={!pagination.hasNextPage}
-                onClick={() => setPage(p => p + 1)}>Siguiente</button>
+                onClick={() => setPage(p => p + 1)}
+              >
+                SIGUIENTE →
+              </button>
             </div>
           )}
         </>
