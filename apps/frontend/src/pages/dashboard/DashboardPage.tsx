@@ -129,7 +129,7 @@ export default function DashboardPage() {
           <p className="text-sm font-bold text-gray-900 mt-1 truncate">{fmt(totalBudget)}</p>
           <p className="text-xs text-gray-400 mt-0.5">todos los proyectos</p>
         </div>
-        <Link to="/pending-orders" className="card p-4 hover:border-amber-300 hover:shadow-sm transition-all group col-span-2 md:col-span-1">
+        <Link to="/pending-orders" className="card p-4 hover:border-amber-300 hover:shadow-sm transition-all group col-span-2 md:col-span-1 border-t-2 md:border-t-0 md:border-l-2" style={{ borderTopColor: '#F5C218', borderLeftColor: '#F5C218' }}>
           <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
             <Clock className="w-3 h-3 text-amber-500" /> Pagos pendientes
           </p>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                   />
                   <Bar dataKey="total" radius={[4, 4, 0, 0]}>
                     {statsData.byMonth.map((_, i) => (
-                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#F5C218' : '#a07c10'} />
+                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#F5C218' : '#D4A017'} fillOpacity={i === statsData.byMonth.length - 1 ? 1 : 0.85} />
                     ))}
                   </Bar>
                 </BarChart>
