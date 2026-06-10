@@ -283,422 +283,515 @@ export default function NewExpensePage() {
 
   const confidenceCfg = ocrResult ? CONFIDENCE_CONFIG[ocrResult.confidence] : null;
 
+  /* ── input / select shared class ── */
+  const inputCls = (hasError?: boolean, isAi?: boolean) =>
+    [
+      'border border-gray-300 rounded-none px-3 py-2 text-sm font-[\'DM_Sans\'] w-full',
+      'focus:ring-2 focus:ring-[#F5C218] focus:outline-none',
+      hasError ? 'border-red-400' : '',
+      isAi     ? 'ring-2 ring-violet-400' : '',
+    ].filter(Boolean).join(' ');
+
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-gray-600 p-1">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div>
-          <p className="module-label">MÓDULO / GASTOS</p>
-          <h1 className="page-title">Nuevo Gasto</h1>
-          <p className="text-sm text-gray-500">Completa los campos o usa IA para autocompletar desde una foto</p>
+    <div className="min-h-screen bg-gray-50">
+
+      {/* ── Top header band ── */}
+      <div style={{ background: '#1C1C1C' }} className="px-4 py-4">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-gray-400 hover:text-[#F5C218] transition-colors p-1"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <p className="font-['Barlow_Condensed'] text-xs uppercase tracking-widest text-gray-500">
+              MÓDULO / GASTOS
+            </p>
+            <h1 className="font-['Barlow_Condensed'] text-3xl uppercase tracking-widest text-white leading-none">
+              Nuevo Gasto
+            </h1>
+            <p className="font-['DM_Sans'] text-xs text-gray-400 mt-0.5">
+              Completa los campos o usa IA para autocompletar desde una foto
+            </p>
+          </div>
         </div>
       </div>
 
-      {success && (
-        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 rounded-xl p-4">
-          <CheckCircle className="w-5 h-5 shrink-0" />
-          <p className="font-medium">{success}</p>
-        </div>
-      )}
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
 
-      {apiError && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <p className="text-sm">{apiError}</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-
-        {/* ── SECCIÓN 1: Foto + IA ─────────────────────────────── */}
-        <div className="card p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-              <span className="w-6 h-6 bg-primary-100 text-primary-700 rounded-full text-xs flex items-center justify-center font-bold">1</span>
-              Foto de factura
-            </h2>
-            <span className="text-xs text-gray-400">Recomendado — activa el autocompletado IA</span>
-          </div>
-
-          {/* Zona de upload — previsualización */}
-          {(photoPreview || photo) && (
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center gap-2">
-              {photoPreview ? (
-                <img src={photoPreview} alt="Factura" className="max-h-48 rounded-lg object-contain shadow" />
-              ) : photo && photo.type === 'application/pdf' ? (
-                <div className="flex flex-col items-center gap-2 py-2">
-                  <FileText className="w-10 h-10 text-red-400" />
-                  <p className="text-sm font-medium text-gray-700">{photo.name}</p>
-                  <p className="text-xs text-gray-400">PDF listo para analizar</p>
-                </div>
-              ) : null}
-            </div>
-          )}
-
-          {/* Botones de carga */}
-          {!photo && (
-            <div className="grid grid-cols-2 gap-3">
-              {/* Opción 1: Tomar foto con cámara */}
-              <button
-                type="button"
-                onClick={() => cameraRef.current?.click()}
-                className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-4 cursor-pointer hover:border-yellow-400 hover:bg-yellow-50 transition-all"
-              >
-                <Camera className="w-7 h-7 text-gray-400" />
-                <div className="text-center">
-                  <p className="text-sm font-medium text-gray-700">Tomar foto</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Usar cámara</p>
-                </div>
-              </button>
-
-              {/* Opción 2: Subir archivo desde el dispositivo */}
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-4 cursor-pointer hover:border-yellow-400 hover:bg-yellow-50 transition-all"
-              >
-                <Upload className="w-7 h-7 text-gray-400" />
-                <div className="text-center">
-                  <p className="text-sm font-medium text-gray-700">Subir archivo</p>
-                  <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, PDF</p>
-                </div>
-              </button>
-            </div>
-          )}
-
-          {/* Input cámara (fuerza cámara en móvil) */}
-          <input
-            type="file"
-            className="hidden"
-            accept="image/*"
-            capture="environment"
-            ref={cameraRef}
-            onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
-          />
-          {/* Input archivo (galería, archivos, escaneados, PDF) */}
-          <input
-            type="file"
-            className="hidden"
-            accept="image/*,application/pdf"
-            ref={fileRef}
-            onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
-          />
-
-          {photo && (
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-green-600 flex items-center gap-1 flex-1">
-                <CheckCircle className="w-3 h-3" /> {photo.name} ({(photo.size / 1024 / 1024).toFixed(2)} MB)
-              </p>
-              <button
-                type="button"
-                onClick={() => handlePhotoChange(null)}
-                className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1"
-              >
-                <X className="w-3.5 h-3.5" /> Quitar
-              </button>
-            </div>
-          )}
-
-          {/* Botón Analizar con IA */}
-          {photo && !ocrLoading && (
-            <button
-              type="button"
-              onClick={handleAnalyze}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm
-                         bg-gradient-to-r from-violet-600 to-indigo-600 text-white
-                         hover:from-violet-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
-            >
-              <Sparkles className="w-4 h-4" />
-              Analizar con IA — autocompletar formulario
-            </button>
-          )}
-
-          {ocrLoading && (
-            <div className="flex items-center justify-center gap-3 py-4 bg-indigo-50 rounded-xl border border-indigo-200">
-              <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
-              <div>
-                <p className="text-sm font-medium text-indigo-700">Analizando factura con IA...</p>
-                <p className="text-xs text-indigo-500">Extrayendo NCF, montos y datos fiscales</p>
-              </div>
-            </div>
-          )}
-
-          {ocrError && (
-            <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3">
-              <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-600">{ocrError}</p>
-            </div>
-          )}
-
-          {/* Resultado OCR */}
-          {ocrResult && !ocrLoading && (
-            <div className="space-y-3">
-              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-indigo-600" />
-                    <p className="text-sm font-semibold text-indigo-800">
-                      IA detectó {ocrResult.fieldsDetected} campo{ocrResult.fieldsDetected !== 1 ? 's' : ''}
-                    </p>
-                  </div>
-                  {confidenceCfg && (
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${confidenceCfg.color}`}>
-                      {confidenceCfg.icon} {confidenceCfg.label}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-indigo-600 flex items-center gap-1">
-                  <Info className="w-3.5 h-3.5" />
-                  Los campos marcados en violeta fueron completados automáticamente. Verifica y corrige si es necesario.
-                </p>
-                {ocrResult.warnings.length > 0 && (
-                  <div className="space-y-1">
-                    {ocrResult.warnings.map((w, i) => (
-                      <div key={i} className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5">
-                        <TriangleAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                        {w}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* ⚠️ VALIDACIÓN OBLIGATORIA DE OCR */}
-              <div className="bg-amber-50 border border-amber-300 rounded-xl p-4">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={ocrValidated}
-                    onChange={(e) => setOcrValidated(e.target.checked)}
-                    className="mt-1 rounded border-gray-300 cursor-pointer"
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-amber-900">
-                      ✓ He revisado y validado los datos del OCR
-                    </p>
-                    <p className="text-xs text-amber-700 mt-1">
-                      Confirma que comparaste los datos extraídos (especialmente montos, NCF y fechas) con la factura original y que son correctos. Esta validación es obligatoria para registrar el gasto.
-                    </p>
-                  </div>
-                </label>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── SECCIÓN 2: Información del gasto ─────────────────── */}
-        <div className="card p-5 space-y-4">
-          <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-            <span className="w-6 h-6 bg-primary-100 text-primary-700 rounded-full text-xs flex items-center justify-center font-bold">2</span>
-            Información del gasto
-          </h2>
-
-          <div>
-            <label className="label">Proyecto *</label>
-            <select
-              className={`input-field ${errors.projectId ? 'input-error' : ''}`}
-              {...register('projectId', { required: 'Selecciona un proyecto' })}
-            >
-              <option value="">— Selecciona un proyecto —</option>
-              {(projects ?? []).map((p) => (
-                <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
-              ))}
-            </select>
-            {errors.projectId && <p className="text-red-500 text-xs mt-1">{errors.projectId.message}</p>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <AiField label="Fecha *" aiActive={aiFields.has('expenseDate')} onClear={() => clearAiField('expenseDate')}>
-              <input
-                type="date"
-                className={`input-field ${errors.expenseDate ? 'input-error' : ''} ${aiFields.has('expenseDate') ? 'ring-2 ring-violet-400' : ''}`}
-                {...register('expenseDate', { required: 'La fecha es requerida' })}
-              />
-            </AiField>
-            <AiField label="Monto (RD$) *" aiActive={aiFields.has('amount')} onClear={() => clearAiField('amount')}>
-              <input
-                type="number" step="0.01" min="0.01" placeholder="0.00"
-                className={`input-field ${errors.amount ? 'input-error' : ''} ${aiFields.has('amount') ? 'ring-2 ring-violet-400' : ''}`}
-                {...register('amount', { required: !foreignCurrency.enabled ? 'El monto es requerido' : false, min: { value: 0.01, message: 'Debe ser mayor a 0' } })}
-              />
-              {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
-            </AiField>
-          </div>
-
-          {/* Sección de moneda extranjera */}
-          <div className="rounded-xl border border-dashed border-blue-300 bg-blue-50 p-4">
-            <ForeignCurrencyInput
-              value={foreignCurrency}
-              onChange={(next) => {
-                setForeignCurrency(next);
-                const fa = parseFloat(next.foreignAmount);
-                const er = parseFloat(next.exchangeRate);
-                if (next.enabled && fa > 0 && er > 0) {
-                  setValue('amount', parseFloat((fa * er).toFixed(2)));
-                }
-              }}
-              rdAmount={
-                foreignCurrency.enabled && foreignCurrency.foreignAmount && foreignCurrency.exchangeRate
-                  ? Number(foreignCurrency.foreignAmount) * Number(foreignCurrency.exchangeRate)
-                  : null
-              }
-            />
-          </div>
-
-          <AiField label="Descripción *" aiActive={aiFields.has('description')} onClear={() => clearAiField('description')}>
-            <input
-              type="text" placeholder="¿En qué se gastó?"
-              className={`input-field ${errors.description ? 'input-error' : ''} ${aiFields.has('description') ? 'ring-2 ring-violet-400' : ''}`}
-              {...register('description', {
-                required: 'La descripción es requerida',
-                minLength: { value: 3, message: 'Mínimo 3 caracteres' },
-                onChange: (e) => handleDescriptionChange(e.target.value),
-              })}
-            />
-            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
-            {/* Chip de sugerencia de categoría */}
-            {catSuggestLoading && !aiFields.has('categoryId') && (
-              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                <Loader2 className="w-3 h-3 animate-spin" /> Analizando categoría...
-              </p>
-            )}
-            {catSuggestion && !aiFields.has('categoryId') && (
-              <button
-                type="button"
-                onClick={acceptCatSuggestion}
-                className="mt-1.5 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors font-medium"
-              >
-                <Sparkles className="w-3 h-3" />
-                Categoría sugerida: <strong>{catSuggestion.categoryName}</strong>
-                {catSuggestion.confidence === 'high' && <span className="text-green-600">✓</span>}
-                — Clic para aceptar
-              </button>
-            )}
-          </AiField>
-
-          <div className="grid grid-cols-2 gap-4">
-            <AiField label="Categoría *" aiActive={aiFields.has('categoryId')} onClear={() => clearAiField('categoryId')}>
-              <select
-                className={`input-field ${errors.categoryId ? 'input-error' : ''} ${aiFields.has('categoryId') ? 'ring-2 ring-violet-400' : ''}`}
-                {...register('categoryId', { required: 'Selecciona una categoría' })}
-              >
-                <option value="">— Categoría —</option>
-                {(categories ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </AiField>
-            <AiField label="Método de pago *" aiActive={aiFields.has('paymentMethod')} onClear={() => clearAiField('paymentMethod')}>
-              <select
-                className={`input-field ${errors.paymentMethod ? 'input-error' : ''} ${aiFields.has('paymentMethod') ? 'ring-2 ring-violet-400' : ''}`}
-                {...register('paymentMethod', { required: 'Selecciona método' })}
-              >
-                <option value="">— Método —</option>
-                <option value="CASH">Efectivo</option>
-                <option value="TRANSFER">Transferencia</option>
-                <option value="CARD">Tarjeta</option>
-                <option value="CHECK">Cheque</option>
-                <option value="OTHER">Otro</option>
-              </select>
-            </AiField>
-          </div>
-
-          {/* Selector de tarjeta — solo cuando paymentMethod = CARD */}
-          {watch('paymentMethod') === 'CARD' && (
-            <div>
-              <label className="label flex items-center gap-1.5">
-                <CreditCard className="w-4 h-4 text-gray-500" />
-                Tarjeta utilizada *
-              </label>
-              <select
-                className={`input-field ${errors.companyCardId ? 'input-error' : ''}`}
-                {...register('companyCardId', {
-                  required: 'Selecciona la tarjeta utilizada',
-                  validate: (v) => (v && Number(v) > 0) ? true : 'Selecciona la tarjeta utilizada',
-                })}
-              >
-                <option value="">— Selecciona una tarjeta —</option>
-                {(cards ?? []).map((card) => (
-                  <option key={card.id} value={card.id}>
-                    {card.holderName} — **** {card.lastFour} ({card.cardType} · {card.bank})
-                  </option>
-                ))}
-              </select>
-              {errors.companyCardId && (
-                <p className="text-red-500 text-xs mt-1">{errors.companyCardId.message}</p>
-              )}
-              {(cards ?? []).length === 0 && (
-                <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  No hay tarjetas registradas. Contacta al administrador.
-                </p>
-              )}
-            </div>
-          )}
-
-          <div>
-            <label className="label">Notas (opcional)</label>
-            <textarea rows={2} placeholder="Información adicional..."
-              className="input-field resize-none" {...register('notes')} />
-          </div>
-        </div>
-
-        {/* ── SECCIÓN 3: Comprobante fiscal ─────────────────────── */}
-        <div className="card p-5 space-y-4">
-          <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-            <span className="w-6 h-6 bg-primary-100 text-primary-700 rounded-full text-xs flex items-center justify-center font-bold">3</span>
-            Comprobante fiscal
-            {(aiFields.has('ncf') || aiFields.has('supplierName') || aiFields.has('supplierRnc')) && (
-              <span className="text-xs font-normal text-violet-600 flex items-center gap-1 ml-1">
-                <Sparkles className="w-3 h-3" /> datos detectados por IA
-              </span>
-            )}
-          </h2>
-
-          <FiscalVoucherForm
-            value={fiscalValues}
-            onChange={(next) => {
-              setFiscalValues(next);
-              setHasFiscal(next.hasFiscal);
-              if (next.ncf)          setValue('fiscalVoucher.ncf',          next.ncf);
-              if (next.supplierRnc)  setValue('fiscalVoucher.supplierRnc',  next.supplierRnc);
-              if (next.supplierName) setValue('fiscalVoucher.supplierName', next.supplierName);
-              if (next.itbisAmount)  setValue('fiscalVoucher.itbisAmount',  Number(next.itbisAmount));
-            }}
-            aiFields={aiFields}
-          />
-        </div>
-
-        {/* Alerta si OCR no está validado */}
-        {ocrResult && !ocrValidated && (
-          <div className="flex items-start gap-2 bg-red-50 border border-red-300 rounded-xl p-4">
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-            <div className="text-sm text-red-700">
-              <p className="font-semibold">No puedes registrar el gasto sin validar el OCR</p>
-              <p className="text-xs mt-1">Marca el checkbox de validación arriba para confirmar que revisaste los datos</p>
-            </div>
+        {/* ── Success banner ── */}
+        {success && (
+          <div className="border-l-4 border-green-500 bg-green-50 text-green-800 px-4 py-3 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 shrink-0" />
+            <p className="font-['DM_Sans'] text-sm font-medium">{success}</p>
           </div>
         )}
 
-        {/* Botones */}
-        <div className="flex gap-3 pb-6">
-          <button type="button" onClick={() => navigate(-1)} className="btn-secondary flex-1">Cancelar</button>
-          <button
-            type="submit"
-            disabled={mutation.isPending || (ocrResult !== null && !ocrValidated)}
-            title={ocrResult && !ocrValidated ? 'Debes validar los datos del OCR antes de guardar' : ''}
-            className="btn-primary flex-1 py-3"
-          >
-            {mutation.isPending
-              ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Guardando...</>
-              : <><CheckCircle className="w-4 h-4" /> Guardar gasto</>
-            }
-          </button>
-        </div>
-      </form>
+        {/* ── Error banner ── */}
+        {apiError && (
+          <div className="border-l-4 border-red-500 bg-red-50 text-red-700 px-4 py-3 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <p className="font-['DM_Sans'] text-sm">{apiError}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+
+          {/* ── SECCIÓN 1: Foto de factura ── */}
+          <div className="bg-white border border-gray-200 p-5 space-y-4">
+            {/* Section header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-6 h-6 text-xs font-bold flex items-center justify-center"
+                  style={{ background: '#F5C218', color: '#1C1C1C' }}
+                >
+                  1
+                </span>
+                <h2 className="font-['Barlow_Condensed'] uppercase tracking-wide text-[#1C1C1C] text-lg">
+                  Foto de factura
+                </h2>
+              </div>
+              <span className="font-['DM_Sans'] text-xs text-gray-400">Activa el autocompletado IA</span>
+            </div>
+
+            {/* Preview zone */}
+            {(photoPreview || photo) && (
+              <div className="border-2 border-dashed border-gray-300 p-4 flex flex-col items-center gap-2">
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Factura" className="max-h-48 object-contain" />
+                ) : photo && photo.type === 'application/pdf' ? (
+                  <div className="flex flex-col items-center gap-2 py-2">
+                    <FileText className="w-10 h-10 text-red-400" />
+                    <p className="font-['DM_Sans'] text-sm font-medium text-gray-700">{photo.name}</p>
+                    <p className="font-['DM_Sans'] text-xs text-gray-400">PDF listo para analizar</p>
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {/* Upload buttons */}
+            {!photo && (
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => cameraRef.current?.click()}
+                  className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 hover:border-[#F5C218] hover:bg-yellow-50 p-4 cursor-pointer transition-colors"
+                >
+                  <Camera className="w-7 h-7 text-gray-400" />
+                  <div className="text-center">
+                    <p className="font-['DM_Sans'] text-sm font-medium text-gray-700">Tomar foto</p>
+                    <p className="font-['DM_Sans'] text-xs text-gray-400 mt-0.5">Usar cámara</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 hover:border-[#F5C218] hover:bg-yellow-50 p-4 cursor-pointer transition-colors"
+                >
+                  <Upload className="w-7 h-7 text-gray-400" />
+                  <div className="text-center">
+                    <p className="font-['DM_Sans'] text-sm font-medium text-gray-700">Subir archivo</p>
+                    <p className="font-['DM_Sans'] text-xs text-gray-400 mt-0.5">JPG, PNG, PDF</p>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {/* Hidden file inputs */}
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*"
+              capture="environment"
+              ref={cameraRef}
+              onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
+            />
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*,application/pdf"
+              ref={fileRef}
+              onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
+            />
+
+            {/* File info row */}
+            {photo && (
+              <div className="flex items-center gap-2">
+                <p className="font-['DM_Sans'] text-xs text-green-600 flex items-center gap-1 flex-1">
+                  <CheckCircle className="w-3 h-3" />
+                  {photo.name} ({(photo.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handlePhotoChange(null)}
+                  className="font-['DM_Sans'] text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" /> Quitar
+                </button>
+              </div>
+            )}
+
+            {/* Analizar con IA — keep violet gradient (AI-specific branding) */}
+            {photo && !ocrLoading && (
+              <button
+                type="button"
+                onClick={handleAnalyze}
+                className="w-full flex items-center justify-center gap-2 py-3 font-semibold text-sm
+                           bg-gradient-to-r from-violet-600 to-indigo-600 text-white
+                           hover:from-violet-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+              >
+                <Sparkles className="w-4 h-4" />
+                Analizar con IA — autocompletar formulario
+              </button>
+            )}
+
+            {/* OCR loading */}
+            {ocrLoading && (
+              <div className="flex items-center justify-center gap-3 py-4 bg-indigo-50 border border-indigo-200">
+                <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+                <div>
+                  <p className="font-['DM_Sans'] text-sm font-medium text-indigo-700">Analizando factura con IA...</p>
+                  <p className="font-['DM_Sans'] text-xs text-indigo-500">Extrayendo NCF, montos y datos fiscales</p>
+                </div>
+              </div>
+            )}
+
+            {/* OCR error */}
+            {ocrError && (
+              <div className="flex items-start gap-2 bg-red-50 border border-red-200 p-3">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <p className="font-['DM_Sans'] text-sm text-red-600">{ocrError}</p>
+              </div>
+            )}
+
+            {/* OCR result panel — keep AI indigo theme */}
+            {ocrResult && !ocrLoading && (
+              <div className="space-y-3">
+                <div className="bg-indigo-50 border border-indigo-200 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-indigo-600" />
+                      <p className="font-['DM_Sans'] text-sm font-semibold text-indigo-800">
+                        IA detectó {ocrResult.fieldsDetected} campo{ocrResult.fieldsDetected !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    {confidenceCfg && (
+                      <span className={`font-['DM_Sans'] text-xs font-medium px-2 py-0.5 ${confidenceCfg.color}`}>
+                        {confidenceCfg.icon} {confidenceCfg.label}
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-['DM_Sans'] text-xs text-indigo-600 flex items-center gap-1">
+                    <Info className="w-3.5 h-3.5" />
+                    Los campos marcados en violeta fueron completados automáticamente. Verifica y corrige si es necesario.
+                  </p>
+                  {ocrResult.warnings.length > 0 && (
+                    <div className="space-y-1">
+                      {ocrResult.warnings.map((w, i) => (
+                        <div key={i} className="flex items-start gap-1.5 font-['DM_Sans'] text-xs text-amber-700 bg-amber-50 px-2.5 py-1.5">
+                          <TriangleAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                          {w}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* OCR validation checkbox */}
+                <div className="border-l-4 border-amber-400 bg-amber-50 p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={ocrValidated}
+                      onChange={(e) => setOcrValidated(e.target.checked)}
+                      className="mt-1 border-gray-300 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <p className="font-['DM_Sans'] text-sm font-semibold text-amber-900">
+                        He revisado y validado los datos del OCR
+                      </p>
+                      <p className="font-['DM_Sans'] text-xs text-amber-700 mt-1">
+                        Confirma que comparaste los datos extraídos (especialmente montos, NCF y fechas) con la factura original y que son correctos. Esta validación es obligatoria para registrar el gasto.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── SECCIÓN 2: Información del gasto ── */}
+          <div className="bg-white border border-gray-200 p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <span
+                className="w-6 h-6 text-xs font-bold flex items-center justify-center"
+                style={{ background: '#F5C218', color: '#1C1C1C' }}
+              >
+                2
+              </span>
+              <h2 className="font-['Barlow_Condensed'] uppercase tracking-wide text-[#1C1C1C] text-lg">
+                Información del gasto
+              </h2>
+            </div>
+
+            {/* Proyecto */}
+            <div>
+              <label className="font-['DM_Sans'] text-xs font-semibold uppercase tracking-wide text-gray-600 block mb-1">
+                Proyecto *
+              </label>
+              <select
+                className={inputCls(!!errors.projectId)}
+                {...register('projectId', { required: 'Selecciona un proyecto' })}
+              >
+                <option value="">— Selecciona un proyecto —</option>
+                {(projects ?? []).map((p) => (
+                  <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
+                ))}
+              </select>
+              {errors.projectId && (
+                <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.projectId.message}</p>
+              )}
+            </div>
+
+            {/* Fecha + Monto */}
+            <div className="grid grid-cols-2 gap-4">
+              <AiField label="Fecha *" aiActive={aiFields.has('expenseDate')} onClear={() => clearAiField('expenseDate')}>
+                <input
+                  type="date"
+                  className={inputCls(!!errors.expenseDate, aiFields.has('expenseDate'))}
+                  {...register('expenseDate', { required: 'La fecha es requerida' })}
+                />
+              </AiField>
+              <AiField label="Monto (RD$) *" aiActive={aiFields.has('amount')} onClear={() => clearAiField('amount')}>
+                <input
+                  type="number" step="0.01" min="0.01" placeholder="0.00"
+                  className={inputCls(!!errors.amount, aiFields.has('amount'))}
+                  {...register('amount', {
+                    required: !foreignCurrency.enabled ? 'El monto es requerido' : false,
+                    min: { value: 0.01, message: 'Debe ser mayor a 0' },
+                  })}
+                />
+                {errors.amount && (
+                  <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.amount.message}</p>
+                )}
+              </AiField>
+            </div>
+
+            {/* Moneda extranjera */}
+            <div className="border border-dashed border-blue-300 bg-blue-50 p-4">
+              <ForeignCurrencyInput
+                value={foreignCurrency}
+                onChange={(next) => {
+                  setForeignCurrency(next);
+                  const fa = parseFloat(next.foreignAmount);
+                  const er = parseFloat(next.exchangeRate);
+                  if (next.enabled && fa > 0 && er > 0) {
+                    setValue('amount', parseFloat((fa * er).toFixed(2)));
+                  }
+                }}
+                rdAmount={
+                  foreignCurrency.enabled && foreignCurrency.foreignAmount && foreignCurrency.exchangeRate
+                    ? Number(foreignCurrency.foreignAmount) * Number(foreignCurrency.exchangeRate)
+                    : null
+                }
+              />
+            </div>
+
+            {/* Descripción */}
+            <AiField label="Descripción *" aiActive={aiFields.has('description')} onClear={() => clearAiField('description')}>
+              <input
+                type="text" placeholder="¿En qué se gastó?"
+                className={inputCls(!!errors.description, aiFields.has('description'))}
+                {...register('description', {
+                  required: 'La descripción es requerida',
+                  minLength: { value: 3, message: 'Mínimo 3 caracteres' },
+                  onChange: (e) => handleDescriptionChange(e.target.value),
+                })}
+              />
+              {errors.description && (
+                <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.description.message}</p>
+              )}
+              {catSuggestLoading && !aiFields.has('categoryId') && (
+                <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1 flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" /> Analizando categoría...
+                </p>
+              )}
+              {/* AI category suggestion chip — keep violet (AI) */}
+              {catSuggestion && !aiFields.has('categoryId') && (
+                <button
+                  type="button"
+                  onClick={acceptCatSuggestion}
+                  className="mt-1.5 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors font-medium font-['DM_Sans']"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Categoría sugerida: <strong>{catSuggestion.categoryName}</strong>
+                  {catSuggestion.confidence === 'high' && <span className="text-green-600">✓</span>}
+                  — Clic para aceptar
+                </button>
+              )}
+            </AiField>
+
+            {/* Categoría + Método de pago */}
+            <div className="grid grid-cols-2 gap-4">
+              <AiField label="Categoría *" aiActive={aiFields.has('categoryId')} onClear={() => clearAiField('categoryId')}>
+                <select
+                  className={inputCls(!!errors.categoryId, aiFields.has('categoryId'))}
+                  {...register('categoryId', { required: 'Selecciona una categoría' })}
+                >
+                  <option value="">— Categoría —</option>
+                  {(categories ?? []).map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </AiField>
+              <AiField label="Método de pago *" aiActive={aiFields.has('paymentMethod')} onClear={() => clearAiField('paymentMethod')}>
+                <select
+                  className={inputCls(!!errors.paymentMethod, aiFields.has('paymentMethod'))}
+                  {...register('paymentMethod', { required: 'Selecciona método' })}
+                >
+                  <option value="">— Método —</option>
+                  <option value="CASH">Efectivo</option>
+                  <option value="TRANSFER">Transferencia</option>
+                  <option value="CARD">Tarjeta</option>
+                  <option value="CHECK">Cheque</option>
+                  <option value="OTHER">Otro</option>
+                </select>
+              </AiField>
+            </div>
+
+            {/* Card selector — only when paymentMethod = CARD */}
+            {watch('paymentMethod') === 'CARD' && (
+              <div>
+                <label className="font-['DM_Sans'] text-xs font-semibold uppercase tracking-wide text-gray-600 flex items-center gap-1.5 mb-1">
+                  <CreditCard className="w-4 h-4 text-gray-500" />
+                  Tarjeta utilizada *
+                </label>
+                <select
+                  className={inputCls(!!errors.companyCardId)}
+                  {...register('companyCardId', {
+                    required: 'Selecciona la tarjeta utilizada',
+                    validate: (v) => (v && Number(v) > 0) ? true : 'Selecciona la tarjeta utilizada',
+                  })}
+                >
+                  <option value="">— Selecciona una tarjeta —</option>
+                  {(cards ?? []).map((card) => (
+                    <option key={card.id} value={card.id}>
+                      {card.holderName} — **** {card.lastFour} ({card.cardType} · {card.bank})
+                    </option>
+                  ))}
+                </select>
+                {errors.companyCardId && (
+                  <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.companyCardId.message}</p>
+                )}
+                {(cards ?? []).length === 0 && (
+                  <p className="font-['DM_Sans'] text-xs text-amber-600 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    No hay tarjetas registradas. Contacta al administrador.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Notas */}
+            <div>
+              <label className="font-['DM_Sans'] text-xs font-semibold uppercase tracking-wide text-gray-600 block mb-1">
+                Notas (opcional)
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Información adicional..."
+                className={inputCls() + ' resize-none'}
+                {...register('notes')}
+              />
+            </div>
+          </div>
+
+          {/* ── SECCIÓN 3: Comprobante fiscal ── */}
+          <div className="bg-white border border-gray-200 p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <span
+                className="w-6 h-6 text-xs font-bold flex items-center justify-center"
+                style={{ background: '#F5C218', color: '#1C1C1C' }}
+              >
+                3
+              </span>
+              <h2 className="font-['Barlow_Condensed'] uppercase tracking-wide text-[#1C1C1C] text-lg">
+                Comprobante fiscal
+              </h2>
+              {(aiFields.has('ncf') || aiFields.has('supplierName') || aiFields.has('supplierRnc')) && (
+                <span className="font-['DM_Sans'] text-xs text-violet-600 flex items-center gap-1 ml-1">
+                  <Sparkles className="w-3 h-3" /> datos detectados por IA
+                </span>
+              )}
+            </div>
+
+            <FiscalVoucherForm
+              value={fiscalValues}
+              onChange={(next) => {
+                setFiscalValues(next);
+                setHasFiscal(next.hasFiscal);
+                if (next.ncf)          setValue('fiscalVoucher.ncf',          next.ncf);
+                if (next.supplierRnc)  setValue('fiscalVoucher.supplierRnc',  next.supplierRnc);
+                if (next.supplierName) setValue('fiscalVoucher.supplierName', next.supplierName);
+                if (next.itbisAmount)  setValue('fiscalVoucher.itbisAmount',  Number(next.itbisAmount));
+              }}
+              aiFields={aiFields}
+            />
+          </div>
+
+          {/* OCR not validated alert */}
+          {ocrResult && !ocrValidated && (
+            <div className="border-l-4 border-red-500 bg-red-50 text-red-700 p-4 flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-['DM_Sans'] text-sm font-semibold">
+                  No puedes registrar el gasto sin validar el OCR
+                </p>
+                <p className="font-['DM_Sans'] text-xs mt-1">
+                  Marca el checkbox de validación arriba para confirmar que revisaste los datos
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Footer buttons ── */}
+          <div className="flex gap-3 pb-6">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="border border-gray-300 text-gray-600 font-['DM_Sans'] text-sm px-4 py-2 flex-1 hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={mutation.isPending || (ocrResult !== null && !ocrValidated)}
+              title={ocrResult && !ocrValidated ? 'Debes validar los datos del OCR antes de guardar' : ''}
+              style={{ background: '#F5C218', color: '#1C1C1C' }}
+              className={[
+                'font-[\'Barlow_Condensed\'] uppercase tracking-widest font-bold flex-1 py-3',
+                'flex items-center justify-center gap-2 transition-opacity',
+                mutation.isPending || (ocrResult !== null && !ocrValidated) ? 'opacity-50' : '',
+              ].join(' ')}
+            >
+              {mutation.isPending ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Guardar gasto
+                </>
+              )}
+            </button>
+          </div>
+
+        </form>
+      </div>
     </div>
   );
 }
@@ -718,9 +811,11 @@ function AiField({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="label !mb-0">{label}</label>
+        <label className="font-['DM_Sans'] text-xs font-semibold uppercase tracking-wide text-gray-600">
+          {label}
+        </label>
         {aiActive && (
-          <span className="flex items-center gap-1 text-xs text-violet-600 font-medium">
+          <span className="font-['DM_Sans'] flex items-center gap-1 text-xs text-violet-600">
             <Sparkles className="w-3 h-3" />
             IA
           </span>
