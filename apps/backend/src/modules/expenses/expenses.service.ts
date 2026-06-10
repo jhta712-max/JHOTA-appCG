@@ -18,6 +18,7 @@ const EXPENSE_INCLUDE = {
   rejectedBy:   { select: { id: true, name: true } },
   fiscalVoucher: true,
   attachments:  { select: { id: true, fileName: true, mimeType: true, isPrimary: true, createdAt: true } },
+  paymentOrder: { select: { id: true, paymentBank: true, paymentReference: true, paidAt: true } },
 } as const;
 
 // Roles que requieren aprobación al crear gastos
