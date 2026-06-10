@@ -32,11 +32,11 @@ const EMPTY_ORDER: OrderForm = {
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'];
 const CURRENCIES    = ['RD$', 'US$', '€'];
 
-const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
-  SERVICIO:   { label: 'Servicio',   icon: <FileText className="w-4 h-4" />,      color: 'border-purple-300 bg-purple-50', desc: 'Pago por servicios'                  },
-  PAYROLL:    { label: 'Nómina',     icon: <Wallet className="w-4 h-4" />,        color: 'border-blue-400 bg-blue-50',     desc: 'Pago de mano de obra'                },
-  MATERIALS:  { label: 'Materiales', icon: <ShoppingCart className="w-4 h-4" />,  color: 'border-amber-400 bg-amber-50',   desc: 'Compra de insumos por transferencia' },
-  PETTY_CASH: { label: 'Caja chica', icon: <Sparkles className="w-4 h-4" />,      color: 'border-green-400 bg-green-50',   desc: 'Pagos menores en efectivo'           },
+const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; accentCls: string; desc: string }> = {
+  SERVICIO:   { label: 'Servicio',   icon: <FileText className="w-4 h-4" />,      accentCls: 'border-purple-400', desc: 'Pago por servicios'                  },
+  PAYROLL:    { label: 'Nómina',     icon: <Wallet className="w-4 h-4" />,        accentCls: 'border-blue-400',   desc: 'Pago de mano de obra'                },
+  MATERIALS:  { label: 'Materiales', icon: <ShoppingCart className="w-4 h-4" />,  accentCls: 'border-amber-400',  desc: 'Compra de insumos por transferencia' },
+  PETTY_CASH: { label: 'Caja chica', icon: <Sparkles className="w-4 h-4" />,      accentCls: 'border-green-400',  desc: 'Pagos menores en efectivo'           },
 };
 
 const STATUS_CFG = {
@@ -459,19 +459,23 @@ export default function PaymentOrdersPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg animate-fade-in">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 text-sm font-semibold shadow-lg animate-fade-in font-['DM_Sans']"
+          style={{ background: '#1C1C1C', color: '#F5C218' }}>
           {toast}
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header band */}
+      <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
         <div>
-          <p className="module-label">MÓDULO / ÓRDENES DE PAGO</p>
-          <h1 className="page-title">Órdenes de Pago</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Solicitudes de pago vía transferencia (Nómina · Materiales · General)</p>
+          <p className="text-xs tracking-widest text-gray-400 font-['Barlow_Condensed'] uppercase">MÓDULO / ÓRDENES DE PAGO</p>
+          <h1 className="text-2xl font-bold tracking-widest text-white font-['Barlow_Condensed'] uppercase mt-0.5">Órdenes de Pago</h1>
+          <p className="text-sm text-gray-400 mt-0.5 font-['DM_Sans']">Solicitudes de pago vía transferencia (Nómina · Materiales · General)</p>
         </div>
-        <button onClick={() => openOrderModal()} className="btn-primary flex items-center gap-2">
+        <button
+          onClick={() => openOrderModal()}
+          className="flex items-center gap-2 px-4 py-2 font-bold font-['Barlow_Condensed'] uppercase tracking-widest rounded-none"
+          style={{ background: '#F5C218', color: '#1C1C1C' }}>
           <Plus className="w-4 h-4" /> Nueva orden
         </button>
       </div>
@@ -482,14 +486,16 @@ export default function PaymentOrdersPage() {
           <div className="flex flex-wrap items-center gap-2">
             {canFilterStatus && (['', 'PENDING', 'PAID'] as const).map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === s ? 'bg-primary-500 text-gray-900' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
-                {s === '' ? 'Todas' : s === 'PENDING' ? '🕐 Pendientes' : '✅ Pagadas'}
+                className={`px-3 py-1.5 text-xs font-bold transition-all font-['Barlow_Condensed'] uppercase tracking-widest rounded-none border ${filterStatus === s ? 'text-white border-transparent' : 'border-gray-300 text-gray-600 bg-white hover:bg-gray-50'}`}
+                style={filterStatus === s ? { background: '#1C1C1C' } : {}}>
+                {s === '' ? 'Todas' : s === 'PENDING' ? 'Pendientes' : 'Pagadas'}
               </button>
             ))}
             <div className="w-px bg-gray-200 mx-1 self-stretch" />
             {(['', 'SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'] as const).map((t) => (
               <button key={t} onClick={() => setFilterType(t)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                className={`px-3 py-1.5 text-xs font-bold transition-all font-['Barlow_Condensed'] uppercase tracking-widest rounded-none border ${filterType === t ? 'text-white border-transparent' : 'border-gray-300 text-gray-600 bg-white hover:bg-gray-50'}`}
+                style={filterType === t ? { background: '#1C1C1C' } : {}}>
                 {t === '' ? 'Todos tipos' : ORDER_TYPE_CFG[t as OrderType].label}
               </button>
             ))}
@@ -498,12 +504,12 @@ export default function PaymentOrdersPage() {
                 <div className="w-px bg-gray-200 mx-1 self-stretch" />
                 <button
                   onClick={() => copyText(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'))}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all">
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all font-['Barlow_Condensed'] uppercase rounded-none">
                   <ClipboardCopy className="w-3.5 h-3.5" /> Copiar todas
                 </button>
                 <button
                   onClick={() => shareWhatsApp(orders.filter((o) => o.generatedText).map((o, i) => `${i + 1}. ${o.generatedText}`).join('\n\n─────────────\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all font-['Barlow_Condensed'] uppercase rounded-none">
                   <MessageCircle className="w-3.5 h-3.5" /> Compartir todas
                 </button>
               </>
@@ -512,19 +518,19 @@ export default function PaymentOrdersPage() {
 
           {/* Detalle expandido */}
           {viewingOrder && (
-            <div className="card p-5 space-y-4 border-l-4 border-primary-400">
+            <div className="border border-gray-200 bg-white p-5 space-y-4 border-l-4 border-l-[#F5C218]">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-gray-400 font-mono">OP-{String(viewingOrder.number).padStart(3, '0')}</span>
+                    <span className="text-xs text-gray-400 font-['Space_Mono']">OP-{String(viewingOrder.number).padStart(3, '0')}</span>
                     <TypeBadge type={viewingOrder.orderType} />
                     <StatusBadge status={viewingOrder.status} />
                   </div>
-                  <p className="font-bold text-gray-900 mt-1 text-base">{viewingOrder.payingCompany}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">{viewingOrder.concept}</p>
-                  <p className="text-lg font-bold text-primary-700 mt-1">{fmtMonto(viewingOrder.amount, viewingOrder.currency)}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    <span className="font-mono">{viewingOrder.project.code}</span>
+                  <p className="font-bold text-gray-900 mt-1 text-base font-['Barlow_Condensed'] uppercase tracking-wide">{viewingOrder.payingCompany}</p>
+                  <p className="text-sm text-gray-500 mt-0.5 font-['DM_Sans']">{viewingOrder.concept}</p>
+                  <p className="text-lg font-bold mt-1 font-['Space_Mono']" style={{ color: '#1C1C1C' }}>{fmtMonto(viewingOrder.amount, viewingOrder.currency)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5 font-['DM_Sans']">
+                    <span className="font-['Space_Mono']">{viewingOrder.project.code}</span>
                     {' — '}{viewingOrder.project.name}
                   </p>
                 </div>
@@ -533,12 +539,12 @@ export default function PaymentOrdersPage() {
 
               {/* Vínculo nómina */}
               {viewingOrder.orderType === 'PAYROLL' && (
-                <div className={`rounded-xl p-3 border text-sm ${viewingOrder.payroll ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
+                <div className={`p-3 border text-sm ${viewingOrder.payroll ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Nómina vinculada</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide font-['Barlow_Condensed']">Nómina vinculada</p>
                     {viewingOrder.status !== 'VOIDED' && !viewingOrder.payroll && (
                       <button onClick={() => setLinkPayrollModal(true)}
-                        className="text-xs text-blue-600 hover:text-blue-800 font-semibold border border-blue-300 px-2 py-0.5 rounded-lg">
+                        className="text-xs text-blue-600 hover:text-blue-800 font-semibold border border-blue-300 px-2 py-0.5 font-['Barlow_Condensed'] uppercase rounded-none">
                         + Vincular nómina existente
                       </button>
                     )}
@@ -546,71 +552,71 @@ export default function PaymentOrdersPage() {
                   {viewingOrder.payroll ? (
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-blue-800">
+                        <p className="font-semibold text-blue-800 font-['DM_Sans']">
                           {PAYROLL_TYPE_LABEL[viewingOrder.payroll.type]} #{viewingOrder.payroll.number}
                         </p>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                        <span className={`px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase ${
                           viewingOrder.payroll.status === 'PAID'    ? 'bg-green-100 text-green-700' :
                           viewingOrder.payroll.status === 'APPROVED'? 'bg-blue-100 text-blue-700'  :
                           'bg-amber-100 text-amber-700'}`}>
                           {viewingOrder.payroll.status}
                         </span>
                       </div>
-                      <p className="text-xs text-blue-600">
+                      <p className="text-xs text-blue-600 font-['Space_Mono']">
                         Período: {fmtDate(viewingOrder.payroll.periodStart)} — {fmtDate(viewingOrder.payroll.periodEnd)}
                         &nbsp;·&nbsp; {fmtMonto(viewingOrder.payroll.totalAmount, viewingOrder.currency)}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-xs">Sin nómina vinculada</p>
+                    <p className="text-gray-400 text-xs font-['DM_Sans']">Sin nómina vinculada</p>
                   )}
                 </div>
               )}
 
               {/* Vínculo gasto — materiales */}
               {viewingOrder.orderType === 'MATERIALS' && (
-                <div className={`rounded-xl p-3 border text-sm ${viewingOrder.expense ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+                <div className={`p-3 border text-sm ${viewingOrder.expense ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">🧾 Gasto vinculado</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide font-['Barlow_Condensed']">Gasto vinculado</p>
                     {viewingOrder.status !== 'VOIDED' && (
                       viewingOrder.expense
                         ? <button onClick={() => { if (confirm('¿Desvincular gasto?')) unlinkExpenseMut.mutate(viewingOrder.id); }}
-                            className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 font-semibold">
+                            className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 font-semibold font-['Barlow_Condensed'] uppercase">
                             <Unlink className="w-3 h-3" /> Desvincular
                           </button>
                         : <button onClick={() => { setSelectedExpenseId(''); setLinkModal(true); }}
-                            className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1 font-semibold">
+                            className="text-xs flex items-center gap-1 font-semibold font-['Barlow_Condensed'] uppercase" style={{ color: '#1C1C1C' }}>
                             <Link className="w-3 h-3" /> Vincular gasto
                           </button>
                     )}
                   </div>
                   {viewingOrder.expense ? (
                     <div>
-                      <p className="font-semibold text-amber-800">{viewingOrder.expense.description}</p>
-                      <p className="text-xs text-amber-600 mt-0.5">
+                      <p className="font-semibold text-amber-800 font-['DM_Sans']">{viewingOrder.expense.description}</p>
+                      <p className="text-xs text-amber-600 mt-0.5 font-['Space_Mono']">
                         {fmtMonto(viewingOrder.expense.amount, viewingOrder.currency)}
                         &nbsp;·&nbsp; {fmtDate(viewingOrder.expense.expenseDate)}
-                        <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs font-bold ${viewingOrder.expense.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        <span className={`ml-2 px-1.5 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase ${viewingOrder.expense.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                           {viewingOrder.expense.status}
                         </span>
                       </p>
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-xs">Sin gasto vinculado — se vincula cuando se confirme la transferencia</p>
+                    <p className="text-gray-400 text-xs font-['DM_Sans']">Sin gasto vinculado — se vincula cuando se confirme la transferencia</p>
                   )}
                 </div>
               )}
 
               {/* Contrato ajustado vinculado */}
               {(viewingOrder as any).contratoAjustado && (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-sm">
-                  <p className="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-1">📋 Contrato ajustado vinculado</p>
-                  <p className="font-semibold text-indigo-800">{(viewingOrder as any).contratoAjustado.descripcionTrabajo}</p>
-                  <p className="text-xs text-indigo-600 mt-0.5">
+                <div className="bg-indigo-50 border border-indigo-200 p-3 text-sm">
+                  <p className="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-1 font-['Barlow_Condensed']">Contrato ajustado vinculado</p>
+                  <p className="font-semibold text-indigo-800 font-['DM_Sans']">{(viewingOrder as any).contratoAjustado.descripcionTrabajo}</p>
+                  <p className="text-xs text-indigo-600 mt-0.5 font-['Space_Mono']">
                     Monto contrato: {fmtMonto((viewingOrder as any).contratoAjustado.montoContratado, viewingOrder.currency)}
                     &nbsp;·&nbsp; Estado: {(viewingOrder as any).contratoAjustado.estado}
                   </p>
-                  <p className="text-xs text-indigo-500 mt-1">
+                  <p className="text-xs text-indigo-500 mt-1 font-['DM_Sans']">
                     El gasto generado quedará registrado como avance de este contrato.
                   </p>
                 </div>
@@ -619,17 +625,18 @@ export default function PaymentOrdersPage() {
               {/* Mensaje de pago */}
               {viewingOrder.generatedText && (
                 <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">📱 Mensaje WhatsApp</p>
-                  <div className="bg-gray-900 text-gray-100 rounded-xl p-4 font-mono text-sm whitespace-pre-wrap leading-relaxed">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 font-['Barlow_Condensed']">Mensaje WhatsApp</p>
+                  <div className="p-4 font-['Space_Mono'] text-sm whitespace-pre-wrap leading-relaxed" style={{ background: '#1C1C1C', color: '#f3f4f6' }}>
                     {viewingOrder.generatedText}
                   </div>
                   <div className="flex gap-2 mt-2 flex-wrap">
-                    <button onClick={() => copyText(viewingOrder.generatedText!)} className="btn-secondary text-sm flex items-center gap-2">
+                    <button onClick={() => copyText(viewingOrder.generatedText!)}
+                      className="text-sm flex items-center gap-2 px-3 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-['Barlow_Condensed'] uppercase font-bold rounded-none">
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
                     <button
                       onClick={() => shareWhatsApp(viewingOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-bold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all font-['Barlow_Condensed'] uppercase rounded-none">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
                   </div>
@@ -642,7 +649,7 @@ export default function PaymentOrdersPage() {
                   <button
                     onClick={() => { if (confirm('¿Revertir esta orden a PENDIENTE? Se limpiará la información de pago.')) revertToPendingMut.mutate(viewingOrder.id); }}
                     disabled={revertToPendingMut.isPending}
-                    className="w-full text-xs text-orange-700 font-bold border border-orange-300 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5">
+                    className="w-full text-xs text-orange-700 font-bold border border-orange-300 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 transition-all flex items-center justify-center gap-1.5 font-['Barlow_Condensed'] uppercase rounded-none">
                     ↩️ Revertir a Pendiente (gasto rechazado)
                   </button>
                 </div>
@@ -654,8 +661,8 @@ export default function PaymentOrdersPage() {
                   <button
                     onClick={() => { if (confirm('⚠️ ¿ELIMINAR esta orden PERMANENTEMENTE? No se puede deshacer.')) hardDeleteOrderMut.mutate(viewingOrder.id); }}
                     disabled={hardDeleteOrderMut.isPending}
-                    className="w-full text-xs text-red-700 font-bold border border-red-300 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all">
-                    🗑 Eliminar permanentemente (Admin)
+                    className="w-full text-xs text-red-700 font-bold border border-red-300 bg-red-50 hover:bg-red-100 px-3 py-1.5 transition-all font-['Barlow_Condensed'] uppercase rounded-none">
+                    Eliminar permanentemente (Admin)
                   </button>
                 </div>
               )}
@@ -665,7 +672,8 @@ export default function PaymentOrdersPage() {
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
                   {/* Editar: PENDING para admin/auxiliar/financiero, PAID solo admin */}
                   {!isAuxiliar && userRole !== 'supervisor' && (viewingOrder.status === 'PENDING' || (isAdmin && viewingOrder.status === 'PAID')) && (
-                    <button onClick={() => openOrderModal(viewingOrder)} className="btn-secondary text-sm flex items-center gap-2">
+                    <button onClick={() => openOrderModal(viewingOrder)}
+                      className="text-sm flex items-center gap-2 px-3 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-['Barlow_Condensed'] uppercase font-bold rounded-none">
                       <Pencil className="w-3.5 h-3.5" />
                       {isAdmin && viewingOrder.status === 'PAID' ? 'Editar (Admin)' : 'Editar'}
                     </button>
@@ -674,12 +682,14 @@ export default function PaymentOrdersPage() {
                   {viewingOrder.status === 'PENDING' && (
                     <>
                       <button onClick={() => openPayModal(viewingOrder)}
-                        className="btn-primary text-sm flex items-center gap-2" disabled={markPaidMut.isPending}>
+                        className="text-sm flex items-center gap-2 px-3 py-2 font-bold font-['Barlow_Condensed'] uppercase rounded-none"
+                        style={{ background: '#F5C218', color: '#1C1C1C' }}
+                        disabled={markPaidMut.isPending}>
                         {markPaidMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
                         Marcar como pagada
                       </button>
                       <button onClick={() => { if (confirm('¿Anular esta orden de pago?')) voidOrderMut.mutate(viewingOrder.id); }}
-                        className="text-sm text-red-600 hover:text-red-700 border border-red-300 hover:bg-red-50 px-3 py-2 rounded-lg font-semibold transition-all">
+                        className="text-sm text-red-600 hover:text-red-700 border border-red-300 hover:bg-red-50 px-3 py-2 font-semibold transition-all font-['Barlow_Condensed'] uppercase rounded-none">
                         Anular
                       </button>
                     </>
@@ -689,22 +699,22 @@ export default function PaymentOrdersPage() {
 
               {/* Comprobante de transferencia — solo cuando está PAID */}
               {viewingOrder.status === 'PAID' && (viewingOrder.paymentReference || viewingOrder.paymentBank || (viewingOrder as any).paymentMethod || (viewingOrder as any).exchangeRate) && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm space-y-1">
-                  <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-1">Transferencia</p>
+                <div className="bg-green-50 border border-green-200 p-3 text-sm space-y-1">
+                  <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-1 font-['Barlow_Condensed']">Transferencia</p>
                   {viewingOrder.paymentReference && (
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 font-['DM_Sans']">
                       <span className="font-semibold text-gray-500">No. transacción:</span>{' '}
-                      <span className="font-mono">{viewingOrder.paymentReference}</span>
+                      <span className="font-['Space_Mono']">{viewingOrder.paymentReference}</span>
                     </p>
                   )}
                   {viewingOrder.paymentBank && (
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 font-['DM_Sans']">
                       <span className="font-semibold text-gray-500">Banco emisor:</span>{' '}
                       {viewingOrder.paymentBank}
                     </p>
                   )}
                   {(viewingOrder as any)?.paymentMethod && (
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm font-['DM_Sans']">
                       <span className="text-gray-500">Método de pago</span>
                       <span className="font-medium">
                         {({'TRANSFER': 'Transferencia', 'CASH': 'Efectivo', 'CARD': 'Tarjeta', 'CHECK': 'Cheque', 'OTHER': 'Otro'} as Record<string,string>)[(viewingOrder as any).paymentMethod] ?? (viewingOrder as any).paymentMethod}
@@ -713,12 +723,12 @@ export default function PaymentOrdersPage() {
                   )}
                   {(viewingOrder as any)?.exchangeRate && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Tasa de cambio</span>
-                      <span className="font-medium font-mono">RD$ {Number((viewingOrder as any).exchangeRate).toFixed(4)}</span>
+                      <span className="text-gray-500 font-['DM_Sans']">Tasa de cambio</span>
+                      <span className="font-medium font-['Space_Mono']">RD$ {Number((viewingOrder as any).exchangeRate).toFixed(4)}</span>
                     </div>
                   )}
                   {(viewingOrder as any)?.exchangeRateValidator && (
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm font-['DM_Sans']">
                       <span className="text-gray-500">Tasa confirmada por</span>
                       <span className="font-medium text-green-700">{(viewingOrder as any).exchangeRateValidator.name}</span>
                     </div>
@@ -729,13 +739,13 @@ export default function PaymentOrdersPage() {
               {/* Generar gasto retroactivo — solo para SERVICIO y MATERIALS, no PAYROLL */}
               {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && viewingOrder.orderType !== 'PAYROLL' && (
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                  <p className="text-xs text-amber-600 flex items-center gap-1">
+                  <p className="text-xs text-amber-600 flex items-center gap-1 font-['DM_Sans']">
                     <AlertCircle className="w-3.5 h-3.5" /> Esta orden no tiene gasto registrado en el proyecto.
                   </p>
                   <button
                     onClick={() => generateExpenseMut.mutate(viewingOrder.id)}
                     disabled={generateExpenseMut.isPending}
-                    className="text-sm text-primary-600 hover:text-primary-700 border border-primary-300 hover:bg-primary-50 px-3 py-2 rounded-lg font-semibold transition-all flex items-center gap-1.5">
+                    className="text-sm border px-3 py-2 font-semibold transition-all flex items-center gap-1.5 font-['Barlow_Condensed'] uppercase rounded-none border-gray-300 text-gray-700 hover:bg-gray-50">
                     {generateExpenseMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
                     Generar gasto
                   </button>
@@ -745,52 +755,52 @@ export default function PaymentOrdersPage() {
           )}
 
           {/* Lista de órdenes */}
-          <div className="card overflow-hidden">
+          <div className="overflow-hidden border border-gray-200 bg-white">
             {loadingOrders ? (
-              <div className="flex items-center justify-center py-12 gap-2 text-gray-400"><Loader2 className="w-5 h-5 animate-spin" /> Cargando...</div>
+              <div className="flex items-center justify-center py-12 gap-2 text-gray-400 font-['DM_Sans']"><Loader2 className="w-5 h-5 animate-spin" /> Cargando...</div>
             ) : orders.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
+              <div className="text-center py-12 text-gray-400 font-['DM_Sans']">
                 <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">No hay órdenes de pago{filterStatus || filterType ? ' con ese filtro' : ''}.</p>
               </div>
             ) : (
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">#</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Beneficiario</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Proyecto</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Monto</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
+                <thead>
+                  <tr style={{ background: '#1C1C1C' }}>
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest text-white font-['Barlow_Condensed']">#</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest text-white font-['Barlow_Condensed']">Tipo</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest text-white font-['Barlow_Condensed']">Beneficiario</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest text-white font-['Barlow_Condensed']">Proyecto</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest text-white font-['Barlow_Condensed']">Monto</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest text-white font-['Barlow_Condensed']">Estado</th>
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {orders.map((o) => (
                     <tr key={o.id}
-                      className={`hover:bg-gray-50 transition-colors cursor-pointer ${viewingOrder?.id === o.id ? 'bg-primary-50' : ''}`}
+                      className={`hover:bg-gray-50 transition-colors cursor-pointer ${viewingOrder?.id === o.id ? 'bg-amber-50' : ''}`}
                       onClick={() => setViewingOrder(viewingOrder?.id === o.id ? null : o)}>
-                      <td className="px-4 py-3 text-xs text-gray-400 font-mono">OP-{String(o.number).padStart(3, '0')}</td>
+                      <td className="px-4 py-3 text-xs text-gray-400 font-['Space_Mono']">OP-{String(o.number).padStart(3, '0')}</td>
                       <td className="px-4 py-3"><TypeBadge type={o.orderType} /></td>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900">{o.supplier.name}</p>
-                        <p className="text-xs text-gray-400">{o.supplier.bank ?? ""}</p>
+                        <p className="font-medium text-gray-900 font-['DM_Sans']">{o.supplier.name}</p>
+                        <p className="text-xs text-gray-400 font-['DM_Sans']">{o.supplier.bank ?? ""}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-xs font-mono text-gray-500">{o.project.code}</p>
-                        <p className="text-xs text-gray-700 font-medium leading-tight">{o.project.name}</p>
+                        <p className="text-xs font-['Space_Mono'] text-gray-500">{o.project.code}</p>
+                        <p className="text-xs text-gray-700 font-medium leading-tight font-['DM_Sans']">{o.project.name}</p>
                       </td>
-                      <td className="px-4 py-3 font-semibold text-gray-900">{fmtMonto(o.amount, o.currency)}</td>
+                      <td className="px-4 py-3 font-semibold text-gray-900 font-['Space_Mono']">{fmtMonto(o.amount, o.currency)}</td>
                       <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center gap-1 justify-end">
                           <button onClick={(e) => { e.stopPropagation(); copyText(o.generatedText ?? ''); }}
-                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg" title="Copiar mensaje">
+                            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100" title="Copiar mensaje">
                             <ClipboardCopy className="w-4 h-4" />
                           </button>
                           <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web')); }}
-                            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg" title="Compartir por WhatsApp">
+                            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50" title="Compartir por WhatsApp">
                             <MessageCircle className="w-4 h-4" />
                           </button>
                         </div>
@@ -805,23 +815,23 @@ export default function PaymentOrdersPage() {
 
       {/* ── MODAL: ORDEN DE PAGO ────────────────────────────── */}
       {orderModal && (
-        <Modal title={editingOrder ? '✏️ Editar orden' : '💳 Nueva orden de pago'} onClose={closeOrderModal} wide>
+        <Modal title={editingOrder ? 'Editar orden' : 'Nueva orden de pago'} onClose={closeOrderModal} wide>
 
           {/* ── VISTA: ÉXITO (batch mode) ─────────────────── */}
           {modalView === 'success' && lastCreatedOrder && (
             <div className="space-y-5">
               {/* Banner éxito */}
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
+              <div className="border-l-4 border-[#F5C218] bg-amber-50 p-4 flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-green-800">¡Orden generada exitosamente!</p>
-                  <p className="text-sm text-green-700">
-                    OP-{String(lastCreatedOrder.number).padStart(3, '0')}
+                  <p className="font-bold text-gray-900 font-['Barlow_Condensed'] uppercase tracking-wide">¡Orden generada exitosamente!</p>
+                  <p className="text-sm text-gray-700 font-['DM_Sans']">
+                    <span className="font-['Space_Mono']">OP-{String(lastCreatedOrder.number).padStart(3, '0')}</span>
                     &nbsp;·&nbsp; {lastCreatedOrder.supplier.name}
                     &nbsp;·&nbsp; {fmtMonto(lastCreatedOrder.amount, lastCreatedOrder.currency)}
                   </p>
                   {sessionOrders.length > 1 && (
-                    <p className="text-xs text-green-600 mt-1 font-semibold">
+                    <p className="text-xs text-gray-600 mt-1 font-semibold font-['DM_Sans']">
                       {sessionOrders.length} órdenes generadas en esta sesión
                     </p>
                   )}
@@ -831,17 +841,17 @@ export default function PaymentOrdersPage() {
               {/* Mensaje generado */}
               {lastCreatedOrder.generatedText && (
                 <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">📱 Mensaje para enviar</p>
-                  <div className="bg-gray-900 text-gray-100 rounded-xl p-4 font-mono text-sm whitespace-pre-wrap leading-relaxed">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 font-['Barlow_Condensed']">Mensaje para enviar</p>
+                  <div className="p-4 font-['Space_Mono'] text-sm whitespace-pre-wrap leading-relaxed" style={{ background: '#1C1C1C', color: '#f3f4f6' }}>
                     {lastCreatedOrder.generatedText}
                   </div>
                   <div className="flex gap-2 mt-2 flex-wrap">
                     <button onClick={() => copyText(lastCreatedOrder.generatedText!)}
-                      className="btn-secondary text-sm flex items-center gap-2">
+                      className="text-sm flex items-center gap-2 px-3 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-['Barlow_Condensed'] uppercase font-bold rounded-none">
                       <ClipboardCopy className="w-4 h-4" /> Copiar
                     </button>
                     <button onClick={() => shareWhatsApp(lastCreatedOrder.generatedText!, () => flash('📋 Copiado — pega en WhatsApp Web'))}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-bold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all font-['Barlow_Condensed'] uppercase rounded-none">
                       <MessageCircle className="w-4 h-4" /> Compartir por WhatsApp
                     </button>
                   </div>
@@ -852,33 +862,33 @@ export default function PaymentOrdersPage() {
               {sessionOrders.length > 1 && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📋 Órdenes de esta sesión ({sessionOrders.length})</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide font-['Barlow_Condensed']">Órdenes de esta sesión ({sessionOrders.length})</p>
                     <div className="flex gap-1">
                       <button
                         onClick={() => copyText(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n-------------\n\n'))}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all">
+                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all font-['Barlow_Condensed'] uppercase rounded-none">
                         <ClipboardCopy className="w-3 h-3" /> Copiar todas
                       </button>
                       <button
                         onClick={() => shareWhatsApp(sessionOrders.map((o, i) => `${i + 1}. ${o.generatedText ?? ''}`).join('\n\n-------------\n\n'), () => flash('📋 Copiado — pega en WhatsApp Web'))}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all">
+                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-all font-['Barlow_Condensed'] uppercase rounded-none">
                         <MessageCircle className="w-3 h-3" /> Compartir todas
                       </button>
                     </div>
                   </div>
                   <div className="space-y-1 max-h-48 overflow-y-auto">
                     {sessionOrders.map((o, i) => (
-                      <div key={o.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-sm">
-                        <span className="text-xs text-gray-400 font-mono shrink-0">{i + 1}. OP-{String(o.number).padStart(3, '0')}</span>
-                        <span className="text-gray-700 truncate mx-3 flex-1">{o.supplier.name}</span>
-                        <span className="text-gray-500 shrink-0 text-xs">{fmtMonto(o.amount, o.currency)}</span>
+                      <div key={o.id} className="flex items-center justify-between bg-gray-50 px-3 py-2 text-sm">
+                        <span className="text-xs text-gray-400 font-['Space_Mono'] shrink-0">{i + 1}. OP-{String(o.number).padStart(3, '0')}</span>
+                        <span className="text-gray-700 truncate mx-3 flex-1 font-['DM_Sans']">{o.supplier.name}</span>
+                        <span className="text-gray-500 shrink-0 text-xs font-['Space_Mono']">{fmtMonto(o.amount, o.currency)}</span>
                         <div className="flex gap-1 ml-2">
                           <button onClick={() => copyText(o.generatedText ?? '')} title="Copiar"
-                            className="p-1 text-gray-400 hover:text-primary-600 rounded">
+                            className="p-1 text-gray-400 hover:text-gray-700">
                             <ClipboardCopy className="w-3.5 h-3.5" />
                           </button>
                           <button onClick={() => shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web'))} title="WhatsApp"
-                            className="p-1 text-gray-400 hover:text-green-600 rounded">
+                            className="p-1 text-gray-400 hover:text-green-600">
                             <MessageCircle className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -891,11 +901,12 @@ export default function PaymentOrdersPage() {
               {/* Acciones */}
               <div className="flex gap-3 pt-2 border-t border-gray-100">
                 <button onClick={crearOtraOrden}
-                  className="btn-secondary flex items-center gap-2 flex-1 justify-center">
+                  className="flex items-center gap-2 flex-1 justify-center px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-['Barlow_Condensed'] uppercase font-bold rounded-none">
                   <Plus className="w-4 h-4" /> Crear otra orden
                 </button>
                 <button onClick={closeOrderModal}
-                  className="btn-primary flex items-center gap-2 flex-1 justify-center">
+                  className="flex items-center gap-2 flex-1 justify-center px-4 py-2 font-bold font-['Barlow_Condensed'] uppercase rounded-none"
+                  style={{ background: '#F5C218', color: '#1C1C1C' }}>
                   <CheckCircle className="w-4 h-4" /> Cerrar
                 </button>
               </div>
@@ -909,10 +920,11 @@ export default function PaymentOrdersPage() {
 
               {/* Tipo de orden */}
               <div className="mb-5">
-                <label className="label">Tipo de orden *</label>
+                <label className="block text-xs font-bold uppercase tracking-widest text-gray-700 mb-2 font-['Barlow_Condensed']">Tipo de orden *</label>
                 <div className="grid grid-cols-3 gap-3">
                   {(Object.keys(ORDER_TYPE_CFG) as OrderType[]).map((t) => {
                     const cfg = ORDER_TYPE_CFG[t];
+                    const isActive = orderForm.orderType === t;
                     return (
                       <button key={t} type="button"
                         onClick={() => setOrderForm((f) => ({
@@ -923,10 +935,11 @@ export default function PaymentOrdersPage() {
                           contratoAjustadoId: '',
                           ...(!editingOrder ? { amount: '', concept: '' } : {}),
                         }))}
-                        className={`p-3 rounded-xl border-2 text-left transition-all ${orderForm.orderType === t ? cfg.color + ' border-opacity-100' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                        <div className={`mb-1 ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-400'}`}>{cfg.icon}</div>
-                        <p className={`text-xs font-bold ${orderForm.orderType === t ? 'text-gray-800' : 'text-gray-600'}`}>{cfg.label}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 leading-tight">{cfg.desc}</p>
+                        className={`p-3 border-2 text-left transition-all rounded-none ${isActive ? `border-[#F5C218] ${cfg.accentCls}` : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                        style={isActive ? { background: '#1C1C1C' } : {}}>
+                        <div className={`mb-1 ${isActive ? 'text-[#F5C218]' : 'text-gray-400'}`}>{cfg.icon}</div>
+                        <p className={`text-xs font-bold font-['Barlow_Condensed'] uppercase ${isActive ? 'text-white' : 'text-gray-600'}`}>{cfg.label}</p>
+                        <p className={`text-xs mt-0.5 leading-tight font-['DM_Sans'] ${isActive ? 'text-gray-300' : 'text-gray-400'}`}>{cfg.desc}</p>
                       </button>
                     );
                   })}
@@ -935,11 +948,11 @@ export default function PaymentOrdersPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Empresa pagadora *">
-                  <input className="input-field" placeholder="SERVINGMI SRL" value={orderForm.payingCompany}
+                  <input className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] font-['DM_Sans'] text-sm" placeholder="SERVINGMI SRL" value={orderForm.payingCompany}
                     onChange={(e) => setOrderForm((f) => ({ ...f, payingCompany: e.target.value }))} />
                 </Field>
                 <Field label="Proyecto *">
-                  <select className="input-field" value={orderForm.projectId}
+                  <select className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] font-['DM_Sans'] text-sm" value={orderForm.projectId}
                     onChange={(e) => setOrderForm((f) => ({ ...f, projectId: e.target.value, payrollId: '', contratoAjustadoId: '' }))}>
                     <option value="">— Selecciona —</option>
                     {projects.map((p) => <option key={p.id} value={p.id}>{p.code} — {p.name}</option>)}
@@ -949,46 +962,46 @@ export default function PaymentOrdersPage() {
 
               {/* PAYROLL: campos de período + tipo (solo en creación) */}
               {orderForm.orderType === 'PAYROLL' && !editingOrder && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3 mb-1">
-                  <p className="text-xs font-bold text-blue-700 uppercase tracking-wide">
-                    👷 Datos de la nómina — se creará automáticamente
+                <div className="border-l-4 border-[#F5C218] bg-amber-50 p-4 space-y-3 mb-1">
+                  <p className="text-xs font-bold text-gray-800 uppercase tracking-wide font-['Barlow_Condensed']">
+                    Datos de la nómina — se creará automáticamente
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-blue-800 mb-1">Período inicio *</label>
-                      <input type="date" className="input-field text-sm"
+                      <label className="block text-xs font-semibold text-gray-700 mb-1 font-['Barlow_Condensed'] uppercase">Período inicio *</label>
+                      <input type="date" className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] text-sm font-['DM_Sans']"
                         value={orderForm.payrollPeriodStart}
                         onChange={(e) => setOrderForm((f) => ({ ...f, payrollPeriodStart: e.target.value }))} />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-blue-800 mb-1">Período fin *</label>
-                      <input type="date" className="input-field text-sm"
+                      <label className="block text-xs font-semibold text-gray-700 mb-1 font-['Barlow_Condensed'] uppercase">Período fin *</label>
+                      <input type="date" className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] text-sm font-['DM_Sans']"
                         value={orderForm.payrollPeriodEnd}
                         onChange={(e) => setOrderForm((f) => ({ ...f, payrollPeriodEnd: e.target.value }))} />
                     </div>
                   </div>
-                  <p className="text-xs text-blue-600">
-                    ✅ Al generar la orden, la nómina se crea y aprueba automáticamente con los datos anteriores.
+                  <p className="text-xs text-gray-600 font-['DM_Sans']">
+                    Al generar la orden, la nómina se crea y aprueba automáticamente con los datos anteriores.
                   </p>
                 </div>
               )}
 
               {/* Info nómina — cuando se está editando */}
               {orderForm.orderType === 'PAYROLL' && editingOrder && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 mb-2">
-                  <strong>👷 Orden de Nómina:</strong> Los datos del período no se pueden modificar desde aquí. Edita la nómina directamente desde el módulo Nóminas si es necesario.
+                <div className="border-l-4 border-[#F5C218] bg-amber-50 p-3 text-xs text-gray-700 mb-2 font-['DM_Sans']">
+                  <strong className="font-['Barlow_Condensed'] uppercase">Orden de Nómina:</strong> Los datos del período no se pueden modificar desde aquí. Edita la nómina directamente desde el módulo Nóminas si es necesario.
                 </div>
               )}
 
               {/* Info materiales */}
               {orderForm.orderType === 'MATERIALS' && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700 mb-2">
-                  <strong>📦 Orden de Materiales:</strong> El gasto se vincula desde el detalle una vez que la transferencia sea confirmada y registrada.
+                <div className="border-l-4 border-[#F5C218] bg-amber-50 p-3 text-xs text-gray-700 mb-2 font-['DM_Sans']">
+                  <strong className="font-['Barlow_Condensed'] uppercase">Orden de Materiales:</strong> El gasto se vincula desde el detalle una vez que la transferencia sea confirmada y registrada.
                 </div>
               )}
 
               <Field label="Suplidor / Beneficiario *">
-                <select className="input-field" value={orderForm.supplierId}
+                <select className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] font-['DM_Sans'] text-sm" value={orderForm.supplierId}
                   onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '', contratoAjustadoId: '' })); setSupplierSearch(''); }}>
                   <option value="">— Selecciona suplidor —</option>
                   {activeSuppliers
@@ -998,7 +1011,7 @@ export default function PaymentOrdersPage() {
                     ))}
                 </select>
                 {activeSuppliers.filter((s) => (!s.bankAccounts || s.bankAccounts.length === 0) && (!s.bank || !s.accountNumber)).length > 0 && (
-                  <p className="text-xs text-amber-600 mt-1">
+                  <p className="text-xs text-amber-600 mt-1 font-['DM_Sans']">
                     Solo se muestran suplidores con datos bancarios. Actualiza los demás desde Directorio de Suplidores.
                   </p>
                 )}
@@ -1014,13 +1027,13 @@ export default function PaymentOrdersPage() {
                   return (
                     <div className="-mt-2 mb-4 space-y-1.5">
                       <select
-                        className="input-field text-sm"
+                        className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] text-sm font-['DM_Sans']"
                         value={orderForm.bankAccountId || selected?.id || ''}
                         onChange={(e) => setOrderForm((f) => ({ ...f, bankAccountId: e.target.value }))}
                       >
                         {accounts.map((a) => (
                           <option key={a.id} value={a.id}>
-                            🏦 {a.bank} · {a.accountType} · {a.accountNumber}{a.isDefault ? ' ★' : ''}
+                            {a.bank} · {a.accountType} · {a.accountNumber}{a.isDefault ? ' ★' : ''}
                           </option>
                         ))}
                       </select>
@@ -1033,14 +1046,14 @@ export default function PaymentOrdersPage() {
                 const accType = acc?.accountType   ?? s.accountType;
                 const accNum  = acc?.accountNumber ?? s.accountNumber;
                 if (!bank && !accNum) return (
-                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-xs text-orange-700 -mt-2 mb-4">
-                    ⚠️ Este suplidor no tiene cuentas bancarias registradas. Agrégalas en el directorio de suplidores.
+                  <div className="border border-orange-200 bg-orange-50 p-3 text-xs text-orange-700 -mt-2 mb-4 font-['DM_Sans']">
+                    Este suplidor no tiene cuentas bancarias registradas. Agrégalas en el directorio de suplidores.
                   </div>
                 );
                 return (
-                  <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600 border border-gray-200 -mt-2 mb-4">
-                    🏦 <strong>{bank}</strong> &nbsp;·&nbsp; {accType} &nbsp;·&nbsp;
-                    <span className="font-mono">{accNum}</span>
+                  <div className="bg-gray-50 p-3 text-sm text-gray-600 border border-gray-200 -mt-2 mb-4 font-['DM_Sans']">
+                    <strong>{bank}</strong> &nbsp;·&nbsp; {accType} &nbsp;·&nbsp;
+                    <span className="font-['Space_Mono']">{accNum}</span>
                     {s.cedula && <> &nbsp;·&nbsp; {s.cedula}</>}
                     {s.rnc    && <> &nbsp;·&nbsp; RNC: {s.rnc}</>}
                   </div>
@@ -1049,12 +1062,12 @@ export default function PaymentOrdersPage() {
 
               {/* Contrato ajustado — solo si tipo=PAYROLL y hay contratos activos para proyecto+suplidor */}
               {orderForm.orderType === 'PAYROLL' && availableContracts.length > 0 && (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-1">
-                  <label className="block text-xs font-bold text-indigo-700 uppercase tracking-wide mb-1.5">
-                    📋 Vincular a contrato ajustado <span className="font-normal text-indigo-500 normal-case">(opcional)</span>
+                <div className="border-l-4 border-[#F5C218] bg-amber-50 p-3 mb-1">
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 font-['Barlow_Condensed']">
+                    Vincular a contrato ajustado <span className="font-normal text-gray-500 normal-case font-['DM_Sans']">(opcional)</span>
                   </label>
                   <select
-                    className="input-field text-sm"
+                    className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] text-sm font-['DM_Sans']"
                     value={orderForm.contratoAjustadoId}
                     onChange={(e) => setOrderForm((f) => ({ ...f, contratoAjustadoId: e.target.value }))}
                   >
@@ -1066,8 +1079,8 @@ export default function PaymentOrdersPage() {
                     ))}
                   </select>
                   {orderForm.contratoAjustadoId && (
-                    <p className="text-xs text-indigo-600 mt-1">
-                      ✅ El gasto generado quedará vinculado automáticamente a este contrato como avance.
+                    <p className="text-xs text-gray-600 mt-1 font-['DM_Sans']">
+                      El gasto generado quedará vinculado automáticamente a este contrato como avance.
                     </p>
                   )}
                 </div>
@@ -1075,12 +1088,12 @@ export default function PaymentOrdersPage() {
 
               {/* Cotización abierta — solo si tipo=SERVICIO y hay cotizaciones activas para proyecto+suplidor */}
               {orderForm.orderType === 'SERVICIO' && availableQuotations.length > 0 && (
-                <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 mb-1">
-                  <label className="block text-xs font-bold text-teal-700 uppercase tracking-wide mb-1.5">
-                    📄 Vincular a cotización abierta <span className="font-normal text-teal-500 normal-case">(opcional)</span>
+                <div className="border-l-4 border-[#F5C218] bg-amber-50 p-3 mb-1">
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 font-['Barlow_Condensed']">
+                    Vincular a cotización abierta <span className="font-normal text-gray-500 normal-case font-['DM_Sans']">(opcional)</span>
                   </label>
                   <select
-                    className="input-field text-sm"
+                    className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] text-sm font-['DM_Sans']"
                     value={orderForm.quotationId}
                     onChange={(e) => setOrderForm((f) => ({ ...f, quotationId: e.target.value }))}
                   >
@@ -1092,8 +1105,8 @@ export default function PaymentOrdersPage() {
                     ))}
                   </select>
                   {orderForm.quotationId && (
-                    <p className="text-xs text-teal-600 mt-1">
-                      ✅ Al confirmar el pago, el gasto quedará vinculado automáticamente a esta cotización como factura parcial.
+                    <p className="text-xs text-gray-600 mt-1 font-['DM_Sans']">
+                      Al confirmar el pago, el gasto quedará vinculado automáticamente a esta cotización como factura parcial.
                     </p>
                   )}
                 </div>
@@ -1104,7 +1117,7 @@ export default function PaymentOrdersPage() {
                   <input
                     type="text"
                     inputMode="decimal"
-                    className="input-field"
+                    className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] font-['Space_Mono'] text-sm"
                     placeholder="0.00"
                     value={fmtAmountInput(orderForm.amount)}
                     onChange={(e) => {
@@ -1116,7 +1129,7 @@ export default function PaymentOrdersPage() {
                   />
                 </Field>
                 <Field label="Moneda *">
-                  <select className="input-field" value={orderForm.currency}
+                  <select className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] font-['DM_Sans'] text-sm" value={orderForm.currency}
                     onChange={(e) => setOrderForm((f) => ({ ...f, currency: e.target.value }))}>
                     {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
                   </select>
@@ -1125,12 +1138,12 @@ export default function PaymentOrdersPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="label !mb-0">Concepto / Descripción *</label>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-gray-700 font-['Barlow_Condensed']">Concepto / Descripción *</label>
                   <button
                     type="button"
                     onClick={handleSuggestConcept}
                     disabled={conceptLoading}
-                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors font-medium disabled:opacity-50"
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors font-medium disabled:opacity-50 font-['Barlow_Condensed'] uppercase rounded-none"
                   >
                     {conceptLoading
                       ? <><Loader2 className="w-3 h-3 animate-spin" /> Generando...</>
@@ -1138,12 +1151,12 @@ export default function PaymentOrdersPage() {
                     }
                   </button>
                 </div>
-                <textarea className="input-field resize-none" rows={2} placeholder="Pago de servicios..."
+                <textarea className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] resize-none font-['DM_Sans'] text-sm" rows={2} placeholder="Pago de servicios..."
                   value={orderForm.concept} onChange={(e) => setOrderForm((f) => ({ ...f, concept: e.target.value }))} />
               </div>
 
               <Field label="Notas (opcional)">
-                <input className="input-field" placeholder="Información adicional" value={orderForm.notes}
+                <input className="w-full border border-gray-300 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218] font-['DM_Sans'] text-sm" placeholder="Información adicional" value={orderForm.notes}
                   onChange={(e) => setOrderForm((f) => ({ ...f, notes: e.target.value }))} />
               </Field>
 
@@ -1157,12 +1170,12 @@ export default function PaymentOrdersPage() {
 
       {/* ── MODAL: VINCULAR GASTO ───────────────────────────── */}
       {linkModal && viewingOrder && (
-        <Modal title="🧾 Vincular gasto de materiales" onClose={() => setLinkModal(false)}>
-          <p className="text-sm text-gray-500 mb-4">
+        <Modal title="Vincular gasto de materiales" onClose={() => setLinkModal(false)}>
+          <p className="text-sm text-gray-500 mb-4 font-['DM_Sans']">
             Selecciona el gasto por transferencia registrado en el proyecto <strong>{viewingOrder.project.code}</strong> que corresponde a esta orden.
           </p>
           {availableExpenses.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-gray-400 font-['DM_Sans']">
               <p className="text-sm">No hay gastos por transferencia disponibles en este proyecto.</p>
               <p className="text-xs mt-1">Registra el gasto primero desde el módulo de Gastos.</p>
             </div>
@@ -1170,14 +1183,14 @@ export default function PaymentOrdersPage() {
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {availableExpenses.map((e: any) => (
                 <label key={e.id}
-                  className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${selectedExpenseId === e.id ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                  className={`flex items-start gap-3 p-3 border-2 cursor-pointer transition-all rounded-none ${selectedExpenseId === e.id ? 'border-[#F5C218] bg-amber-50' : 'border-gray-200 hover:border-gray-300'}`}>
                   <input type="radio" name="expense" value={e.id} className="mt-1"
                     checked={selectedExpenseId === e.id} onChange={() => setSelectedExpenseId(e.id)} />
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">{e.description}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="font-semibold text-gray-900 text-sm font-['DM_Sans']">{e.description}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 font-['Space_Mono']">
                       {fmtMonto(e.amount, 'RD$')} &nbsp;·&nbsp; {fmtDate(e.expenseDate)}
-                      &nbsp;·&nbsp; {e.category?.name}
+                      <span className="font-['DM_Sans']">&nbsp;·&nbsp; {e.category?.name}</span>
                     </p>
                   </div>
                 </label>
@@ -1195,9 +1208,9 @@ export default function PaymentOrdersPage() {
 
       {/* ── MODAL: VINCULAR NÓMINA ─────────────────────────── */}
       {linkPayrollModal && viewingOrder && (
-        <Modal title="📋 Vincular nómina a esta orden" onClose={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}>
+        <Modal title="Vincular nómina a esta orden" onClose={() => { setLinkPayrollModal(false); setSelectedPayrollId(''); }}>
           {projectPayrolls.filter((p: any) => p.status === 'APPROVED').length === 0 ? (
-            <div className="text-center py-4 text-gray-400">
+            <div className="text-center py-4 text-gray-400 font-['DM_Sans']">
               <p className="text-sm">No hay nóminas aprobadas para este proyecto.</p>
               <p className="text-xs mt-1">Solo se pueden vincular nóminas con estado <strong>Aprobada</strong>.</p>
             </div>
@@ -1205,17 +1218,17 @@ export default function PaymentOrdersPage() {
             <div className="space-y-2 max-h-72 overflow-y-auto">
               {projectPayrolls.filter((p: any) => p.status === 'APPROVED').map((p: any) => (
                 <label key={p.id}
-                  className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${selectedPayrollId === p.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                  className={`flex items-start gap-3 p-3 border-2 cursor-pointer transition-all rounded-none ${selectedPayrollId === p.id ? 'border-[#F5C218] bg-amber-50' : 'border-gray-200 hover:border-gray-300'}`}>
                   <input type="radio" name="payroll-select" checked={selectedPayrollId === p.id}
                     onChange={() => setSelectedPayrollId(p.id)} className="mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm">
-                      NOM-{String(p.number).padStart(3, '0')} — {p.description || p.type}
-                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${p.status === 'PAID' ? 'bg-green-100 text-green-700' : p.status === 'APPROVED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                    <p className="font-semibold text-gray-900 text-sm font-['DM_Sans']">
+                      <span className="font-['Space_Mono']">NOM-{String(p.number).padStart(3, '0')}</span> — {p.description || p.type}
+                      <span className={`ml-2 px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase ${p.status === 'PAID' ? 'bg-green-100 text-green-700' : p.status === 'APPROVED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
                         {p.status === 'PAID' ? 'Pagada' : p.status === 'APPROVED' ? 'Aprobada' : 'Borrador'}
                       </span>
                     </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-500 mt-0.5 font-['Space_Mono']">
                       {fmtDate(p.periodStart)} — {fmtDate(p.periodEnd)}
                       &nbsp;·&nbsp; RD$ {Number(p.totalAmount).toLocaleString('es-DO')}
                       &nbsp;·&nbsp; {p.lines?.length ?? 0} líneas
@@ -1243,12 +1256,12 @@ export default function PaymentOrdersPage() {
         >
           <div className="space-y-4">
             {/* Resumen de la orden */}
-            <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
-              <p className="font-semibold text-gray-800">
-                OP-{String(payingOrder.number).padStart(3, '0')} — {payingOrder.concept}
+            <div className="border-l-4 border-[#F5C218] bg-amber-50 p-3 text-sm space-y-1">
+              <p className="font-semibold text-gray-800 font-['Barlow_Condensed'] uppercase tracking-wide">
+                <span className="font-['Space_Mono']">OP-{String(payingOrder.number).padStart(3, '0')}</span> — {payingOrder.concept}
               </p>
-              <p className="text-gray-500">
-                {payingOrder.supplier?.name} · RD$ {Number(payingOrder.amount).toLocaleString('es-DO')}
+              <p className="text-gray-500 font-['DM_Sans']">
+                {payingOrder.supplier?.name} · <span className="font-['Space_Mono']">RD$ {Number(payingOrder.amount).toLocaleString('es-DO')}</span>
               </p>
             </div>
 
@@ -1265,12 +1278,12 @@ export default function PaymentOrdersPage() {
               }}
             />
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-gray-700">Comprobante fiscal (opcional)</p>
+              <p className="text-sm font-semibold text-gray-700 font-['Barlow_Condensed'] uppercase tracking-wide">Comprobante fiscal (opcional)</p>
               <button
                 type="button"
                 onClick={() => ocrPayInputRef.current?.click()}
                 disabled={ocrPayLoading}
-                className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-800 border border-violet-300 hover:bg-violet-50 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
+                className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-800 border border-violet-300 hover:bg-violet-50 px-2.5 py-1 transition-all disabled:opacity-50 font-['Barlow_Condensed'] uppercase rounded-none">
                 {ocrPayLoading
                   ? <><Loader2 className="w-3 h-3 animate-spin" /> Analizando...</>
                   : <><Camera className="w-3 h-3" /> Escanear factura</>
@@ -1284,16 +1297,16 @@ export default function PaymentOrdersPage() {
               defaultName={payingOrder.supplier?.name ?? ''}
             />
             {ocrPayError && (
-              <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2 mt-1">{ocrPayError}</p>
+              <p className="text-xs text-red-600 bg-red-50 px-3 py-2 mt-1 font-['DM_Sans']">{ocrPayError}</p>
             )}
 
             {/* Información de transferencia */}
             <div className="space-y-3 border-t border-gray-100 pt-3">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Transferencia (opcional)</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide font-['Barlow_Condensed']">Transferencia (opcional)</p>
 
               {/* Método de pago */}
               <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 font-['Barlow_Condensed'] uppercase tracking-wide text-xs">
                   Método de pago <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -1303,7 +1316,7 @@ export default function PaymentOrdersPage() {
                     paymentMethod: e.target.value as typeof f.paymentMethod,
                     rateConfirmed: false,
                   }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F5C218] font-['DM_Sans']"
                 >
                   <option value="TRANSFER">Transferencia bancaria</option>
                   <option value="CASH">Efectivo</option>
@@ -1315,16 +1328,16 @@ export default function PaymentOrdersPage() {
 
               {/* Tasa de cambio — solo para divisas extranjeras */}
               {payingOrder.currency !== 'RD$' && (
-                <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+                <div className="border border-blue-200 bg-blue-50 p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-blue-800">
+                    <h4 className="text-sm font-semibold text-blue-800 font-['Barlow_Condensed'] uppercase tracking-wide">
                       Tasa de cambio ({payingOrder.currency} → RD$)
                     </h4>
                     <button
                       type="button"
                       onClick={handleFetchBcrdRate}
                       disabled={bcrdLoading}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 border border-blue-300 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 border border-blue-300 bg-white hover:bg-blue-50 px-3 py-1.5 transition-all disabled:opacity-50 font-['Barlow_Condensed'] uppercase rounded-none"
                     >
                       {bcrdLoading ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1337,20 +1350,20 @@ export default function PaymentOrdersPage() {
 
                   {bcrdRate && !bcrdRate.fallback && (
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-white rounded-lg border border-blue-100 px-3 py-2">
-                        <p className="text-xs text-gray-500 font-medium">Compra (BCRD)</p>
-                        <p className="text-blue-800 font-bold">
+                      <div className="bg-white border border-blue-100 px-3 py-2">
+                        <p className="text-xs text-gray-500 font-medium font-['Barlow_Condensed'] uppercase">Compra (BCRD)</p>
+                        <p className="text-blue-800 font-bold font-['Space_Mono']">
                           {bcrdRate.compra != null ? `RD$ ${bcrdRate.compra.toFixed(2)}` : '—'}
                         </p>
                       </div>
-                      <div className="bg-white rounded-lg border border-blue-100 px-3 py-2">
-                        <p className="text-xs text-gray-500 font-medium">Venta (BCRD)</p>
-                        <p className="text-blue-800 font-bold">
+                      <div className="bg-white border border-blue-100 px-3 py-2">
+                        <p className="text-xs text-gray-500 font-medium font-['Barlow_Condensed'] uppercase">Venta (BCRD)</p>
+                        <p className="text-blue-800 font-bold font-['Space_Mono']">
                           {bcrdRate.venta != null ? `RD$ ${bcrdRate.venta.toFixed(2)}` : '—'}
                         </p>
                       </div>
                       {bcrdRate.date && (
-                        <p className="col-span-2 text-xs text-gray-400">
+                        <p className="col-span-2 text-xs text-gray-400 font-['DM_Sans']">
                           Tasa oficial BCRD al {bcrdRate.date}
                         </p>
                       )}
@@ -1359,14 +1372,14 @@ export default function PaymentOrdersPage() {
 
                   {bcrdRate && bcrdRate.fallback && bcrdRate.source === 'fallback' && (
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-white rounded-lg border border-amber-100 px-3 py-2 col-span-2">
-                        <p className="text-xs text-amber-600 font-medium">Tasa de referencia (fuente alternativa)</p>
-                        <p className="text-amber-800 font-bold">
+                      <div className="bg-white border border-amber-100 px-3 py-2 col-span-2">
+                        <p className="text-xs text-amber-600 font-medium font-['Barlow_Condensed'] uppercase">Tasa de referencia (fuente alternativa)</p>
+                        <p className="text-amber-800 font-bold font-['Space_Mono']">
                           {bcrdRate.venta != null ? `RD$ ${bcrdRate.venta.toFixed(2)}` : '—'}
                         </p>
                       </div>
                       {bcrdRate.date && (
-                        <p className="col-span-2 text-xs text-amber-600">
+                        <p className="col-span-2 text-xs text-amber-600 font-['DM_Sans']">
                           Tasa de referencia al {bcrdRate.date} — verifica con tu banco. El BCRD no respondió.
                         </p>
                       )}
@@ -1374,13 +1387,13 @@ export default function PaymentOrdersPage() {
                   )}
 
                   {bcrdError && (
-                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 font-['DM_Sans']">
                       {bcrdError}
                     </p>
                   )}
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1 font-['Barlow_Condensed'] uppercase">
                       Tasa utilizada (1 {payingOrder.currency === 'US$' ? 'USD' : payingOrder.currency} = X RD$)
                     </label>
                     <input
@@ -1390,12 +1403,12 @@ export default function PaymentOrdersPage() {
                       placeholder="ej: 60.50"
                       min="0"
                       step="0.01"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-gray-300 rounded-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F5C218] font-['Space_Mono']"
                     />
                     {payInfoForm.exchangeRate && Number(payInfoForm.exchangeRate) > 0 && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Equivalente: RD$ {(Number(payingOrder.amount ?? 0) * Number(payInfoForm.exchangeRate))
-                          .toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      <p className="text-xs text-gray-500 mt-1 font-['DM_Sans']">
+                        Equivalente: <span className="font-['Space_Mono']">RD$ {(Number(payingOrder.amount ?? 0) * Number(payInfoForm.exchangeRate))
+                          .toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </p>
                     )}
                   </div>
@@ -1406,11 +1419,11 @@ export default function PaymentOrdersPage() {
                         type="checkbox"
                         checked={payInfoForm.rateConfirmed}
                         onChange={(e) => setPayInfoForm((f) => ({ ...f, rateConfirmed: e.target.checked }))}
-                        className="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="mt-0.5 border-gray-300 text-blue-600 focus:ring-[#F5C218]"
                       />
-                      <span className="text-xs text-blue-900 leading-relaxed">
+                      <span className="text-xs text-blue-900 leading-relaxed font-['DM_Sans']">
                         Confirmo que la tasa de{' '}
-                        <strong>RD$ {Number(payInfoForm.exchangeRate).toFixed(2)}</strong> por{' '}
+                        <strong className="font-['Space_Mono']">RD$ {Number(payInfoForm.exchangeRate).toFixed(2)}</strong> por{' '}
                         <strong>{payingOrder.currency === 'US$' ? 'USD' : payingOrder.currency}</strong>{' '}
                         es correcta a la fecha de{' '}
                         <strong>{new Date().toLocaleDateString('es-DO', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>.
@@ -1431,7 +1444,7 @@ export default function PaymentOrdersPage() {
               />
             </div>
 
-            {fiscalErr && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{fiscalErr}</p>}
+            {fiscalErr && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 font-['DM_Sans']">{fiscalErr}</p>}
           </div>
 
           <ModalFooter
@@ -1486,7 +1499,7 @@ export default function PaymentOrdersPage() {
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CFG[status as keyof typeof STATUS_CFG] ?? STATUS_CFG.PENDING;
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.cls}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold font-['Barlow_Condensed'] uppercase ${cfg.cls}`}>
       {cfg.icon} {cfg.label}
     </span>
   );
@@ -1500,18 +1513,23 @@ function TypeBadge({ type }: { type: any }) {
     MATERIALS:  'bg-amber-100 text-amber-700',
     PETTY_CASH: 'bg-green-100 text-green-700',
   };
-  return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${cls[normalized]}`}>{ORDER_TYPE_CFG[normalized].label}</span>;
+  return <span className={`inline-flex px-2 py-0.5 text-xs font-semibold font-['Barlow_Condensed'] uppercase ${cls[normalized]}`}>{ORDER_TYPE_CFG[normalized].label}</span>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="mb-4"><label className="label">{label}</label>{children}</div>;
+  return (
+    <div className="mb-4">
+      <label className="block text-xs font-bold uppercase tracking-widest text-gray-700 mb-1 font-['Barlow_Condensed']">{label}</label>
+      {children}
+    </div>
+  );
 }
 
 function AlertBox({ msg }: { msg: string }) {
   return (
-    <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+    <div className="flex items-start gap-2 bg-red-50 border border-red-200 p-3 mb-4">
       <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-      <p className="text-sm text-red-600">{msg}</p>
+      <p className="text-sm text-red-600 font-['DM_Sans']">{msg}</p>
     </div>
   );
 }
@@ -1520,12 +1538,14 @@ function Modal({ title, onClose, wide = false, size, children }: { title: string
   const maxW = size === 'md' ? 'max-w-lg' : wide ? 'max-w-2xl' : 'max-w-md';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className={`bg-white rounded-2xl shadow-xl w-full ${maxW} p-6 max-h-[90vh] overflow-y-auto`}>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-bold text-gray-900 text-base">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+      <div className={`bg-white shadow-xl w-full ${maxW} max-h-[90vh] overflow-y-auto`}>
+        <div className="flex items-center justify-between px-6 py-4" style={{ background: '#1C1C1C' }}>
+          <h2 className="font-bold text-white text-base font-['Barlow_Condensed'] uppercase tracking-widest">{title}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
         </div>
-        {children}
+        <div className="p-6">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -1534,8 +1554,13 @@ function Modal({ title, onClose, wide = false, size, children }: { title: string
 function ModalFooter({ onCancel, onSave, saving, label, disabled }: { onCancel: () => void; onSave: () => void; saving: boolean; label: string; disabled?: boolean }) {
   return (
     <div className="flex gap-3 mt-2 justify-end">
-      <button onClick={onCancel} className="btn-secondary">Cancelar</button>
-      <button onClick={onSave} disabled={saving || disabled} className="btn-primary">
+      <button onClick={onCancel}
+        className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-['Barlow_Condensed'] uppercase font-bold rounded-none text-sm">
+        Cancelar
+      </button>
+      <button onClick={onSave} disabled={saving || disabled}
+        className="flex items-center gap-2 px-4 py-2 font-bold font-['Barlow_Condensed'] uppercase rounded-none text-sm disabled:opacity-50"
+        style={{ background: '#F5C218', color: '#1C1C1C' }}>
         {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</> : <><CheckCircle className="w-4 h-4" /> {label}</>}
       </button>
     </div>
