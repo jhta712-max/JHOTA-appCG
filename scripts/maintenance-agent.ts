@@ -44,10 +44,20 @@ interface AiAnalysisResult {
   analyzedAt:      string;
 }
 
+interface HistoryEntry {
+  analyzedAt:  string;
+  status:      'healthy' | 'warning' | 'critical';
+  errorRate:   number | null;
+  issueCount:  number;
+  issueUrl:    string | null;
+}
+
 interface Cache {
-  lastAnalysis: AiAnalysisResult | null;
-  lastIssueUrl: string | null;
-  lastRunAt:    string | null;
+  lastAnalysis:     AiAnalysisResult | null;
+  lastIssueUrl:     string | null;
+  lastIssueNumber:  number | null;
+  lastRunAt:        string | null;
+  history:          HistoryEntry[];
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────
@@ -64,14 +74,33 @@ const CACHE_PATH  = path.join(process.cwd(), '.maintenance-cache.json');
 
 function loadCache(): Cache {
   try {
-    return JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
+    const raw = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
+    return {
+      lastAnalysis:    raw.lastAnalysis    ?? null,
+      lastIssueUrl:    raw.lastIssueUrl    ?? null,
+      lastIssueNumber: raw.lastIssueNumber ?? null,
+      lastRunAt:       raw.lastRunAt       ?? null,
+      history:         raw.history         ?? [],
+    };
   } catch {
-    return { lastAnalysis: null, lastIssueUrl: null, lastRunAt: null };
+    return { lastAnalysis: null, lastIssueUrl: null, lastIssueNumber: null, lastRunAt: null, history: [] };
   }
 }
 
 function saveCache(cache: Cache) {
   fs.writeFileSync(CACHE_PATH, JSON.stringify(cache, null, 2));
+}
+
+function pushHistory(cache: Cache, analysis: AiAnalysisResult, issueUrl: string | null): Cache {
+  const entry: HistoryEntry = {
+    analyzedAt:  analysis.analyzedAt,
+    status:      analysis.status,
+    errorRate:   null,
+    issueCount:  analysis.issues.length,
+    issueUrl,
+  };
+  const history = [entry, ...cache.history].slice(0, 4);
+  return { ...cache, history };
 }
 
 async function fetchJson(url: string, options: RequestInit = {}): Promise<any> {
@@ -254,18 +283,26 @@ async function main() {
   console.log(`\n📊 Estado: ${analysis.status} | Abrir issue: ${needsIssue ? 'SÍ' : 'NO'}`);
 
   let issueUrl = '';
+  let issueNumber: number | null = null;
   if (needsIssue) {
     issueUrl = await createGitHubIssue(analysis, cache.lastAnalysis?.status);
+    // Extraer el número del issue de la URL (ej: .../issues/123)
+    const match = issueUrl.match(/\/issues\/(\d+)$/);
+    issueNumber = match ? parseInt(match[1], 10) : null;
   } else {
     console.log('✅ Sistema saludable — no se requiere issue esta semana');
   }
 
-  // 4. Actualizar cache
-  saveCache({
+  // 4. Actualizar cache con history
+  let newCache: Cache = {
     lastAnalysis: analysis,
     lastIssueUrl: issueUrl || cache.lastIssueUrl,
+    lastIssueNumber: issueNumber ?? cache.lastIssueNumber,
     lastRunAt:    new Date().toISOString(),
-  });
+    history:      cache.history,
+  };
+  newCache = pushHistory(newCache, analysis, issueUrl || cache.lastIssueUrl);
+  saveCache(newCache);
 
   console.log('\n✅ Agente completado\n');
 }
