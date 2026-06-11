@@ -68,6 +68,7 @@ const ADMIN_EMAIL = process.env.SERVINGMI_ADMIN_EMAIL ?? '';
 const ADMIN_PASS  = process.env.SERVINGMI_ADMIN_PASS  ?? '';
 const GH_TOKEN    = process.env.GH_TOKEN              ?? '';
 const GH_REPO     = process.env.GH_REPO               ?? '';
+const TRIGGER_TYPE = process.env.TRIGGER_TYPE ?? 'manual';   // 'weekly' | 'post-deploy' | 'manual'
 
 const CACHE_PATH  = path.join(process.cwd(), '.maintenance-cache.json');
 
@@ -188,16 +189,25 @@ async function runAiAnalysis(token: string): Promise<AiAnalysisResult> {
 
 // ── Paso 3: Decidir si abrir issue ───────────────────────────────────────────
 
-function shouldOpenIssue(current: AiAnalysisResult, cache: Cache): boolean {
-  // Siempre abrir si es critical
+function shouldOpenIssue(
+  current:     AiAnalysisResult,
+  cache:       Cache,
+  triggerType: string,
+): boolean {
+  // Post-deploy: solo abrir si hay degradación respecto al estado anterior
+  if (triggerType === 'post-deploy') {
+    if (current.status === 'critical') return true;
+    if (current.issues.some(i => i.severity === 'high')) return true;
+    const prev = cache.lastAnalysis?.status;
+    if (prev === 'healthy' && current.status !== 'healthy') return true;
+    return false;
+  }
+
+  // Semanal/manual: lógica original
   if (current.status === 'critical') return true;
-  // Abrir si hay issues de alta severidad
   if (current.issues.some(i => i.severity === 'high')) return true;
-  // Abrir si hay recomendaciones urgentes
   if (current.recommendations.some(r => r.priority === 'urgent')) return true;
-  // Si el estado cambió de healthy a warning
   if (cache.lastAnalysis?.status === 'healthy' && current.status === 'warning') return true;
-  // No abrir si el sistema está sano y no hubo degradación
   return false;
 }
 
@@ -341,7 +351,7 @@ async function main() {
   const analysis = await runAiAnalysis(token);
 
   // 3. Decidir si crear issue
-  const needsIssue = shouldOpenIssue(analysis, cache);
+  const needsIssue = shouldOpenIssue(analysis, cache, TRIGGER_TYPE);
   console.log(`\n📊 Estado: ${analysis.status} | Abrir issue: ${needsIssue ? 'SÍ' : 'NO'}`);
 
   let issueUrl = '';
@@ -354,7 +364,7 @@ async function main() {
       cache.lastAnalysis?.status,
       trendSummary,
       deployContext,
-      'weekly',  // triggerType — filled in Task 4
+      TRIGGER_TYPE,
     );
     // Extraer el número del issue de la URL (ej: .../issues/123)
     const match = issueUrl.match(/\/issues\/(\d+)$/);

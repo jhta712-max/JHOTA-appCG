@@ -4,6 +4,9 @@ on:
   schedule:
     # Cada lunes a las 8:00 AM hora de Santo Domingo (UTC-4 → 12:00 UTC)
     - cron: '0 12 * * 1'
+  push:
+    branches:
+      - main
   workflow_dispatch:
     # Permite ejecutar manualmente desde GitHub Actions → Run workflow
 
@@ -47,6 +50,7 @@ jobs:
           SERVINGMI_ADMIN_PASS:  ${{ secrets.SERVINGMI_ADMIN_PASS }}
           GH_TOKEN:              ${{ secrets.GITHUB_TOKEN }}
           GH_REPO:               ${{ github.repository }}
+          TRIGGER_TYPE:          ${{ github.event_name == 'schedule' && 'weekly' || github.event_name == 'push' && 'post-deploy' || 'manual' }}
         run: pnpm exec tsx scripts/maintenance-agent.ts
 
       - name: Guardar cache actualizado
