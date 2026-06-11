@@ -82,7 +82,7 @@ interface RemediationResult {
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
-const BACKEND_URL = process.env.SERVINGMI_BACKEND_URL ?? 'https://servingmi-backend.onrender.com';
+const BACKEND_URL = (process.env.SERVINGMI_BACKEND_URL ?? 'https://servingmi-backend.onrender.com').replace(/\/$/, '');
 const ADMIN_EMAIL = process.env.SERVINGMI_ADMIN_EMAIL ?? '';
 const ADMIN_PASS  = process.env.SERVINGMI_ADMIN_PASS  ?? '';
 const GH_TOKEN    = process.env.GH_TOKEN              ?? '';
