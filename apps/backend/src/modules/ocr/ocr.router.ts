@@ -68,8 +68,11 @@ router.post(
       // setImmediate garantiza que la respuesta ya fue enviada antes de
       // comenzar la tarea costosa.
       setImmediate(async () => {
+        const startMs = Date.now();
+        console.log(`[OCR] job ${job.id} started — mimeType=${mimeType} size=${fileBuffer.length}`);
         try {
           const result = await analyzeInvoice(fileBuffer, mimeType);
+          console.log(`[OCR] job ${job.id} completed in ${Date.now() - startMs}ms`);
 
           await prisma.ocrJob.update({
             where: { id: job.id },
@@ -80,15 +83,17 @@ router.post(
             },
           });
         } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error(`[OCR] job ${job.id} failed after ${Date.now() - startMs}ms — ${msg}`);
           await prisma.ocrJob.update({
             where: { id: job.id },
             data: {
               status:      'failed',
-              error:       err instanceof Error ? err.message : String(err),
+              error:       msg,
               completedAt: new Date(),
             },
-          }).catch(() => {
-            // No propagar errores de DB dentro del background task
+          }).catch((dbErr) => {
+            console.error(`[OCR] job ${job.id} — DB update failed:`, dbErr);
           });
         }
       });
