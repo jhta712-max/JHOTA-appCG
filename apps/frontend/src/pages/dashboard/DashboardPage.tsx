@@ -22,9 +22,34 @@ function fmt(amount: number, currency = 'DOP') {
 
 const OPEN_STATUSES = new Set(['PENDING', 'APPROVED', 'ADVANCE_PAID', 'IN_PROGRESS', 'PARTIAL_INVOICED']);
 
+// Section header — Barlow Condensed uppercase with yellow left rule
+function SectionHeader({ icon: Icon, title, action }: { icon: React.ElementType; title: string; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <span className="w-0.5 h-5 shrink-0" style={{ background: '#F5C218' }} />
+        <Icon className="w-4 h-4 text-gray-400 shrink-0" />
+        <h2 className="font-bold uppercase tracking-wide text-[#1C1C1C] text-sm font-['Barlow_Condensed']">
+          {title}
+        </h2>
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function ViewAllLink({ to, label = 'Ver todos' }: { to: string; label?: string }) {
+  return (
+    <Link to={to}
+      className="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-[#1C1C1C] flex items-center gap-1 transition-colors font-['Barlow_Condensed']">
+      {label} <ArrowRight className="w-3 h-3" />
+    </Link>
+  );
+}
+
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
-  const { canCreateExpense, canViewFinancials, isAuxiliar, isFinanciero, canViewReports } = useRole();
+  const { canCreateExpense, canViewFinancials, isAuxiliar, canViewReports } = useRole();
 
   const { data: projectsData } = useQuery({
     queryKey: ['projects', 'dashboard-all'],
@@ -79,64 +104,82 @@ export default function DashboardPage() {
     return 'Buenas noches';
   };
 
-  // Stats globales
   const totalBudget        = projects.reduce((s, p) => s + Number(p.estimatedBudget ?? 0), 0);
-  const totalExpended      = projects.reduce((s, p) => s + Number((p as any).totalExpenses ?? 0), 0);
   const totalPendingAmount = pendingOrders.reduce((s: number, o: any) => s + Number(o.amount), 0);
 
   return (
     <div className="space-y-6">
 
-      {/* Saludo */}
-      <div className="flex items-center justify-between">
+      {/* ── Saludo ─────────────────────────────────────────── */}
+      <div className="flex items-end justify-between">
         <div>
-          <h1 className="page-title" style={{ fontSize: '1.6rem' }}>
+          <p className="text-xs uppercase tracking-widest text-gray-400 font-['Barlow_Condensed'] mb-1">
+            {new Date().toLocaleDateString('es-DO', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
+          <h1 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] leading-none"
+              style={{ fontSize: '1.75rem' }}>
             {greeting()}, {user?.name?.split(' ')[0]}
           </h1>
-          <p className="text-gray-500 text-sm mt-0.5">Aquí está el resumen de hoy</p>
+          <p className="font-['DM_Sans'] text-gray-400 text-sm mt-1">Aquí está el resumen de hoy</p>
         </div>
         {canCreateExpense && (
-          <Link to="/expenses/new" className="btn-primary text-sm hidden sm:flex">
+          <Link to="/expenses/new"
+            className="hidden sm:flex items-center gap-2 px-4 py-2.5 text-sm font-bold uppercase tracking-wide font-['Barlow_Condensed'] transition-colors"
+            style={{ background: '#F5C218', color: '#1C1C1C' }}>
             <Plus className="w-4 h-4" /> Nuevo gasto
           </Link>
         )}
         {canViewReports && !canCreateExpense && (
-          <Link to="/reports" className="btn-secondary text-sm hidden sm:flex">
+          <Link to="/reports"
+            className="hidden sm:flex items-center gap-2 px-4 py-2.5 text-sm font-bold uppercase tracking-wide font-['Barlow_Condensed'] border border-[#1C1C1C] text-[#1C1C1C] hover:bg-[#1C1C1C] hover:text-white transition-colors">
             <TrendingUp className="w-4 h-4" /> Ver reportes
           </Link>
         )}
       </div>
 
-      {/* Stats globales */}
+      {/* ── Stats KPI cards ─────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        <div className="card p-4">
-          <p className="text-xs text-gray-500 font-medium">Proyectos activos</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{projects.length}</p>
-          <p className="text-xs text-gray-400 mt-0.5">en ejecución</p>
+
+        {/* Proyectos activos */}
+        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #1C1C1C' }}>
+          <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed']">Proyectos activos</p>
+          <p className="font-['Space_Mono'] text-3xl font-bold text-[#1C1C1C] mt-1 leading-none">{projects.length}</p>
+          <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">en ejecución</p>
         </div>
-        <div className="card p-4">
-          <p className="text-xs text-gray-500 font-medium">Gastos registrados</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{expensesData?.pagination?.total ?? 0}</p>
-          <p className="text-xs text-gray-400 mt-0.5">total acumulado</p>
+
+        {/* Gastos registrados */}
+        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #1C1C1C' }}>
+          <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed']">Gastos registrados</p>
+          <p className="font-['Space_Mono'] text-3xl font-bold text-[#1C1C1C] mt-1 leading-none">{expensesData?.pagination?.total ?? 0}</p>
+          <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">total acumulado</p>
         </div>
-        <div className="card p-4">
-          <p className="text-xs text-gray-500 font-medium">Cotizaciones abiertas</p>
-          <p className="text-2xl font-bold text-amber-600 mt-1">{openQuotations.length}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{totalOpenAmount > 0 ? fmt(totalOpenAmount) : 'sin monto'}</p>
+
+        {/* Cotizaciones abiertas */}
+        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #F5C218' }}>
+          <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed']">Cotizaciones abiertas</p>
+          <p className="font-['Space_Mono'] text-3xl font-bold mt-1 leading-none" style={{ color: '#F5C218' }}>{openQuotations.length}</p>
+          <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1 truncate">{totalOpenAmount > 0 ? fmt(totalOpenAmount) : 'sin monto'}</p>
         </div>
-        <div className="card p-4">
-          <p className="text-xs text-gray-500 font-medium">Presupuesto total</p>
-          <p className="text-sm font-bold text-gray-900 mt-1 truncate">{fmt(totalBudget)}</p>
-          <p className="text-xs text-gray-400 mt-0.5">todos los proyectos</p>
+
+        {/* Presupuesto total */}
+        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #1C1C1C' }}>
+          <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed']">Presupuesto total</p>
+          <p className="font-['Space_Mono'] text-base font-bold text-[#1C1C1C] mt-1 leading-tight truncate">{fmt(totalBudget)}</p>
+          <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">todos los proyectos</p>
         </div>
-        <Link to="/pending-orders" className="card p-4 hover:border-amber-300 hover:shadow-sm transition-all group col-span-2 md:col-span-1 border-t-2 md:border-t-0 md:border-l-2" style={{ borderTopColor: '#F5C218', borderLeftColor: '#F5C218' }}>
-          <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
-            <Clock className="w-3 h-3 text-amber-500" /> Pagos pendientes
+
+        {/* Pagos pendientes */}
+        <Link to="/pending-orders"
+          className="border bg-white p-4 transition-colors col-span-2 md:col-span-1 group hover:border-[#F5C218]"
+          style={{ borderTop: '3px solid #F5C218' }}>
+          <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed'] flex items-center gap-1">
+            <Clock className="w-3 h-3" style={{ color: '#F5C218' }} /> Pagos pendientes
           </p>
-          <p className={`text-2xl font-bold mt-1 ${pendingOrders.length > 0 ? 'text-amber-600' : 'text-gray-900'}`}>
+          <p className="font-['Space_Mono'] text-3xl font-bold mt-1 leading-none"
+             style={{ color: pendingOrders.length > 0 ? '#F5C218' : '#1C1C1C' }}>
             {pendingOrders.length}
           </p>
-          <p className="text-xs text-gray-400 mt-0.5 truncate">
+          <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1 truncate">
             {totalPendingAmount > 0 ? fmt(totalPendingAmount) : 'ninguno pendiente'}
           </p>
         </Link>
@@ -147,32 +190,33 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-2 gap-5">
 
           {/* Gastos por mes */}
-          <div className="rounded-xl p-5" style={{ background: '#1C1C1C' }}>
-            <h2 className="font-semibold text-sm mb-4 flex items-center gap-2" style={{ color: '#F5C218' }}>
+          <div className="p-5" style={{ background: '#1C1C1C' }}>
+            <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2"
+                style={{ color: '#F5C218' }}>
               <TrendingUp className="w-4 h-4" />
               Gastos por mes
             </h2>
             {statsData.byMonth.length === 0 ? (
-              <p className="text-sm text-center py-10" style={{ color: '#555' }}>Sin datos</p>
+              <p className="font-['DM_Sans'] text-sm text-center py-10" style={{ color: '#555' }}>Sin datos</p>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
                 <ComposedChart data={statsData.byMonth} barSize={28} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2d2d2d" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6b7280', fontFamily: 'Space Mono' }} axisLine={false} tickLine={false} />
                   <YAxis
-                    tick={{ fontSize: 10, fill: '#6b7280' }}
+                    tick={{ fontSize: 10, fill: '#6b7280', fontFamily: 'Space Mono' }}
                     axisLine={false} tickLine={false} width={52}
                     tickFormatter={(v) => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : v}
                   />
                   <Tooltip
                     cursor={{ fill: 'rgba(245,194,24,0.08)' }}
                     formatter={(v) => [fmt(Number(v)), 'Total']}
-                    contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #333', background: '#252525', color: '#fff' }}
-                    labelStyle={{ color: '#9ca3af' }}
+                    contentStyle={{ fontSize: 12, border: '1px solid #333', background: '#252525', color: '#fff', borderRadius: 0, fontFamily: 'DM Sans' }}
+                    labelStyle={{ color: '#9ca3af', fontFamily: 'Barlow Condensed' }}
                   />
-                  <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="total" radius={[0, 0, 0, 0]}>
                     {statsData.byMonth.map((_, i) => (
-                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#F5C218' : '#D4A017'} fillOpacity={i === statsData.byMonth.length - 1 ? 1 : 0.85} />
+                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#F5C218' : '#D4A017'} fillOpacity={i === statsData.byMonth.length - 1 ? 1 : 0.75} />
                     ))}
                   </Bar>
                   <Line
@@ -189,25 +233,26 @@ export default function DashboardPage() {
           </div>
 
           {/* Gastos por categoría */}
-          <div className="card p-5">
-            <h2 className="font-semibold text-gray-900 text-sm mb-4 flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-blue-500" />
+          <div className="border border-gray-200 bg-white p-5">
+            <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] text-sm mb-4 flex items-center gap-2">
+              <span className="w-0.5 h-4 shrink-0" style={{ background: '#F5C218' }} />
+              <Receipt className="w-4 h-4 text-gray-400" />
               Gastos por categoría
             </h2>
             {statsData.byCategory.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-10">Sin datos</p>
+              <p className="font-['DM_Sans'] text-sm text-gray-400 text-center py-10">Sin datos</p>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {statsData.byCategory.map((cat, i) => {
-                  const colors = ['#F5C218','#fbbf24','#f59e0b','#d97706','#b45309','#92400e','#78350f'];
+                  const fills = ['#F5C218','#D4A017','#B8880E','#9C720B','#805C08','#644606','#483004'];
                   return (
                     <div key={i}>
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-medium text-gray-700 truncate max-w-[60%]">{cat.name}</span>
-                        <span className="text-gray-500 shrink-0 ml-2">{cat.pct}% · {fmt(cat.total)}</span>
+                        <span className="font-['DM_Sans'] font-semibold text-[#1C1C1C] uppercase tracking-wide truncate max-w-[55%]">{cat.name}</span>
+                        <span className="font-['Space_Mono'] text-gray-500 shrink-0 ml-2">{cat.pct}% · {fmt(cat.total)}</span>
                       </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${cat.pct}%`, background: colors[i] }} />
+                      <div className="h-1.5 bg-gray-100 overflow-hidden">
+                        <div className="h-full transition-all" style={{ width: `${cat.pct}%`, background: fills[i] }} />
                       </div>
                     </div>
                   );
@@ -221,111 +266,105 @@ export default function DashboardPage() {
 
       {/* Alerta cotizaciones próximas a vencer */}
       {expiring.length > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-2">
-          <div className="flex items-center gap-2 text-orange-700 font-medium text-sm">
+        <div className="border-l-4 p-4 space-y-2" style={{ borderColor: '#F5C218', background: '#FFFBEB' }}>
+          <div className="flex items-center gap-2 font-bold text-sm font-['Barlow_Condensed'] uppercase tracking-wide text-amber-800">
             <Clock className="w-4 h-4 shrink-0" />
             {expiring.length} cotización{expiring.length > 1 ? 'es vencen' : ' vence'} en los próximos 7 días
           </div>
           {expiring.map((q) => (
             <Link key={q.id} to={`/quotations/${q.id}`}
-              className="flex items-center justify-between text-xs text-orange-600 hover:text-orange-800">
+              className="flex items-center justify-between text-xs text-amber-700 hover:text-amber-900 font-['DM_Sans']">
               <span className="truncate">{q.supplierName} — {q.project.code}</span>
-              <span className="ml-2 shrink-0 font-medium">vence {fmtDate(q.validUntil!)}</span>
+              <span className="ml-2 shrink-0 font-semibold font-['Space_Mono']">vence {fmtDate(q.validUntil!)}</span>
             </Link>
           ))}
         </div>
       )}
 
-      {/* ── TARJETAS POR PROYECTO ─────────────────────────────── */}
-      {!isAuxiliar && <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-            <FolderOpen className="w-4 h-4 text-blue-500" />
-            Proyectos activos
-          </h2>
-          <Link to="/projects" className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
-            Ver todos <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
+      {/* ── Proyectos activos ────────────────────────────────── */}
+      {!isAuxiliar && (
+        <div>
+          <SectionHeader icon={FolderOpen} title="Proyectos activos" action={<ViewAllLink to="/projects" />} />
+          {projects.length === 0 ? (
+            <div className="border border-gray-200 p-8 text-center font-['DM_Sans'] text-gray-400 text-sm">No hay proyectos activos</div>
+          ) : (
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {projects.map((p) => {
+                const budget   = Number(p.estimatedBudget ?? 0);
+                const expended = Number((p as any).totalExpenses ?? 0);
+                const pct      = budget > 0 ? Math.min(Math.round((expended / budget) * 100), 100) : 0;
+                const barColor = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#22c55e';
 
-        {projects.length === 0 ? (
-          <div className="card p-8 text-center text-gray-400 text-sm">No hay proyectos activos</div>
-        ) : (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {projects.map((p) => {
-              const budget   = Number(p.estimatedBudget ?? 0);
-              const expended = Number((p as any).totalExpenses ?? 0);
-              const pct      = budget > 0 ? Math.min(Math.round((expended / budget) * 100), 100) : 0;
-              const barColor = pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-amber-500' : 'bg-green-500';
-
-              return (
-                <Link key={p.id} to={`/projects/${p.id}`}
-                  className="card p-5 hover:border-primary-200 hover:shadow-md transition-all group space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 truncate group-hover:text-primary-700 text-sm leading-tight">
-                        {p.name}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">{p.code} · {p.client ?? 'Sin cliente'}</p>
+                return (
+                  <Link key={p.id} to={`/projects/${p.id}`}
+                    className="border border-gray-200 bg-white p-5 hover:border-[#1C1C1C] transition-all group space-y-3 block"
+                    style={{ borderTop: '3px solid #1C1C1C' }}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] truncate text-sm leading-tight">
+                          {p.name}
+                        </p>
+                        <p className="font-['Space_Mono'] text-[10px] text-gray-400 mt-0.5">{p.code} · {p.client ?? 'Sin cliente'}</p>
+                      </div>
+                      <span className="ml-2 shrink-0 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 font-['Barlow_Condensed']"
+                            style={{ background: '#F5C218', color: '#1C1C1C' }}>
+                        Activo
+                      </span>
                     </div>
-                    <span className="ml-2 shrink-0 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                      Activo
-                    </span>
-                  </div>
 
-                  {/* Barra de progreso */}
-                  <div>
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>Ejecutado</span>
-                      <span className="font-medium">{pct}%</span>
-                    </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-50">
                     <div>
-                      <p className="text-xs text-gray-400">Presupuesto</p>
-                      <p className="text-sm font-semibold text-gray-900">{fmt(budget)}</p>
+                      <div className="flex justify-between font-['Space_Mono'] text-[10px] text-gray-400 mb-1">
+                        <span>Ejecutado</span>
+                        <span className="font-bold text-[#1C1C1C]">{pct}%</span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 overflow-hidden">
+                        <div className="h-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-400">Gastos · {p._count?.expenses ?? 0}</p>
-                      <p className={`text-sm font-semibold ${pct >= 90 ? 'text-red-600' : 'text-gray-900'}`}>
-                        {fmt(expended)}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>}
 
-      {/* Órdenes de pago pendientes */}
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+                      <div>
+                        <p className="font-['Barlow_Condensed'] text-[10px] uppercase tracking-wide text-gray-400">Presupuesto</p>
+                        <p className="font-['Space_Mono'] text-xs font-bold text-[#1C1C1C]">{fmt(budget)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-['Barlow_Condensed'] text-[10px] uppercase tracking-wide text-gray-400">Gastos · {p._count?.expenses ?? 0}</p>
+                        <p className="font-['Space_Mono'] text-xs font-bold" style={{ color: pct >= 90 ? '#ef4444' : '#1C1C1C' }}>
+                          {fmt(expended)}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Órdenes de pago pendientes ───────────────────────── */}
       {pendingOrders.length > 0 && (
-        <div className="card">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              <Wallet className="w-4 h-4 text-amber-500" /> Órdenes de pago pendientes
+        <div className="border border-gray-200 bg-white">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100"
+               style={{ borderLeft: '3px solid #F5C218' }}>
+            <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] text-sm flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-gray-400" /> Órdenes de pago pendientes
             </h2>
-            <Link to="/pending-orders" className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
-              Ver todas <ArrowRight className="w-3 h-3" />
-            </Link>
+            <ViewAllLink to="/pending-orders" label="Ver todas" />
           </div>
           <div className="divide-y divide-gray-50">
             {pendingOrders.map((o: any) => (
               <div key={o.id} className="flex items-center justify-between px-5 py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">{o.supplier?.name}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C] truncate">{o.supplier?.name}</p>
+                  <p className="font-['Space_Mono'] text-[10px] text-gray-400">
                     {o.project?.code} · {o.concept}
                   </p>
                 </div>
                 <div className="text-right ml-3 shrink-0">
-                  <p className="text-sm font-semibold text-gray-900">{fmt(Number(o.amount))}</p>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                  <p className="font-['Space_Mono'] text-sm font-bold text-[#1C1C1C]">{fmt(Number(o.amount))}</p>
+                  <span className="font-['Barlow_Condensed'] text-[10px] uppercase tracking-wide px-2 py-0.5 font-bold"
+                        style={{ background: '#F5C218', color: '#1C1C1C' }}>
                     Pendiente
                   </span>
                 </div>
@@ -335,85 +374,89 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {!isAuxiliar && <div className="grid md:grid-cols-2 gap-6">
+      {/* ── Gastos recientes + Cotizaciones ─────────────────── */}
+      {!isAuxiliar && (
+        <div className="grid md:grid-cols-2 gap-6">
 
-        {/* Gastos recientes */}
-        <div className="card">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-green-500" /> Gastos recientes
-            </h2>
-            <Link to="/expenses" className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
-              Ver todos <ArrowRight className="w-3 h-3" />
-            </Link>
+          <div className="border border-gray-200 bg-white">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] text-sm flex items-center gap-2">
+                <span className="w-0.5 h-4 shrink-0" style={{ background: '#F5C218' }} />
+                <Receipt className="w-4 h-4 text-gray-400" /> Gastos recientes
+              </h2>
+              <ViewAllLink to="/expenses" />
+            </div>
+            <div className="divide-y divide-gray-50">
+              {expenses.length === 0 ? (
+                <p className="font-['DM_Sans'] text-center text-gray-400 py-8 text-sm">No hay gastos</p>
+              ) : expenses.map((e) => (
+                <Link key={e.id} to={`/expenses/${e.id}`}
+                  className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors group">
+                  <div className="min-w-0">
+                    <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C] truncate">{e.description}</p>
+                    <p className="font-['Space_Mono'] text-[10px] text-gray-400">{e.project.code} · {e.category.name}</p>
+                  </div>
+                  <div className="text-right ml-3 shrink-0">
+                    <p className="font-['Space_Mono'] text-sm font-bold text-[#1C1C1C]">{fmt(Number(e.amount))}</p>
+                    <p className="font-['Space_Mono'] text-[10px] text-gray-400">{fmtDate(e.expenseDate)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-          <div className="divide-y divide-gray-50">
-            {expenses.length === 0 ? (
-              <p className="text-center text-gray-400 py-8 text-sm">No hay gastos</p>
-            ) : expenses.map((e) => (
-              <Link key={e.id} to={`/expenses/${e.id}`}
-                className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors group">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate group-hover:text-primary-700">{e.description}</p>
-                  <p className="text-xs text-gray-400">{e.project.code} · {e.category.name}</p>
-                </div>
-                <div className="text-right ml-3 shrink-0">
-                  <p className="text-sm font-semibold text-gray-900">{fmt(Number(e.amount))}</p>
-                  <p className="text-xs text-gray-400">{fmtDate(e.expenseDate)}</p>
-                </div>
-              </Link>
-            ))}
+
+          <div className="border border-gray-200 bg-white">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] text-sm flex items-center gap-2">
+                <span className="w-0.5 h-4 shrink-0" style={{ background: '#F5C218' }} />
+                <FileText className="w-4 h-4 text-gray-400" /> Cotizaciones
+              </h2>
+              <ViewAllLink to="/quotations" label="Ver todas" />
+            </div>
+            <div className="divide-y divide-gray-50">
+              {recentQuotations.length === 0 ? (
+                <p className="font-['DM_Sans'] text-center text-gray-400 py-8 text-sm">No hay cotizaciones</p>
+              ) : recentQuotations.map((q) => (
+                <Link key={q.id} to={`/quotations/${q.id}`}
+                  className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors group">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C] truncate">
+                      {q.supplierName}
+                      {q.quotationNumber && <span className="font-['Space_Mono'] text-[10px] text-gray-400 ml-1">#{q.quotationNumber}</span>}
+                    </p>
+                    <p className="font-['Space_Mono'] text-[10px] text-gray-400">{q.project.code} · {fmtDate(q.quotationDate)}</p>
+                  </div>
+                  <div className="text-right shrink-0 space-y-1">
+                    <p className="font-['Space_Mono'] text-sm font-bold text-[#1C1C1C]">{fmt(Number(q.total), q.currency)}</p>
+                    <span className={`inline-flex text-[10px] px-2 py-0.5 font-bold font-['Barlow_Condensed'] uppercase tracking-wide ${QUOTATION_STATUS_COLORS[q.status as QuotationStatus]}`}>
+                      {QUOTATION_STATUS_LABELS[q.status as QuotationStatus]}
+                    </span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
+                </Link>
+              ))}
+            </div>
           </div>
+
         </div>
+      )}
 
-        {/* Cotizaciones recientes */}
-        <div className="card">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-amber-500" /> Cotizaciones
-            </h2>
-            <Link to="/quotations" className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
-              Ver todas <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="divide-y divide-gray-50">
-            {recentQuotations.length === 0 ? (
-              <p className="text-center text-gray-400 py-8 text-sm">No hay cotizaciones</p>
-            ) : recentQuotations.map((q) => (
-              <Link key={q.id} to={`/quotations/${q.id}`}
-                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors group">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate group-hover:text-primary-700">
-                    {q.supplierName}
-                    {q.quotationNumber && <span className="text-xs text-gray-400 font-mono ml-1">#{q.quotationNumber}</span>}
-                  </p>
-                  <p className="text-xs text-gray-400">{q.project.code} · {fmtDate(q.quotationDate)}</p>
-                </div>
-                <div className="text-right shrink-0 space-y-1">
-                  <p className="text-sm font-semibold text-gray-900">{fmt(Number(q.total), q.currency)}</p>
-                  <span className={`inline-flex text-xs px-2 py-0.5 rounded-full font-medium ${QUOTATION_STATUS_COLORS[q.status as QuotationStatus]}`}>
-                    {QUOTATION_STATUS_LABELS[q.status as QuotationStatus]}
-                  </span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
-              </Link>
-            ))}
-          </div>
-        </div>
-
-      </div>}
-
+      {/* CTA móvil */}
       {canCreateExpense && (
-        <Link to="/expenses/new" className="btn-primary w-full sm:hidden py-4 text-base">
+        <Link to="/expenses/new"
+          className="flex items-center justify-center gap-2 w-full sm:hidden py-4 text-base font-bold uppercase tracking-wide font-['Barlow_Condensed']"
+          style={{ background: '#F5C218', color: '#1C1C1C' }}>
           <Plus className="w-5 h-5" /> Registrar nuevo gasto
         </Link>
       )}
 
+      {/* Aviso DGII */}
       {canCreateExpense && (
-        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-800">
-            <strong>Recuerda:</strong> Todo gasto con comprobante fiscal debe incluir NCF y RNC del suplidor para cumplimiento con la DGII.
+        <div className="border-l-4 p-4 flex items-start gap-3" style={{ borderColor: '#F5C218', background: '#FFFBEB' }}>
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#F5C218' }} />
+          <p className="font-['DM_Sans'] text-xs text-amber-800">
+            <strong className="font-['Barlow_Condensed'] uppercase tracking-wide">Recuerda:</strong>{' '}
+            Todo gasto con comprobante fiscal debe incluir NCF y RNC del suplidor para cumplimiento con la DGII.
           </p>
         </div>
       )}
