@@ -176,19 +176,27 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
     };
   }
 
-  const response = await client.messages.create({
-    model:      'claude-haiku-4-5',
-    max_tokens: 1024,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          fileContentBlock,
-          { type: 'text', text: EXTRACTION_PROMPT },
-        ],
-      },
-    ],
-  });
+  const TIMEOUT_MS = 25_000;
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new AppError(408, 'Tiempo de espera agotado. El servidor tardó demasiado en procesar la imagen. Intenta de nuevo.', 'OCR_TIMEOUT')), TIMEOUT_MS)
+  );
+
+  const response = await Promise.race([
+    client.messages.create({
+      model:      'claude-haiku-4-5',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            fileContentBlock,
+            { type: 'text', text: EXTRACTION_PROMPT },
+          ],
+        },
+      ],
+    }),
+    timeoutPromise,
+  ]);
 
   const rawText = response.content[0].type === 'text' ? response.content[0].text : '';
   return parseDocumentResponse(rawText);

@@ -279,7 +279,7 @@ export const ocrApi = {
     return api.post<{ jobId: string; status: OcrJobStatus }>(
       '/ocr/analyze',
       form,
-      { headers: { 'Content-Type': 'multipart/form-data' } },
+      { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 90_000 },
     );
   },
   getJob: (jobId: string) =>
