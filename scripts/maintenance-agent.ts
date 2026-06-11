@@ -297,10 +297,10 @@ async function createGitHubIssue(
   trendSummary:   string,
   deployContext:  string,
   triggerType:    string,
-): Promise<string> {
+): Promise<{ url: string; number: number }> {
   if (!GH_TOKEN || !GH_REPO) {
     console.log('⚠️  GH_TOKEN o GH_REPO no configurados — saltando creación de issue');
-    return '';
+    return { url: '', number: 0 };
   }
 
   console.log('📝 Creando GitHub Issue...');
@@ -327,7 +327,42 @@ async function createGitHubIssue(
   });
 
   console.log(`   ✅ Issue creado: ${data.html_url}`);
-  return data.html_url;
+  return { url: data.html_url as string, number: data.number as number };
+}
+
+// ── Helpers post-issue ───────────────────────────────────────────────────────
+
+function getIssueNumberFromUrl(url: string | null): number | null {
+  if (!url) return null;
+  const match = url.match(/\/issues\/(\d+)$/);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+async function commentAndCloseIssue(issueNumber: number, analysis: AiAnalysisResult): Promise<void> {
+  if (!GH_TOKEN || !GH_REPO) return;
+
+  const base = `https://api.github.com/repos/${GH_REPO}/issues/${issueNumber}`;
+  const headers = {
+    Authorization: `Bearer ${GH_TOKEN}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+
+  await fetchJson(`${base}/comments`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      body: `✅ **Sistema recuperado** — ${new Date().toLocaleString('es-DO')}\n\nEl sistema ha vuelto al estado \`healthy\`. Tasa de error dentro de límites normales.\n\n> _Cierre automático por el Agente de Mantenimiento SERVINGMI_`,
+    }),
+  });
+
+  await fetchJson(base, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
+  });
+
+  console.log(`   ✅ Issue #${issueNumber} cerrado automáticamente`);
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
@@ -354,21 +389,31 @@ async function main() {
   const needsIssue = shouldOpenIssue(analysis, cache, TRIGGER_TYPE);
   console.log(`\n📊 Estado: ${analysis.status} | Abrir issue: ${needsIssue ? 'SÍ' : 'NO'}`);
 
+  // Recovery: close issue if system is back to healthy
+  const systemRecovered =
+    analysis.status === 'healthy' &&
+    cache.lastAnalysis?.status !== 'healthy' &&
+    cache.lastIssueNumber !== null;
+
+  if (systemRecovered && cache.lastIssueNumber) {
+    console.log(`\n🔄 Sistema recuperado — cerrando issue #${cache.lastIssueNumber}...`);
+    await commentAndCloseIssue(cache.lastIssueNumber, analysis);
+  }
+
   let issueUrl = '';
   let issueNumber: number | null = null;
   if (needsIssue) {
     const deployContext = getDeployContext();
     const trendSummary = buildTrendSummary(cache.history);
-    issueUrl = await createGitHubIssue(
+    const created = await createGitHubIssue(
       analysis,
       cache.lastAnalysis?.status,
       trendSummary,
       deployContext,
       TRIGGER_TYPE,
     );
-    // Extraer el número del issue de la URL (ej: .../issues/123)
-    const match = issueUrl.match(/\/issues\/(\d+)$/);
-    issueNumber = match ? parseInt(match[1], 10) : null;
+    issueUrl = created.url;
+    issueNumber = created.number || null;
   } else {
     console.log('✅ Sistema saludable — no se requiere issue esta semana');
   }
@@ -376,8 +421,8 @@ async function main() {
   // 4. Actualizar cache con history
   let newCache: Cache = {
     lastAnalysis: analysis,
-    lastIssueUrl: issueUrl || cache.lastIssueUrl,
-    lastIssueNumber: issueNumber ?? cache.lastIssueNumber,
+    lastIssueUrl: issueUrl || (systemRecovered ? null : cache.lastIssueUrl),
+    lastIssueNumber: issueNumber ?? (systemRecovered ? null : cache.lastIssueNumber),
     lastRunAt:    new Date().toISOString(),
     history:      cache.history,
   };
