@@ -46,15 +46,18 @@ function DownloadButton({
     } finally { setLoading(false); }
   };
 
-  const base = 'flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all disabled:opacity-50 border';
   const variants = {
-    default: 'border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300',
-    primary: 'border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100',
-    gold:    'border-yellow-400 text-yellow-900 bg-yellow-50 hover:bg-yellow-100 shadow-sm',
+    default: 'border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300',
+    primary: 'border border-[#F5C218]/60 text-[#1C1C1C] bg-[#F5C218]/10 hover:bg-[#F5C218]/20',
+    gold:    'bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400] border border-[#F5C218]',
   };
 
   return (
-    <button onClick={handleClick} disabled={loading} className={`${base} ${variants[variant]}`}>
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      className={`flex items-center gap-2 px-4 py-2.5 font-['Barlow_Condensed'] font-semibold text-sm uppercase tracking-wide transition-all disabled:opacity-50 ${variants[variant]}`}
+    >
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> :
        done    ? <CheckCircle2 className="w-4 h-4 text-green-600" /> : icon}
       {loading ? 'Descargando...' : done ? '¡Descargado!' : label}
@@ -107,252 +110,326 @@ export default function ExportPage() {
   // Guard de acceso
   if (!canAccess) {
     return (
-      <div className="max-w-lg mx-auto mt-20 text-center space-y-4">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-          <Shield className="w-8 h-8 text-red-500" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white border border-gray-200 p-10 max-w-sm w-full text-center space-y-4">
+          <div className="w-14 h-14 bg-[#1C1C1C] flex items-center justify-center mx-auto">
+            <Shield className="w-7 h-7 text-[#F5C218]" />
+          </div>
+          <h2 className="font-['Barlow_Condensed'] text-2xl font-bold text-gray-900 uppercase tracking-tight">Acceso restringido</h2>
+          <p className="font-['DM_Sans'] text-gray-500 text-sm">Este módulo es exclusivo para Administradores y Supervisores.</p>
+          <button
+            onClick={() => navigate('/')}
+            className="w-full px-6 py-2.5 bg-[#F5C218] text-[#1C1C1C] font-['Barlow_Condensed'] font-semibold uppercase tracking-wide text-sm hover:bg-[#e6b400]"
+          >
+            Volver al inicio
+          </button>
         </div>
-        <h2 className="text-xl font-bold text-gray-900">Acceso restringido</h2>
-        <p className="text-gray-500 text-sm">Este módulo es exclusivo para Administradores y Supervisores.</p>
-        <button onClick={() => navigate('/')} className="btn-primary px-6 py-2">Volver al inicio</button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-gray-600 p-1">
-          <ArrowLeft className="w-5 h-5" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero header */}
+      <div className="bg-[#1C1C1C] px-6 py-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1.5 text-[#F5C218] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Volver
         </button>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <p className="module-label">REPORTES / EXPORTACIÓN</p>
-            <h1 className="page-title">Exportación de Datos</h1>
-            <span className="flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-              <Shield className="w-3 h-3" /> Admin
-            </span>
-          </div>
-          <p className="text-sm text-gray-500 mt-0.5">Genera reportes Excel con los gastos de todos los proyectos</p>
+        <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-[#F5C218] uppercase mb-1">
+          REPORTES / EXPORTACIÓN
+        </p>
+        <div className="flex items-center gap-3">
+          <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight">
+            Exportación de Datos
+          </h1>
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#1C1C1C] bg-[#F5C218] px-2.5 py-1 font-['Barlow_Condensed'] uppercase tracking-wide">
+            <Shield className="w-3 h-3" /> Admin
+          </span>
         </div>
+        <p className="font-['DM_Sans'] text-sm text-gray-400 mt-1">
+          Genera reportes Excel con los gastos de todos los proyectos
+        </p>
       </div>
 
-      {/* ── Panel de filtros ─────────────────────────────────────── */}
-      <div className="card p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-gray-800 flex items-center gap-2 text-sm">
-            <Filter className="w-4 h-4 text-gray-500" /> Filtros de exportación
-          </h2>
-          <button
-            type="button"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
-          >
-            Filtros avanzados {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+      <div className="px-6 py-6 max-w-4xl mx-auto space-y-6">
+
+        {/* ── Panel de filtros ─────────────────────────────────────── */}
+        <div className="bg-white border border-gray-200">
+          <div className="px-5 py-3 bg-[#1C1C1C] flex items-center justify-between">
+            <h2 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-400 uppercase flex items-center gap-2">
+              <Filter className="w-3.5 h-3.5" /> Filtros de exportación
+            </h2>
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-xs text-[#F5C218] hover:text-white flex items-center gap-1 font-['Barlow_Condensed'] uppercase tracking-wide font-semibold"
+            >
+              Filtros avanzados {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+
+          <div className="p-5 space-y-4">
+            {/* Filtros básicos */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1 flex items-center gap-1">
+                  <Calendar className="w-3 h-3" /> Fecha inicio
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                />
+              </div>
+              <div>
+                <label className="block font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1 flex items-center gap-1">
+                  <Calendar className="w-3 h-3" /> Fecha fin
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                />
+              </div>
+              <div>
+                <label className="block font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1 flex items-center gap-1">
+                  <FolderOpen className="w-3 h-3" /> Proyecto
+                </label>
+                <select
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                >
+                  <option value="">— Todos —</option>
+                  {(projects ?? []).map((p) => (
+                    <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Filtros avanzados */}
+            {showAdvanced && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-gray-100">
+                <div>
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1 flex items-center gap-1">
+                    <Tag className="w-3 h-3" /> Categoría
+                  </label>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  >
+                    <option value="">— Todas —</option>
+                    {(categories ?? []).map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1 flex items-center gap-1">
+                    <CreditCard className="w-3 h-3" /> Método de pago
+                  </label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  >
+                    <option value="">— Todos —</option>
+                    <option value="CASH">Efectivo</option>
+                    <option value="TRANSFER">Transferencia</option>
+                    <option value="CARD">Tarjeta</option>
+                    <option value="CHECK">Cheque</option>
+                    <option value="OTHER">Otro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1">
+                    Estado del gasto
+                  </label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  >
+                    <option value="ACTIVE">Solo activos</option>
+                    <option value="VOIDED">Solo anulados</option>
+                    <option value="">Todos (activos + anulados)</option>
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Filtros básicos */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="label flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Fecha inicio</label>
-            <input type="date" className="input-field" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-          </div>
-          <div>
-            <label className="label flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Fecha fin</label>
-            <input type="date" className="input-field" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-          </div>
-          <div>
-            <label className="label flex items-center gap-1"><FolderOpen className="w-3.5 h-3.5" /> Proyecto</label>
-            <select className="input-field" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-              <option value="">— Todos —</option>
-              {(projects ?? []).map((p) => (
-                <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Filtros avanzados */}
-        {showAdvanced && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-gray-100">
-            <div>
-              <label className="label flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Categoría</label>
-              <select className="input-field" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-                <option value="">— Todas —</option>
-                {(categories ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+        {/* ── Exportación estrella: Excel completo ─────────────────── */}
+        <div className="bg-white border-2 border-[#F5C218] p-6 space-y-4">
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 bg-[#1C1C1C] flex items-center justify-center shrink-0">
+              <FileSpreadsheet className="w-6 h-6 text-[#F5C218]" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-gray-900 uppercase tracking-tight">
+                  Exportación Completa — Excel Multi-Hoja
+                </h3>
+                <span className="text-xs bg-[#F5C218] text-[#1C1C1C] px-2 py-0.5 font-['Barlow_Condensed'] font-semibold uppercase tracking-wide">
+                  Recomendado
+                </span>
+              </div>
+              <p className="font-['DM_Sans'] text-sm text-gray-600">
+                Genera un archivo Excel con 4 hojas integradas: todos los gastos en detalle,
+                resumen por proyecto con semáforo presupuestal, distribución por categoría, y listado de comprobantes fiscales NCF.
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {['Hoja 1: Gastos detallados', 'Hoja 2: Por proyecto', 'Hoja 3: Por categoría', 'Hoja 4: NCF / Fiscales'].map((s) => (
+                  <span key={s} className="border border-gray-200 px-2 py-0.5 text-xs text-gray-500 font-['DM_Sans']">{s}</span>
                 ))}
-              </select>
-            </div>
-            <div>
-              <label className="label flex items-center gap-1"><CreditCard className="w-3.5 h-3.5" /> Método de pago</label>
-              <select className="input-field" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
-                <option value="">— Todos —</option>
-                <option value="CASH">Efectivo</option>
-                <option value="TRANSFER">Transferencia</option>
-                <option value="CARD">Tarjeta</option>
-                <option value="CHECK">Cheque</option>
-                <option value="OTHER">Otro</option>
-              </select>
-            </div>
-            <div>
-              <label className="label">Estado del gasto</label>
-              <select className="input-field" value={status} onChange={(e) => setStatus(e.target.value)}>
-                <option value="ACTIVE">Solo activos</option>
-                <option value="VOIDED">Solo anulados</option>
-                <option value="">Todos (activos + anulados)</option>
-              </select>
+              </div>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* ── Exportación estrella: Excel completo ─────────────────── */}
-      <div className="card p-5 border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-white space-y-4">
-        <div className="flex items-start gap-3">
-          <div className="w-11 h-11 rounded-xl bg-yellow-100 flex items-center justify-center shrink-0">
-            <FileSpreadsheet className="w-6 h-6 text-yellow-700" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-gray-900">Exportación Completa — Excel Multi-Hoja</h3>
-              <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-full font-semibold">Recomendado</span>
-            </div>
-            <p className="text-sm text-gray-600 mt-1">
-              Genera un archivo Excel con 4 hojas integradas: todos los gastos en detalle,
-              resumen por proyecto con semáforo presupuestal, distribución por categoría, y listado de comprobantes fiscales NCF.
-            </p>
-            <div className="flex flex-wrap gap-2 mt-3 text-xs text-gray-500">
-              <span className="bg-gray-100 rounded-full px-2 py-0.5">📋 Hoja 1: Gastos detallados</span>
-              <span className="bg-gray-100 rounded-full px-2 py-0.5">🏗 Hoja 2: Por proyecto</span>
-              <span className="bg-gray-100 rounded-full px-2 py-0.5">🏷 Hoja 3: Por categoría</span>
-              <span className="bg-gray-100 rounded-full px-2 py-0.5">🧾 Hoja 4: NCF / Fiscales</span>
-            </div>
-          </div>
+          <DownloadButton
+            variant="gold"
+            label="Descargar Excel Completo"
+            icon={<Download className="w-4 h-4" />}
+            onClick={() => {
+              const q = qs();
+              return downloadFile(
+                `/expenses/complete.xlsx${q ? '?' + q : ''}`,
+                `gastos-${startDate}_${endDate}.xlsx`,
+              );
+            }}
+          />
         </div>
-        <DownloadButton
-          variant="gold"
-          label="Descargar Excel Completo"
-          icon={<Download className="w-4 h-4" />}
-          onClick={() => {
-            const q = qs();
-            return downloadFile(
-              `/expenses/complete.xlsx${q ? '?' + q : ''}`,
-              `gastos-${startDate}_${endDate}.xlsx`,
-            );
-          }}
-        />
-      </div>
 
-      {/* ── Reportes individuales ─────────────────────────────────── */}
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Reportes individuales</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* ── Reportes individuales ─────────────────────────────────── */}
+        <div>
+          <p className="font-['Barlow_Condensed'] text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+            Reportes individuales
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-          {/* Resumen de todos los proyectos */}
-          <div className="card p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
+            {/* Resumen de todos los proyectos */}
+            <div className="bg-white border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-4 h-4 text-[#F5C218]" />
+                </div>
+                <div>
+                  <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
+                    Resumen de Proyectos
+                  </h3>
+                  <p className="font-['DM_Sans'] text-xs text-gray-500">Presupuesto vs. gastado por proyecto</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 text-sm">Resumen de Proyectos</h3>
-                <p className="text-xs text-gray-500">Presupuesto vs. gastado por proyecto</p>
-              </div>
-            </div>
-            <DownloadButton
-              label="Excel"
-              icon={<FileSpreadsheet className="w-3.5 h-3.5 text-green-600" />}
-              onClick={() => downloadFile('/projects/summary.xlsx', `resumen-proyectos-${today}.xlsx`)}
-            />
-          </div>
-
-          {/* Gastos de proyecto específico */}
-          <div className="card p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center">
-                <FolderOpen className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 text-sm">Gastos por Proyecto</h3>
-                <p className="text-xs text-gray-500">Requiere seleccionar un proyecto</p>
-              </div>
-            </div>
-            <div className="flex gap-2 flex-wrap">
               <DownloadButton
                 label="Excel"
-                icon={<FileSpreadsheet className="w-3.5 h-3.5 text-green-600" />}
-                onClick={() => {
-                  if (!projectId) { alert('Selecciona un proyecto en los filtros'); return Promise.resolve(); }
-                  const q = qs();
-                  return downloadFile(`/projects/${projectId}/expenses.xlsx${q ? '?' + q : ''}`, `gastos-proyecto-${today}.xlsx`);
-                }}
+                icon={<FileSpreadsheet className="w-3.5 h-3.5" />}
+                onClick={() => downloadFile('/projects/summary.xlsx', `resumen-proyectos-${today}.xlsx`)}
               />
+            </div>
+
+            {/* Gastos de proyecto específico */}
+            <div className="bg-white border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
+                  <FolderOpen className="w-4 h-4 text-[#F5C218]" />
+                </div>
+                <div>
+                  <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
+                    Gastos por Proyecto
+                  </h3>
+                  <p className="font-['DM_Sans'] text-xs text-gray-500">Requiere seleccionar un proyecto</p>
+                </div>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <DownloadButton
+                  label="Excel"
+                  icon={<FileSpreadsheet className="w-3.5 h-3.5" />}
+                  onClick={() => {
+                    if (!projectId) { alert('Selecciona un proyecto en los filtros'); return Promise.resolve(); }
+                    const q = qs();
+                    return downloadFile(`/projects/${projectId}/expenses.xlsx${q ? '?' + q : ''}`, `gastos-proyecto-${today}.xlsx`);
+                  }}
+                />
+                <DownloadButton
+                  label="PDF"
+                  icon={<FileText className="w-3.5 h-3.5" />}
+                  onClick={() => {
+                    if (!projectId) { alert('Selecciona un proyecto en los filtros'); return Promise.resolve(); }
+                    const q = qs();
+                    return downloadFile(`/projects/${projectId}/expenses.pdf${q ? '?' + q : ''}`, `reporte-proyecto-${today}.pdf`);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Comprobantes Fiscales */}
+            <div className="bg-white border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
+                  <Receipt className="w-4 h-4 text-[#F5C218]" />
+                </div>
+                <div>
+                  <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
+                    Comprobantes Fiscales (NCF)
+                  </h3>
+                  <p className="font-['DM_Sans'] text-xs text-gray-500">Para revisión DGII / contabilidad</p>
+                </div>
+              </div>
               <DownloadButton
-                label="PDF"
-                icon={<FileText className="w-3.5 h-3.5 text-red-500" />}
+                label="Excel NCF"
+                icon={<FileSpreadsheet className="w-3.5 h-3.5" />}
                 onClick={() => {
-                  if (!projectId) { alert('Selecciona un proyecto en los filtros'); return Promise.resolve(); }
                   const q = qs();
-                  return downloadFile(`/projects/${projectId}/expenses.pdf${q ? '?' + q : ''}`, `reporte-proyecto-${today}.pdf`);
+                  return downloadFile(`/fiscal.xlsx${q ? '?' + q : ''}`, `comprobantes-ncf-${today}.xlsx`);
                 }}
               />
             </div>
-          </div>
 
-          {/* Comprobantes Fiscales */}
-          <div className="card p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Receipt className="w-5 h-5 text-amber-600" />
+            {/* Reportes rápidos */}
+            <div className="bg-white border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
+                  <BarChart3 className="w-4 h-4 text-[#F5C218]" />
+                </div>
+                <div>
+                  <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
+                    Exportación rápida
+                  </h3>
+                  <p className="font-['DM_Sans'] text-xs text-gray-500">Mes actual, sin filtros adicionales</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 text-sm">Comprobantes Fiscales (NCF)</h3>
-                <p className="text-xs text-gray-500">Para revisión DGII / contabilidad</p>
-              </div>
+              <DownloadButton
+                label="Mes actual"
+                icon={<Download className="w-3.5 h-3.5" />}
+                variant="primary"
+                onClick={() => downloadFile(
+                  `/expenses/complete.xlsx?startDate=${firstDay}&endDate=${today}&status=ACTIVE`,
+                  `mes-actual-${today}.xlsx`,
+                )}
+              />
             </div>
-            <DownloadButton
-              label="Excel NCF"
-              icon={<FileSpreadsheet className="w-3.5 h-3.5 text-green-600" />}
-              onClick={() => {
-                const q = qs();
-                return downloadFile(`/fiscal.xlsx${q ? '?' + q : ''}`, `comprobantes-ncf-${today}.xlsx`);
-              }}
-            />
-          </div>
-
-          {/* Reportes rápidos */}
-          <div className="card p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-gray-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 text-sm">Exportación rápida</h3>
-                <p className="text-xs text-gray-500">Mes actual, sin filtros adicionales</p>
-              </div>
-            </div>
-            <DownloadButton
-              label="Mes actual"
-              icon={<Download className="w-3.5 h-3.5 text-indigo-500" />}
-              variant="primary"
-              onClick={() => downloadFile(
-                `/expenses/complete.xlsx?startDate=${firstDay}&endDate=${today}&status=ACTIVE`,
-                `mes-actual-${today}.xlsx`,
-              )}
-            />
           </div>
         </div>
-      </div>
 
-      {/* Nota informativa */}
-      <div className="rounded-xl bg-gray-50 border border-gray-200 p-4 text-xs text-gray-500 flex gap-3">
-        <Shield className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <p className="font-semibold text-gray-600">Módulo de acceso restringido</p>
-          <p>Este módulo solo es visible para Administradores y Supervisores. Los archivos Excel incluyen formato profesional con colores corporativos, semáforos de alerta presupuestal y totales automáticos. Los filtros aplicados arriba se reflejan en todas las exportaciones.</p>
+        {/* Nota informativa */}
+        <div className="bg-[#1C1C1C] border border-[#F5C218]/40 p-4 flex gap-3">
+          <Shield className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-['Barlow_Condensed'] font-semibold text-[#F5C218] text-xs uppercase tracking-widest">
+              Módulo de acceso restringido
+            </p>
+            <p className="font-['DM_Sans'] text-xs text-gray-400">
+              Este módulo solo es visible para Administradores y Supervisores. Los archivos Excel incluyen formato profesional con colores corporativos, semáforos de alerta presupuestal y totales automáticos. Los filtros aplicados arriba se reflejan en todas las exportaciones.
+            </p>
+          </div>
         </div>
       </div>
     </div>
