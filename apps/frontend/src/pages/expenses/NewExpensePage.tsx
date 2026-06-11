@@ -469,25 +469,6 @@ export default function NewExpensePage() {
                   )}
                 </div>
 
-                {/* OCR validation checkbox */}
-                <div className="border-l-4 border-amber-400 bg-amber-50 p-4">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={ocrValidated}
-                      onChange={(e) => setOcrValidated(e.target.checked)}
-                      className="mt-1 border-gray-300 cursor-pointer"
-                    />
-                    <div className="flex-1">
-                      <p className="font-['DM_Sans'] text-sm font-semibold text-amber-900">
-                        He revisado y validado los datos del OCR
-                      </p>
-                      <p className="font-['DM_Sans'] text-xs text-amber-700 mt-1">
-                        Confirma que comparaste los datos extraídos (especialmente montos, NCF y fechas) con la factura original y que son correctos. Esta validación es obligatoria para registrar el gasto.
-                      </p>
-                    </div>
-                  </label>
-                </div>
               </div>
             )}
           </div>
@@ -711,18 +692,27 @@ export default function NewExpensePage() {
             />
           </div>
 
-          {/* OCR not validated alert */}
-          {ocrResult && !ocrValidated && (
-            <div className="border-l-4 border-red-500 bg-red-50 text-red-700 p-4 flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-['DM_Sans'] text-sm font-semibold">
-                  No puedes registrar el gasto sin validar el OCR
-                </p>
-                <p className="font-['DM_Sans'] text-xs mt-1">
-                  Marca el checkbox de validación arriba para confirmar que revisaste los datos
-                </p>
-              </div>
+          {/* OCR validation checkbox — shown at bottom so user confirms after reviewing all fields */}
+          {ocrResult && (
+            <div className={`border-l-4 p-4 ${ocrValidated ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={ocrValidated}
+                  onChange={(e) => setOcrValidated(e.target.checked)}
+                  className="mt-1 cursor-pointer"
+                />
+                <div className="flex-1">
+                  <p className={`font-['DM_Sans'] text-sm font-semibold ${ocrValidated ? 'text-green-800' : 'text-amber-900'}`}>
+                    {ocrValidated ? '✓ Datos del OCR validados' : 'Confirmar datos extraídos por IA'}
+                  </p>
+                  <p className={`font-['DM_Sans'] text-xs mt-1 ${ocrValidated ? 'text-green-700' : 'text-amber-700'}`}>
+                    {ocrValidated
+                      ? 'Has confirmado que los datos (montos, NCF, fechas) coinciden con la factura original.'
+                      : 'Compara los campos completados automáticamente con la factura original antes de guardar.'}
+                  </p>
+                </div>
+              </label>
             </div>
           )}
 
@@ -738,7 +728,7 @@ export default function NewExpensePage() {
             <button
               type="submit"
               disabled={mutation.isPending || (ocrResult !== null && !ocrValidated)}
-              title={ocrResult && !ocrValidated ? 'Debes validar los datos del OCR antes de guardar' : ''}
+              title={ocrResult && !ocrValidated ? 'Marca el checkbox de validación para confirmar los datos del OCR' : ''}
               style={{ background: '#F5C218', color: '#1C1C1C' }}
               className={[
                 'font-[\'Barlow_Condensed\'] uppercase tracking-widest font-bold flex-1 py-3',
