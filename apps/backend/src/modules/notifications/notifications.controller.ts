@@ -50,7 +50,8 @@ export async function testWhatsApp(req: Request, res: Response, next: NextFuncti
 export async function whatsappRecipients(req: Request, res: Response, next: NextFunction) {
   try {
     if (req.user!.role !== 'admin') throw new AppError(403, 'Solo administradores', 'FORBIDDEN');
-    const recipients = await service.getWhatsAppRecipients();
+    const type = typeof req.query.type === 'string' ? req.query.type : undefined;
+    const recipients = await service.getWhatsAppRecipients(type);
     res.json({ success: true, data: { recipients } });
   } catch (err) { next(err); }
 }

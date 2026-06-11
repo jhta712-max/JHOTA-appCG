@@ -536,7 +536,7 @@ function buildRemediationNote(remediation: RemediationResult): string {
 
 async function getWhatsAppRecipients(token: string): Promise<string[]> {
   try {
-    const data = await fetchJson(`${BACKEND_URL}/api/v1/notifications/whatsapp-recipients`, {
+    const data = await fetchJson(`${BACKEND_URL}/api/v1/notifications/whatsapp-recipients?type=SYSTEM`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const fromDb: string[] = data?.data?.recipients ?? [];
