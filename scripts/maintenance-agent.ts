@@ -92,7 +92,9 @@ const TRIGGER_TYPE = process.env.TRIGGER_TYPE ?? 'manual';   // 'weekly' | 'post
 const RENDER_API_KEY    = process.env.RENDER_API_KEY    ?? '';
 const RENDER_SERVICE_ID = process.env.RENDER_SERVICE_ID ?? '';
 
-const CACHE_PATH  = path.join(process.cwd(), '.maintenance-cache.json');
+// In GitHub Actions, __dirname points to the script file location; cache lives at repo root
+const REPO_ROOT   = path.resolve(__dirname, '..');
+const CACHE_PATH  = path.join(REPO_ROOT, '.maintenance-cache.json');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -217,7 +219,10 @@ function runPnpmAudit(): AuditReport {
       encoding: 'utf8',
       timeout: 60_000,
     });
-    const data = JSON.parse(raw);
+    // pnpm audit may prepend warning lines before the JSON object — extract only the JSON
+    const jsonStart = raw.indexOf('{');
+    if (jsonStart === -1) return { vulnerabilities: [], totalHigh: 0, totalCritical: 0 };
+    const data = JSON.parse(raw.slice(jsonStart));
 
     const vulns: AuditVulnerability[] = [];
     const advisories = data?.advisories ?? data?.vulnerabilities ?? {};

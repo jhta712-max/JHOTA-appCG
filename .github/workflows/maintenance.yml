@@ -42,6 +42,7 @@ jobs:
           key: maintenance-cache-${{ github.run_id }}
           restore-keys: |
             maintenance-cache-
+        # restore-keys ensures the latest saved cache is restored even when key doesn't match
 
       - name: Ejecutar agente de mantenimiento
         env:
