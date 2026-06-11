@@ -123,12 +123,7 @@ export async function getSupplierHistory(id: string) {
       })
     : [];
 
-  const officeExpenses = await prisma.officeExpense.findMany({
-    where:   { supplierId: id, status: 'ACTIVE' },
-    include: { createdBy: { select: { id: true, name: true } } },
-    orderBy: { expenseDate: 'desc' },
-    take:    50,
-  });
+  const officeExpenses: never[] = [];
 
   // Órdenes de pago recibidas por este suplidor
   const paymentOrders = await prisma.paymentOrder.findMany({
