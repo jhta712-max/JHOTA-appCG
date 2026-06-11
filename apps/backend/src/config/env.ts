@@ -29,11 +29,10 @@ const envSchema = z.object({
   // Backup automático
   BACKUP_SECRET_KEY:      z.string().optional(),
   BACKUP_EMAIL:           z.string().email().optional(),
-  // Notificaciones WhatsApp (Twilio)
-  TWILIO_ACCOUNT_SID:     z.string().optional(),
-  TWILIO_AUTH_TOKEN:      z.string().optional(),
-  TWILIO_WHATSAPP_FROM:   z.string().default('whatsapp:+14155238886'),
-  NOTIFY_WHATSAPP_TO:     z.string().optional(), // comma-separated: "whatsapp:+18095551234,whatsapp:+18095555678"
+  // Notificaciones WhatsApp (UltraMsg)
+  ULTRAMSG_INSTANCE_ID:   z.string().optional(),  // Instance ID del dashboard UltraMsg
+  ULTRAMSG_TOKEN:         z.string().optional(),  // Token del dashboard UltraMsg
+  NOTIFY_WHATSAPP_TO:     z.string().optional(),  // comma-separated: "+18095551234,+18095555678"
 });
 
 const parsed = envSchema.safeParse(process.env);

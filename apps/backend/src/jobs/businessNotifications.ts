@@ -44,35 +44,32 @@ async function getWhatsAppRecipients(): Promise<string[]> {
 }
 
 function normalizeWhatsApp(phone: string): string {
-  const clean = phone.replace(/[\s\-().]/g, '');
-  const withPlus = clean.startsWith('+') ? clean : `+${clean}`;
-  return withPlus.startsWith('whatsapp:') ? withPlus : `whatsapp:${withPlus}`;
+  const clean = phone.replace(/[\s\-(). ]/g, '');
+  // Strip "whatsapp:" prefix — UltraMsg uses plain numbers
+  const withoutPrefix = clean.startsWith('whatsapp:') ? clean.slice(9) : clean;
+  return withoutPrefix.startsWith('+') ? withoutPrefix : `+${withoutPrefix}`;
 }
 
-// ─── WhatsApp sender (Twilio, graceful no-op if not configured) ──────────────
+// ─── WhatsApp sender (UltraMsg, graceful no-op if not configured) ─────────────
 
 async function sendWhatsApp(message: string): Promise<void> {
-  if (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN) return;
+  if (!env.ULTRAMSG_INSTANCE_ID || !env.ULTRAMSG_TOKEN) return;
   const recipients = await getWhatsAppRecipients();
   if (recipients.length === 0) return;
 
   for (const to of recipients) {
     try {
-      const body = new URLSearchParams({ From: env.TWILIO_WHATSAPP_FROM, To: to, Body: message });
       const resp = await fetch(
-        `https://api.twilio.com/2010-04-01/Accounts/${env.TWILIO_ACCOUNT_SID}/Messages.json`,
+        `https://api.ultramsg.com/${env.ULTRAMSG_INSTANCE_ID}/messages/chat`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: `Basic ${Buffer.from(`${env.TWILIO_ACCOUNT_SID}:${env.TWILIO_AUTH_TOKEN}`).toString('base64')}`,
-          },
-          body: body.toString(),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: env.ULTRAMSG_TOKEN, to, body: message }),
         },
       );
       if (!resp.ok) {
         const err = await resp.text();
-        logger.error('[BusinessNotifications] Twilio error:', err);
+        logger.error('[BusinessNotifications] UltraMsg error:', err);
       }
     } catch (err) {
       logger.error('[BusinessNotifications] Error enviando WhatsApp:', err);

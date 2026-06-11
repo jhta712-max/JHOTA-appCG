@@ -34,8 +34,8 @@ export async function createNotification(opts: {
 }
 
 export async function sendTestWhatsApp(): Promise<void> {
-  if (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN) {
-    throw new Error('Twilio no está configurado (faltan TWILIO_ACCOUNT_SID o TWILIO_AUTH_TOKEN)');
+  if (!env.ULTRAMSG_INSTANCE_ID || !env.ULTRAMSG_TOKEN) {
+    throw new Error('UltraMsg no está configurado (faltan ULTRAMSG_INSTANCE_ID o ULTRAMSG_TOKEN)');
   }
 
   const [users, contacts] = await Promise.all([
@@ -53,10 +53,8 @@ export async function sendTestWhatsApp(): Promise<void> {
   for (const u of users)    if (u.phone) recipients.push(normalizePhone(u.phone));
   for (const c of contacts) if (c.phone) recipients.push(normalizePhone(c.phone));
 
-  if (recipients.length === 0) {
-    if (env.NOTIFY_WHATSAPP_TO) {
-      env.NOTIFY_WHATSAPP_TO.split(',').map((s) => s.trim()).filter(Boolean).forEach((n) => recipients.push(n));
-    }
+  if (recipients.length === 0 && env.NOTIFY_WHATSAPP_TO) {
+    env.NOTIFY_WHATSAPP_TO.split(',').map((s) => s.trim()).filter(Boolean).forEach((n) => recipients.push(n));
   }
 
   if (recipients.length === 0) {
@@ -65,35 +63,32 @@ export async function sendTestWhatsApp(): Promise<void> {
 
   const unique = [...new Set(recipients)];
   for (const to of unique) {
-    const body = new URLSearchParams({
-      From: env.TWILIO_WHATSAPP_FROM,
-      To:   to,
-      Body: '✅ *Control de Gastos — Prueba*\n\nLas notificaciones de WhatsApp están configuradas correctamente.',
-    });
     const resp = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${env.TWILIO_ACCOUNT_SID}/Messages.json`,
+      `https://api.ultramsg.com/${env.ULTRAMSG_INSTANCE_ID}/messages/chat`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `Basic ${Buffer.from(`${env.TWILIO_ACCOUNT_SID}:${env.TWILIO_AUTH_TOKEN}`).toString('base64')}`,
-        },
-        body: body.toString(),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: env.ULTRAMSG_TOKEN,
+          to,
+          body: '✅ *Control de Gastos — Prueba*\n\nLas notificaciones de WhatsApp están configuradas correctamente.',
+        }),
       },
     );
     if (!resp.ok) {
       const err = await resp.text();
-      logger.error('[Notifications] Twilio test error:', err);
-      throw new Error(`Twilio respondió con error: ${err}`);
+      logger.error('[Notifications] UltraMsg test error:', err);
+      throw new Error(`UltraMsg respondió con error: ${err}`);
     }
   }
   logger.info(`[Notifications] Test WhatsApp enviado a ${unique.length} destinatario(s).`);
 }
 
 function normalizePhone(phone: string): string {
-  const clean = phone.replace(/[\s\-().]/g, '');
-  const withPlus = clean.startsWith('+') ? clean : `+${clean}`;
-  return withPlus.startsWith('whatsapp:') ? withPlus : `whatsapp:${withPlus}`;
+  const clean = phone.replace(/[\s\-(). ]/g, '');
+  // Strip "whatsapp:" prefix — UltraMsg uses plain numbers e.g. "+18095551234"
+  const withoutPrefix = clean.startsWith('whatsapp:') ? clean.slice(9) : clean;
+  return withoutPrefix.startsWith('+') ? withoutPrefix : `+${withoutPrefix}`;
 }
 
 export async function recentNotificationExists(

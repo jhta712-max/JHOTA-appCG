@@ -4,7 +4,7 @@
  *
  * Canales soportados:
  *   - Email: nodemailer (SMTP / Gmail / SendGrid)
- *   - WhatsApp: Twilio WhatsApp API
+ *   - WhatsApp: UltraMsg API
  */
 
 import nodemailer from 'nodemailer';
@@ -17,10 +17,13 @@ const SMTP_PORT     = parseInt(process.env.SMTP_PORT   ?? '465');
 const SMTP_USER     = process.env.SMTP_USER            ?? '';
 const SMTP_PASS     = process.env.SMTP_PASS            ?? '';
 
-const TWILIO_SID    = process.env.TWILIO_ACCOUNT_SID   ?? '';
-const TWILIO_TOKEN  = process.env.TWILIO_AUTH_TOKEN    ?? '';
-const TWILIO_FROM   = process.env.TWILIO_WHATSAPP_FROM ?? 'whatsapp:+14155238886'; // Twilio sandbox default
-const WHATSAPP_TO   = process.env.NOTIFY_WHATSAPP_TO   ?? '';  // comma-separated e.g. "whatsapp:+18095551234"
+// UltraMsg — https://ultramsg.com
+// Instance ID y token se obtienen en el dashboard de UltraMsg
+const ULTRAMSG_INSTANCE = process.env.ULTRAMSG_INSTANCE_ID ?? '';
+const ULTRAMSG_TOKEN    = process.env.ULTRAMSG_TOKEN        ?? '';
+// Destinatarios: números con código de país, sin "whatsapp:" prefix
+// Ej: "+18095551234,+18095555678"
+const WHATSAPP_TO       = process.env.NOTIFY_WHATSAPP_TO    ?? '';
 
 const APP_NAME      = 'SERVINGMI — Gastos';
 const APP_URL       = process.env.APP_URL ?? 'http://localhost:3001';
@@ -135,32 +138,24 @@ async function sendEmail(subject: string, html: string): Promise<void> {
   }
 }
 
-// ─── WhatsApp sender via Twilio ───────────────────────────────
+// ─── WhatsApp sender via UltraMsg ────────────────────────────
 async function sendWhatsApp(message: string): Promise<void> {
-  if (!TWILIO_SID || !TWILIO_TOKEN || !WHATSAPP_TO) return;
+  if (!ULTRAMSG_INSTANCE || !ULTRAMSG_TOKEN || !WHATSAPP_TO) return;
   const recipients = WHATSAPP_TO.split(',').map(s => s.trim()).filter(Boolean);
 
   for (const to of recipients) {
     try {
-      const body = new URLSearchParams({
-        From: TWILIO_FROM,
-        To:   to,
-        Body: message,
-      });
       const resp = await fetch(
-        `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
+        `https://api.ultramsg.com/${ULTRAMSG_INSTANCE}/messages/chat`,
         {
           method:  'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': `Basic ${Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64')}`,
-          },
-          body: body.toString(),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: ULTRAMSG_TOKEN, to, body: message }),
         }
       );
       if (!resp.ok) {
         const err = await resp.text();
-        console.error('[Notifications] Twilio error:', err);
+        console.error('[Notifications] UltraMsg error:', err);
       }
     } catch (err) {
       console.error('[Notifications] Error enviando WhatsApp:', err);
