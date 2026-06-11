@@ -6,7 +6,7 @@ import {
   ArrowUpDown, Filter,
 } from 'lucide-react';
 import {
-  officeExpensesApi, cardsApi, suppliersApi,
+  officeExpensesApi, cardsApi,
   OFFICE_EXPENSE_CATEGORY_LABELS,
   type OfficeExpense, type OfficeExpenseCategory,
 } from '../../api';
@@ -52,7 +52,7 @@ const emptyForm = () => ({
   expenseDate:   new Date().toISOString().slice(0, 10),
   paymentMethod: 'CASH',
   companyCardId: '',
-  supplierId:    '',
+  supplierName:  '',
   hasFiscalDoc:  false,
   fiscalDocNum:  '',
   notes:         '',
@@ -108,15 +108,7 @@ export default function OfficeExpensesPage() {
     select:   (r) => r.data.data?.filter((c: any) => c.isActive) ?? [],
   });
 
-  const { data: suppliersData } = useQuery({
-    queryKey: ['suppliers-active'],
-    queryFn:  () => suppliersApi.list({ onlyActive: true }),
-    select:   (r) => r.data.data ?? [],
-    enabled:  showForm,
-  });
-
-  const expenses  = listData?.data ?? [];
-  const suppliers = suppliersData ?? [];
+  const expenses = listData?.data ?? [];
 
   function invalidate() {
     qc.invalidateQueries({ queryKey: ['office-expenses'] });
@@ -129,7 +121,7 @@ export default function OfficeExpensesPage() {
     mutationFn: () => officeExpensesApi.create({
       ...form, amount: Number(form.amount),
       companyCardId: form.companyCardId || null,
-      supplierId:    form.supplierId    || null,
+      supplierName:  form.supplierName  || null,
       fiscalDocNum:  form.fiscalDocNum  || null,
       notes:         form.notes         || null,
     }),
@@ -141,7 +133,7 @@ export default function OfficeExpensesPage() {
     mutationFn: () => officeExpensesApi.update(editingId!, {
       ...form, amount: Number(form.amount),
       companyCardId: form.companyCardId || null,
-      supplierId:    form.supplierId    || null,
+      supplierName:  form.supplierName  || null,
       fiscalDocNum:  form.fiscalDocNum  || null,
       notes:         form.notes         || null,
     }),
@@ -163,7 +155,7 @@ export default function OfficeExpensesPage() {
     setForm({
       category: exp.category, description: exp.description, amount: String(exp.amount),
       expenseDate: exp.expenseDate.slice(0, 10), paymentMethod: exp.paymentMethod,
-      companyCardId: exp.companyCardId ?? '', supplierId: exp.supplierId ?? '',
+      companyCardId: exp.companyCardId ?? '', supplierName: exp.supplierName ?? '',
       hasFiscalDoc: exp.hasFiscalDoc, fiscalDocNum: exp.fiscalDocNum ?? '', notes: exp.notes ?? '',
     });
     setActionError(''); resetOcr(); setOcrValidated(false); setShowForm(true); setViewingExp(null);
@@ -187,14 +179,8 @@ export default function OfficeExpensesPage() {
       ...(data.description && { description:  data.description }),
       ...(data.ncf         && { hasFiscalDoc: true, fiscalDocNum: data.ncf }),
       ...((!data.ncf && (data.supplierRnc || data.supplierName)) && { hasFiscalDoc: true }),
+      ...(data.supplierName && { supplierName: data.supplierName }),
     }));
-    if (data.supplierName && suppliers.length > 0) {
-      const match = suppliers.find((s: any) =>
-        s.name.toLowerCase().includes(data.supplierName!.toLowerCase()) ||
-        data.supplierName!.toLowerCase().includes(s.name.toLowerCase())
-      );
-      if (match) setForm((f) => ({ ...f, supplierId: match.id }));
-    }
   }
 
   const isSubmitting = createMut.isPending || updateMut.isPending;
@@ -417,9 +403,9 @@ export default function OfficeExpensesPage() {
                     <p className="text-sm text-gray-500 mt-0.5 font-['Space_Mono'] text-xs">
                       {fmtDate(exp.expenseDate)} · {PAYMENT_METHODS[exp.paymentMethod] ?? exp.paymentMethod}
                       {exp.hasFiscalDoc && <span className="ml-2 text-green-600 font-bold">· FACTURA</span>}
-                      {exp.supplier && (
+                      {exp.supplierName && (
                         <span className="ml-2 text-blue-600">
-                          · {exp.supplier.name}
+                          · {exp.supplierName}
                         </span>
                       )}
                     </p>
@@ -504,11 +490,9 @@ export default function OfficeExpensesPage() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Suplidor (opcional)</label>
-                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
-                  value={form.supplierId} onChange={(e) => setForm((f) => ({ ...f, supplierId: e.target.value }))}>
-                  <option value="">Sin suplidor</option>
-                  {suppliers.map((s: any) => <option key={s.id} value={s.id}>{s.name}{s.rnc ? ` — RNC ${s.rnc}` : ''}</option>)}
-                </select>
+                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  placeholder="Nombre del suplidor o comercio"
+                  value={form.supplierName} onChange={(e) => setForm((f) => ({ ...f, supplierName: e.target.value }))} />
               </div>
 
               <div>
@@ -632,12 +616,12 @@ export default function OfficeExpensesPage() {
                     <p className="font-medium font-['Space_Mono'] text-xs">{viewingExp.companyCard.holderName} ···{viewingExp.companyCard.lastFour}</p>
                   </div>
                 )}
-                {viewingExp.supplier && (
+                {viewingExp.supplierName && (
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-0.5 font-['Space_Mono']">Suplidor</p>
                     <p className="font-medium flex items-center gap-1">
                       <Building2 className="w-3.5 h-3.5 text-gray-400" />
-                      {viewingExp.supplier.name}
+                      {viewingExp.supplierName}
                     </p>
                   </div>
                 )}

@@ -515,7 +515,7 @@ export interface OfficeExpense {
   expenseDate:   string;
   paymentMethod: string;
   companyCardId: string | null;
-  supplierId:    string | null;
+  supplierName:  string | null;
   hasFiscalDoc:  boolean;
   fiscalDocNum:  string | null;
   notes:         string | null;
@@ -524,7 +524,6 @@ export interface OfficeExpense {
   createdAt:     string;
   createdBy:     { id: string; name: string; email: string };
   companyCard:   { id: string; holderName: string; lastFour: string; bank: string } | null;
-  supplier:      { id: string; name: string; rnc: string | null } | null;
 }
 
 export interface OfficeExpenseSummary {
