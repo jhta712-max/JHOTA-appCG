@@ -6,10 +6,11 @@ import {
   ArrowUpDown, Filter,
 } from 'lucide-react';
 import {
-  officeExpensesApi, cardsApi, ocrApi, suppliersApi,
+  officeExpensesApi, cardsApi, suppliersApi,
   OFFICE_EXPENSE_CATEGORY_LABELS,
   type OfficeExpense, type OfficeExpenseCategory,
 } from '../../api';
+import { useOcrPolling } from '../../hooks/useOcrPolling';
 import { fmtDate } from '../../utils/date';
 import { useRole } from '../../hooks/useRole';
 
@@ -66,8 +67,7 @@ export default function OfficeExpensesPage() {
   const [flash,        setFlash]        = useState('');
   const [catFilter,    setCatFilter]    = useState('');
   const [expandStats,  setExpandStats]  = useState(true);
-  const [ocrLoading,   setOcrLoading]   = useState(false);
-  const [ocrError,     setOcrError]     = useState('');
+  const { loading: ocrLoading, error: ocrError, analyze: runOcr, reset: resetOcr } = useOcrPolling();
   const [ocrValidated, setOcrValidated] = useState(false);
   const [actionError,  setActionError]  = useState('');
   const [orderBy,      setOrderBy]      = useState<'expenseDate' | 'amount' | 'createdAt'>('expenseDate');
@@ -152,7 +152,7 @@ export default function OfficeExpensesPage() {
   });
 
   function openCreate() {
-    setEditingId(null); setForm(emptyForm()); setActionError(''); setOcrError(''); setOcrValidated(false); setShowForm(true);
+    setEditingId(null); setForm(emptyForm()); setActionError(''); resetOcr(); setOcrValidated(false); setShowForm(true);
   }
 
   function openEdit(exp: OfficeExpense) {
@@ -163,7 +163,7 @@ export default function OfficeExpensesPage() {
       companyCardId: exp.companyCardId ?? '', supplierId: exp.supplierId ?? '',
       hasFiscalDoc: exp.hasFiscalDoc, fiscalDocNum: exp.fiscalDocNum ?? '', notes: exp.notes ?? '',
     });
-    setActionError(''); setOcrError(''); setOcrValidated(false); setShowForm(true); setViewingExp(null);
+    setActionError(''); resetOcr(); setOcrValidated(false); setShowForm(true); setViewingExp(null);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -174,30 +174,23 @@ export default function OfficeExpensesPage() {
   async function handleOcrFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setOcrLoading(true); setOcrError('');
-    try {
-      const res  = await ocrApi.analyze(file);
-      const data = res.data.data;
-      setForm((f) => ({
-        ...f,
-        ...(data.amount      && { amount:      String(data.amount) }),
-        ...(data.date        && { expenseDate:  data.date }),
-        ...(data.description && { description:  data.description }),
-        ...(data.ncf         && { hasFiscalDoc: true, fiscalDocNum: data.ncf }),
-        ...((!data.ncf && (data.supplierRnc || data.supplierName)) && { hasFiscalDoc: true }),
-      }));
-      if (data.supplierName && suppliers.length > 0) {
-        const match = suppliers.find((s: any) =>
-          s.name.toLowerCase().includes(data.supplierName!.toLowerCase()) ||
-          data.supplierName!.toLowerCase().includes(s.name.toLowerCase())
-        );
-        if (match) setForm((f) => ({ ...f, supplierId: match.id }));
-      }
-    } catch {
-      setOcrError('No se pudo analizar la imagen. Intenta con una foto más clara.');
-    } finally {
-      setOcrLoading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    const data = await runOcr(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (!data) return;
+    setForm((f) => ({
+      ...f,
+      ...(data.amount      && { amount:      String(data.amount) }),
+      ...(data.date        && { expenseDate:  data.date }),
+      ...(data.description && { description:  data.description }),
+      ...(data.ncf         && { hasFiscalDoc: true, fiscalDocNum: data.ncf }),
+      ...((!data.ncf && (data.supplierRnc || data.supplierName)) && { hasFiscalDoc: true }),
+    }));
+    if (data.supplierName && suppliers.length > 0) {
+      const match = suppliers.find((s: any) =>
+        s.name.toLowerCase().includes(data.supplierName!.toLowerCase()) ||
+        data.supplierName!.toLowerCase().includes(s.name.toLowerCase())
+      );
+      if (match) setForm((f) => ({ ...f, supplierId: match.id }));
     }
   }
 

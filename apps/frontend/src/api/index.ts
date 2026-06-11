@@ -225,16 +225,28 @@ export const payrollApi = {
   exportDocxUrl: (id: string) => `/api/v1/payrolls/${id}/export.docx`,
 };
 
+export type OcrJobStatus = 'processing' | 'completed' | 'failed';
+export interface OcrJobResponse {
+  jobId: string;
+  status: OcrJobStatus;
+  result?: OcrResult;
+  error?: string;
+  createdAt?: string;
+  completedAt?: string;
+}
+
 export const ocrApi = {
   analyze: (file: File) => {
     const form = new FormData();
     form.append('image', file);
-    return api.post<{ success: boolean; data: OcrResult }>(
+    return api.post<{ jobId: string; status: OcrJobStatus }>(
       '/ocr/analyze',
       form,
       { headers: { 'Content-Type': 'multipart/form-data' } },
     );
   },
+  getJob: (jobId: string) =>
+    api.get<OcrJobResponse>(`/ocr/jobs/${jobId}`),
 };
 
 // ── Cotizaciones ──────────────────────────────────────────────

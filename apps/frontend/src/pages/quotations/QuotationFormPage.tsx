@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Save, Loader2, AlertCircle, Sparkles, X,
 } from 'lucide-react';
-import { quotationsApi, projectsApi, categoriesApi, ocrApi } from '../../api';
+import { quotationsApi, projectsApi, categoriesApi } from '../../api';
+import { useOcrPolling } from '../../hooks/useOcrPolling';
 
 interface FormData {
   projectId:       string;
@@ -68,7 +69,7 @@ export default function QuotationFormPage() {
   const [apiErr,  setApiErr]  = useState('');
 
   const [ocrFile,     setOcrFile]     = useState<File | null>(null);
-  const [ocrLoading,  setOcrLoading]  = useState(false);
+  const { loading: ocrLoading, analyze: runOcr } = useOcrPolling();
   const [ocrMsg,      setOcrMsg]      = useState('');
 
   const { data: projects } = useQuery({
@@ -130,34 +131,27 @@ export default function QuotationFormPage() {
 
   const handleOcr = async () => {
     if (!ocrFile) return;
-    setOcrLoading(true);
     setOcrMsg('');
-    try {
-      const res = await ocrApi.analyze(ocrFile);
-      const d   = res.data.data as any;
-      setOcrMsg(`Documento detectado: ${d.documentTypeLabel ?? d.documentType ?? 'desconocido'}`);
-      setForm(f => ({
-        ...f,
-        supplierName:    d.supplierName    ?? f.supplierName,
-        supplierRnc:     d.supplierRnc     ?? f.supplierRnc,
-        quotationNumber: d.quotationNumber ?? f.quotationNumber,
-        quotationDate:   d.date            ? d.date.slice(0, 10) : f.quotationDate,
-        validUntil:      d.validUntil      ? d.validUntil.slice(0, 10) : f.validUntil,
-        currency:        d.currency        ?? f.currency,
-        subtotal:        d.subtotal        ? d.subtotal.toString() : f.subtotal,
-        itbisAmount:     d.itbisAmount     != null ? d.itbisAmount.toString() : f.itbisAmount,
-        total:           d.amount          ? d.amount.toString() : f.total,
-        description:     d.description     ?? f.description,
-        paymentTerms:    d.paymentTerms    ?? f.paymentTerms,
-        advancePct:      d.advancePct      != null ? d.advancePct.toString() : f.advancePct,
-        deliveryDays:    d.deliveryDays    != null ? d.deliveryDays.toString() : f.deliveryDays,
-        observations:    d.observations    ?? f.observations,
-      }));
-    } catch {
-      setOcrMsg('No se pudo analizar el documento. Verifica el archivo.');
-    } finally {
-      setOcrLoading(false);
-    }
+    const d = await runOcr(ocrFile) as any;
+    if (!d) return;
+    setOcrMsg(`Documento detectado: ${d.documentTypeLabel ?? d.documentType ?? 'desconocido'}`);
+    setForm(f => ({
+      ...f,
+      supplierName:    d.supplierName    ?? f.supplierName,
+      supplierRnc:     d.supplierRnc     ?? f.supplierRnc,
+      quotationNumber: d.quotationNumber ?? f.quotationNumber,
+      quotationDate:   d.date            ? d.date.slice(0, 10) : f.quotationDate,
+      validUntil:      d.validUntil      ? d.validUntil.slice(0, 10) : f.validUntil,
+      currency:        d.currency        ?? f.currency,
+      subtotal:        d.subtotal        ? d.subtotal.toString() : f.subtotal,
+      itbisAmount:     d.itbisAmount     != null ? d.itbisAmount.toString() : f.itbisAmount,
+      total:           d.amount          ? d.amount.toString() : f.total,
+      description:     d.description     ?? f.description,
+      paymentTerms:    d.paymentTerms    ?? f.paymentTerms,
+      advancePct:      d.advancePct      != null ? d.advancePct.toString() : f.advancePct,
+      deliveryDays:    d.deliveryDays    != null ? d.deliveryDays.toString() : f.deliveryDays,
+      observations:    d.observations    ?? f.observations,
+    }));
   };
 
   const validate = () => {

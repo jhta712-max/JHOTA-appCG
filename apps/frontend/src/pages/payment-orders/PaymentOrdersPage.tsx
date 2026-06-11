@@ -6,7 +6,8 @@ import {
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
   MessageCircle, Sparkles, Camera,
 } from 'lucide-react';
-import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi, ocrApi } from '../../api';
+import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../api';
+import { useOcrPolling } from '../../hooks/useOcrPolling';
 import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
@@ -186,12 +187,11 @@ export default function PaymentOrdersPage() {
   const [payInfoForm,  setPayInfoForm]  = useState({ paymentBank: '', paymentReference: '', exchangeRate: '' });
   const [fiscalErr,    setFiscalErr]    = useState('');
   const [conceptLoading, setConceptLoading] = useState(false);
-  const [ocrPayLoading, setOcrPayLoading] = useState(false);
-  const [ocrPayError,   setOcrPayError]   = useState('');
+  const { loading: ocrPayLoading, error: ocrPayError, analyze: runOcrPay, reset: resetOcrPay } = useOcrPolling();
   const ocrPayInputRef = useRef<HTMLInputElement>(null);
 
   const openPayModal = (o: PaymentOrder) => {
-    setOcrPayError(''); setOcrPayLoading(false); setPayingOrder(o);
+    resetOcrPay(); setPayingOrder(o);
     setFiscalForm({ hasFiscal: false, ncf: '', supplierRnc: o.supplier?.rnc ?? '', supplierName: o.supplier?.name ?? '', itbisAmount: '' });
     setPayInfoForm({ paymentBank: '', paymentReference: '', exchangeRate: '' });
     setFiscalErr(''); setPayModal(true);
@@ -199,25 +199,16 @@ export default function PaymentOrdersPage() {
   const closePayModal = () => { setPayModal(false); setPayingOrder(null); };
 
   const handleOcrPayScan = async (file: File) => {
-    setOcrPayLoading(true); setOcrPayError('');
-    try {
-      const res  = await ocrApi.analyze(file);
-      const data = res.data.data;
-      if (data.ncf || data.supplierName || data.supplierRnc || data.itbisAmount !== null) {
-        setFiscalForm((v) => ({
-          hasFiscal: true,
-          ncf:          data.ncf          ?? v.ncf,
-          supplierRnc:  data.supplierRnc  ?? v.supplierRnc,
-          supplierName: data.supplierName ?? v.supplierName,
-          itbisAmount:  data.itbisAmount != null ? String(data.itbisAmount) : v.itbisAmount,
-        }));
-      } else {
-        setOcrPayError('No se detectaron datos fiscales en la imagen.');
-      }
-    } catch {
-      setOcrPayError('Error al procesar la imagen. Intente de nuevo.');
-    } finally {
-      setOcrPayLoading(false);
+    const data = await runOcrPay(file);
+    if (!data) return;
+    if (data.ncf || data.supplierName || data.supplierRnc || data.itbisAmount !== null) {
+      setFiscalForm((v) => ({
+        hasFiscal: true,
+        ncf:          data.ncf          ?? v.ncf,
+        supplierRnc:  data.supplierRnc  ?? v.supplierRnc,
+        supplierName: data.supplierName ?? v.supplierName,
+        itbisAmount:  data.itbisAmount != null ? String(data.itbisAmount) : v.itbisAmount,
+      }));
     }
   };
 
