@@ -24,6 +24,7 @@ export const createOfficeExpenseSchema = z.object({
   category:      z.enum(OFFICE_EXPENSE_CATEGORIES),
   description:   z.string().min(3).max(500),
   amount:        z.coerce.number().positive(),
+  itbisAmount:   z.coerce.number().min(0).default(0),
   expenseDate:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (YYYY-MM-DD)'),
   paymentMethod: z.enum(PAYMENT_METHODS),
   companyCardId: z.coerce.string().optional().nullable(),

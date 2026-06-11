@@ -62,6 +62,7 @@ export async function createOfficeExpense(data: CreateOfficeExpenseInput, userId
       category:      data.category,
       description:   data.description,
       amount:        data.amount,
+      itbisAmount:   data.itbisAmount ?? 0,
       expenseDate:   new Date(data.expenseDate),
       paymentMethod: data.paymentMethod as any,
       companyCardId: data.companyCardId ? Number(data.companyCardId) : null,
@@ -90,7 +91,8 @@ export async function updateOfficeExpense(id: string, data: UpdateOfficeExpenseI
     data: {
       ...(data.category      && { category:    data.category }),
       ...(data.description   && { description: data.description }),
-      ...(data.amount        && { amount:      data.amount }),
+      ...(data.amount        && { amount:       data.amount }),
+      ...(data.itbisAmount   !== undefined && { itbisAmount: data.itbisAmount ?? 0 }),
       ...(data.expenseDate   && { expenseDate: new Date(data.expenseDate) }),
       ...(paymentMethod      && { paymentMethod: paymentMethod as any }),
       ...(data.companyCardId !== undefined && { companyCardId: data.companyCardId ? Number(data.companyCardId) : null }),

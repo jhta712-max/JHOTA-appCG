@@ -49,6 +49,7 @@ const emptyForm = () => ({
   category:      'CONSUMABLES' as OfficeExpenseCategory,
   description:   '',
   amount:        '',
+  itbisAmount:   '',
   expenseDate:   new Date().toISOString().slice(0, 10),
   paymentMethod: 'CASH',
   companyCardId: '',
@@ -119,7 +120,7 @@ export default function OfficeExpensesPage() {
 
   const createMut = useMutation({
     mutationFn: () => officeExpensesApi.create({
-      ...form, amount: Number(form.amount),
+      ...form, amount: Number(form.amount), itbisAmount: Number(form.itbisAmount) || 0,
       companyCardId: form.companyCardId || null,
       supplierName:  form.supplierName  || null,
       fiscalDocNum:  form.fiscalDocNum  || null,
@@ -131,7 +132,7 @@ export default function OfficeExpensesPage() {
 
   const updateMut = useMutation({
     mutationFn: () => officeExpensesApi.update(editingId!, {
-      ...form, amount: Number(form.amount),
+      ...form, amount: Number(form.amount), itbisAmount: Number(form.itbisAmount) || 0,
       companyCardId: form.companyCardId || null,
       supplierName:  form.supplierName  || null,
       fiscalDocNum:  form.fiscalDocNum  || null,
@@ -154,6 +155,7 @@ export default function OfficeExpensesPage() {
     setEditingId(exp.id);
     setForm({
       category: exp.category, description: exp.description, amount: String(exp.amount),
+      itbisAmount: String(exp.itbisAmount ?? '0'),
       expenseDate: exp.expenseDate.slice(0, 10), paymentMethod: exp.paymentMethod,
       companyCardId: exp.companyCardId ?? '', supplierName: exp.supplierName ?? '',
       hasFiscalDoc: exp.hasFiscalDoc, fiscalDocNum: exp.fiscalDocNum ?? '', notes: exp.notes ?? '',
@@ -174,7 +176,8 @@ export default function OfficeExpensesPage() {
     if (!data) return;
     setForm((f) => ({
       ...f,
-      ...(data.amount      && { amount:      String(data.amount) }),
+      ...(data.amount      && { amount:       String(data.amount) }),
+      ...(data.itbisAmount !== undefined && data.itbisAmount !== null && { itbisAmount: String(data.itbisAmount) }),
       ...(data.date        && { expenseDate:  data.date }),
       ...(data.description && { description:  data.description }),
       ...(data.ncf         && { hasFiscalDoc: true, fiscalDocNum: data.ncf }),
@@ -482,10 +485,16 @@ export default function OfficeExpensesPage() {
                     placeholder="0.00" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} required />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha *</label>
-                  <input type="date" className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
-                    value={form.expenseDate} onChange={(e) => setForm((f) => ({ ...f, expenseDate: e.target.value }))} required />
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">ITBIS (DOP)</label>
+                  <input type="number" step="0.01" min="0" className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                    placeholder="0.00" value={form.itbisAmount} onChange={(e) => setForm((f) => ({ ...f, itbisAmount: e.target.value }))} />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha *</label>
+                <input type="date" className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  value={form.expenseDate} onChange={(e) => setForm((f) => ({ ...f, expenseDate: e.target.value }))} required />
               </div>
 
               <div>
@@ -598,7 +607,12 @@ export default function OfficeExpensesPage() {
                   </span>
                   <p className="font-bold text-[#1C1C1C] mt-2 font-['Barlow_Condensed'] text-xl uppercase tracking-wide">{viewingExp.description}</p>
                 </div>
-                <p className="text-2xl font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(viewingExp.amount)}</p>
+                <div className="text-right">
+                  <p className="text-2xl font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(viewingExp.amount)}</p>
+                  {Number(viewingExp.itbisAmount) > 0 && (
+                    <p className="text-xs text-gray-500 font-['Space_Mono'] mt-0.5">ITBIS: {fmt(viewingExp.itbisAmount)}</p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">

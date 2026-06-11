@@ -512,6 +512,7 @@ export interface OfficeExpense {
   category:      OfficeExpenseCategory;
   description:   string;
   amount:        string;
+  itbisAmount:   string;
   expenseDate:   string;
   paymentMethod: string;
   companyCardId: string | null;
