@@ -139,7 +139,8 @@ function getDeployContext(): string {
 
     const lines = raw.split('\n').slice(0, 20); // máximo 20 commits
     return lines.map(l => `- \`${l}\``).join('\n');
-  } catch {
+  } catch (err) {
+    console.error('⚠️  getDeployContext() error:', err instanceof Error ? err.message : String(err));
     return '_No se pudo obtener el historial de git._';
   }
 }
