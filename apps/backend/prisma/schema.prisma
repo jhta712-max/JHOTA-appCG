@@ -41,6 +41,7 @@ model User {
   avatarUrl     String?   @map("avatar_url") @db.VarChar(500)
   isActive      Boolean   @default(true) @map("is_active")
   whatsappOptIn Boolean   @default(false) @map("whatsapp_opt_in")
+  notifTypes    String[]  @default([]) @map("notif_types")
   lastLogin     DateTime? @map("last_login")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
@@ -922,6 +923,7 @@ model NotificationContact {
   phone       String?  @db.VarChar(30) // formato +18091234567
   email       String?  @db.VarChar(150)
   isActive    Boolean  @default(true) @map("is_active")
+  notifTypes  String[] @default([]) @map("notif_types")
   createdById String   @map("created_by") @db.Uuid
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

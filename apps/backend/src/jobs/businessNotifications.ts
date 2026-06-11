@@ -14,12 +14,23 @@ const APP_URL = process.env.FRONTEND_URL ?? 'https://gastos-proyectos.onrender.c
 
 // ─── WhatsApp recipients: users with opt-in + external contacts ──────────────
 
-async function getWhatsAppRecipients(): Promise<string[]> {
+async function getWhatsAppRecipients(type?: string): Promise<string[]> {
   const numbers: string[] = [];
 
   // 1. Users with whatsappOptIn and a phone number
+  // Empty notifTypes = subscribed to all (backwards compatibility)
   const optedInUsers = await prisma.user.findMany({
-    where: { isActive: true, whatsappOptIn: true, phone: { not: null } },
+    where: {
+      isActive: true,
+      whatsappOptIn: true,
+      phone: { not: null },
+      ...(type ? {
+        OR: [
+          { notifTypes: { isEmpty: true } },
+          { notifTypes: { has: type } },
+        ],
+      } : {}),
+    },
     select: { phone: true },
   });
   for (const u of optedInUsers) {
@@ -27,8 +38,18 @@ async function getWhatsAppRecipients(): Promise<string[]> {
   }
 
   // 2. Active external contacts with a phone
+  // Empty notifTypes = subscribed to all (backwards compatibility)
   const contacts = await prisma.notificationContact.findMany({
-    where: { isActive: true, phone: { not: null } },
+    where: {
+      isActive: true,
+      phone: { not: null },
+      ...(type ? {
+        OR: [
+          { notifTypes: { isEmpty: true } },
+          { notifTypes: { has: type } },
+        ],
+      } : {}),
+    },
     select: { phone: true },
   });
   for (const c of contacts) {
@@ -52,9 +73,9 @@ function normalizeWhatsApp(phone: string): string {
 
 // ─── WhatsApp sender (UltraMsg, graceful no-op if not configured) ─────────────
 
-async function sendWhatsApp(message: string): Promise<void> {
+async function sendWhatsApp(message: string, type?: string): Promise<void> {
   if (!env.ULTRAMSG_INSTANCE_ID || !env.ULTRAMSG_TOKEN) return;
-  const recipients = await getWhatsAppRecipients();
+  const recipients = await getWhatsAppRecipients(type);
   if (recipients.length === 0) return;
 
   for (const to of recipients) {
@@ -79,14 +100,32 @@ async function sendWhatsApp(message: string): Promise<void> {
 
 // ─── Email recipients: admin/supervisor + external contacts with email ────────
 
-async function getAllEmailRecipients() {
+async function getAllEmailRecipients(type?: string) {
   const [users, contacts] = await Promise.all([
     prisma.user.findMany({
-      where: { isActive: true, role: { name: { in: ['admin', 'supervisor'] } } },
+      where: {
+        isActive: true,
+        role: { name: { in: ['admin', 'supervisor'] } },
+        ...(type ? {
+          OR: [
+            { notifTypes: { isEmpty: true } },
+            { notifTypes: { has: type } },
+          ],
+        } : {}),
+      },
       select: { id: true, name: true, email: true },
     }),
     prisma.notificationContact.findMany({
-      where: { isActive: true, email: { not: null } },
+      where: {
+        isActive: true,
+        email: { not: null },
+        ...(type ? {
+          OR: [
+            { notifTypes: { isEmpty: true } },
+            { notifTypes: { has: type } },
+          ],
+        } : {}),
+      },
       select: { name: true, email: true },
     }),
   ]);
@@ -118,7 +157,7 @@ async function checkBudgetThresholds() {
     },
   });
 
-  const { userRecipients, emailRecipients } = await getAllEmailRecipients();
+  const { userRecipients, emailRecipients } = await getAllEmailRecipients('BUDGET');
   let alertCount = 0;
 
   for (const project of projects) {
@@ -157,6 +196,7 @@ async function checkBudgetThresholds() {
         `Proyecto: ${project.code} — ${project.name}\n` +
         `Consumido: ${Math.round(pct)}% (RD $${spent.toLocaleString('es-DO')} / RD $${budget.toLocaleString('es-DO')})\n\n` +
         `Ver: ${APP_URL}/projects/${project.id}/financial`,
+        'BUDGET',
       );
 
       alertCount++;
@@ -189,7 +229,7 @@ async function checkPendingOrders() {
     return;
   }
 
-  const { userRecipients, emailRecipients } = await getAllEmailRecipients();
+  const { userRecipients, emailRecipients } = await getAllEmailRecipients('ORDERS');
   const title   = `${orders.length} orden${orders.length !== 1 ? 'es' : ''} de pago pendiente${orders.length !== 1 ? 's' : ''}`;
   const message = `Hay ${orders.length} orden${orders.length !== 1 ? 'es' : ''} de pago sin pagar con más de 5 días de antigüedad.`;
   const link    = '/payment-orders';
@@ -220,6 +260,7 @@ async function checkPendingOrders() {
     `⏳ *Control de Gastos — Órdenes pendientes*\n\n` +
     `${orders.length} orden${orders.length !== 1 ? 'es' : ''} de pago con +5 días sin pagar.\n\n` +
     `Ver: ${APP_URL}/payment-orders`,
+    'ORDERS',
   );
 
   logger.info(`[BusinessNotifications] Pending orders: ${orders.length} notified.`);
