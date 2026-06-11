@@ -53,7 +53,7 @@ jobs:
           TRIGGER_TYPE:          ${{ github.event_name == 'schedule' && 'weekly' || github.event_name == 'push' && 'post-deploy' || 'manual' }}
           RENDER_API_KEY:        ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID:     ${{ vars.RENDER_SERVICE_ID }}
-        run: pnpm exec tsx scripts/maintenance-agent.ts
+        run: pnpm --filter backend exec tsx ../../scripts/maintenance-agent.ts
 
       - name: Guardar cache actualizado
         if: always()
