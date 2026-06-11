@@ -5,6 +5,7 @@ export const OFFICE_EXPENSE_CATEGORIES = [
   'CONSUMABLES',
   'OFFICE_SERVICES',
   'BIDDING',
+  'OFFICE_ASSETS',
   'OTHER',
 ] as const;
 
@@ -13,6 +14,7 @@ export const OFFICE_EXPENSE_CATEGORY_LABELS: Record<string, string> = {
   CONSUMABLES:       'Material gastable',
   OFFICE_SERVICES:   'Servicios de oficina',
   BIDDING:           'Licitacion',
+  OFFICE_ASSETS:     'Activos de oficina',
   OTHER:             'Otros gastos de oficina',
 };
 

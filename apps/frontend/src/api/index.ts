@@ -495,7 +495,7 @@ export const paymentOrdersApi = {
 };
 
 // ── Gastos de Oficina ─────────────────────────────────────────
-export type OfficeExpenseCategory = 'CLEANING_SUPPLIES' | 'CONSUMABLES' | 'OFFICE_SERVICES' | 'BIDDING' | 'OTHER';
+export type OfficeExpenseCategory = 'CLEANING_SUPPLIES' | 'CONSUMABLES' | 'OFFICE_SERVICES' | 'BIDDING' | 'OFFICE_ASSETS' | 'OTHER';
 export type OfficeExpenseStatus   = 'ACTIVE' | 'VOIDED';
 
 export const OFFICE_EXPENSE_CATEGORY_LABELS: Record<OfficeExpenseCategory, string> = {
@@ -503,6 +503,7 @@ export const OFFICE_EXPENSE_CATEGORY_LABELS: Record<OfficeExpenseCategory, strin
   CONSUMABLES:       'Material gastable',
   OFFICE_SERVICES:   'Servicios de oficina',
   BIDDING:           'Licitacion',
+  OFFICE_ASSETS:     'Activos de oficina',
   OTHER:             'Otros gastos de oficina',
 };
 

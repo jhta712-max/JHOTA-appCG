@@ -32,6 +32,7 @@ const CATEGORY_COLORS: Record<OfficeExpenseCategory, string> = {
   CONSUMABLES:       'bg-amber-100 text-amber-700',
   OFFICE_SERVICES:   'bg-purple-100 text-purple-700',
   BIDDING:           'bg-orange-100 text-orange-700',
+  OFFICE_ASSETS:     'bg-emerald-100 text-emerald-700',
   OTHER:             'bg-gray-100 text-gray-700',
 };
 
@@ -40,6 +41,7 @@ const CATEGORY_DOT: Record<OfficeExpenseCategory, string> = {
   CONSUMABLES:       'bg-amber-500',
   OFFICE_SERVICES:   'bg-purple-500',
   BIDDING:           'bg-orange-500',
+  OFFICE_ASSETS:     'bg-emerald-500',
   OTHER:             'bg-gray-400',
 };
 
