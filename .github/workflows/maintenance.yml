@@ -51,6 +51,8 @@ jobs:
           GH_TOKEN:              ${{ secrets.GITHUB_TOKEN }}
           GH_REPO:               ${{ github.repository }}
           TRIGGER_TYPE:          ${{ github.event_name == 'schedule' && 'weekly' || github.event_name == 'push' && 'post-deploy' || 'manual' }}
+          RENDER_API_KEY:        ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID:     ${{ vars.RENDER_SERVICE_ID }}
         run: pnpm exec tsx scripts/maintenance-agent.ts
 
       - name: Guardar cache actualizado

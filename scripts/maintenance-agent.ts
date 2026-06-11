@@ -74,6 +74,12 @@ interface AuditReport {
   totalCritical:   number;
 }
 
+interface RemediationResult {
+  attempted:  boolean;
+  recovered:  boolean;
+  deployId:   string | null;
+}
+
 // ── Config ───────────────────────────────────────────────────────────────────
 
 const BACKEND_URL = process.env.SERVINGMI_BACKEND_URL ?? 'https://servingmi-backend.onrender.com';
@@ -82,6 +88,9 @@ const ADMIN_PASS  = process.env.SERVINGMI_ADMIN_PASS  ?? '';
 const GH_TOKEN    = process.env.GH_TOKEN              ?? '';
 const GH_REPO     = process.env.GH_REPO               ?? '';
 const TRIGGER_TYPE = process.env.TRIGGER_TYPE ?? 'manual';   // 'weekly' | 'post-deploy' | 'manual'
+
+const RENDER_API_KEY    = process.env.RENDER_API_KEY    ?? '';
+const RENDER_SERVICE_ID = process.env.RENDER_SERVICE_ID ?? '';
 
 const CACHE_PATH  = path.join(process.cwd(), '.maintenance-cache.json');
 
@@ -294,6 +303,7 @@ function buildIssueBody(
   deployContext:   string,
   triggerType:     string,
   securitySection: string,
+  remediationNote: string,
 ): string {
   const date = new Date().toLocaleDateString('es-DO', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -319,7 +329,7 @@ function buildIssueBody(
 
   return `## ${STATUS_EMOJI[result.status]} Diagnóstico ${triggerType === 'post-deploy' ? 'Post-Deploy' : 'Semanal'} — ${date}
 ${statusChange}
-**Estado del sistema:** \`${result.status.toUpperCase()}\`
+${remediationNote}**Estado del sistema:** \`${result.status.toUpperCase()}\`
 
 ### 📋 Resumen Ejecutivo
 ${result.summary}
@@ -369,6 +379,7 @@ async function createGitHubIssue(
   deployContext:   string,
   triggerType:     string,
   securitySection: string,
+  remediationNote: string,
 ): Promise<{ url: string; number: number }> {
   if (!GH_TOKEN || !GH_REPO) {
     console.log('⚠️  GH_TOKEN o GH_REPO no configurados — saltando creación de issue');
@@ -386,7 +397,7 @@ async function createGitHubIssue(
   if (result.status === 'critical') labels.push('priority: high');
   if (result.status === 'warning')  labels.push('priority: medium');
 
-  const body = buildIssueBody(result, previousStatus, trendSummary, deployContext, triggerType, securitySection);
+  const body = buildIssueBody(result, previousStatus, trendSummary, deployContext, triggerType, securitySection, remediationNote);
 
   const data = await fetchJson(`https://api.github.com/repos/${GH_REPO}/issues`, {
     method: 'POST',
@@ -400,6 +411,109 @@ async function createGitHubIssue(
 
   console.log(`   ✅ Issue creado: ${data.html_url}`);
   return { url: data.html_url as string, number: data.number as number };
+}
+
+// ── Auto-remediación ─────────────────────────────────────────────────────────
+
+async function triggerRenderRedeploy(): Promise<string | null> {
+  if (!RENDER_API_KEY || !RENDER_SERVICE_ID) {
+    console.log('⚠️  RENDER_API_KEY o RENDER_SERVICE_ID no configurados — saltando redeploy');
+    return null;
+  }
+
+  console.log('🚀 Iniciando redeploy en Render...');
+  const res = await fetch(`https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys`, {
+    method: 'POST',
+    headers: {
+      Authorization:   `Bearer ${RENDER_API_KEY}`,
+      'Content-Type':  'application/json',
+      Accept:          'application/json',
+    },
+    body: JSON.stringify({ clearCache: 'do_not_clear' }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`   ❌ Render API respondió ${res.status}: ${body}`);
+    return null;
+  }
+
+  const data = await res.json() as any;
+  const deployId = data?.id ?? data?.deploy?.id ?? null;
+  console.log(`   ✅ Redeploy iniciado${deployId ? ` (deploy: ${deployId})` : ''}`);
+  return deployId;
+}
+
+async function waitForRecovery(token: string, maxWaitMs = 3 * 60 * 1000): Promise<AiAnalysisResult | null> {
+  const intervalMs = 20_000;
+  const start      = Date.now();
+  let   attempt    = 0;
+
+  console.log(`⏳ Esperando recuperación (máx ${maxWaitMs / 60_000} min)...`);
+
+  while (Date.now() - start < maxWaitMs) {
+    await new Promise<void>(resolve => setTimeout(resolve, intervalMs));
+    attempt++;
+
+    try {
+      const result = await runAiAnalysis(token);
+      console.log(`   [${attempt}] Estado: ${result.status}`);
+      if (result.status === 'healthy') return result;
+    } catch {
+      console.log(`   [${attempt}] Backend aún no responde, esperando...`);
+    }
+  }
+
+  console.log('   ⏰ Tiempo de espera agotado — el sistema no se recuperó');
+  return null;
+}
+
+async function attemptRemediation(
+  analysis: AiAnalysisResult,
+  token:    string,
+): Promise<RemediationResult> {
+  const shouldAttempt =
+    analysis.status === 'critical' ||
+    (analysis.status === 'warning' && analysis.issues.some(i => i.severity === 'high'));
+
+  if (!shouldAttempt) {
+    return { attempted: false, recovered: false, deployId: null };
+  }
+
+  console.log('\n🔧 Auto-remediación: intentando redeploy...');
+  const deployId = await triggerRenderRedeploy();
+
+  if (!deployId && (!RENDER_API_KEY || !RENDER_SERVICE_ID)) {
+    return { attempted: false, recovered: false, deployId: null };
+  }
+
+  const recovered = await waitForRecovery(token);
+  return { attempted: true, recovered: recovered !== null, deployId };
+}
+
+function buildRemediationNote(remediation: RemediationResult): string {
+  if (!remediation.attempted) return '';
+
+  if (remediation.recovered) {
+    return `### 🔧 Auto-Remediación
+
+✅ **El sistema se recuperó automáticamente** mediante redeploy en Render.${remediation.deployId ? `\n- Deploy ID: \`${remediation.deployId}\`` : ''}
+
+> _Este issue se abrió porque la recuperación ocurrió DESPUÉS de que se detectaran problemas adicionales (ej. vulnerabilidades de seguridad)._
+
+---
+
+`;
+  }
+
+  return `### 🔧 Auto-Remediación
+
+⚠️ **Se intentó un redeploy automático en Render pero el sistema no se recuperó.**${remediation.deployId ? `\n- Deploy ID: \`${remediation.deployId}\`` : ''}
+- Acción requerida: revisar logs en el dashboard de Render.
+
+---
+
+`;
 }
 
 // ── Helpers post-issue ───────────────────────────────────────────────────────
@@ -460,13 +574,23 @@ async function main() {
     console.log('   ✅ Sin vulnerabilidades detectadas');
   }
 
-  // 3. Decidir si crear issue
-  const needsIssue = shouldOpenIssue(analysis, cache, TRIGGER_TYPE, audit);
-  console.log(`\n📊 Estado: ${analysis.status} | Abrir issue: ${needsIssue ? 'SÍ' : 'NO'}`);
+  // 3. Auto-remediación (si hay problemas críticos)
+  const remediation = await attemptRemediation(analysis, token);
+
+  let postRemediationAnalysis = analysis;
+  if (remediation.attempted && remediation.recovered) {
+    console.log('\n✅ Sistema recuperado por auto-remediación');
+    // Re-fetch fresh analysis after recovery
+    postRemediationAnalysis = await runAiAnalysis(token);
+  }
+
+  // 4. Decidir si crear issue
+  const needsIssue = shouldOpenIssue(postRemediationAnalysis, cache, TRIGGER_TYPE, audit);
+  console.log(`\n📊 Estado: ${postRemediationAnalysis.status} | Abrir issue: ${needsIssue ? 'SÍ' : 'NO'}`);
 
   // Recovery: close issue if system is back to healthy
   const systemRecovered =
-    analysis.status === 'healthy' &&
+    postRemediationAnalysis.status === 'healthy' &&
     cache.lastAnalysis?.status !== 'healthy' &&
     cache.lastIssueNumber !== null;
 
@@ -478,16 +602,18 @@ async function main() {
   let issueUrl = '';
   let issueNumber: number | null = null;
   if (needsIssue) {
-    const deployContext = getDeployContext();
-    const trendSummary = buildTrendSummary(cache.history);
-    const securitySection = buildSecuritySection(audit);
+    const deployContext    = getDeployContext();
+    const trendSummary     = buildTrendSummary(cache.history);
+    const securitySection  = buildSecuritySection(audit);
+    const remediationNote  = buildRemediationNote(remediation);
     const created = await createGitHubIssue(
-      analysis,
+      postRemediationAnalysis,
       cache.lastAnalysis?.status,
       trendSummary,
       deployContext,
       TRIGGER_TYPE,
       securitySection,
+      remediationNote,
     );
     issueUrl = created.url;
     issueNumber = created.number !== 0 ? created.number : null;
@@ -495,15 +621,15 @@ async function main() {
     console.log('✅ Sistema saludable — no se requiere issue esta semana');
   }
 
-  // 4. Actualizar cache con history
+  // 5. Actualizar cache con history
   let newCache: Cache = {
-    lastAnalysis: analysis,
-    lastIssueUrl: issueUrl || (systemRecovered ? null : cache.lastIssueUrl),
+    lastAnalysis:    postRemediationAnalysis,
+    lastIssueUrl:    issueUrl || (systemRecovered ? null : cache.lastIssueUrl),
     lastIssueNumber: issueNumber ?? (systemRecovered ? null : cache.lastIssueNumber),
-    lastRunAt:    new Date().toISOString(),
-    history:      cache.history,
+    lastRunAt:       new Date().toISOString(),
+    history:         cache.history,
   };
-  newCache = pushHistory(newCache, analysis, issueUrl || cache.lastIssueUrl);
+  newCache = pushHistory(newCache, postRemediationAnalysis, issueUrl || cache.lastIssueUrl);
   saveCache(newCache);
 
   console.log('\n✅ Agente completado\n');
