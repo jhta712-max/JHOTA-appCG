@@ -10,6 +10,7 @@ router.get('/',                 ctrl.list);
 router.patch('/read-all',       ctrl.markAllRead);
 router.patch('/:id/read',       ctrl.markRead);
 router.post('/run-checks',      ctrl.runChecks);
-router.post('/test-whatsapp',   ctrl.testWhatsApp);
+router.post('/test-whatsapp',      ctrl.testWhatsApp);
+router.get('/whatsapp-recipients', ctrl.whatsappRecipients);
 
 export default router;

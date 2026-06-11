@@ -46,3 +46,11 @@ export async function testWhatsApp(req: Request, res: Response, next: NextFuncti
     res.json({ success: true, message: 'Mensaje de prueba enviado. Revisa tu WhatsApp.' });
   } catch (err) { next(err); }
 }
+
+export async function whatsappRecipients(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (req.user!.role !== 'admin') throw new AppError(403, 'Solo administradores', 'FORBIDDEN');
+    const recipients = await service.getWhatsAppRecipients();
+    res.json({ success: true, data: { recipients } });
+  } catch (err) { next(err); }
+}

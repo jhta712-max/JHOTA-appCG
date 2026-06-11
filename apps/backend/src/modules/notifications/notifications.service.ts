@@ -91,6 +91,29 @@ function normalizePhone(phone: string): string {
   return withoutPrefix.startsWith('+') ? withoutPrefix : `+${withoutPrefix}`;
 }
 
+export async function getWhatsAppRecipients(): Promise<string[]> {
+  const [users, contacts] = await Promise.all([
+    prisma.user.findMany({
+      where: { isActive: true, whatsappOptIn: true, phone: { not: null } },
+      select: { phone: true },
+    }),
+    prisma.notificationContact.findMany({
+      where: { isActive: true, phone: { not: null } },
+      select: { phone: true },
+    }),
+  ]);
+
+  const numbers: string[] = [];
+  for (const u of users)    if (u.phone) numbers.push(normalizePhone(u.phone));
+  for (const c of contacts) if (c.phone) numbers.push(normalizePhone(c.phone));
+
+  if (numbers.length === 0 && env.NOTIFY_WHATSAPP_TO) {
+    env.NOTIFY_WHATSAPP_TO.split(',').map(s => s.trim()).filter(Boolean).forEach(n => numbers.push(n));
+  }
+
+  return [...new Set(numbers)];
+}
+
 export async function recentNotificationExists(
   type: string,
   entityId: string,

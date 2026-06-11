@@ -534,13 +534,37 @@ function buildRemediationNote(remediation: RemediationResult): string {
 
 // ── WhatsApp via UltraMsg ─────────────────────────────────────────────────────
 
-async function sendWhatsAppAlert(analysis: AiAnalysisResult, issueUrl: string): Promise<void> {
+async function getWhatsAppRecipients(token: string): Promise<string[]> {
+  try {
+    const data = await fetchJson(`${BACKEND_URL}/api/v1/notifications/whatsapp-recipients`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const fromDb: string[] = data?.data?.recipients ?? [];
+    if (fromDb.length > 0) {
+      console.log(`   📋 Destinatarios WhatsApp desde la BD: ${fromDb.length}`);
+      return fromDb;
+    }
+  } catch (err) {
+    console.error('   ⚠️  No se pudo obtener destinatarios del backend, usando fallback env:', err instanceof Error ? err.message : String(err));
+  }
+  // Fallback: env var
+  const fromEnv = (process.env.NOTIFY_WHATSAPP_TO ?? '').split(',').map(s => s.trim()).filter(Boolean);
+  if (fromEnv.length > 0) console.log(`   📋 Destinatarios WhatsApp desde env: ${fromEnv.length}`);
+  return fromEnv;
+}
+
+async function sendWhatsAppAlert(analysis: AiAnalysisResult, issueUrl: string, token: string): Promise<void> {
   const instanceId = process.env.ULTRAMSG_INSTANCE_ID ?? '';
   const waToken    = process.env.ULTRAMSG_TOKEN        ?? '';
-  const recipients = (process.env.NOTIFY_WHATSAPP_TO  ?? '').split(',').map(s => s.trim()).filter(Boolean);
 
-  if (!instanceId || !waToken || recipients.length === 0) {
-    console.log('   ⚠️  WhatsApp omitido (faltan ULTRAMSG_INSTANCE_ID / ULTRAMSG_TOKEN / NOTIFY_WHATSAPP_TO)');
+  if (!instanceId || !waToken) {
+    console.log('   ⚠️  WhatsApp omitido (faltan ULTRAMSG_INSTANCE_ID / ULTRAMSG_TOKEN)');
+    return;
+  }
+
+  const recipients = await getWhatsAppRecipients(token);
+  if (recipients.length === 0) {
+    console.log('   ⚠️  WhatsApp omitido (sin destinatarios configurados en BD ni en NOTIFY_WHATSAPP_TO)');
     return;
   }
 
@@ -572,12 +596,14 @@ async function sendWhatsAppAlert(analysis: AiAnalysisResult, issueUrl: string): 
   console.log(`   📱 WhatsApp enviado a ${recipients.length} destinatario(s)`);
 }
 
-async function sendWhatsAppRecovery(): Promise<void> {
+async function sendWhatsAppRecovery(token: string): Promise<void> {
   const instanceId = process.env.ULTRAMSG_INSTANCE_ID ?? '';
   const waToken    = process.env.ULTRAMSG_TOKEN        ?? '';
-  const recipients = (process.env.NOTIFY_WHATSAPP_TO  ?? '').split(',').map(s => s.trim()).filter(Boolean);
 
-  if (!instanceId || !waToken || recipients.length === 0) return;
+  if (!instanceId || !waToken) return;
+
+  const recipients = await getWhatsAppRecipients(token);
+  if (recipients.length === 0) return;
 
   const message = `✅ *SERVINGMI — Sistema Recuperado*\n\nEl sistema ha vuelto a estado saludable.\n\nNo se requieren acciones.`;
 
@@ -677,7 +703,7 @@ async function main() {
     console.log(`\n🔄 Sistema recuperado — cerrando issue #${cache.lastIssueNumber}...`);
     await commentAndCloseIssue(cache.lastIssueNumber);
     console.log('📱 Notificando recuperación por WhatsApp...');
-    await sendWhatsAppRecovery();
+    await sendWhatsAppRecovery(token);
   }
 
   let issueUrl = '';
@@ -699,7 +725,7 @@ async function main() {
     issueUrl = created.url;
     issueNumber = created.number !== 0 ? created.number : null;
     console.log('📱 Notificando por WhatsApp...');
-    await sendWhatsAppAlert(postRemediationAnalysis, issueUrl);
+    await sendWhatsAppAlert(postRemediationAnalysis, issueUrl, token);
   } else {
     console.log('✅ Sistema saludable — no se requiere issue esta semana');
   }
