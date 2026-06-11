@@ -291,7 +291,7 @@ async function checkApprovedPayrolls() {
     return;
   }
 
-  const { userRecipients, emailRecipients } = await getAllEmailRecipients();
+  const { userRecipients, emailRecipients } = await getAllEmailRecipients('PAYROLL');
   const title   = `${payrolls.length} nómina${payrolls.length !== 1 ? 's' : ''} aprobada${payrolls.length !== 1 ? 's' : ''} sin pagar`;
   const message = `Hay ${payrolls.length} nómina${payrolls.length !== 1 ? 's' : ''} aprobada${payrolls.length !== 1 ? 's' : ''} con más de 3 días sin ser pagada${payrolls.length !== 1 ? 's' : ''}.`;
   const link    = '/payrolls';
@@ -322,6 +322,7 @@ async function checkApprovedPayrolls() {
     `🧾 *Control de Gastos — Nóminas sin pagar*\n\n` +
     `${payrolls.length} nómina${payrolls.length !== 1 ? 's' : ''} aprobada${payrolls.length !== 1 ? 's' : ''} con +3 días sin pagar.\n\n` +
     `Ver: ${APP_URL}/payrolls`,
+    'PAYROLL',
   );
 
   logger.info(`[BusinessNotifications] Approved payrolls: ${payrolls.length} notified.`);

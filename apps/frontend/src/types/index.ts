@@ -363,14 +363,15 @@ export interface AppNotification {
 
 // ── Contactos de notificación externos ─────────────────────────
 export interface NotificationContact {
-  id:        string;
-  name:      string;
-  phone?:    string | null;
-  email?:    string | null;
-  isActive:  boolean;
-  createdBy: { id: string; name: string };
-  createdAt: string;
-  updatedAt: string;
+  id:          string;
+  name:        string;
+  phone?:      string | null;
+  email?:      string | null;
+  isActive:    boolean;
+  notifTypes:  string[];
+  createdBy:   { id: string; name: string };
+  createdAt:   string;
+  updatedAt:   string;
 }
 
 // ── Suscripciones de servicios ─────────────────────────────────

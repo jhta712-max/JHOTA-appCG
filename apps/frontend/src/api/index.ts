@@ -598,9 +598,9 @@ export const notificationsApi = {
 export const notificationContactsApi = {
   list:   () =>
     api.get<{ success: boolean; data: NotificationContact[] }>('/notification-contacts'),
-  create: (data: { name: string; phone?: string | null; email?: string | null }) =>
+  create: (data: { name: string; phone?: string | null; email?: string | null; notifTypes?: string[] }) =>
     api.post<{ success: boolean; data: NotificationContact }>('/notification-contacts', data),
-  update: (id: string, data: { name?: string; phone?: string | null; email?: string | null; isActive?: boolean }) =>
+  update: (id: string, data: { name?: string; phone?: string | null; email?: string | null; isActive?: boolean; notifTypes?: string[] }) =>
     api.put<{ success: boolean; data: NotificationContact }>(`/notification-contacts/${id}`, data),
   remove: (id: string) =>
     api.delete(`/notification-contacts/${id}`),

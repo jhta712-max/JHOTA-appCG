@@ -17,6 +17,7 @@ export const updateUserSchema = z.object({
   roleId:         z.coerce.number().int().positive().optional(),
   isActive:       z.boolean().optional(),
   whatsappOptIn:  z.boolean().optional(),
+  notifTypes:     z.array(z.string()).optional(),
 });
 
 export const changePasswordSchema = z.object({
