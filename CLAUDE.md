@@ -79,7 +79,7 @@ api/          # index.ts centraliza todos los axios calls
 
 **RBAC en frontend:** Usa siempre `useRole()` hook — nunca `useAuthStore` directamente para permisos. El hook expone flags como `isAdmin`, `canApprovePayroll`, `canViewReports`, etc., y soporta el modo "preview de rol" que admin puede activar.
 
-**OCR asíncrono:** El flujo es POST → recibe `jobId` (202) → poll GET `/ocr/jobs/:jobId` cada 2s hasta `completed`/`failed` (max 60s). Usar siempre el hook `useOcrPolling()` en los formularios — no llamar `ocrApi` directamente.
+**OCR asíncrono:** El backend procesa OCR sincrónicamente (Render free tier mata procesos en background). El POST devuelve el resultado inline: `{ status: 'completed', result: OcrResult, jobId }`. El hook `useOcrPolling()` detecta esto y omite el polling. El fallback de polling sigue existiendo para futuros modos async. Usar siempre `useOcrPolling()` — nunca `ocrApi` directamente.
 
 **Design system:** Industrial. Todas las páginas siguen este patrón exacto:
 - Hero: `<div className="bg-[#1C1C1C]">` con breadcrumb `text-[#F5C218]` y H1 `font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight`
@@ -92,19 +92,27 @@ api/          # index.ts centraliza todos los axios calls
 - Inputs: `border-gray-200` focus → `focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]`
 - Outer wrapper de página: `min-h-screen bg-gray-50`
 
+**Axios generics y el wrapper de respuesta:** `api.post<T>` donde `T` es el tipo de `res.data` (no del dato interno). El backend siempre devuelve `{ success, data: T }`. Por tanto: `api.post<{ success: boolean; data: MiTipo }>('/ruta', body)` y acceder con `res.data.data`. Tipar solo el dato interno (`api.post<MiTipo>`) causa que `res.data.data` sea `undefined` en runtime.
+
+**Vite/esbuild TDZ en producción:** Si en un componente React se usa una variable de `useForm` (ej: `watch`, `setValue`) ANTES de la línea donde se llama a `useForm({...})`, el build de producción falla con `ReferenceError: Cannot access 'X' before initialization`. El minificador combina las declaraciones `const` en una sola cadena, haciendo visible el TDZ. Regla: llamar siempre a `useForm()` ANTES de usar cualquiera de sus valores retornados (`watch`, `setValue`, etc.).
+
+**Gastos de oficina vs Módulo de suplidores:** Los suplidores del módulo `/suppliers` son entidades continuas (servicios, materiales, mano de obra). Los gastos de oficina (`/office-expenses`) usan texto libre `supplierName` — no FK a la tabla `suppliers` — porque sus proveedores son ocasionales y no continuos.
+
 ## Reglas concretas
 
 1. **Docker:** Siempre `COPY apps ./apps` (TODO el workspace). Nunca `COPY apps/backend ./apps/backend`. Si cambia Dockerfile → test local: `docker build -f Dockerfile.backend .`
 
-2. **Prisma:** Si cambias `schema.prisma` → ejecuta `pnpm run db:generate` ANTES de push. Schema debe tener: `binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]`
+2. **Prisma:** Si cambias `schema.prisma` → ejecuta `pnpm run db:generate` ANTES de push. Schema debe tener: `binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]`. Al quitar una relación de un modelo, buscar también el lado inverso en el modelo relacionado (ej: quitar FK en `OfficeExpense` requiere quitar también `officeExpenses[]` en `Supplier`). Buscar además en todos los `*.service.ts` que puedan filtrar por el campo eliminado.
 
 3. **Antes de cada push a main:** Ejecuta `workspace/DEPLOYMENT/DEPLOY_CHECKLIST.md`.
 
-4. **WhatsApp (UltraMsg):** Env vars: `ULTRAMSG_INSTANCE_ID`, `ULTRAMSG_TOKEN`, `NOTIFY_WHATSAPP_TO` (fallback). Los destinatarios reales vienen de la BD (`notificationContact` + usuarios con `whatsappOptIn`). El endpoint `GET /api/v1/notifications/whatsapp-recipients` devuelve la lista combinada filtrable por tipo (`?type=BUDGET`). Tipos válidos: `BUDGET`, `PAYROLL`, `ORDERS`, `SERVICE_PAYMENTS`, `SYSTEM`, `SECURITY`. Campo `notifTypes String[]` en User y NotificationContact — array vacío = recibe todos.
+4. **Modelo de notificaciones WhatsApp — dos implementaciones:** `apps/backend/src/services/notifications.service.ts` (alertas del sistema/jobs) y `apps/backend/src/modules/notifications/notifications.service.ts` (in-app + WhatsApp con `getWhatsAppRecipients`). Ambas deben usar `getWhatsAppRecipients(type?)` del módulo para respetar los `notifTypes` configurados en la BD. Si se agrega una alerta nueva, asegurarse de pasar el tipo correcto a `sendWhatsApp(message, 'TIPO')`.
 
-5. **Agente de mantenimiento** (`scripts/maintenance-agent.ts`): corre en GitHub Actions (`.github/workflows/maintenance.yml`). Cache en `.maintenance-cache.json` en raíz del repo. Path calculado con `__dirname` (no `process.cwd()`). Triggers: cron semanal + `on: push: branches: [main]` (post-deploy). En modo post-deploy solo crea issue si hay degradación.
+5. **WhatsApp (UltraMsg):** Env vars: `ULTRAMSG_INSTANCE_ID`, `ULTRAMSG_TOKEN`, `NOTIFY_WHATSAPP_TO` (fallback). Los destinatarios reales vienen de la BD (`notificationContact` + usuarios con `whatsappOptIn`). El endpoint `GET /api/v1/notifications/whatsapp-recipients` devuelve la lista combinada filtrable por tipo (`?type=BUDGET`). Tipos válidos: `BUDGET`, `PAYROLL`, `ORDERS`, `SERVICE_PAYMENTS`, `SYSTEM`, `SECURITY`. Campo `notifTypes String[]` en User y NotificationContact — array vacío = recibe todos.
 
-6. **Post-OCR Enrichment Agent** (`apps/backend/src/modules/ocr/ocr-enrichment.service.ts`): se llama después de OCR completo (no bloquea). Nivel 1 (alta confianza): match proveedor por RNC, duplicado NCF/eNCF, clasificación tipo comprobante (B01-B16 tradicional, E31-E45 eNCF electrónico), cruce con cotización abierta. Nivel 2 (solo warnings): validación ITBIS 10%-26%, tipos gubernamentales inusuales. Frontend: componente `OcrEnrichmentAlerts.tsx`, hook `useOcrPolling(projectId?)` llama `ocrApi.enrich()` en background tras OCR completo.
+6. **Agente de mantenimiento** (`scripts/maintenance-agent.ts`): corre en GitHub Actions (`.github/workflows/maintenance.yml`). Cache en `.maintenance-cache.json` en raíz del repo. Path calculado con `__dirname` (no `process.cwd()`). Triggers: cron semanal + `on: push: branches: [main]` (post-deploy). En modo post-deploy solo crea issue si hay degradación.
+
+7. **Post-OCR Enrichment Agent** (`apps/backend/src/modules/ocr/ocr-enrichment.service.ts`): se llama después de OCR completo (no bloquea). Nivel 1 (alta confianza): match proveedor por RNC, duplicado NCF/eNCF, clasificación tipo comprobante (B01-B16 tradicional, E31-E45 eNCF electrónico), cruce con cotización abierta. Nivel 2 (solo warnings): validación ITBIS 10%-26%, tipos gubernamentales inusuales. Frontend: componente `OcrEnrichmentAlerts.tsx`, hook `useOcrPolling(projectId?)` llama `ocrApi.enrich()` en background tras OCR completo.
 
 ## Primeros pasos en una sesión
 
