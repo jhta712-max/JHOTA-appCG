@@ -123,7 +123,7 @@ export async function getSupplierHistory(id: string) {
       })
     : [];
 
-  const officeExpenses: never[] = [];
+  const officeExpenses: { amount: number | string }[] = [];
 
   // Órdenes de pago recibidas por este suplidor
   const paymentOrders = await prisma.paymentOrder.findMany({
