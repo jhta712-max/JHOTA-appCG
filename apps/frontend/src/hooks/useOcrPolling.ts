@@ -68,8 +68,14 @@ export function useOcrPolling(projectId?: string | null) {
               setState(s => ({ ...s, loading: false, error: msg }));
               resolve(null);
             }
-          } catch {
-            // transient network error — keep polling
+          } catch (pollErr: any) {
+            // 401 = token expired mid-poll; stop to avoid forceLogout loop
+            if (pollErr?.response?.status === 401) {
+              clearTimeout(timeout);
+              stopPolling();
+              setState(s => ({ ...s, loading: false, error: 'Sesión expirada. Por favor recarga la página.' }));
+            }
+            // other transient network errors — keep polling
           }
         }, 2_000);
       });
