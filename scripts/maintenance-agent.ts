@@ -527,6 +527,69 @@ function buildRemediationNote(remediation: RemediationResult): string {
 `;
 }
 
+// ── WhatsApp via UltraMsg ─────────────────────────────────────────────────────
+
+async function sendWhatsAppAlert(analysis: AiAnalysisResult, issueUrl: string): Promise<void> {
+  const instanceId = process.env.ULTRAMSG_INSTANCE_ID ?? '';
+  const waToken    = process.env.ULTRAMSG_TOKEN        ?? '';
+  const recipients = (process.env.NOTIFY_WHATSAPP_TO  ?? '').split(',').map(s => s.trim()).filter(Boolean);
+
+  if (!instanceId || !waToken || recipients.length === 0) {
+    console.log('   ⚠️  WhatsApp omitido (faltan ULTRAMSG_INSTANCE_ID / ULTRAMSG_TOKEN / NOTIFY_WHATSAPP_TO)');
+    return;
+  }
+
+  const statusEmoji = analysis.status === 'critical' ? '🔴' : '🟡';
+  const topIssues   = analysis.issues.slice(0, 3).map(i => `• ${i.title}`).join('\n');
+  const message = [
+    `${statusEmoji} *SERVINGMI — Alerta del Sistema*`,
+    ``,
+    `Estado: *${analysis.status.toUpperCase()}*`,
+    `Issues detectados: ${analysis.issues.length}`,
+    ``,
+    topIssues,
+    ``,
+    `📋 ${issueUrl}`,
+  ].join('\n');
+
+  for (const to of recipients) {
+    try {
+      const resp = await fetch(`https://api.ultramsg.com/${instanceId}/messages/chat`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ token: waToken, to, body: message }),
+      });
+      if (!resp.ok) console.error(`   ⚠️  UltraMsg error para ${to}:`, await resp.text());
+    } catch (err) {
+      console.error(`   ⚠️  Error enviando WhatsApp a ${to}:`, err);
+    }
+  }
+  console.log(`   📱 WhatsApp enviado a ${recipients.length} destinatario(s)`);
+}
+
+async function sendWhatsAppRecovery(): Promise<void> {
+  const instanceId = process.env.ULTRAMSG_INSTANCE_ID ?? '';
+  const waToken    = process.env.ULTRAMSG_TOKEN        ?? '';
+  const recipients = (process.env.NOTIFY_WHATSAPP_TO  ?? '').split(',').map(s => s.trim()).filter(Boolean);
+
+  if (!instanceId || !waToken || recipients.length === 0) return;
+
+  const message = `✅ *SERVINGMI — Sistema Recuperado*\n\nEl sistema ha vuelto a estado saludable.\n\nNo se requieren acciones.`;
+
+  for (const to of recipients) {
+    try {
+      await fetch(`https://api.ultramsg.com/${instanceId}/messages/chat`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ token: waToken, to, body: message }),
+      });
+    } catch (err) {
+      console.error(`   ⚠️  Error enviando WhatsApp de recuperación a ${to}:`, err);
+    }
+  }
+  console.log(`   📱 WhatsApp de recuperación enviado a ${recipients.length} destinatario(s)`);
+}
+
 // ── Helpers post-issue ───────────────────────────────────────────────────────
 
 async function commentAndCloseIssue(issueNumber: number): Promise<void> {
@@ -608,6 +671,8 @@ async function main() {
   if (systemRecovered && cache.lastIssueNumber) {
     console.log(`\n🔄 Sistema recuperado — cerrando issue #${cache.lastIssueNumber}...`);
     await commentAndCloseIssue(cache.lastIssueNumber);
+    console.log('📱 Notificando recuperación por WhatsApp...');
+    await sendWhatsAppRecovery();
   }
 
   let issueUrl = '';
@@ -628,6 +693,8 @@ async function main() {
     );
     issueUrl = created.url;
     issueNumber = created.number !== 0 ? created.number : null;
+    console.log('📱 Notificando por WhatsApp...');
+    await sendWhatsAppAlert(postRemediationAnalysis, issueUrl);
   } else {
     console.log('✅ Sistema saludable — no se requiere issue esta semana');
   }
