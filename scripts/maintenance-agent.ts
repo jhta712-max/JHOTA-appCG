@@ -480,11 +480,16 @@ async function attemptRemediation(
     return { attempted: false, recovered: false, deployId: null };
   }
 
+  if (!RENDER_API_KEY || !RENDER_SERVICE_ID) {
+    return { attempted: false, recovered: false, deployId: null };
+  }
+
   console.log('\n🔧 Auto-remediación: intentando redeploy...');
   const deployId = await triggerRenderRedeploy();
 
-  if (!deployId && (!RENDER_API_KEY || !RENDER_SERVICE_ID)) {
-    return { attempted: false, recovered: false, deployId: null };
+  if (deployId === null) {
+    // Render API call failed — no esperar, el deploy nunca se inició
+    return { attempted: true, recovered: false, deployId: null };
   }
 
   const recovered = await waitForRecovery(token);
