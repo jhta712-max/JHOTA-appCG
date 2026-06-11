@@ -103,6 +103,30 @@ function pushHistory(cache: Cache, analysis: AiAnalysisResult, issueUrl: string 
   return { ...cache, history };
 }
 
+function buildTrendSummary(history: HistoryEntry[]): string {
+  if (history.length < 2) return '_Historial insuficiente (menos de 2 semanas)._';
+
+  const statusLine = history
+    .map(h => {
+      const emoji = h.status === 'healthy' ? '✅' : h.status === 'warning' ? '⚠️' : '🚨';
+      const date  = new Date(h.analyzedAt).toLocaleDateString('es-DO', { day: '2-digit', month: 'short' });
+      return `${date}: ${emoji} ${h.status} (${h.issueCount} issues)`;
+    })
+    .join('\n');
+
+  // Detectar tendencia de degradación
+  const statuses = history.map(h => h.status);
+  const nonHealthyStreak = statuses.findIndex(s => s === 'healthy');
+  let trendNote = '';
+  if (nonHealthyStreak === -1) {
+    trendNote = '⚠️ **El sistema lleva todas las semanas registradas sin alcanzar estado healthy.**';
+  } else if (nonHealthyStreak === 0 && statuses.slice(1).every(s => s !== 'healthy')) {
+    trendNote = '📈 Sistema mejoró esta semana respecto a semanas anteriores.';
+  }
+
+  return `${statusLine}${trendNote ? '\n\n' + trendNote : ''}`;
+}
+
 async function fetchJson(url: string, options: RequestInit = {}): Promise<any> {
   const res = await fetch(url, {
     ...options,
@@ -165,7 +189,13 @@ const SEVERITY_EMOJI = { high: '🔴', medium: '🟡', low: '🟢' };
 const STATUS_EMOJI   = { healthy: '✅', warning: '⚠️', critical: '🚨' };
 const PRIORITY_EMOJI = { urgent: '🔥', normal: '📌', optional: '💡' };
 
-function buildIssueBody(result: AiAnalysisResult, previousStatus?: string): string {
+function buildIssueBody(
+  result:         AiAnalysisResult,
+  previousStatus: string | undefined,
+  trendSummary:   string,
+  deployContext:  string,
+  triggerType:    string,
+): string {
   const date = new Date().toLocaleDateString('es-DO', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
@@ -188,7 +218,7 @@ function buildIssueBody(result: AiAnalysisResult, previousStatus?: string): stri
     ? `\n> ⚡ Cambio de estado: \`${previousStatus}\` → \`${result.status}\`\n`
     : '';
 
-  return `## ${STATUS_EMOJI[result.status]} Diagnóstico Semanal — ${date}
+  return `## ${STATUS_EMOJI[result.status]} Diagnóstico ${triggerType === 'post-deploy' ? 'Post-Deploy' : 'Semanal'} — ${date}
 ${statusChange}
 **Estado del sistema:** \`${result.status.toUpperCase()}\`
 
@@ -207,16 +237,23 @@ ${recLines.length > 0 ? recLines.join('\n') : '_Sin recomendaciones adicionales.
 
 ---
 
+### 📈 Tendencia (últimas semanas)
+
+${trendSummary}
+
+---
+
 ### ✅ Aspectos Positivos
 
 ${result.positives.map(p => `- ${p}`).join('\n')}
 
 ---
 
-<details>
+${deployContext ? `### 🚀 Cambios Desplegados Esta Semana\n\n${deployContext}\n\n---\n\n` : ''}<details>
 <summary>📊 Metadatos del análisis</summary>
 
 - **Analizado:** ${new Date(result.analyzedAt).toLocaleString('es-DO')}
+- **Modo:** ${triggerType === 'post-deploy' ? 'Post-deploy automático' : 'Diagnóstico semanal programado'}
 - **Generado por:** Agente de Mantenimiento SERVINGMI (Claude via \`/monitoring/ai-analyze\`)
 - **Backend:** \`${BACKEND_URL}\`
 
@@ -226,7 +263,13 @@ ${result.positives.map(p => `- ${p}`).join('\n')}
 
 // ── Paso 5: Crear GitHub Issue ───────────────────────────────────────────────
 
-async function createGitHubIssue(result: AiAnalysisResult, previousStatus?: string): Promise<string> {
+async function createGitHubIssue(
+  result:         AiAnalysisResult,
+  previousStatus: string | undefined,
+  trendSummary:   string,
+  deployContext:  string,
+  triggerType:    string,
+): Promise<string> {
   if (!GH_TOKEN || !GH_REPO) {
     console.log('⚠️  GH_TOKEN o GH_REPO no configurados — saltando creación de issue');
     return '';
@@ -236,13 +279,14 @@ async function createGitHubIssue(result: AiAnalysisResult, previousStatus?: stri
 
   const statusEmoji = STATUS_EMOJI[result.status];
   const weekDate = new Date().toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' });
-  const title = `${statusEmoji} Diagnóstico semanal [${result.status.toUpperCase()}] — ${weekDate}`;
+  const modeLabel = triggerType === 'post-deploy' ? 'Post-Deploy' : 'Semanal';
+  const title = `${statusEmoji} Diagnóstico ${modeLabel} [${result.status.toUpperCase()}] — ${weekDate}`;
 
   const labels = ['maintenance', 'automated'];
   if (result.status === 'critical') labels.push('priority: high');
   if (result.status === 'warning')  labels.push('priority: medium');
 
-  const body = buildIssueBody(result, previousStatus);
+  const body = buildIssueBody(result, previousStatus, trendSummary, deployContext, triggerType);
 
   const data = await fetchJson(`https://api.github.com/repos/${GH_REPO}/issues`, {
     method: 'POST',
@@ -285,7 +329,13 @@ async function main() {
   let issueUrl = '';
   let issueNumber: number | null = null;
   if (needsIssue) {
-    issueUrl = await createGitHubIssue(analysis, cache.lastAnalysis?.status);
+    issueUrl = await createGitHubIssue(
+      analysis,
+      cache.lastAnalysis?.status,
+      buildTrendSummary(cache.history),
+      '',        // deployContext — filled in Task 3
+      'weekly',  // triggerType — filled in Task 4
+    );
     // Extraer el número del issue de la URL (ej: .../issues/123)
     const match = issueUrl.match(/\/issues\/(\d+)$/);
     issueNumber = match ? parseInt(match[1], 10) : null;
