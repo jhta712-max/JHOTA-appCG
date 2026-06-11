@@ -294,7 +294,7 @@ export default function NewExpensePage() {
 
         {/* ── Success banner ── */}
         {success && (
-          <div className="border-l-4 border-green-500 bg-green-50 text-green-800 px-4 py-3 flex items-center gap-2">
+          <div className="bg-[#1C1C1C] border border-[#F5C218]/40 px-4 py-3 flex items-center gap-2" style={{ color: '#F5C218' }}>
             <CheckCircle className="w-4 h-4 shrink-0" />
             <p className="font-['DM_Sans'] text-sm font-medium">{success}</p>
           </div>
@@ -302,7 +302,7 @@ export default function NewExpensePage() {
 
         {/* ── Error banner ── */}
         {apiError && (
-          <div className="border-l-4 border-red-500 bg-red-50 text-red-700 px-4 py-3 flex items-center gap-2">
+          <div className="bg-red-950/40 border border-red-800 text-red-400 px-4 py-3 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <p className="font-['DM_Sans'] text-sm">{apiError}</p>
           </div>
