@@ -432,14 +432,20 @@ async function triggerRenderRedeploy(): Promise<string | null> {
     body: JSON.stringify({ clearCache: 'do_not_clear' }),
   });
 
+  const responseText = await res.text();
   if (!res.ok) {
-    const body = await res.text();
-    console.error(`   ❌ Render API respondió ${res.status}: ${body}`);
+    console.error(`   ❌ Render API respondió ${res.status}: ${responseText}`);
     return null;
   }
 
-  const data = await res.json() as any;
-  const deployId = data?.id ?? data?.deploy?.id ?? null;
+  let deployId: string | null = null;
+  try {
+    if (responseText) {
+      const data = JSON.parse(responseText) as any;
+      deployId = data?.id ?? data?.deploy?.id ?? null;
+    }
+  } catch { /* body vacío o no-JSON, deploy igualmente iniciado */ }
+
   console.log(`   ✅ Redeploy iniciado${deployId ? ` (deploy: ${deployId})` : ''}`);
   return deployId;
 }
