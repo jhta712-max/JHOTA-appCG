@@ -72,6 +72,10 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
   res.on('finish', () => {
     const duration   = Date.now() - startTime;
     const statusCode = res.statusCode;
+
+    // 304 Not Modified son respuestas de caché HTTP normales — no loggear
+    if (statusCode === 304) return;
+
     const level      = statusCode >= 500 ? 'error'
                      : statusCode >= 400 ? 'warn'
                      : 'info';
