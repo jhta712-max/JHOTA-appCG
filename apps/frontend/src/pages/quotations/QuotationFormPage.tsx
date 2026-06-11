@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Save, Loader2, AlertCircle, Sparkles, X,
 } from 'lucide-react';
-import { quotationsApi, projectsApi, categoriesApi, ocrApi } from '../../api';
+import { quotationsApi, projectsApi, categoriesApi } from '../../api';
+import { useOcrPolling } from '../../hooks/useOcrPolling';
 
 interface FormData {
   projectId:       string;
@@ -68,8 +69,9 @@ export default function QuotationFormPage() {
   const [apiErr,  setApiErr]  = useState('');
 
   const [ocrFile,     setOcrFile]     = useState<File | null>(null);
-  const [ocrLoading,  setOcrLoading]  = useState(false);
-  const [ocrMsg,      setOcrMsg]      = useState('');
+  const { loading: ocrLoading, analyze: runOcr } = useOcrPolling();
+  const [ocrMsg,         setOcrMsg]         = useState('');
+  const [ocrValidated,   setOcrValidated]   = useState(false);
 
   const { data: projects } = useQuery({
     queryKey: ['projects', 'select'],
@@ -130,34 +132,28 @@ export default function QuotationFormPage() {
 
   const handleOcr = async () => {
     if (!ocrFile) return;
-    setOcrLoading(true);
     setOcrMsg('');
-    try {
-      const res = await ocrApi.analyze(ocrFile);
-      const d   = res.data.data as any;
-      setOcrMsg(`Documento detectado: ${d.documentTypeLabel ?? d.documentType ?? 'desconocido'}`);
-      setForm(f => ({
-        ...f,
-        supplierName:    d.supplierName    ?? f.supplierName,
-        supplierRnc:     d.supplierRnc     ?? f.supplierRnc,
-        quotationNumber: d.quotationNumber ?? f.quotationNumber,
-        quotationDate:   d.date            ? d.date.slice(0, 10) : f.quotationDate,
-        validUntil:      d.validUntil      ? d.validUntil.slice(0, 10) : f.validUntil,
-        currency:        d.currency        ?? f.currency,
-        subtotal:        d.subtotal        ? d.subtotal.toString() : f.subtotal,
-        itbisAmount:     d.itbisAmount     != null ? d.itbisAmount.toString() : f.itbisAmount,
-        total:           d.amount          ? d.amount.toString() : f.total,
-        description:     d.description     ?? f.description,
-        paymentTerms:    d.paymentTerms    ?? f.paymentTerms,
-        advancePct:      d.advancePct      != null ? d.advancePct.toString() : f.advancePct,
-        deliveryDays:    d.deliveryDays    != null ? d.deliveryDays.toString() : f.deliveryDays,
-        observations:    d.observations    ?? f.observations,
-      }));
-    } catch {
-      setOcrMsg('No se pudo analizar el documento. Verifica el archivo.');
-    } finally {
-      setOcrLoading(false);
-    }
+    setOcrValidated(false);
+    const d = await runOcr(ocrFile) as any;
+    if (!d) return;
+    setOcrMsg(`Documento detectado: ${d.documentTypeLabel ?? d.documentType ?? 'desconocido'}`);
+    setForm(f => ({
+      ...f,
+      supplierName:    d.supplierName    ?? f.supplierName,
+      supplierRnc:     d.supplierRnc     ?? f.supplierRnc,
+      quotationNumber: d.quotationNumber ?? f.quotationNumber,
+      quotationDate:   d.date            ? d.date.slice(0, 10) : f.quotationDate,
+      validUntil:      d.validUntil      ? d.validUntil.slice(0, 10) : f.validUntil,
+      currency:        d.currency        ?? f.currency,
+      subtotal:        d.subtotal        ? d.subtotal.toString() : f.subtotal,
+      itbisAmount:     d.itbisAmount     != null ? d.itbisAmount.toString() : f.itbisAmount,
+      total:           d.amount          ? d.amount.toString() : f.total,
+      description:     d.description     ?? f.description,
+      paymentTerms:    d.paymentTerms    ?? f.paymentTerms,
+      advancePct:      d.advancePct      != null ? d.advancePct.toString() : f.advancePct,
+      deliveryDays:    d.deliveryDays    != null ? d.deliveryDays.toString() : f.deliveryDays,
+      observations:    d.observations    ?? f.observations,
+    }));
   };
 
   const validate = () => {
@@ -467,6 +463,25 @@ export default function QuotationFormPage() {
           </div>
         )}
 
+        {/* OCR validation checkbox */}
+        {ocrMsg && (
+          <div className={`border-l-4 p-4 ${ocrValidated ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" checked={ocrValidated} onChange={(e) => setOcrValidated(e.target.checked)} className="mt-1" />
+              <div className="flex-1">
+                <p className={`font-['DM_Sans'] text-sm font-semibold ${ocrValidated ? 'text-green-800' : 'text-amber-900'}`}>
+                  {ocrValidated ? '✓ Datos del OCR validados' : 'Confirmar datos extraídos por IA'}
+                </p>
+                <p className={`font-['DM_Sans'] text-xs mt-1 ${ocrValidated ? 'text-green-700' : 'text-amber-700'}`}>
+                  {ocrValidated
+                    ? 'Has confirmado que los datos coinciden con el documento original.'
+                    : 'Compara los campos completados automáticamente con la cotización original antes de guardar.'}
+                </p>
+              </div>
+            </label>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-3 pb-6">
           <button
@@ -478,7 +493,7 @@ export default function QuotationFormPage() {
           </button>
           <button
             type="submit"
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || (!!ocrMsg && !ocrValidated)}
             className="flex-1 flex items-center justify-center gap-2 py-3 font-['Barlow_Condensed'] uppercase tracking-wide text-sm font-bold disabled:opacity-50 transition-opacity"
             style={{ background: '#F5C218', color: '#1C1C1C' }}
           >

@@ -5,7 +5,7 @@ import {
   AlertCircle, FileText, Clock, ChevronRight, TrendingUp, Wallet,
 } from 'lucide-react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
 } from 'recharts';
 import { projectsApi, expensesApi, quotationsApi, paymentOrdersApi } from '../../api';
@@ -156,7 +156,7 @@ export default function DashboardPage() {
               <p className="text-sm text-center py-10" style={{ color: '#555' }}>Sin datos</p>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={statsData.byMonth} barSize={28} margin={{ top: 0, right: 4, left: 0, bottom: 0 }}>
+                <ComposedChart data={statsData.byMonth} barSize={28} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2d2d2d" />
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
                   <YAxis
@@ -175,7 +175,15 @@ export default function DashboardPage() {
                       <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#F5C218' : '#D4A017'} fillOpacity={i === statsData.byMonth.length - 1 ? 1 : 0.85} />
                     ))}
                   </Bar>
-                </BarChart>
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#F5C218"
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: '#F5C218', strokeWidth: 0 }}
+                    activeDot={{ r: 5, fill: '#F5C218' }}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
             )}
           </div>

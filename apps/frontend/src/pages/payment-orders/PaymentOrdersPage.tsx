@@ -6,7 +6,8 @@ import {
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
   MessageCircle, Sparkles, Camera,
 } from 'lucide-react';
-import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi, ocrApi } from '../../api';
+import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../api';
+import { useOcrPolling } from '../../hooks/useOcrPolling';
 import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
@@ -186,12 +187,12 @@ export default function PaymentOrdersPage() {
   const [payInfoForm,  setPayInfoForm]  = useState({ paymentBank: '', paymentReference: '', exchangeRate: '' });
   const [fiscalErr,    setFiscalErr]    = useState('');
   const [conceptLoading, setConceptLoading] = useState(false);
-  const [ocrPayLoading, setOcrPayLoading] = useState(false);
-  const [ocrPayError,   setOcrPayError]   = useState('');
+  const { loading: ocrPayLoading, error: ocrPayError, analyze: runOcrPay, reset: resetOcrPay } = useOcrPolling();
+  const [ocrPayValidated, setOcrPayValidated] = useState(false);
   const ocrPayInputRef = useRef<HTMLInputElement>(null);
 
   const openPayModal = (o: PaymentOrder) => {
-    setOcrPayError(''); setOcrPayLoading(false); setPayingOrder(o);
+    resetOcrPay(); setOcrPayValidated(false); setPayingOrder(o);
     setFiscalForm({ hasFiscal: false, ncf: '', supplierRnc: o.supplier?.rnc ?? '', supplierName: o.supplier?.name ?? '', itbisAmount: '' });
     setPayInfoForm({ paymentBank: '', paymentReference: '', exchangeRate: '' });
     setFiscalErr(''); setPayModal(true);
@@ -199,25 +200,16 @@ export default function PaymentOrdersPage() {
   const closePayModal = () => { setPayModal(false); setPayingOrder(null); };
 
   const handleOcrPayScan = async (file: File) => {
-    setOcrPayLoading(true); setOcrPayError('');
-    try {
-      const res  = await ocrApi.analyze(file);
-      const data = res.data.data;
-      if (data.ncf || data.supplierName || data.supplierRnc || data.itbisAmount !== null) {
-        setFiscalForm((v) => ({
-          hasFiscal: true,
-          ncf:          data.ncf          ?? v.ncf,
-          supplierRnc:  data.supplierRnc  ?? v.supplierRnc,
-          supplierName: data.supplierName ?? v.supplierName,
-          itbisAmount:  data.itbisAmount != null ? String(data.itbisAmount) : v.itbisAmount,
-        }));
-      } else {
-        setOcrPayError('No se detectaron datos fiscales en la imagen.');
-      }
-    } catch {
-      setOcrPayError('Error al procesar la imagen. Intente de nuevo.');
-    } finally {
-      setOcrPayLoading(false);
+    const data = await runOcrPay(file);
+    if (!data) return;
+    if (data.ncf || data.supplierName || data.supplierRnc || data.itbisAmount !== null) {
+      setFiscalForm((v) => ({
+        hasFiscal: true,
+        ncf:          data.ncf          ?? v.ncf,
+        supplierRnc:  data.supplierRnc  ?? v.supplierRnc,
+        supplierName: data.supplierName ?? v.supplierName,
+        itbisAmount:  data.itbisAmount != null ? String(data.itbisAmount) : v.itbisAmount,
+      }));
     }
   };
 
@@ -1231,11 +1223,33 @@ export default function PaymentOrdersPage() {
             </div>
 
             {fiscalErr && <p className="text-sm text-red-600 bg-red-50 border-l-4 border-red-500 px-3 py-2">{fiscalErr}</p>}
+
+            {fiscalForm.hasFiscal && (
+              <div className={`border-l-4 p-3 ${ocrPayValidated ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={ocrPayValidated} onChange={(e) => setOcrPayValidated(e.target.checked)} className="mt-1" />
+                  <div className="flex-1">
+                    <p className={`text-sm font-bold ${ocrPayValidated ? 'text-green-800' : 'text-amber-900'}`}>
+                      {ocrPayValidated ? '✓ Datos del OCR validados' : 'Confirmar datos extraídos por IA'}
+                    </p>
+                    <p className={`text-xs mt-1 ${ocrPayValidated ? 'text-green-700' : 'text-amber-700'}`}>
+                      {ocrPayValidated
+                        ? 'Has confirmado que los datos coinciden con la factura original.'
+                        : 'Compara los campos completados automáticamente con la factura original antes de confirmar.'}
+                    </p>
+                  </div>
+                </label>
+              </div>
+            )}
           </div>
 
           <ModalFooter
             onCancel={closePayModal}
             onSave={() => {
+              if (fiscalForm.hasFiscal && !ocrPayValidated) {
+                setFiscalErr('Debes confirmar los datos del OCR antes de continuar');
+                return;
+              }
               setFiscalErr('');
               const isForeignOrder = payingOrder.currency !== 'RD$';
               if (isForeignOrder && !payInfoForm.exchangeRate) {

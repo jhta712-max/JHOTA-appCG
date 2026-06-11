@@ -6,10 +6,11 @@ import {
   ArrowUpDown, Filter,
 } from 'lucide-react';
 import {
-  officeExpensesApi, cardsApi, ocrApi, suppliersApi,
+  officeExpensesApi, cardsApi, suppliersApi,
   OFFICE_EXPENSE_CATEGORY_LABELS,
   type OfficeExpense, type OfficeExpenseCategory,
 } from '../../api';
+import { useOcrPolling } from '../../hooks/useOcrPolling';
 import { fmtDate } from '../../utils/date';
 import { useRole } from '../../hooks/useRole';
 
@@ -66,8 +67,7 @@ export default function OfficeExpensesPage() {
   const [flash,        setFlash]        = useState('');
   const [catFilter,    setCatFilter]    = useState('');
   const [expandStats,  setExpandStats]  = useState(true);
-  const [ocrLoading,   setOcrLoading]   = useState(false);
-  const [ocrError,     setOcrError]     = useState('');
+  const { loading: ocrLoading, error: ocrError, analyze: runOcr, reset: resetOcr } = useOcrPolling();
   const [ocrValidated, setOcrValidated] = useState(false);
   const [actionError,  setActionError]  = useState('');
   const [orderBy,      setOrderBy]      = useState<'expenseDate' | 'amount' | 'createdAt'>('expenseDate');
@@ -152,7 +152,7 @@ export default function OfficeExpensesPage() {
   });
 
   function openCreate() {
-    setEditingId(null); setForm(emptyForm()); setActionError(''); setOcrError(''); setOcrValidated(false); setShowForm(true);
+    setEditingId(null); setForm(emptyForm()); setActionError(''); resetOcr(); setOcrValidated(false); setShowForm(true);
   }
 
   function openEdit(exp: OfficeExpense) {
@@ -163,7 +163,7 @@ export default function OfficeExpensesPage() {
       companyCardId: exp.companyCardId ?? '', supplierId: exp.supplierId ?? '',
       hasFiscalDoc: exp.hasFiscalDoc, fiscalDocNum: exp.fiscalDocNum ?? '', notes: exp.notes ?? '',
     });
-    setActionError(''); setOcrError(''); setOcrValidated(false); setShowForm(true); setViewingExp(null);
+    setActionError(''); resetOcr(); setOcrValidated(false); setShowForm(true); setViewingExp(null);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -174,30 +174,23 @@ export default function OfficeExpensesPage() {
   async function handleOcrFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setOcrLoading(true); setOcrError('');
-    try {
-      const res  = await ocrApi.analyze(file);
-      const data = res.data.data;
-      setForm((f) => ({
-        ...f,
-        ...(data.amount      && { amount:      String(data.amount) }),
-        ...(data.date        && { expenseDate:  data.date }),
-        ...(data.description && { description:  data.description }),
-        ...(data.ncf         && { hasFiscalDoc: true, fiscalDocNum: data.ncf }),
-        ...((!data.ncf && (data.supplierRnc || data.supplierName)) && { hasFiscalDoc: true }),
-      }));
-      if (data.supplierName && suppliers.length > 0) {
-        const match = suppliers.find((s: any) =>
-          s.name.toLowerCase().includes(data.supplierName!.toLowerCase()) ||
-          data.supplierName!.toLowerCase().includes(s.name.toLowerCase())
-        );
-        if (match) setForm((f) => ({ ...f, supplierId: match.id }));
-      }
-    } catch {
-      setOcrError('No se pudo analizar la imagen. Intenta con una foto más clara.');
-    } finally {
-      setOcrLoading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    const data = await runOcr(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (!data) return;
+    setForm((f) => ({
+      ...f,
+      ...(data.amount      && { amount:      String(data.amount) }),
+      ...(data.date        && { expenseDate:  data.date }),
+      ...(data.description && { description:  data.description }),
+      ...(data.ncf         && { hasFiscalDoc: true, fiscalDocNum: data.ncf }),
+      ...((!data.ncf && (data.supplierRnc || data.supplierName)) && { hasFiscalDoc: true }),
+    }));
+    if (data.supplierName && suppliers.length > 0) {
+      const match = suppliers.find((s: any) =>
+        s.name.toLowerCase().includes(data.supplierName!.toLowerCase()) ||
+        data.supplierName!.toLowerCase().includes(s.name.toLowerCase())
+      );
+      if (match) setForm((f) => ({ ...f, supplierId: match.id }));
     }
   }
 
@@ -474,17 +467,6 @@ export default function OfficeExpensesPage() {
                       <AlertCircle className="w-3 h-3" /> {ocrError}
                     </p>
                   )}
-                  {form.hasFiscalDoc && !ocrValidated && (
-                    <div className="bg-amber-50 border-l-4 border-amber-400 p-3">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" checked={ocrValidated} onChange={(e) => setOcrValidated(e.target.checked)} className="mt-1" />
-                        <div className="flex-1">
-                          <p className="text-sm font-bold text-amber-900">He revisado y validado los datos del OCR</p>
-                          <p className="text-xs text-amber-700 mt-1">Confirma que los datos extraídos (montos, NCF, fechas) coinciden con el comprobante original.</p>
-                        </div>
-                      </label>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -569,6 +551,24 @@ export default function OfficeExpensesPage() {
                 <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border-l-4 border-red-500 p-3">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{actionError}</span>
+                </div>
+              )}
+
+              {form.hasFiscalDoc && (
+                <div className={`border-l-4 p-3 ${ocrValidated ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={ocrValidated} onChange={(e) => setOcrValidated(e.target.checked)} className="mt-1" />
+                    <div className="flex-1">
+                      <p className={`text-sm font-bold ${ocrValidated ? 'text-green-800' : 'text-amber-900'}`}>
+                        {ocrValidated ? '✓ Datos del OCR validados' : 'Confirmar datos extraídos por IA'}
+                      </p>
+                      <p className={`text-xs mt-1 ${ocrValidated ? 'text-green-700' : 'text-amber-700'}`}>
+                        {ocrValidated
+                          ? 'Has confirmado que los datos coinciden con el comprobante original.'
+                          : 'Compara los campos completados automáticamente con el comprobante original antes de guardar.'}
+                      </p>
+                    </div>
+                  </label>
                 </div>
               )}
 

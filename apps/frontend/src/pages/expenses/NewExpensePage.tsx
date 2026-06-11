@@ -8,8 +8,9 @@ import {
 } from 'lucide-react';
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
 import { ForeignCurrencyInput, type ForeignCurrencyValue } from '../../components/shared/ForeignCurrencyInput';
-import { expensesApi, projectsApi, categoriesApi, ocrApi, cardsApi, type OcrResult } from '../../api';
+import { expensesApi, projectsApi, categoriesApi, cardsApi, type OcrResult } from '../../api';
 import { useRole } from '../../hooks/useRole';
+import { useOcrPolling } from '../../hooks/useOcrPolling';
 
 type FV = { ncf: string; supplierRnc: string; supplierName: string; itbisAmount: number };
 type FormData = {
@@ -65,11 +66,9 @@ export default function NewExpensePage() {
   const [apiError,    setApiError]    = useState('');
 
   // OCR state
-  const [ocrLoading,    setOcrLoading]    = useState(false);
-  const [ocrResult,     setOcrResult]     = useState<OcrResult | null>(null);
-  const [ocrError,      setOcrError]      = useState('');
-  const [ocrValidated,  setOcrValidated]  = useState(false); // Usuario debe validar datos OCR
-  const [aiFields,      setAiFields]      = useState<Set<string>>(new Set()); // campos llenados por IA
+  const { loading: ocrLoading, result: ocrResult, error: ocrError, analyze: runOcr, reset: resetOcr } = useOcrPolling();
+  const [ocrValidated,  setOcrValidated]  = useState(false);
+  const [aiFields,      setAiFields]      = useState<Set<string>>(new Set());
 
   // Sugerencia de categoría automática
   const [catSuggestion, setCatSuggestion] = useState<{ categoryName: string; confidence: 'high' | 'medium' | 'low' } | null>(null);
@@ -119,7 +118,7 @@ export default function NewExpensePage() {
       setFiscalValues({ hasFiscal: false, ncf: '', supplierRnc: '', supplierName: '', itbisAmount: '' });
       setPhoto(null);
       setPhotoPreview(null);
-      setOcrResult(null);
+      resetOcr();
       setAiFields(new Set());
       setTimeout(() => navigate('/expenses'), 1500);
     },
@@ -167,9 +166,8 @@ export default function NewExpensePage() {
   // ── Seleccionar foto ───────────────────────────────────────
   const handlePhotoChange = (file: File | null) => {
     setPhoto(file);
-    setOcrResult(null);
-    setOcrError('');
-    setOcrValidated(false); // Reset validación cuando se carga nueva foto
+    resetOcr();
+    setOcrValidated(false);
     setAiFields(new Set());
     setPhotoPreview(null);
     if (file && file.type !== 'application/pdf') {
@@ -183,70 +181,42 @@ export default function NewExpensePage() {
   // ── Analizar con IA ─────────────────────────────────────────
   const handleAnalyze = async () => {
     if (!photo) return;
-    setOcrLoading(true);
-    setOcrError('');
-    setOcrResult(null);
-    setOcrValidated(false); // Reset validación cuando se analiza nueva foto
+    setOcrValidated(false);
     setAiFields(new Set());
 
-    try {
-      const res  = await ocrApi.analyze(photo);
-      const data = res.data.data;
-      setOcrResult(data);
+    const data = await runOcr(photo);
+    if (!data) return;
 
-      const filled = new Set<string>();
+    const filled = new Set<string>();
 
-      // Auto-llenar campos con los datos extraídos
-      if (data.date) {
-        setValue('expenseDate', data.date);
-        filled.add('expenseDate');
-      }
-      if (data.amount !== null) {
-        setValue('amount', data.amount);
-        filled.add('amount');
-      }
-      if (data.description) {
-        setValue('description', data.description);
-        filled.add('description');
-      }
-      if (data.paymentMethod) {
-        setValue('paymentMethod', data.paymentMethod);
-        filled.add('paymentMethod');
-      }
+    if (data.date) { setValue('expenseDate', data.date); filled.add('expenseDate'); }
+    if (data.amount !== null) { setValue('amount', data.amount); filled.add('amount'); }
+    if (data.description) { setValue('description', data.description); filled.add('description'); }
+    if (data.paymentMethod) { setValue('paymentMethod', data.paymentMethod); filled.add('paymentMethod'); }
 
-      // Categoría sugerida
-      if (data.suggestedCategory && categories) {
-        const match = categories.find(
-          (c) => c.name.toLowerCase() === data.suggestedCategory!.toLowerCase()
-        );
-        if (match) {
-          setValue('categoryId', match.id);
-          filled.add('categoryId');
-        }
-      }
-
-      // Comprobante fiscal
-      if (data.ncf || data.supplierName || data.supplierRnc || data.itbisAmount !== null) {
-        setFiscalValues((v) => ({
-          hasFiscal:    true,
-          ncf:          data.ncf          ?? v.ncf,
-          supplierRnc:  data.supplierRnc  ?? v.supplierRnc,
-          supplierName: data.supplierName ?? v.supplierName,
-          itbisAmount:  data.itbisAmount != null ? String(data.itbisAmount) : v.itbisAmount,
-        }));
-        if (data.ncf)          filled.add('ncf');
-        if (data.supplierName) filled.add('supplierName');
-        if (data.supplierRnc)  filled.add('supplierRnc');
-        if (data.itbisAmount != null) filled.add('itbisAmount');
-      }
-
-      setAiFields(filled);
-      if (filled.has('categoryId')) setCatSuggestion(null);
-    } catch (err: any) {
-      setOcrError(err.response?.data?.error ?? 'Error al procesar la imagen con IA');
-    } finally {
-      setOcrLoading(false);
+    if (data.suggestedCategory && categories) {
+      const match = categories.find(
+        (c) => c.name.toLowerCase() === data.suggestedCategory!.toLowerCase()
+      );
+      if (match) { setValue('categoryId', match.id); filled.add('categoryId'); }
     }
+
+    if (data.ncf || data.supplierName || data.supplierRnc || data.itbisAmount !== null) {
+      setFiscalValues((v) => ({
+        hasFiscal:    true,
+        ncf:          data.ncf          ?? v.ncf,
+        supplierRnc:  data.supplierRnc  ?? v.supplierRnc,
+        supplierName: data.supplierName ?? v.supplierName,
+        itbisAmount:  data.itbisAmount != null ? String(data.itbisAmount) : v.itbisAmount,
+      }));
+      if (data.ncf)          filled.add('ncf');
+      if (data.supplierName) filled.add('supplierName');
+      if (data.supplierRnc)  filled.add('supplierRnc');
+      if (data.itbisAmount != null) filled.add('itbisAmount');
+    }
+
+    setAiFields(filled);
+    if (filled.has('categoryId')) setCatSuggestion(null);
   };
 
   const clearAiField = (field: string) => {
@@ -452,8 +422,8 @@ export default function NewExpensePage() {
               <div className="flex items-center justify-center gap-3 py-4 bg-indigo-50 border border-indigo-200">
                 <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
                 <div>
-                  <p className="font-['DM_Sans'] text-sm font-medium text-indigo-700">Analizando factura con IA...</p>
-                  <p className="font-['DM_Sans'] text-xs text-indigo-500">Extrayendo NCF, montos y datos fiscales</p>
+                  <p className="font-['DM_Sans'] text-sm font-medium text-indigo-700">Procesando con IA...</p>
+                  <p className="font-['DM_Sans'] text-xs text-indigo-500">Extrayendo NCF, montos y datos fiscales (10-15 seg)</p>
                 </div>
               </div>
             )}
@@ -499,25 +469,6 @@ export default function NewExpensePage() {
                   )}
                 </div>
 
-                {/* OCR validation checkbox */}
-                <div className="border-l-4 border-amber-400 bg-amber-50 p-4">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={ocrValidated}
-                      onChange={(e) => setOcrValidated(e.target.checked)}
-                      className="mt-1 border-gray-300 cursor-pointer"
-                    />
-                    <div className="flex-1">
-                      <p className="font-['DM_Sans'] text-sm font-semibold text-amber-900">
-                        He revisado y validado los datos del OCR
-                      </p>
-                      <p className="font-['DM_Sans'] text-xs text-amber-700 mt-1">
-                        Confirma que comparaste los datos extraídos (especialmente montos, NCF y fechas) con la factura original y que son correctos. Esta validación es obligatoria para registrar el gasto.
-                      </p>
-                    </div>
-                  </label>
-                </div>
               </div>
             )}
           </div>
@@ -741,18 +692,27 @@ export default function NewExpensePage() {
             />
           </div>
 
-          {/* OCR not validated alert */}
-          {ocrResult && !ocrValidated && (
-            <div className="border-l-4 border-red-500 bg-red-50 text-red-700 p-4 flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-['DM_Sans'] text-sm font-semibold">
-                  No puedes registrar el gasto sin validar el OCR
-                </p>
-                <p className="font-['DM_Sans'] text-xs mt-1">
-                  Marca el checkbox de validación arriba para confirmar que revisaste los datos
-                </p>
-              </div>
+          {/* OCR validation checkbox — shown at bottom so user confirms after reviewing all fields */}
+          {ocrResult && (
+            <div className={`border-l-4 p-4 ${ocrValidated ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={ocrValidated}
+                  onChange={(e) => setOcrValidated(e.target.checked)}
+                  className="mt-1 cursor-pointer"
+                />
+                <div className="flex-1">
+                  <p className={`font-['DM_Sans'] text-sm font-semibold ${ocrValidated ? 'text-green-800' : 'text-amber-900'}`}>
+                    {ocrValidated ? '✓ Datos del OCR validados' : 'Confirmar datos extraídos por IA'}
+                  </p>
+                  <p className={`font-['DM_Sans'] text-xs mt-1 ${ocrValidated ? 'text-green-700' : 'text-amber-700'}`}>
+                    {ocrValidated
+                      ? 'Has confirmado que los datos (montos, NCF, fechas) coinciden con la factura original.'
+                      : 'Compara los campos completados automáticamente con la factura original antes de guardar.'}
+                  </p>
+                </div>
+              </label>
             </div>
           )}
 
@@ -768,7 +728,7 @@ export default function NewExpensePage() {
             <button
               type="submit"
               disabled={mutation.isPending || (ocrResult !== null && !ocrValidated)}
-              title={ocrResult && !ocrValidated ? 'Debes validar los datos del OCR antes de guardar' : ''}
+              title={ocrResult && !ocrValidated ? 'Marca el checkbox de validación para confirmar los datos del OCR' : ''}
               style={{ background: '#F5C218', color: '#1C1C1C' }}
               className={[
                 'font-[\'Barlow_Condensed\'] uppercase tracking-widest font-bold flex-1 py-3',
