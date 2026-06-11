@@ -81,7 +81,16 @@ api/          # index.ts centraliza todos los axios calls
 
 **OCR asíncrono:** El flujo es POST → recibe `jobId` (202) → poll GET `/ocr/jobs/:jobId` cada 2s hasta `completed`/`failed` (max 60s). Usar siempre el hook `useOcrPolling()` en los formularios — no llamar `ocrApi` directamente.
 
-**Design system:** Industrial. `#1C1C1C` fondo oscuro, `#F5C218` amarillo acento. Tipografías: Barlow Condensed (headings), DM Sans (body), Space Mono (números/códigos). Sin border-radius en cards ni botones principales.
+**Design system:** Industrial. Todas las páginas siguen este patrón exacto:
+- Hero: `<div className="bg-[#1C1C1C]">` con breadcrumb `text-[#F5C218]` y H1 `font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight`
+- Tipografías: `font-['Barlow_Condensed']` headings/labels, `font-['DM_Sans']` body, `font-['Space_Mono']` números/códigos
+- Sin `rounded-xl`, `rounded-2xl`, `rounded-lg` en cards, panels ni modals — esquinas afiladas en todo
+- Botón primario: `bg-[#F5C218] text-[#1C1C1C]` sin radius. Botón cancelar: `border border-gray-200 text-gray-600` sin radius
+- Modal header: `bg-[#1C1C1C]` con título blanco uppercase, X gris → hover `text-[#F5C218]`
+- Tabla: `thead` con `bg-[#1C1C1C]`, headers `font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]`
+- Feedback OK: `bg-[#1C1C1C] border border-[#F5C218]/40 text-[#F5C218]` (nunca `bg-green-50`)
+- Inputs: `border-gray-200` focus → `focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]`
+- Outer wrapper de página: `min-h-screen bg-gray-50`
 
 ## Reglas concretas
 
@@ -91,9 +100,11 @@ api/          # index.ts centraliza todos los axios calls
 
 3. **Antes de cada push a main:** Ejecuta `workspace/DEPLOYMENT/DEPLOY_CHECKLIST.md`.
 
-4. **WhatsApp (UltraMsg):** Env vars: `ULTRAMSG_INSTANCE_ID`, `ULTRAMSG_TOKEN`, `NOTIFY_WHATSAPP_TO` (fallback). Los destinatarios reales vienen de la BD (`notificationContact` + usuarios con `whatsappOptIn`). El endpoint `GET /api/v1/notifications/whatsapp-recipients` devuelve la lista combinada.
+4. **WhatsApp (UltraMsg):** Env vars: `ULTRAMSG_INSTANCE_ID`, `ULTRAMSG_TOKEN`, `NOTIFY_WHATSAPP_TO` (fallback). Los destinatarios reales vienen de la BD (`notificationContact` + usuarios con `whatsappOptIn`). El endpoint `GET /api/v1/notifications/whatsapp-recipients` devuelve la lista combinada filtrable por tipo (`?type=BUDGET`). Tipos válidos: `BUDGET`, `PAYROLL`, `ORDERS`, `SERVICE_PAYMENTS`, `SYSTEM`, `SECURITY`. Campo `notifTypes String[]` en User y NotificationContact — array vacío = recibe todos.
 
-5. **Agente de mantenimiento** (`scripts/maintenance-agent.ts`): corre en GitHub Actions (`.github/workflows/maintenance.yml`). Cache en `.maintenance-cache.json` en raíz del repo. Path calculado con `__dirname` (no `process.cwd()`).
+5. **Agente de mantenimiento** (`scripts/maintenance-agent.ts`): corre en GitHub Actions (`.github/workflows/maintenance.yml`). Cache en `.maintenance-cache.json` en raíz del repo. Path calculado con `__dirname` (no `process.cwd()`). Triggers: cron semanal + `on: push: branches: [main]` (post-deploy). En modo post-deploy solo crea issue si hay degradación.
+
+6. **Post-OCR Enrichment Agent** (`apps/backend/src/modules/ocr/ocr-enrichment.service.ts`): se llama después de OCR completo (no bloquea). Nivel 1 (alta confianza): match proveedor por RNC, duplicado NCF/eNCF, clasificación tipo comprobante (B01-B16 tradicional, E31-E45 eNCF electrónico), cruce con cotización abierta. Nivel 2 (solo warnings): validación ITBIS 10%-26%, tipos gubernamentales inusuales. Frontend: componente `OcrEnrichmentAlerts.tsx`, hook `useOcrPolling(projectId?)` llama `ocrApi.enrich()` en background tras OCR completo.
 
 ## Primeros pasos en una sesión
 
