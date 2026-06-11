@@ -293,13 +293,13 @@ export default function SuppliersPage() {
                   {role.canManageSuppliers && (
                     <>
                       <button onClick={() => openEdit(s)}
-                        className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                         title="Editar suplidor">
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => toggleMutation.mutate(s.id)}
-                        className={`p-1.5 rounded-lg transition-colors ${s.isActive ? 'text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                        className={`p-1.5 transition-colors ${s.isActive ? 'text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
                         title={s.isActive ? 'Desactivar' : 'Activar'}>
                         {s.isActive ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
                       </button>
@@ -351,7 +351,7 @@ export default function SuppliersPage() {
               <h3 className="font-['Barlow_Condensed'] text-xl font-bold text-white uppercase tracking-wide">
                 {modal === 'create' ? 'Nuevo Suplidor' : `Editar: ${editing?.name}`}
               </h3>
-              <button onClick={closeModal} className="p-1.5 text-gray-400 hover:text-white rounded-lg transition-colors">
+              <button onClick={closeModal} className="p-1.5 text-gray-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -369,7 +369,7 @@ export default function SuppliersPage() {
                     Nombre <span className="text-red-500">*</span>
                   </label>
                   <input
-                    className="w-full font-['DM_Sans'] text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent"
+                    className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent"
                     name="name" value={form.name} onChange={handleChange}
                     placeholder="Ej: Ferretería La Central, S.R.L." required minLength={2} maxLength={200}
                   />
@@ -470,15 +470,15 @@ export default function SuppliersPage() {
                           <div className="flex items-center gap-1 shrink-0">
                             {!acc.isDefault && (
                               <button onClick={() => setDefaultMutation.mutate({ supplierId: editing.id, accountId: acc.id })}
-                                className="p-1.5 text-gray-400 hover:text-[#F5C218] hover:bg-[#F5C218]/10 rounded-lg transition-colors" title="Predeterminada">
+                                className="p-1.5 text-gray-400 hover:text-[#F5C218] hover:bg-[#F5C218]/10 transition-colors" title="Predeterminada">
                                 <Star className="w-3.5 h-3.5" />
                               </button>
                             )}
                             {acc.isDefault && <span className="p-1.5 text-[#F5C218]"><StarOff className="w-3.5 h-3.5" /></span>}
-                            <button onClick={() => openEditAccount(acc)} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => openEditAccount(acc)} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
                             {bankAccounts.length > 1 && (
                               <button onClick={() => { if (confirm('¿Eliminar esta cuenta bancaria?')) deleteBankMutation.mutate({ supplierId: editing.id, accountId: acc.id }); }}
-                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                             )}
                           </div>
                         </div>

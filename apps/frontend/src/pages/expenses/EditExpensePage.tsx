@@ -22,6 +22,9 @@ const NCF_REGEX   = /^[A-Z]\d{10}$/;
 const E_NCF_REGEX = /^E\d{12}$/;
 const RNC_REGEX   = /^\d{9}(\d{2})?$/;
 
+const inputCls = "w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent bg-white";
+const labelCls = "block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5";
+
 export default function EditExpensePage() {
   const { id }   = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -33,7 +36,6 @@ export default function EditExpensePage() {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
 
-  // ── Cargar el gasto existente ──────────────────────────────────────────────
   const { data: expense, isLoading: loadingExpense } = useQuery({
     queryKey: ['expense', id],
     queryFn:  () => expensesApi.getById(id!),
@@ -53,7 +55,6 @@ export default function EditExpensePage() {
     select:   (r) => r.data.data,
   });
 
-  // Pre-cargar formulario cuando llegan los datos del gasto
   useEffect(() => {
     if (!expense) return;
     const hasFV = !!expense.fiscalVoucher;
@@ -79,7 +80,6 @@ export default function EditExpensePage() {
     });
   }, [expense, reset]);
 
-  // ── Mutación de actualización ─────────────────────────────────────────────
   const mutation = useMutation({
     mutationFn: (data: any) => expensesApi.update(id!, data),
     onSuccess: () => {
@@ -116,12 +116,11 @@ export default function EditExpensePage() {
     mutation.mutate(payload);
   };
 
-  // ── Loading inicial ───────────────────────────────────────────────────────
   if (loadingExpense) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
-        <span className="ml-2 text-gray-500">Cargando gasto...</span>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#F5C218' }} />
+        <span className="font-['DM_Sans'] text-sm text-gray-500">Cargando gasto...</span>
       </div>
     );
   }
@@ -129,19 +128,26 @@ export default function EditExpensePage() {
   if (!expense) {
     return (
       <div className="text-center py-20 text-gray-400">
-        <p>Gasto no encontrado.</p>
-        <button onClick={() => navigate('/expenses')} className="btn-secondary mt-4">Volver</button>
+        <p className="font-['DM_Sans']">Gasto no encontrado.</p>
+        <button
+          onClick={() => navigate('/expenses')}
+          className="font-['Barlow_Condensed'] uppercase text-sm font-bold px-4 py-2 mt-4 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          Volver
+        </button>
       </div>
     );
   }
 
-  // ── No se puede editar un gasto anulado ──────────────────────────────────
   if (expense.status === 'VOIDED') {
     return (
       <div className="max-w-lg mx-auto text-center py-20">
         <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-        <p className="text-gray-700 font-medium">Este gasto ha sido anulado y no puede editarse.</p>
-        <button onClick={() => navigate(`/expenses/${id}`)} className="btn-secondary mt-4">
+        <p className="font-['DM_Sans'] text-gray-700 font-medium">Este gasto ha sido anulado y no puede editarse.</p>
+        <button
+          onClick={() => navigate(`/expenses/${id}`)}
+          className="font-['Barlow_Condensed'] uppercase text-sm font-bold px-4 py-2 mt-4 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+        >
           Ver detalle
         </button>
       </div>
@@ -149,79 +155,92 @@ export default function EditExpensePage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-5 pb-10">
+    <div className="max-w-lg mx-auto space-y-0 pb-10">
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(`/expenses/${id}`)}
-          className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div>
-          <p className="module-label">MÓDULO / GASTOS</p>
-          <h1 className="page-title">Editar Gasto</h1>
-          <p className="text-sm text-gray-500">Modifica los datos del gasto</p>
+      {/* Hero header */}
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 mb-6" style={{ background: '#1C1C1C' }}>
+        <div className="max-w-lg flex items-center gap-3">
+          <button
+            onClick={() => navigate(`/expenses/${id}`)}
+            className="p-2 text-gray-400 hover:text-[#F5C218] transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#F5C218' }}>
+              MÓDULO / GASTOS
+            </p>
+            <h1 className="font-['Barlow_Condensed'] text-3xl font-bold tracking-tight text-white uppercase">
+              Editar Gasto
+            </h1>
+            <p className="font-['DM_Sans'] text-xs text-gray-400 mt-0.5">Modifica los datos del gasto</p>
+          </div>
         </div>
       </div>
 
       {/* Error global */}
       {apiError && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
+        <div className="flex items-center gap-2 bg-red-950/40 border border-red-800 text-red-400 p-3 text-sm font-['DM_Sans'] mb-4">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{apiError}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
         {/* Sección 1 — Datos del gasto */}
-        <div className="card p-5 space-y-4">
-          <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-            <span className="w-6 h-6 bg-primary-100 text-primary-700 rounded-full text-xs flex items-center justify-center font-bold">1</span>
-            Datos del gasto
-          </h2>
+        <div className="bg-white border border-gray-100 p-5 space-y-4">
+          <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+            <span
+              className="w-6 h-6 text-xs font-bold flex items-center justify-center"
+              style={{ background: '#F5C218', color: '#1C1C1C' }}
+            >1</span>
+            <h2 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-800">
+              Datos del gasto
+            </h2>
+          </div>
 
           <div>
-            <label className="label">Proyecto *</label>
-            <select className={`input-field ${errors.projectId ? 'input-error' : ''}`}
+            <label className={labelCls}>Proyecto *</label>
+            <select className={`${inputCls} ${errors.projectId ? 'border-red-400' : ''}`}
               {...register('projectId', { required: 'Selecciona un proyecto' })}>
               <option value="">— Selecciona un proyecto —</option>
               {(projects ?? []).map((p: any) => (
                 <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
               ))}
             </select>
-            {errors.projectId && <p className="text-red-500 text-xs mt-1">{errors.projectId.message}</p>}
+            {errors.projectId && <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.projectId.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Fecha *</label>
-              <input type="date" className={`input-field ${errors.expenseDate ? 'input-error' : ''}`}
+              <label className={labelCls}>Fecha *</label>
+              <input type="date" className={`${inputCls} ${errors.expenseDate ? 'border-red-400' : ''}`}
                 {...register('expenseDate', { required: 'La fecha es requerida' })} />
             </div>
             <div>
-              <label className="label">Monto (RD$) *</label>
+              <label className={labelCls}>Monto (RD$) *</label>
               <input type="number" step="0.01" min="0.01" placeholder="0.00"
-                className={`input-field ${errors.amount ? 'input-error' : ''}`}
+                className={`${inputCls} font-['Space_Mono'] ${errors.amount ? 'border-red-400' : ''}`}
                 {...register('amount', {
                   required: 'El monto es requerido',
                   min: { value: 0.01, message: 'Debe ser mayor a 0' },
                 })} />
-              {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
+              {errors.amount && <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.amount.message}</p>}
             </div>
           </div>
 
           {/* Moneda extranjera */}
-          <div className="rounded-xl border border-dashed border-blue-300 bg-blue-50 p-4 space-y-3">
+          <div className="border border-dashed border-blue-300 bg-blue-50 p-4 space-y-3">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={useForeign} onChange={(e) => setUseForeign(e.target.checked)} className="rounded border-gray-300" />
-              <span className="text-sm font-medium text-blue-800">💱 Pago realizado en moneda extranjera</span>
+              <input type="checkbox" checked={useForeign} onChange={(e) => setUseForeign(e.target.checked)} className="border-gray-300" />
+              <span className="font-['DM_Sans'] text-sm font-medium text-blue-800">Pago realizado en moneda extranjera</span>
             </label>
             {useForeign && (
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Moneda</label>
-                  <select value={foreignCurrency} onChange={(e) => setForeignCurrency(e.target.value)} className="input-field text-sm">
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Moneda</label>
+                  <select value={foreignCurrency} onChange={(e) => setForeignCurrency(e.target.value)} className={inputCls + ' text-sm'}>
                     <option value="USD">USD — Dólar</option>
                     <option value="EUR">EUR — Euro</option>
                     <option value="GBP">GBP — Libra</option>
@@ -229,39 +248,43 @@ export default function EditExpensePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Monto en {foreignCurrency}</label>
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Monto en {foreignCurrency}</label>
                   <input type="number" step="0.01" min="0.01" placeholder="0.00"
                     defaultValue={(expense as any)?.foreignAmount ?? ''}
-                    className="input-field text-sm"
+                    className={inputCls + ' text-sm font-[\'Space_Mono\']'}
                     {...(register as any)('foreignAmount')} />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Tasa (1 {foreignCurrency} = X DOP)</label>
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Tasa (1 {foreignCurrency} = X DOP)</label>
                   <input type="number" step="0.01" min="0.01" placeholder="ej: 60.50"
                     defaultValue={(expense as any)?.exchangeRate ?? ''}
-                    className="input-field text-sm"
+                    className={inputCls + ' text-sm font-[\'Space_Mono\']'}
                     {...(register as any)('exchangeRate')} />
                 </div>
               </div>
             )}
-            {useForeign && <p className="text-xs text-blue-600">El campo <strong>Monto (RD$)</strong> es el valor final que se registra en el proyecto.</p>}
+            {useForeign && (
+              <p className="font-['DM_Sans'] text-xs text-blue-600">
+                El campo <strong>Monto (RD$)</strong> es el valor final que se registra en el proyecto.
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="label">Descripción *</label>
+            <label className={labelCls}>Descripción *</label>
             <input type="text" placeholder="¿En qué se gastó?"
-              className={`input-field ${errors.description ? 'input-error' : ''}`}
+              className={`${inputCls} ${errors.description ? 'border-red-400' : ''}`}
               {...register('description', {
                 required: 'La descripción es requerida',
                 minLength: { value: 3, message: 'Mínimo 3 caracteres' },
               })} />
-            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
+            {errors.description && <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.description.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Categoría *</label>
-              <select className={`input-field ${errors.categoryId ? 'input-error' : ''}`}
+              <label className={labelCls}>Categoría *</label>
+              <select className={`${inputCls} ${errors.categoryId ? 'border-red-400' : ''}`}
                 {...register('categoryId', { required: 'Selecciona una categoría' })}>
                 <option value="">— Categoría —</option>
                 {(categories ?? []).map((c: any) => (
@@ -270,8 +293,8 @@ export default function EditExpensePage() {
               </select>
             </div>
             <div>
-              <label className="label">Método de pago *</label>
-              <select className={`input-field ${errors.paymentMethod ? 'input-error' : ''}`}
+              <label className={labelCls}>Método de pago *</label>
+              <select className={`${inputCls} ${errors.paymentMethod ? 'border-red-400' : ''}`}
                 {...register('paymentMethod', { required: 'Selecciona método' })}>
                 <option value="">— Método —</option>
                 <option value="CASH">Efectivo</option>
@@ -284,40 +307,45 @@ export default function EditExpensePage() {
           </div>
 
           <div>
-            <label className="label">Notas (opcional)</label>
+            <label className={labelCls}>Notas (opcional)</label>
             <textarea rows={2} placeholder="Información adicional..."
-              className="input-field resize-none" {...register('notes')} />
+              className={inputCls + ' resize-none'} {...register('notes')} />
           </div>
         </div>
 
         {/* Sección 2 — Comprobante fiscal */}
-        <div className="card p-5 space-y-4">
-          <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-            <span className="w-6 h-6 bg-primary-100 text-primary-700 rounded-full text-xs flex items-center justify-center font-bold">2</span>
-            Comprobante fiscal
-          </h2>
+        <div className="bg-white border border-gray-100 p-5 space-y-4">
+          <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+            <span
+              className="w-6 h-6 text-xs font-bold flex items-center justify-center"
+              style={{ background: '#F5C218', color: '#1C1C1C' }}
+            >2</span>
+            <h2 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-800">
+              Comprobante fiscal
+            </h2>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <button type="button" onClick={() => setHasFiscal(true)}
-              className={`p-4 rounded-xl border-2 text-center transition-all ${hasFiscal ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
-              <Receipt className={`w-6 h-6 mx-auto mb-1 ${hasFiscal ? 'text-primary-600' : 'text-gray-400'}`} />
-              <p className={`text-sm font-medium ${hasFiscal ? 'text-primary-700' : 'text-gray-600'}`}>Tiene NCF</p>
+              className={`p-4 border-2 text-center transition-all ${hasFiscal ? 'border-[#F5C218] bg-[#F5C218]/5' : 'border-gray-200 hover:border-gray-300'}`}>
+              <Receipt className={`w-6 h-6 mx-auto mb-1 ${hasFiscal ? 'text-[#1C1C1C]' : 'text-gray-400'}`} />
+              <p className={`font-['Barlow_Condensed'] text-sm font-bold uppercase ${hasFiscal ? 'text-[#1C1C1C]' : 'text-gray-600'}`}>Tiene NCF</p>
             </button>
             <button type="button" onClick={() => setHasFiscal(false)}
-              className={`p-4 rounded-xl border-2 text-center transition-all ${!hasFiscal ? 'border-gray-400 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
-              <span className="text-2xl block mb-1">—</span>
-              <p className={`text-sm font-medium ${!hasFiscal ? 'text-gray-700' : 'text-gray-400'}`}>No aplica</p>
+              className={`p-4 border-2 text-center transition-all ${!hasFiscal ? 'border-gray-400 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
+              <span className="font-['Space_Mono'] text-2xl block mb-1 text-gray-500">—</span>
+              <p className={`font-['Barlow_Condensed'] text-sm font-bold uppercase ${!hasFiscal ? 'text-gray-700' : 'text-gray-400'}`}>No aplica</p>
             </button>
           </div>
 
           {hasFiscal && (
             <div className="space-y-3 pt-2 border-t border-gray-100">
               <div>
-                <label className="label">NCF *
-                  <span className="text-gray-400 font-normal"> — B0100000001 o E310000000001</span>
+                <label className={labelCls}>
+                  NCF * <span className="text-gray-400 font-normal normal-case tracking-normal"> — B0100000001 o E310000000001</span>
                 </label>
                 <input type="text" placeholder="B0100000001" maxLength={13}
-                  className="input-field uppercase"
+                  className={`${inputCls} font-['Space_Mono'] uppercase`}
                   {...register('fiscalVoucher.ncf', {
                     required: 'El NCF es requerido',
                     validate: (v) =>
@@ -325,35 +353,35 @@ export default function EditExpensePage() {
                         ? true : 'NCF inválido (11 chars tradicional o 13 chars e-NCF)',
                   })} />
                 {(errors as any).fiscalVoucher?.ncf && (
-                  <p className="text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.ncf.message}</p>
+                  <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.ncf.message}</p>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">RNC Suplidor *</label>
+                  <label className={labelCls}>RNC Suplidor *</label>
                   <input type="text" placeholder="101234567" maxLength={11}
-                    className="input-field"
+                    className={`${inputCls} font-['Space_Mono']`}
                     {...register('fiscalVoucher.supplierRnc', {
                       required: 'RNC requerido',
                       validate: (v) => RNC_REGEX.test(v ?? '') ? true : 'RNC inválido (9 u 11 dígitos)',
                     })} />
                   {(errors as any).fiscalVoucher?.supplierRnc && (
-                    <p className="text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.supplierRnc.message}</p>
+                    <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.supplierRnc.message}</p>
                   )}
                 </div>
                 <div>
-                  <label className="label">ITBIS (RD$)</label>
+                  <label className={labelCls}>ITBIS (RD$)</label>
                   <input type="number" step="0.01" min="0" placeholder="0.00"
-                    className="input-field" {...register('fiscalVoucher.itbisAmount')} />
+                    className={`${inputCls} font-['Space_Mono']`} {...register('fiscalVoucher.itbisAmount')} />
                 </div>
               </div>
               <div>
-                <label className="label">Nombre del suplidor *</label>
+                <label className={labelCls}>Nombre del suplidor *</label>
                 <input type="text" placeholder="Empresa o persona que emitió la factura"
-                  className="input-field"
+                  className={inputCls}
                   {...register('fiscalVoucher.supplierName', { required: 'Nombre requerido' })} />
                 {(errors as any).fiscalVoucher?.supplierName && (
-                  <p className="text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.supplierName.message}</p>
+                  <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.supplierName.message}</p>
                 )}
               </div>
             </div>
@@ -362,12 +390,21 @@ export default function EditExpensePage() {
 
         {/* Botones */}
         <div className="flex gap-3 pb-6">
-          <button type="button" onClick={() => navigate(`/expenses/${id}`)} className="btn-secondary flex-1">
+          <button
+            type="button"
+            onClick={() => navigate(`/expenses/${id}`)}
+            className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-2.5 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+          >
             Cancelar
           </button>
-          <button type="submit" disabled={mutation.isPending} className="btn-primary flex-1 py-3">
+          <button
+            type="submit"
+            disabled={mutation.isPending}
+            className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-2.5 flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+            style={{ background: '#F5C218', color: '#1C1C1C' }}
+          >
             {mutation.isPending
-              ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Guardando...</>
+              ? <><span className="w-4 h-4 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> Guardando...</>
               : <><CheckCircle className="w-4 h-4" /> Guardar cambios</>
             }
           </button>
