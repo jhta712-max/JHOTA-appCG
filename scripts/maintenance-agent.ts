@@ -20,6 +20,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -125,6 +126,22 @@ function buildTrendSummary(history: HistoryEntry[]): string {
   }
 
   return `${statusLine}${trendNote ? '\n\n' + trendNote : ''}`;
+}
+
+function getDeployContext(): string {
+  try {
+    const raw = execSync(
+      'git log --oneline --since="7 days ago" --no-merges',
+      { encoding: 'utf8', timeout: 10_000 },
+    ).trim();
+
+    if (!raw) return '_Sin commits en los últimos 7 días._';
+
+    const lines = raw.split('\n').slice(0, 20); // máximo 20 commits
+    return lines.map(l => `- \`${l}\``).join('\n');
+  } catch {
+    return '_No se pudo obtener el historial de git._';
+  }
 }
 
 async function fetchJson(url: string, options: RequestInit = {}): Promise<any> {
@@ -329,11 +346,13 @@ async function main() {
   let issueUrl = '';
   let issueNumber: number | null = null;
   if (needsIssue) {
+    const deployContext = getDeployContext();
+    const trendSummary = buildTrendSummary(cache.history);
     issueUrl = await createGitHubIssue(
       analysis,
       cache.lastAnalysis?.status,
-      buildTrendSummary(cache.history),
-      '',        // deployContext — filled in Task 3
+      trendSummary,
+      deployContext,
       'weekly',  // triggerType — filled in Task 4
     );
     // Extraer el número del issue de la URL (ej: .../issues/123)
