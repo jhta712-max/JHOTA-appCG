@@ -8,22 +8,18 @@
  */
 
 import nodemailer from 'nodemailer';
+import { getWhatsAppRecipients } from '../modules/notifications/notifications.service';
 
 // ─── Configuración desde env ──────────────────────────────────
 const EMAIL_FROM    = process.env.NOTIFY_EMAIL_FROM    ?? '';
-const EMAIL_TO      = process.env.NOTIFY_EMAIL_TO      ?? '';  // comma-separated
+const EMAIL_TO      = process.env.NOTIFY_EMAIL_TO      ?? '';
 const SMTP_HOST     = process.env.SMTP_HOST            ?? 'smtp.gmail.com';
 const SMTP_PORT     = parseInt(process.env.SMTP_PORT   ?? '465');
 const SMTP_USER     = process.env.SMTP_USER            ?? '';
 const SMTP_PASS     = process.env.SMTP_PASS            ?? '';
 
-// UltraMsg — https://ultramsg.com
-// Instance ID y token se obtienen en el dashboard de UltraMsg
 const ULTRAMSG_INSTANCE = process.env.ULTRAMSG_INSTANCE_ID ?? '';
 const ULTRAMSG_TOKEN    = process.env.ULTRAMSG_TOKEN        ?? '';
-// Destinatarios: números con código de país, sin "whatsapp:" prefix
-// Ej: "+18095551234,+18095555678"
-const WHATSAPP_TO       = process.env.NOTIFY_WHATSAPP_TO    ?? '';
 
 const APP_NAME      = 'SERVINGMI — Gastos';
 const APP_URL       = process.env.APP_URL ?? 'http://localhost:3001';
@@ -139,9 +135,11 @@ async function sendEmail(subject: string, html: string): Promise<void> {
 }
 
 // ─── WhatsApp sender via UltraMsg ────────────────────────────
-async function sendWhatsApp(message: string): Promise<void> {
-  if (!ULTRAMSG_INSTANCE || !ULTRAMSG_TOKEN || !WHATSAPP_TO) return;
-  const recipients = WHATSAPP_TO.split(',').map(s => s.trim()).filter(Boolean);
+// Usa getWhatsAppRecipients de la BD para respetar los notifTypes configurados
+async function sendWhatsApp(message: string, type?: string): Promise<void> {
+  if (!ULTRAMSG_INSTANCE || !ULTRAMSG_TOKEN) return;
+  const recipients = await getWhatsAppRecipients(type);
+  if (recipients.length === 0) return;
 
   for (const to of recipients) {
     try {
@@ -189,7 +187,7 @@ export async function notifySystemDown(details: {
 
   await Promise.all([
     sendEmail(title, alertHtml('Sistema con falla detectada', bodyHtml, 'error')),
-    sendWhatsApp(waMsg),
+    sendWhatsApp(waMsg, 'SYSTEM'),
   ]);
 }
 
@@ -204,7 +202,7 @@ export async function notifySystemRecovered(): Promise<void> {
 
   await Promise.all([
     sendEmail(title, alertHtml('Sistema recuperado', bodyHtml, 'info')),
-    sendWhatsApp(waMsg),
+    sendWhatsApp(waMsg, 'SYSTEM'),
   ]);
 }
 
@@ -221,7 +219,7 @@ export async function notifyHighErrorRate(count: number, windowMinutes: number):
 
   await Promise.all([
     sendEmail(title, alertHtml(`${count} errores detectados`, bodyHtml, 'warn')),
-    sendWhatsApp(waMsg),
+    sendWhatsApp(waMsg, 'SYSTEM'),
   ]);
 }
 
@@ -260,7 +258,7 @@ export async function sendDailyReport(stats: {
 
   await Promise.all([
     sendEmail(`📊 Reporte Diario — ${APP_NAME}`, html),
-    sendWhatsApp(waMsg),
+    sendWhatsApp(waMsg, 'SYSTEM'),
   ]);
 }
 
@@ -292,7 +290,7 @@ export async function sendWeeklyReport(stats: {
 
   await Promise.all([
     sendEmail(`📈 Reporte Semanal — ${APP_NAME}`, html),
-    sendWhatsApp(waMsg),
+    sendWhatsApp(waMsg, 'SYSTEM'),
   ]);
 }
 
