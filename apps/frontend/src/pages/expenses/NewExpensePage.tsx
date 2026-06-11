@@ -66,6 +66,11 @@ export default function NewExpensePage() {
   const [success,     setSuccess]     = useState('');
   const [apiError,    setApiError]    = useState('');
 
+  const { register, handleSubmit, watch, formState: { errors }, reset, setValue, getValues } =
+    useForm<FormData>({
+      defaultValues: { expenseDate: new Date().toISOString().split('T')[0], hasFiscalDoc: false },
+    });
+
   // OCR state — pasamos projectId para que el agente cruce con cotizaciones
   const watchedProjectId = watch('projectId');
   const { loading: ocrLoading, result: ocrResult, enrichment: ocrEnrichment, error: ocrError, analyze: runOcr, reset: resetOcr } = useOcrPolling(watchedProjectId);
@@ -76,11 +81,6 @@ export default function NewExpensePage() {
   const [catSuggestion, setCatSuggestion] = useState<{ categoryName: string; confidence: 'high' | 'medium' | 'low' } | null>(null);
   const [catSuggestLoading, setCatSuggestLoading] = useState(false);
   const catDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const { register, handleSubmit, watch, formState: { errors }, reset, setValue, getValues } =
-    useForm<FormData>({
-      defaultValues: { expenseDate: new Date().toISOString().split('T')[0], hasFiscalDoc: false },
-    });
 
   // Pre-seleccionar proyecto desde state (botón del proyecto) o query param
   useEffect(() => {
