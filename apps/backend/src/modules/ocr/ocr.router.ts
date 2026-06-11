@@ -69,12 +69,12 @@ router.post(
         data:  { status: 'completed', result: result as any, completedAt: new Date() },
       });
 
-      // Responder con 202 + resultado completo — el hook de polling lo recoge
-      // en la primera llamada a GET /jobs/:jobId (ya estará completed).
+      // Devolver resultado completo en la respuesta — el hook no necesita hacer polling
       res.status(202).json({
         success: true,
         jobId:   job.id,
         status:  'completed',
+        result,
         meta: {
           fileName:    originalName,
           fileSize,
