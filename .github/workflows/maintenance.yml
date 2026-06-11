@@ -1,0 +1,63 @@
+name: 🔧 Agente de Mantenimiento Semanal
+
+on:
+  schedule:
+    # Cada lunes a las 8:00 AM hora de Santo Domingo (UTC-4 → 12:00 UTC)
+    - cron: '0 12 * * 1'
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    # Permite ejecutar manualmente desde GitHub Actions → Run workflow
+
+jobs:
+  maintenance:
+    name: Diagnóstico IA del sistema
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias (pnpm workspace)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - run: pnpm install --frozen-lockfile
+
+      - name: Restaurar cache del agente
+        uses: actions/cache@v4
+        with:
+          path: .maintenance-cache.json
+          key: maintenance-cache-${{ github.run_id }}
+          restore-keys: |
+            maintenance-cache-
+
+      - name: Ejecutar agente de mantenimiento
+        env:
+          SERVINGMI_BACKEND_URL: ${{ vars.SERVINGMI_BACKEND_URL }}
+          SERVINGMI_ADMIN_EMAIL: ${{ secrets.SERVINGMI_ADMIN_EMAIL }}
+          SERVINGMI_ADMIN_PASS:  ${{ secrets.SERVINGMI_ADMIN_PASS }}
+          GH_TOKEN:              ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO:               ${{ github.repository }}
+          TRIGGER_TYPE:          ${{ github.event_name == 'schedule' && 'weekly' || github.event_name == 'push' && 'post-deploy' || 'manual' }}
+          RENDER_API_KEY:        ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID:     ${{ vars.RENDER_SERVICE_ID }}
+        run: pnpm exec tsx scripts/maintenance-agent.ts
+
+      - name: Guardar cache actualizado
+        if: always()
+        uses: actions/cache@v4
+        with:
+          path: .maintenance-cache.json
+          key: maintenance-cache-${{ github.run_id }}
