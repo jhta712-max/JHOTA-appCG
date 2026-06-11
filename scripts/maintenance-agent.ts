@@ -184,7 +184,7 @@ async function fetchJson(url: string, options: RequestInit = {}): Promise<any> {
 
 async function getAuthToken(): Promise<string> {
   console.log('🔐 Autenticando en el backend...');
-  const data = await fetchJson(`${BACKEND_URL}/auth/login`, {
+  const data = await fetchJson(`${BACKEND_URL}/api/v1/auth/login`, {
     method: 'POST',
     body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASS }),
   });
@@ -198,7 +198,7 @@ async function getAuthToken(): Promise<string> {
 
 async function runAiAnalysis(token: string): Promise<AiAnalysisResult> {
   console.log('🤖 Solicitando análisis IA al backend...');
-  const data = await fetchJson(`${BACKEND_URL}/monitoring/ai-analyze`, {
+  const data = await fetchJson(`${BACKEND_URL}/api/v1/monitoring/ai-analyze`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   });
