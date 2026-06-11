@@ -190,16 +190,17 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="space-y-5 max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+    <div className="space-y-5 max-w-3xl mx-auto pb-10">
 
       {/* Hero header */}
-      <div className="px-5 py-6" style={{ background: '#1C1C1C' }}>
+      <div className="bg-[#1C1C1C] px-5 py-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-gray-400 mb-1">
+            <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-[#F5C218] mb-1">
               ADMINISTRACIÓN / USUARIOS
             </p>
-            <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl text-white">
+            <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight">
               Usuarios
             </h1>
             <p className="font-['DM_Sans'] text-sm text-gray-400 mt-1">
@@ -217,6 +218,9 @@ export default function UsersPage() {
           )}
         </div>
       </div>
+
+      {/* Main content */}
+      <div className="px-5 space-y-5">
 
       {/* Success */}
       {apiOk && (
@@ -262,7 +266,7 @@ export default function UsersPage() {
         <div className="border border-gray-200 divide-y divide-gray-100">
           {(users ?? []).map((u: any) => (
             <div key={u.id} className="flex items-center gap-4 px-5 py-4">
-              <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: '#1C1C1C' }}>
+              <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-[#1C1C1C]">
                 <span className="font-['Barlow_Condensed'] text-lg font-bold text-white">
                   {u.name.charAt(0).toUpperCase()}
                 </span>
@@ -354,11 +358,13 @@ export default function UsersPage() {
         </div>
       </div>
 
+      </div>{/* end main content */}
+
       {/* Modal Invitar */}
       {modal === 'invite' && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4" style={{ background: '#1C1C1C' }}>
+            <div className="flex items-center justify-between px-6 py-4 bg-[#1C1C1C]">
               <h3 className="font-['Barlow_Condensed'] uppercase tracking-wide text-white flex items-center gap-2">
                 <UserPlus className="w-4 h-4" style={{ color: '#F5C218' }} /> Invitar nuevo usuario
               </h3>
@@ -424,7 +430,7 @@ export default function UsersPage() {
       {modal === 'edit' && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4" style={{ background: '#1C1C1C' }}>
+            <div className="flex items-center justify-between px-6 py-4 bg-[#1C1C1C]">
               <h3 className="font-['Barlow_Condensed'] uppercase tracking-wide text-white">Editar usuario</h3>
               <button onClick={closeModal} className="p-1 text-gray-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
@@ -517,7 +523,7 @@ export default function UsersPage() {
                             type="checkbox"
                             checked={checked}
                             onChange={() => toggleNotifType(opt.value)}
-                            className="mt-0.5"
+                            className="mt-0.5 accent-[#F5C218]"
                           />
                           <div className="min-w-0">
                             <p className="font-['DM_Sans'] text-sm font-medium text-gray-800">{opt.label}</p>
@@ -548,6 +554,7 @@ export default function UsersPage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

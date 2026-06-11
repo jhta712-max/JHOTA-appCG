@@ -198,7 +198,7 @@ export default function OfficeExpensesPage() {
   const isSubmitting = createMut.isPending || updateMut.isPending;
 
   return (
-    <div className="font-['DM_Sans'] space-y-0">
+    <div className="min-h-screen bg-gray-50 font-['DM_Sans']">
 
       {/* Flash */}
       {flash && (
@@ -351,7 +351,7 @@ export default function OfficeExpensesPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Comprobante</label>
-                  <select className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1C1C1C]" value={hasFiscalDoc} onChange={(e) => setHasFiscalDoc(e.target.value)}>
+                  <select className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" value={hasFiscalDoc} onChange={(e) => setHasFiscalDoc(e.target.value)}>
                     <option value="">Todos</option>
                     <option value="true">Con factura</option>
                     <option value="false">Sin factura</option>
@@ -359,11 +359,11 @@ export default function OfficeExpensesPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Desde</label>
-                  <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1C1C1C]" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                  <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Hasta</label>
-                  <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1C1C1C]" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                  <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
                 </div>
               </div>
             </div>
@@ -474,7 +474,7 @@ export default function OfficeExpensesPage() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Categoría *</label>
-                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
                   value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as OfficeExpenseCategory }))} required>
                   {CATEGORIES.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
                 </select>
@@ -482,7 +482,7 @@ export default function OfficeExpensesPage() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Descripción *</label>
-                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
                   placeholder="Ej: Compra de papel carta, detergente industrial..."
                   value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} required minLength={3} />
               </div>
@@ -490,19 +490,19 @@ export default function OfficeExpensesPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Monto (DOP) *</label>
-                  <input type="number" step="0.01" min="0.01" className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1C1C1C]"
+                  <input type="number" step="0.01" min="0.01" className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
                     placeholder="0.00" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} required />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha *</label>
-                  <input type="date" className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                  <input type="date" className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
                     value={form.expenseDate} onChange={(e) => setForm((f) => ({ ...f, expenseDate: e.target.value }))} required />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Suplidor (opcional)</label>
-                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
                   value={form.supplierId} onChange={(e) => setForm((f) => ({ ...f, supplierId: e.target.value }))}>
                   <option value="">Sin suplidor</option>
                   {suppliers.map((s: any) => <option key={s.id} value={s.id}>{s.name}{s.rnc ? ` — RNC ${s.rnc}` : ''}</option>)}
@@ -511,7 +511,7 @@ export default function OfficeExpensesPage() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Método de pago *</label>
-                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
                   value={form.paymentMethod} onChange={(e) => setForm((f) => ({ ...f, paymentMethod: e.target.value, companyCardId: '' }))} required>
                   {Object.entries(PAYMENT_METHODS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
@@ -520,7 +520,7 @@ export default function OfficeExpensesPage() {
               {form.paymentMethod === 'CARD' && (
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Tarjeta corporativa *</label>
-                  <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                  <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
                     value={form.companyCardId} onChange={(e) => setForm((f) => ({ ...f, companyCardId: e.target.value }))} required>
                     <option value="">Seleccionar tarjeta...</option>
                     {(cardsData ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.holderName} — ···{c.lastFour} ({c.bank})</option>)}
@@ -531,20 +531,20 @@ export default function OfficeExpensesPage() {
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="hasFiscalDoc" checked={form.hasFiscalDoc}
                   onChange={(e) => setForm((f) => ({ ...f, hasFiscalDoc: e.target.checked }))}
-                  className="w-4 h-4 border-gray-300 accent-[#1C1C1C]" />
+                  className="w-4 h-4 border-gray-300 accent-[#F5C218]" />
                 <label htmlFor="hasFiscalDoc" className="text-sm text-gray-700">Tiene documento fiscal (factura / NCF)</label>
               </div>
               {form.hasFiscalDoc && (
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Número de comprobante</label>
-                  <input className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1C1C1C]"
+                  <input className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
                     placeholder="Ej: B0100000001" value={form.fiscalDocNum} onChange={(e) => setForm((f) => ({ ...f, fiscalDocNum: e.target.value }))} />
                 </div>
               )}
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Notas (opcional)</label>
-                <textarea className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C] resize-none"
+                <textarea className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] resize-none"
                   rows={2} placeholder="Observaciones adicionales..."
                   value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
               </div>
@@ -597,7 +597,7 @@ export default function OfficeExpensesPage() {
           <div className="bg-white w-full max-w-md shadow-2xl">
             <div className="bg-[#1C1C1C] flex items-center justify-between px-6 py-4">
               <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${CATEGORY_DOT[viewingExp.category]}`} />
+                <div className={`w-2 h-2 ${CATEGORY_DOT[viewingExp.category]}`} />
                 <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">Detalle del Gasto</h2>
               </div>
               <button onClick={() => setViewingExp(null)} className="text-gray-400 hover:text-white transition-colors">
