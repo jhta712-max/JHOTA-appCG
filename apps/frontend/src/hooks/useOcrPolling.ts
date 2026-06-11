@@ -30,7 +30,7 @@ export function useOcrPolling(projectId?: string | null) {
       itbisAmount:  result.itbisAmount,
       projectId:    projectId ?? null,
     }).then(res => {
-      setState(s => ({ ...s, enrichment: res.data }));
+      setState(s => ({ ...s, enrichment: res.data.data }));
     }).catch(() => {});
   }, [projectId]);
 

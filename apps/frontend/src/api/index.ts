@@ -291,7 +291,7 @@ export const ocrApi = {
     amount?:       number | null;
     itbisAmount?:  number | null;
     projectId?:    string | null;
-  }) => api.post<OcrEnrichmentResult>('/ocr/enrich', payload),
+  }) => api.post<{ success: boolean; data: OcrEnrichmentResult }>('/ocr/enrich', payload),
 };
 
 // ── Cotizaciones ──────────────────────────────────────────────
