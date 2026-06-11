@@ -188,10 +188,11 @@ export default function PaymentOrdersPage() {
   const [fiscalErr,    setFiscalErr]    = useState('');
   const [conceptLoading, setConceptLoading] = useState(false);
   const { loading: ocrPayLoading, error: ocrPayError, analyze: runOcrPay, reset: resetOcrPay } = useOcrPolling();
+  const [ocrPayValidated, setOcrPayValidated] = useState(false);
   const ocrPayInputRef = useRef<HTMLInputElement>(null);
 
   const openPayModal = (o: PaymentOrder) => {
-    resetOcrPay(); setPayingOrder(o);
+    resetOcrPay(); setOcrPayValidated(false); setPayingOrder(o);
     setFiscalForm({ hasFiscal: false, ncf: '', supplierRnc: o.supplier?.rnc ?? '', supplierName: o.supplier?.name ?? '', itbisAmount: '' });
     setPayInfoForm({ paymentBank: '', paymentReference: '', exchangeRate: '' });
     setFiscalErr(''); setPayModal(true);
@@ -1222,11 +1223,33 @@ export default function PaymentOrdersPage() {
             </div>
 
             {fiscalErr && <p className="text-sm text-red-600 bg-red-50 border-l-4 border-red-500 px-3 py-2">{fiscalErr}</p>}
+
+            {fiscalForm.hasFiscal && (
+              <div className={`border-l-4 p-3 ${ocrPayValidated ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={ocrPayValidated} onChange={(e) => setOcrPayValidated(e.target.checked)} className="mt-1" />
+                  <div className="flex-1">
+                    <p className={`text-sm font-bold ${ocrPayValidated ? 'text-green-800' : 'text-amber-900'}`}>
+                      {ocrPayValidated ? '✓ Datos del OCR validados' : 'Confirmar datos extraídos por IA'}
+                    </p>
+                    <p className={`text-xs mt-1 ${ocrPayValidated ? 'text-green-700' : 'text-amber-700'}`}>
+                      {ocrPayValidated
+                        ? 'Has confirmado que los datos coinciden con la factura original.'
+                        : 'Compara los campos completados automáticamente con la factura original antes de confirmar.'}
+                    </p>
+                  </div>
+                </label>
+              </div>
+            )}
           </div>
 
           <ModalFooter
             onCancel={closePayModal}
             onSave={() => {
+              if (fiscalForm.hasFiscal && !ocrPayValidated) {
+                setFiscalErr('Debes confirmar los datos del OCR antes de continuar');
+                return;
+              }
               setFiscalErr('');
               const isForeignOrder = payingOrder.currency !== 'RD$';
               if (isForeignOrder && !payInfoForm.exchangeRate) {

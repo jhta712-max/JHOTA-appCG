@@ -467,17 +467,6 @@ export default function OfficeExpensesPage() {
                       <AlertCircle className="w-3 h-3" /> {ocrError}
                     </p>
                   )}
-                  {form.hasFiscalDoc && !ocrValidated && (
-                    <div className="bg-amber-50 border-l-4 border-amber-400 p-3">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" checked={ocrValidated} onChange={(e) => setOcrValidated(e.target.checked)} className="mt-1" />
-                        <div className="flex-1">
-                          <p className="text-sm font-bold text-amber-900">He revisado y validado los datos del OCR</p>
-                          <p className="text-xs text-amber-700 mt-1">Confirma que los datos extraídos (montos, NCF, fechas) coinciden con el comprobante original.</p>
-                        </div>
-                      </label>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -562,6 +551,24 @@ export default function OfficeExpensesPage() {
                 <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border-l-4 border-red-500 p-3">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{actionError}</span>
+                </div>
+              )}
+
+              {form.hasFiscalDoc && (
+                <div className={`border-l-4 p-3 ${ocrValidated ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={ocrValidated} onChange={(e) => setOcrValidated(e.target.checked)} className="mt-1" />
+                    <div className="flex-1">
+                      <p className={`text-sm font-bold ${ocrValidated ? 'text-green-800' : 'text-amber-900'}`}>
+                        {ocrValidated ? '✓ Datos del OCR validados' : 'Confirmar datos extraídos por IA'}
+                      </p>
+                      <p className={`text-xs mt-1 ${ocrValidated ? 'text-green-700' : 'text-amber-700'}`}>
+                        {ocrValidated
+                          ? 'Has confirmado que los datos coinciden con el comprobante original.'
+                          : 'Compara los campos completados automáticamente con el comprobante original antes de guardar.'}
+                      </p>
+                    </div>
+                  </label>
                 </div>
               )}
 

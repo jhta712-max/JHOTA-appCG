@@ -70,7 +70,8 @@ export default function QuotationFormPage() {
 
   const [ocrFile,     setOcrFile]     = useState<File | null>(null);
   const { loading: ocrLoading, analyze: runOcr } = useOcrPolling();
-  const [ocrMsg,      setOcrMsg]      = useState('');
+  const [ocrMsg,         setOcrMsg]         = useState('');
+  const [ocrValidated,   setOcrValidated]   = useState(false);
 
   const { data: projects } = useQuery({
     queryKey: ['projects', 'select'],
@@ -132,6 +133,7 @@ export default function QuotationFormPage() {
   const handleOcr = async () => {
     if (!ocrFile) return;
     setOcrMsg('');
+    setOcrValidated(false);
     const d = await runOcr(ocrFile) as any;
     if (!d) return;
     setOcrMsg(`Documento detectado: ${d.documentTypeLabel ?? d.documentType ?? 'desconocido'}`);
@@ -461,6 +463,25 @@ export default function QuotationFormPage() {
           </div>
         )}
 
+        {/* OCR validation checkbox */}
+        {ocrMsg && (
+          <div className={`border-l-4 p-4 ${ocrValidated ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" checked={ocrValidated} onChange={(e) => setOcrValidated(e.target.checked)} className="mt-1" />
+              <div className="flex-1">
+                <p className={`font-['DM_Sans'] text-sm font-semibold ${ocrValidated ? 'text-green-800' : 'text-amber-900'}`}>
+                  {ocrValidated ? '✓ Datos del OCR validados' : 'Confirmar datos extraídos por IA'}
+                </p>
+                <p className={`font-['DM_Sans'] text-xs mt-1 ${ocrValidated ? 'text-green-700' : 'text-amber-700'}`}>
+                  {ocrValidated
+                    ? 'Has confirmado que los datos coinciden con el documento original.'
+                    : 'Compara los campos completados automáticamente con la cotización original antes de guardar.'}
+                </p>
+              </div>
+            </label>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-3 pb-6">
           <button
@@ -472,7 +493,7 @@ export default function QuotationFormPage() {
           </button>
           <button
             type="submit"
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || (!!ocrMsg && !ocrValidated)}
             className="flex-1 flex items-center justify-center gap-2 py-3 font-['Barlow_Condensed'] uppercase tracking-wide text-sm font-bold disabled:opacity-50 transition-opacity"
             style={{ background: '#F5C218', color: '#1C1C1C' }}
           >
