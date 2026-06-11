@@ -332,13 +332,7 @@ async function createGitHubIssue(
 
 // ── Helpers post-issue ───────────────────────────────────────────────────────
 
-function getIssueNumberFromUrl(url: string | null): number | null {
-  if (!url) return null;
-  const match = url.match(/\/issues\/(\d+)$/);
-  return match ? parseInt(match[1], 10) : null;
-}
-
-async function commentAndCloseIssue(issueNumber: number, analysis: AiAnalysisResult): Promise<void> {
+async function commentAndCloseIssue(issueNumber: number): Promise<void> {
   if (!GH_TOKEN || !GH_REPO) return;
 
   const base = `https://api.github.com/repos/${GH_REPO}/issues/${issueNumber}`;
@@ -397,7 +391,7 @@ async function main() {
 
   if (systemRecovered && cache.lastIssueNumber) {
     console.log(`\n🔄 Sistema recuperado — cerrando issue #${cache.lastIssueNumber}...`);
-    await commentAndCloseIssue(cache.lastIssueNumber, analysis);
+    await commentAndCloseIssue(cache.lastIssueNumber);
   }
 
   let issueUrl = '';
@@ -413,7 +407,7 @@ async function main() {
       TRIGGER_TYPE,
     );
     issueUrl = created.url;
-    issueNumber = created.number || null;
+    issueNumber = created.number !== 0 ? created.number : null;
   } else {
     console.log('✅ Sistema saludable — no se requiere issue esta semana');
   }
