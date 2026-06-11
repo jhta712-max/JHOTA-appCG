@@ -34,7 +34,7 @@ export function useOcrPolling(projectId?: string | null) {
           stopPolling();
           setState(s => ({ ...s, loading: false, error: 'Tiempo de espera agotado. Intenta de nuevo.' }));
           resolve(null);
-        }, 60_000);
+        }, 90_000);
 
         pollRef.current = setInterval(async () => {
           try {
