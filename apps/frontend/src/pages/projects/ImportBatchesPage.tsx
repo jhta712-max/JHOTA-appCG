@@ -8,29 +8,35 @@ export default function ImportBatchesPage() {
   const [showModal, setShowModal] = useState(true);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <button
-            onClick={() => navigate('/projects')}
-            className="text-gray-400 hover:text-gray-600 p-1"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <p className="module-label">MÓDULO / IMPORTACIÓN</p>
-            <h1 className="page-title">Importar Lotes desde CSV</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Carga un archivo CSV con los gastos históricos para importarlos como lotes
-            </p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero header */}
+      <div className="bg-[#1C1C1C] px-6 py-6">
+        <button
+          onClick={() => navigate('/projects')}
+          className="flex items-center gap-1.5 text-[#F5C218] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Volver a proyectos
+        </button>
+        <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-[#F5C218] uppercase mb-1">
+          MÓDULO / IMPORTACIÓN
+        </p>
+        <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight">
+          Importar Lotes desde CSV
+        </h1>
+        <p className="font-['DM_Sans'] text-sm text-gray-400 mt-1">
+          Carga un archivo CSV con los gastos históricos para importarlos como lotes
+        </p>
+      </div>
+
+      <div className="px-6 py-6 max-w-4xl mx-auto space-y-6">
 
         {/* Info Card */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-3">Instrucciones de uso:</h2>
-          <ol className="space-y-2 text-sm text-gray-600 list-decimal list-inside">
+        <div className="bg-white border border-gray-200 p-6">
+          <h2 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-3">
+            Instrucciones de uso
+          </h2>
+          <ol className="space-y-2 text-sm text-gray-600 font-['DM_Sans'] list-decimal list-inside">
             <li>Prepara un archivo CSV con el siguiente formato</li>
             <li>
               Asegúrate que el código del lote (batch_code) coincida con un proyecto existente
@@ -42,102 +48,112 @@ export default function ImportBatchesPage() {
         </div>
 
         {/* CSV Format Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-          <h3 className="font-semibold text-blue-900 mb-3">Formato del archivo CSV</h3>
-          <p className="text-sm text-blue-800 mb-3">
+        <div className="bg-white border border-[#F5C218]/40 p-6">
+          <h3 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-3">
+            Formato del archivo CSV
+          </h3>
+          <p className="text-sm text-gray-600 font-['DM_Sans'] mb-3">
             El CSV debe incluir estas columnas (en cualquier orden):
           </p>
-          <div className="bg-white rounded p-3 mb-3 overflow-x-auto">
+          <div className="border border-gray-200 overflow-x-auto mb-3">
             <table className="text-xs w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left p-2 font-medium text-gray-700">Campo</th>
-                  <th className="text-left p-2 font-medium text-gray-700">Requerido</th>
-                  <th className="text-left p-2 font-medium text-gray-700">Ejemplo</th>
+              <thead className="bg-[#1C1C1C]">
+                <tr>
+                  <th className="text-left p-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Campo</th>
+                  <th className="text-left p-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Requerido</th>
+                  <th className="text-left p-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Ejemplo</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">batch_code</td>
-                  <td className="p-2 text-green-600">✓</td>
-                  <td className="p-2">MOPC-CCC-LPN-2021-0036</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">batch_code</td>
+                  <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
+                  <td className="p-2 text-gray-600 font-['DM_Sans']">MOPC-CCC-LPN-2021-0036</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">item_code</td>
-                  <td className="p-2 text-green-600">✓</td>
-                  <td className="p-2">ITEM-5</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">item_code</td>
+                  <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
+                  <td className="p-2 text-gray-600 font-['DM_Sans']">ITEM-5</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">provincia</td>
-                  <td className="p-2 text-green-600">✓</td>
-                  <td className="p-2">Puerto Plata</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">provincia</td>
+                  <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
+                  <td className="p-2 text-gray-600 font-['DM_Sans']">Puerto Plata</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">sector</td>
-                  <td className="p-2 text-green-600">✓</td>
-                  <td className="p-2">Puerto Plata Gualete</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">sector</td>
+                  <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
+                  <td className="p-2 text-gray-600 font-['DM_Sans']">Puerto Plata Gualete</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">descripcion</td>
-                  <td className="p-2 text-green-600">✓</td>
-                  <td className="p-2">ARENA</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">descripcion</td>
+                  <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
+                  <td className="p-2 text-gray-600 font-['DM_Sans']">ARENA</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">monto</td>
-                  <td className="p-2 text-green-600">✓</td>
-                  <td className="p-2">16200.0</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">monto</td>
+                  <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
+                  <td className="p-2 text-gray-600 font-['Space_Mono'] text-xs">16200.0</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">categoria</td>
-                  <td className="p-2 text-gray-500">Opcional</td>
-                  <td className="p-2">Materiales</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">categoria</td>
+                  <td className="p-2 text-gray-400 font-['DM_Sans']">Opcional</td>
+                  <td className="p-2 text-gray-600 font-['DM_Sans']">Materiales</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">fecha</td>
-                  <td className="p-2 text-gray-500">Opcional</td>
-                  <td className="p-2">2021-06-15</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">fecha</td>
+                  <td className="p-2 text-gray-400 font-['DM_Sans']">Opcional</td>
+                  <td className="p-2 text-gray-600 font-['Space_Mono'] text-xs">2021-06-15</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">proveedor</td>
-                  <td className="p-2 text-gray-500">Opcional</td>
-                  <td className="p-2">Proveedor XYZ</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">proveedor</td>
+                  <td className="p-2 text-gray-400 font-['DM_Sans']">Opcional</td>
+                  <td className="p-2 text-gray-600 font-['DM_Sans']">Proveedor XYZ</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-mono text-blue-600">metodo_pago</td>
-                  <td className="p-2 text-gray-500">Opcional</td>
-                  <td className="p-2">CASH</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">metodo_pago</td>
+                  <td className="p-2 text-gray-400 font-['DM_Sans']">Opcional</td>
+                  <td className="p-2 text-gray-600 font-['Space_Mono'] text-xs">CASH</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-blue-700">
-            💡 Tip: Si los campos requeridos están vacíos, el registro será saltado con un mensaje de error.
+          <p className="text-xs text-gray-500 font-['DM_Sans']">
+            Tip: Si los campos requeridos están vacíos, el registro será saltado con un mensaje de error.
           </p>
         </div>
 
         {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-900 mb-2">✓ Validación Inteligente</h4>
-            <p className="text-sm text-green-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white border border-gray-200 p-4">
+            <h4 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-2">
+              Validacion inteligente
+            </h4>
+            <p className="text-sm text-gray-600 font-['DM_Sans']">
               Detecta y reporta errores por fila sin detener la importación
             </p>
           </div>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-900 mb-2">✓ Sin Duplicados</h4>
-            <p className="text-sm text-green-700">
+          <div className="bg-white border border-gray-200 p-4">
+            <h4 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-2">
+              Sin duplicados
+            </h4>
+            <p className="text-sm text-gray-600 font-['DM_Sans']">
               Salta automáticamente registros duplicados
             </p>
           </div>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-900 mb-2">✓ Categorías Automáticas</h4>
-            <p className="text-sm text-green-700">
+          <div className="bg-white border border-gray-200 p-4">
+            <h4 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-2">
+              Categorias automaticas
+            </h4>
+            <p className="text-sm text-gray-600 font-['DM_Sans']">
               Crea categorías inexistentes automáticamente
             </p>
           </div>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-900 mb-2">✓ Cálculos Precisos</h4>
-            <p className="text-sm text-green-700">
+          <div className="bg-white border border-gray-200 p-4">
+            <h4 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-2">
+              Calculos precisos
+            </h4>
+            <p className="text-sm text-gray-600 font-['DM_Sans']">
               Actualiza presupuestos de items y lotes automáticamente
             </p>
           </div>

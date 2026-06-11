@@ -188,7 +188,7 @@ export default function SuppliersPage() {
           {role.canManageSuppliers && (
             <button
               onClick={openCreate}
-              className="flex items-center gap-2 px-4 py-2.5 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide rounded-lg transition-all hover:opacity-90"
+              className="flex items-center gap-2 px-4 py-2.5 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide transition-all hover:opacity-90"
               style={{ background: '#F5C218', color: '#1C1C1C' }}
             >
               <Plus className="w-4 h-4" />
@@ -201,14 +201,14 @@ export default function SuppliersPage() {
       <div className="space-y-5">
         {/* Feedback */}
         {apiOk && (
-          <div className="flex items-center gap-2 bg-green-950/40 border border-green-800 text-green-400 rounded-xl p-3 text-sm font-['DM_Sans']">
+          <div className="flex items-center gap-2 bg-[#1C1C1C] border border-[#F5C218]/40 text-[#F5C218] p-3 text-sm font-['DM_Sans']">
             <CheckCircle className="w-4 h-4 shrink-0" />
             <span className="flex-1">{apiOk}</span>
             <button onClick={() => setApiOk('')}><X className="w-3.5 h-3.5" /></button>
           </div>
         )}
         {apiError && !modal && (
-          <div className="flex items-center gap-2 bg-red-950/40 border border-red-800 text-red-400 rounded-xl p-3 text-sm font-['DM_Sans']">
+          <div className="flex items-center gap-2 bg-red-950/40 border border-red-800 text-red-400 p-3 text-sm font-['DM_Sans']">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span className="flex-1">{apiError}</span>
             <button onClick={() => setApiError('')}><X className="w-3.5 h-3.5" /></button>
@@ -223,7 +223,7 @@ export default function SuppliersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre o RNC..."
-            className="w-full pl-9 pr-9 py-2.5 text-sm font-['DM_Sans'] bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent"
+            className="w-full pl-9 pr-9 py-2.5 text-sm font-['DM_Sans'] bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -243,11 +243,11 @@ export default function SuppliersPage() {
             {suppliers.map((s) => (
               <div
                 key={s.id}
-                className={`bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-4 transition-all hover:border-[#F5C218]/40 hover:shadow-sm ${!s.isActive ? 'opacity-50' : ''}`}
+                className={`bg-white border border-gray-100 p-4 flex items-center gap-4 transition-all hover:border-[#F5C218]/40 hover:shadow-sm ${!s.isActive ? 'opacity-50' : ''}`}
               >
                 {/* Avatar */}
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 font-['Barlow_Condensed'] text-lg font-bold"
+                  className="w-11 h-11 flex items-center justify-center shrink-0 font-['Barlow_Condensed'] text-lg font-bold"
                   style={{ background: s.isActive ? '#1C1C1C' : '#E5E7EB', color: s.isActive ? '#F5C218' : '#9CA3AF' }}
                 >
                   {s.name.charAt(0).toUpperCase()}
@@ -307,7 +307,7 @@ export default function SuppliersPage() {
                   )}
                   <Link
                     to={`/suppliers/${s.id}`}
-                    className="font-['Barlow_Condensed'] flex items-center gap-1 text-xs font-semibold uppercase tracking-wide px-3 py-1.5 rounded-lg border transition-all hover:border-[#F5C218] hover:text-[#1C1C1C]"
+                    className="font-['Barlow_Condensed'] flex items-center gap-1 text-xs font-semibold uppercase tracking-wide px-3 py-1.5 border transition-all hover:border-[#F5C218] hover:text-[#1C1C1C]"
                     style={{ borderColor: '#E5E7EB', color: '#6B7280' }}
                   >
                     Historial
@@ -318,8 +318,8 @@ export default function SuppliersPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-100 p-14 text-center">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: '#1C1C1C' }}>
+          <div className="bg-white border border-gray-100 p-14 text-center">
+            <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4" style={{ background: '#1C1C1C' }}>
               <Building2 className="w-7 h-7" style={{ color: '#F5C218' }} />
             </div>
             <p className="font-['Barlow_Condensed'] text-lg font-bold text-gray-700 uppercase tracking-wide">
@@ -331,7 +331,7 @@ export default function SuppliersPage() {
             {!debouncedSearch && role.canManageSuppliers && (
               <button
                 onClick={openCreate}
-                className="mt-5 px-4 py-2.5 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide rounded-lg transition-all hover:opacity-90"
+                className="mt-5 px-4 py-2.5 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide transition-all hover:opacity-90"
                 style={{ background: '#F5C218', color: '#1C1C1C' }}
               >
                 Registrar primer suplidor
@@ -344,10 +344,10 @@ export default function SuppliersPage() {
       {/* ── Modal crear/editar ────────────────────────────────── */}
       {modal && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
+          <div className="bg-white w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
 
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 shrink-0" style={{ background: '#1C1C1C', borderRadius: '1rem 1rem 0 0' }}>
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 shrink-0" style={{ background: '#1C1C1C' }}>
               <h3 className="font-['Barlow_Condensed'] text-xl font-bold text-white uppercase tracking-wide">
                 {modal === 'create' ? 'Nuevo Suplidor' : `Editar: ${editing?.name}`}
               </h3>
@@ -359,7 +359,7 @@ export default function SuppliersPage() {
             <div className="overflow-y-auto flex-1">
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 {apiError && (
-                  <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm font-['DM_Sans']">
+                  <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 p-3 text-sm font-['DM_Sans']">
                     <AlertCircle className="w-4 h-4 shrink-0" /><span>{apiError}</span>
                   </div>
                 )}
@@ -378,12 +378,12 @@ export default function SuppliersPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">RNC</label>
-                    <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="rnc" value={form.rnc} onChange={handleChange} placeholder="9 u 11 dígitos" maxLength={11} />
+                    <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="rnc" value={form.rnc} onChange={handleChange} placeholder="9 u 11 dígitos" maxLength={11} />
                     <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">Empresa / contribuyente</p>
                   </div>
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Cédula</label>
-                    <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="cedula" value={form.cedula} onChange={handleChange} placeholder="001-0000000-0" maxLength={20} />
+                    <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="cedula" value={form.cedula} onChange={handleChange} placeholder="001-0000000-0" maxLength={20} />
                     <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">Persona física</p>
                   </div>
                 </div>
@@ -391,30 +391,30 @@ export default function SuppliersPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Teléfono</label>
-                    <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="phone" value={form.phone} onChange={handleChange} placeholder="809-000-0000" maxLength={20} />
+                    <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="phone" value={form.phone} onChange={handleChange} placeholder="809-000-0000" maxLength={20} />
                   </div>
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Email</label>
-                    <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="email" type="email" value={form.email} onChange={handleChange} placeholder="contacto@empresa.com" maxLength={150} />
+                    <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="email" type="email" value={form.email} onChange={handleChange} placeholder="contacto@empresa.com" maxLength={150} />
                   </div>
                 </div>
 
                 <div>
                   <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Dirección</label>
-                  <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="address" value={form.address} onChange={handleChange} placeholder="Calle, sector, ciudad" maxLength={500} />
+                  <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="address" value={form.address} onChange={handleChange} placeholder="Calle, sector, ciudad" maxLength={500} />
                 </div>
 
                 <div>
                   <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Notas</label>
-                  <textarea className="w-full font-['DM_Sans'] text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] resize-none" name="notes" value={form.notes} onChange={handleChange} placeholder="Información adicional..." rows={2} maxLength={1000} />
+                  <textarea className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] resize-none" name="notes" value={form.notes} onChange={handleChange} placeholder="Información adicional..." rows={2} maxLength={1000} />
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={closeModal} className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-2.5 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                  <button type="button" onClick={closeModal} className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-2.5 border-2 border-gray-200 hover:bg-gray-50 transition-colors">
                     Cancelar
                   </button>
                   <button type="submit" disabled={isPending}
-                    className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+                    className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-2.5 flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
                     style={{ background: '#F5C218', color: '#1C1C1C' }}>
                     {isPending ? <span className="w-4 h-4 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                     {modal === 'create' ? 'Crear Suplidor' : 'Guardar Cambios'}
@@ -436,7 +436,7 @@ export default function SuppliersPage() {
                     {!showBankForm && (
                       <button
                         onClick={() => { setShowBankForm(true); setEditingAccount(null); setBankForm(EMPTY_BANK); }}
-                        className="flex items-center gap-1.5 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg border-2 transition-colors"
+                        className="flex items-center gap-1.5 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide px-3 py-1.5 border-2 transition-colors"
                         style={{ borderColor: '#F5C218', color: '#1C1C1C' }}>
                         <Plus className="w-3.5 h-3.5" />Agregar
                       </button>
@@ -446,7 +446,7 @@ export default function SuppliersPage() {
                   {bankAccounts && bankAccounts.length > 0 ? (
                     <div className="space-y-2 mb-4">
                       {bankAccounts.map((acc) => (
-                        <div key={acc.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${acc.isDefault ? 'border-[#F5C218]/40 bg-[#F5C218]/5' : 'border-gray-100 bg-gray-50'}`}>
+                        <div key={acc.id} className={`flex items-center gap-3 p-3 border transition-colors ${acc.isDefault ? 'border-[#F5C218]/40 bg-[#F5C218]/5' : 'border-gray-100 bg-gray-50'}`}>
                           <CreditCard className={`w-4 h-4 shrink-0 ${acc.isDefault ? 'text-[#F5C218]' : 'text-gray-400'}`} />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -485,43 +485,43 @@ export default function SuppliersPage() {
                       ))}
                     </div>
                   ) : !showBankForm ? (
-                    <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200 mb-4">
+                    <div className="text-center py-6 bg-gray-50 border border-dashed border-gray-200 mb-4">
                       <CreditCard className="w-7 h-7 text-gray-300 mx-auto mb-2" />
                       <p className="font-['DM_Sans'] text-sm text-gray-400">Sin cuentas bancarias</p>
                     </div>
                   ) : null}
 
                   {showBankForm && (
-                    <form onSubmit={handleBankSubmit} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+                    <form onSubmit={handleBankSubmit} className="bg-gray-50 border border-gray-200 p-4 space-y-3">
                       <p className="font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-widest text-gray-600">
                         {editingAccount ? 'Editar cuenta bancaria' : 'Nueva cuenta bancaria'}
                       </p>
                       {bankError && (
-                        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-lg p-2 text-xs font-['DM_Sans']">
+                        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 p-2 text-xs font-['DM_Sans']">
                           <AlertCircle className="w-3.5 h-3.5 shrink-0" />{bankError}
                         </div>
                       )}
                       <div>
                         <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1">Banco <span className="text-red-500">*</span></label>
-                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="bank" value={bankForm.bank} onChange={handleBankChange} placeholder="Banreservas, Banco Popular, BHD…" maxLength={100} required />
+                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="bank" value={bankForm.bank} onChange={handleBankChange} placeholder="Banreservas, Banco Popular, BHD…" maxLength={100} required />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1">Tipo</label>
-                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountType" value={bankForm.accountType} onChange={handleBankChange}>
+                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountType" value={bankForm.accountType} onChange={handleBankChange}>
                             {ACCOUNT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                           </select>
                         </div>
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1">No. de cuenta <span className="text-red-500">*</span></label>
-                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountNumber" value={bankForm.accountNumber} onChange={handleBankChange} placeholder="000-000000-0" maxLength={50} required />
+                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountNumber" value={bankForm.accountNumber} onChange={handleBankChange} placeholder="000-000000-0" maxLength={50} required />
                         </div>
                       </div>
                       <div>
                         <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1.5">Divisa</label>
                         <div className="flex items-center gap-2">
                           {(['RD$', 'US$', '€'] as const).map((cur) => (
-                            <label key={cur} className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border font-['Space_Mono'] text-sm font-medium transition-colors ${bankForm.currency === cur ? 'border-[#F5C218] bg-[#F5C218]/10 text-[#1C1C1C]' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}>
+                            <label key={cur} className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 border font-['Space_Mono'] text-sm font-medium transition-colors ${bankForm.currency === cur ? 'border-[#F5C218] bg-[#F5C218]/10 text-[#1C1C1C]' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}>
                               <input type="radio" name="currency" value={cur} checked={bankForm.currency === cur} onChange={handleBankChange} className="sr-only" />
                               {cur}
                             </label>
@@ -530,18 +530,18 @@ export default function SuppliersPage() {
                       </div>
                       <div>
                         <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1">Notas</label>
-                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="notes" value={bankForm.notes} onChange={handleBankChange} placeholder="Opcional…" maxLength={200} />
+                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="notes" value={bankForm.notes} onChange={handleBankChange} placeholder="Opcional…" maxLength={200} />
                       </div>
                       <label className="flex items-center gap-2 cursor-pointer font-['DM_Sans'] text-xs text-gray-600">
                         <input type="checkbox" name="isDefault" checked={bankForm.isDefault} onChange={handleBankChange} className="rounded accent-[#F5C218]" />
                         Establecer como cuenta predeterminada
                       </label>
                       <div className="flex gap-2 pt-1">
-                        <button type="button" onClick={cancelBankForm} className="flex-1 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide py-2 border-2 border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
+                        <button type="button" onClick={cancelBankForm} className="flex-1 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide py-2 border-2 border-gray-200 hover:bg-gray-100 transition-colors">
                           Cancelar
                         </button>
                         <button type="submit" disabled={isBankPending}
-                          className="flex-1 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
+                          className="flex-1 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide py-2 flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
                           style={{ background: '#F5C218', color: '#1C1C1C' }}>
                           {isBankPending ? <span className="w-3.5 h-3.5 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
                           {editingAccount ? 'Guardar' : 'Agregar'}
