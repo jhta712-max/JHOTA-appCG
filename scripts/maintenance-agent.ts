@@ -215,11 +215,12 @@ function runPnpmAudit(): AuditReport {
 
     for (const [name, info] of Object.entries(advisories)) {
       const v = info as any;
+      if (!v || typeof v !== 'object') continue;
       vulns.push({
         name:     name,
         severity: v.severity ?? 'low',
         via:      Array.isArray(v.via)
-          ? v.via.filter((x: any) => typeof x === 'string').join(', ')
+          ? v.via.map((x: any) => typeof x === 'string' ? x : (x.name ?? x.title ?? '')).filter(Boolean).join(', ')
           : String(v.via ?? ''),
         range:    v.range ?? v.fixAvailable?.version ?? 'unknown',
       });
