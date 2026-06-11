@@ -11,6 +11,7 @@ import {
   type OfficeExpense, type OfficeExpenseCategory,
 } from '../../api';
 import { useOcrPolling } from '../../hooks/useOcrPolling';
+import { OcrEnrichmentAlerts } from '../../components/OcrEnrichmentAlerts';
 import { fmtDate } from '../../utils/date';
 import { useRole } from '../../hooks/useRole';
 
@@ -67,7 +68,7 @@ export default function OfficeExpensesPage() {
   const [flash,        setFlash]        = useState('');
   const [catFilter,    setCatFilter]    = useState('');
   const [expandStats,  setExpandStats]  = useState(true);
-  const { loading: ocrLoading, error: ocrError, analyze: runOcr, reset: resetOcr } = useOcrPolling();
+  const { loading: ocrLoading, error: ocrError, enrichment: ocrEnrichment, analyze: runOcr, reset: resetOcr } = useOcrPolling();
   const [ocrValidated, setOcrValidated] = useState(false);
   const [actionError,  setActionError]  = useState('');
   const [orderBy,      setOrderBy]      = useState<'expenseDate' | 'amount' | 'createdAt'>('expenseDate');
@@ -467,6 +468,7 @@ export default function OfficeExpensesPage() {
                       <AlertCircle className="w-3 h-3" /> {ocrError}
                     </p>
                   )}
+                  <OcrEnrichmentAlerts enrichment={ocrEnrichment} />
                 </div>
               )}
 

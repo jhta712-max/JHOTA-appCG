@@ -4,6 +4,7 @@ import { authenticate } from '../../middlewares/authenticate';
 import { analyzeInvoice } from './ocr.service';
 import { AppError } from '../../middlewares/errorHandler';
 import prisma from '../../config/database';
+import { enrichOcrResult } from './ocr-enrichment.service';
 
 const router = Router();
 
@@ -132,6 +133,32 @@ router.get(
           completedAt: job.completedAt ?? null,
         },
       });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ── POST /api/v1/ocr/enrich ────────────────────────────────────
+// Enriquece los datos extraídos por el OCR con validaciones de BD.
+// Recibe los campos clave del resultado OCR + projectId opcional.
+router.post(
+  '/enrich',
+  authenticate,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { supplierRnc, supplierName, ncf, amount, itbisAmount, projectId } = req.body;
+
+      const enrichment = await enrichOcrResult({
+        supplierRnc:  supplierRnc  ?? null,
+        supplierName: supplierName ?? null,
+        ncf:          ncf          ?? null,
+        amount:       typeof amount      === 'number' ? amount      : null,
+        itbisAmount:  typeof itbisAmount === 'number' ? itbisAmount : null,
+        projectId:    projectId    ?? null,
+      });
+
+      res.json({ success: true, data: enrichment });
     } catch (err) {
       next(err);
     }

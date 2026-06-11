@@ -235,6 +235,43 @@ export interface OcrJobResponse {
   completedAt?: string;
 }
 
+export interface OcrSupplierMatch {
+  id:         string;
+  name:       string;
+  rnc:        string | null;
+  confidence: 'exact' | 'rnc';
+}
+
+export interface OcrNcfDuplicate {
+  expenseId:   string | null;
+  expenseCode: string | null;
+  date:        string;
+  source:      'expense' | 'fiscal_voucher';
+}
+
+export interface OcrCotizacionAlert {
+  cotizacionId:   string;
+  cotizacionCode: string;
+  cotizacionAmt:  number;
+  invoiceAmt:     number;
+  diffPct:        number;
+}
+
+export interface OcrNcfInfo {
+  code:            string;
+  description:     string;
+  isElectronic:    boolean;
+  itbisDeductible: boolean;
+}
+
+export interface OcrEnrichmentResult {
+  supplierMatch:   OcrSupplierMatch   | null;
+  ncfDuplicate:    OcrNcfDuplicate    | null;
+  ncfInfo:         OcrNcfInfo         | null;
+  cotizacionAlert: OcrCotizacionAlert | null;
+  warnings:        string[];
+}
+
 export const ocrApi = {
   analyze: (file: File) => {
     const form = new FormData();
@@ -247,6 +284,14 @@ export const ocrApi = {
   },
   getJob: (jobId: string) =>
     api.get<OcrJobResponse>(`/ocr/jobs/${jobId}`),
+  enrich: (payload: {
+    supplierRnc?:  string | null;
+    supplierName?: string | null;
+    ncf?:          string | null;
+    amount?:       number | null;
+    itbisAmount?:  number | null;
+    projectId?:    string | null;
+  }) => api.post<OcrEnrichmentResult>('/ocr/enrich', payload),
 };
 
 // ── Cotizaciones ──────────────────────────────────────────────

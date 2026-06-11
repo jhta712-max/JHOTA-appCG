@@ -9,6 +9,7 @@ import {
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
 import { ForeignCurrencyInput, type ForeignCurrencyValue } from '../../components/shared/ForeignCurrencyInput';
 import { expensesApi, projectsApi, categoriesApi, cardsApi, type OcrResult } from '../../api';
+import { OcrEnrichmentAlerts } from '../../components/OcrEnrichmentAlerts';
 import { useRole } from '../../hooks/useRole';
 import { useOcrPolling } from '../../hooks/useOcrPolling';
 
@@ -65,8 +66,9 @@ export default function NewExpensePage() {
   const [success,     setSuccess]     = useState('');
   const [apiError,    setApiError]    = useState('');
 
-  // OCR state
-  const { loading: ocrLoading, result: ocrResult, error: ocrError, analyze: runOcr, reset: resetOcr } = useOcrPolling();
+  // OCR state — pasamos projectId para que el agente cruce con cotizaciones
+  const watchedProjectId = watch('projectId');
+  const { loading: ocrLoading, result: ocrResult, enrichment: ocrEnrichment, error: ocrError, analyze: runOcr, reset: resetOcr } = useOcrPolling(watchedProjectId);
   const [ocrValidated,  setOcrValidated]  = useState(false);
   const [aiFields,      setAiFields]      = useState<Set<string>>(new Set());
 
@@ -469,6 +471,8 @@ export default function NewExpensePage() {
                   )}
                 </div>
 
+                {/* Agente Post-OCR: validaciones de BD */}
+                <OcrEnrichmentAlerts enrichment={ocrEnrichment} />
               </div>
             )}
           </div>

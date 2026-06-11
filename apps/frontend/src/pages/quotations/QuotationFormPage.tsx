@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { quotationsApi, projectsApi, categoriesApi } from '../../api';
 import { useOcrPolling } from '../../hooks/useOcrPolling';
+import { OcrEnrichmentAlerts } from '../../components/OcrEnrichmentAlerts';
 
 interface FormData {
   projectId:       string;
@@ -69,7 +70,7 @@ export default function QuotationFormPage() {
   const [apiErr,  setApiErr]  = useState('');
 
   const [ocrFile,     setOcrFile]     = useState<File | null>(null);
-  const { loading: ocrLoading, analyze: runOcr } = useOcrPolling();
+  const { loading: ocrLoading, enrichment: ocrEnrichment, analyze: runOcr } = useOcrPolling();
   const [ocrMsg,         setOcrMsg]         = useState('');
   const [ocrValidated,   setOcrValidated]   = useState(false);
 
@@ -269,6 +270,7 @@ export default function QuotationFormPage() {
               ✓ {ocrMsg} — Revisa y ajusta los campos antes de guardar.
             </div>
           )}
+          <OcrEnrichmentAlerts enrichment={ocrEnrichment} />
         </div>
       </div>
 
