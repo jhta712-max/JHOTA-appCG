@@ -491,12 +491,12 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                 ) : (
                   <div className="border border-gray-200 overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                      <thead className="bg-[#1C1C1C] border-b border-gray-200">
                         <tr>
-                          <th className="text-left px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono']">#</th>
-                          <th className="text-left px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wide">Descripción</th>
-                          <th className="text-left px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wide">Fecha</th>
-                          <th className="text-right px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wide">Monto adicional</th>
+                          <th className="text-left px-3 py-2 text-xs font-bold text-white uppercase tracking-wide font-['Space_Mono']">#</th>
+                          <th className="text-left px-3 py-2 text-xs font-bold text-white uppercase tracking-wide">Descripción</th>
+                          <th className="text-left px-3 py-2 text-xs font-bold text-white uppercase tracking-wide">Fecha</th>
+                          <th className="text-right px-3 py-2 text-xs font-bold text-white uppercase tracking-wide">Monto adicional</th>
                           {canEdit && <th className="px-3 py-2" />}
                         </tr>
                       </thead>
@@ -550,11 +550,11 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                 ) : (
                   <div className="border border-gray-200 overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                      <thead className="bg-[#1C1C1C] border-b border-gray-200">
                         <tr>
-                          <th className="text-left px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wide">Descripción</th>
-                          <th className="text-left px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wide">Fecha</th>
-                          <th className="text-right px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wide">Monto</th>
+                          <th className="text-left px-3 py-2 text-xs font-bold text-white uppercase tracking-wide">Descripción</th>
+                          <th className="text-left px-3 py-2 text-xs font-bold text-white uppercase tracking-wide">Fecha</th>
+                          <th className="text-right px-3 py-2 text-xs font-bold text-white uppercase tracking-wide">Monto</th>
                           {canEdit && <th className="px-3 py-2" />}
                         </tr>
                       </thead>
@@ -830,18 +830,18 @@ export default function ContratosAjustadosPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1 justify-end">
                           <button onClick={() => setDetailContrato(c)}
-                            className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] rounded transition-colors" title="Ver detalle">
+                            className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] transition-colors" title="Ver detalle">
                             <FileCheck className="w-4 h-4" />
                           </button>
                           {canEdit && (
                             <button onClick={() => handleEdit(c)}
-                              className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-gray-100 rounded transition-colors" title="Editar">
+                              className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-gray-100 transition-colors" title="Editar">
                               <Pencil className="w-4 h-4" />
                             </button>
                           )}
                           {canDelete && (
                             <button onClick={() => { setDeleteId(c.id); setDeleteError(''); }}
-                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Eliminar">
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Eliminar">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
