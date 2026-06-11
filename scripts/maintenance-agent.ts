@@ -61,6 +61,19 @@ interface Cache {
   history:          HistoryEntry[];
 }
 
+interface AuditVulnerability {
+  name:     string;
+  severity: 'critical' | 'high' | 'moderate' | 'low';
+  via:      string;
+  range:    string;
+}
+
+interface AuditReport {
+  vulnerabilities: AuditVulnerability[];
+  totalHigh:       number;
+  totalCritical:   number;
+}
+
 // ── Config ───────────────────────────────────────────────────────────────────
 
 const BACKEND_URL = process.env.SERVINGMI_BACKEND_URL ?? 'https://servingmi-backend.onrender.com';
@@ -189,11 +202,67 @@ async function runAiAnalysis(token: string): Promise<AiAnalysisResult> {
 
 // ── Paso 3: Decidir si abrir issue ───────────────────────────────────────────
 
+function runPnpmAudit(): AuditReport {
+  try {
+    const raw = execSync('pnpm audit --json 2>/dev/null || true', {
+      encoding: 'utf8',
+      timeout: 60_000,
+    });
+    const data = JSON.parse(raw);
+
+    const vulns: AuditVulnerability[] = [];
+    const advisories = data?.advisories ?? data?.vulnerabilities ?? {};
+
+    for (const [name, info] of Object.entries(advisories)) {
+      const v = info as any;
+      vulns.push({
+        name:     name,
+        severity: v.severity ?? 'low',
+        via:      Array.isArray(v.via)
+          ? v.via.filter((x: any) => typeof x === 'string').join(', ')
+          : String(v.via ?? ''),
+        range:    v.range ?? v.fixAvailable?.version ?? 'unknown',
+      });
+    }
+
+    const totalHigh     = vulns.filter(v => v.severity === 'high').length;
+    const totalCritical = vulns.filter(v => v.severity === 'critical').length;
+
+    return { vulnerabilities: vulns, totalHigh, totalCritical };
+  } catch (err) {
+    console.error('⚠️  pnpm audit error:', err instanceof Error ? err.message : String(err));
+    return { vulnerabilities: [], totalHigh: 0, totalCritical: 0 };
+  }
+}
+
+function buildSecuritySection(audit: AuditReport): string {
+  if (audit.vulnerabilities.length === 0) return '';
+
+  const lines: string[] = [];
+  for (const v of audit.vulnerabilities) {
+    const emoji = v.severity === 'critical' ? '🔴' : v.severity === 'high' ? '🟠' : '🟡';
+    lines.push(`- ${emoji} **${v.name}** (${v.severity}) — afecta \`${v.range}\`${v.via ? ` vía ${v.via}` : ''}`);
+  }
+
+  return `### 🔒 Vulnerabilidades de Seguridad (pnpm audit)
+
+${lines.join('\n')}
+
+> _Ejecutar \`pnpm audit --fix\` para actualizar dependencias automáticamente._
+
+---
+
+`;
+}
+
 function shouldOpenIssue(
   current:     AiAnalysisResult,
   cache:       Cache,
   triggerType: string,
+  audit:       AuditReport,
 ): boolean {
+  // Security vulnerabilities always warrant an issue
+  if (audit.totalCritical > 0 || audit.totalHigh > 0) return true;
   // Post-deploy: solo abrir si hay degradación respecto al estado anterior
   if (triggerType === 'post-deploy') {
     if (current.status === 'critical') return true;
@@ -218,11 +287,12 @@ const STATUS_EMOJI   = { healthy: '✅', warning: '⚠️', critical: '🚨' };
 const PRIORITY_EMOJI = { urgent: '🔥', normal: '📌', optional: '💡' };
 
 function buildIssueBody(
-  result:         AiAnalysisResult,
-  previousStatus: string | undefined,
-  trendSummary:   string,
-  deployContext:  string,
-  triggerType:    string,
+  result:          AiAnalysisResult,
+  previousStatus:  string | undefined,
+  trendSummary:    string,
+  deployContext:   string,
+  triggerType:     string,
+  securitySection: string,
 ): string {
   const date = new Date().toLocaleDateString('es-DO', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -277,7 +347,7 @@ ${result.positives.map(p => `- ${p}`).join('\n')}
 
 ---
 
-${deployContext ? `### 🚀 Cambios Desplegados Esta Semana\n\n${deployContext}\n\n---\n\n` : ''}<details>
+${securitySection}${deployContext ? `### 🚀 Cambios Desplegados Esta Semana\n\n${deployContext}\n\n---\n\n` : ''}<details>
 <summary>📊 Metadatos del análisis</summary>
 
 - **Analizado:** ${new Date(result.analyzedAt).toLocaleString('es-DO')}
@@ -292,11 +362,12 @@ ${deployContext ? `### 🚀 Cambios Desplegados Esta Semana\n\n${deployContext}\
 // ── Paso 5: Crear GitHub Issue ───────────────────────────────────────────────
 
 async function createGitHubIssue(
-  result:         AiAnalysisResult,
-  previousStatus: string | undefined,
-  trendSummary:   string,
-  deployContext:  string,
-  triggerType:    string,
+  result:          AiAnalysisResult,
+  previousStatus:  string | undefined,
+  trendSummary:    string,
+  deployContext:   string,
+  triggerType:     string,
+  securitySection: string,
 ): Promise<{ url: string; number: number }> {
   if (!GH_TOKEN || !GH_REPO) {
     console.log('⚠️  GH_TOKEN o GH_REPO no configurados — saltando creación de issue');
@@ -314,7 +385,7 @@ async function createGitHubIssue(
   if (result.status === 'critical') labels.push('priority: high');
   if (result.status === 'warning')  labels.push('priority: medium');
 
-  const body = buildIssueBody(result, previousStatus, trendSummary, deployContext, triggerType);
+  const body = buildIssueBody(result, previousStatus, trendSummary, deployContext, triggerType, securitySection);
 
   const data = await fetchJson(`https://api.github.com/repos/${GH_REPO}/issues`, {
     method: 'POST',
@@ -379,8 +450,17 @@ async function main() {
   // 2. Análisis IA (usa Claude internamente en el backend)
   const analysis = await runAiAnalysis(token);
 
+  // 2b. Security audit
+  console.log('🔒 Ejecutando auditoría de seguridad...');
+  const audit = runPnpmAudit();
+  if (audit.vulnerabilities.length > 0) {
+    console.log(`   ⚠️  ${audit.totalCritical} críticas, ${audit.totalHigh} altas, ${audit.vulnerabilities.length} total`);
+  } else {
+    console.log('   ✅ Sin vulnerabilidades detectadas');
+  }
+
   // 3. Decidir si crear issue
-  const needsIssue = shouldOpenIssue(analysis, cache, TRIGGER_TYPE);
+  const needsIssue = shouldOpenIssue(analysis, cache, TRIGGER_TYPE, audit);
   console.log(`\n📊 Estado: ${analysis.status} | Abrir issue: ${needsIssue ? 'SÍ' : 'NO'}`);
 
   // Recovery: close issue if system is back to healthy
@@ -399,12 +479,14 @@ async function main() {
   if (needsIssue) {
     const deployContext = getDeployContext();
     const trendSummary = buildTrendSummary(cache.history);
+    const securitySection = buildSecuritySection(audit);
     const created = await createGitHubIssue(
       analysis,
       cache.lastAnalysis?.status,
       trendSummary,
       deployContext,
       TRIGGER_TYPE,
+      securitySection,
     );
     issueUrl = created.url;
     issueNumber = created.number !== 0 ? created.number : null;
