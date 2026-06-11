@@ -22,9 +22,12 @@ pnpm build:backend        # Compilar TypeScript backend
 pnpm build:frontend       # Build Vite frontend
 
 # Base de datos
-docker-compose up -d postgres   # Levantar PostgreSQL local
-pnpm db:migrate                 # Ejecutar migraciones Prisma
-pnpm db:generate                # Regenerar Prisma client tras cambios al schema
+docker-compose up -d postgres           # Levantar PostgreSQL local
+pnpm db:migrate                         # Ejecutar migraciones Prisma
+pnpm --filter backend db:generate       # Regenerar Prisma client tras cambios al schema
+
+# TypeScript check (sin emitir)
+pnpm build:backend                      # Compila y detecta errores de tipos
 
 # Mantenimiento manual
 pnpm --filter backend exec tsx ../../scripts/maintenance-agent.ts
