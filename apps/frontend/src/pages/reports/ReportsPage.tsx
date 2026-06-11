@@ -130,7 +130,7 @@ export default function ReportsPage() {
       <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">
 
         {/* ── Filtros ───────────────────────────────────────────────────── */}
-        <div className="bg-white border border-gray-200 shadow-sm">
+        <div className="bg-white border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
             <Calendar className="w-4 h-4 text-[#F5C218]" />
             <h2 className="font-['Barlow_Condensed'] text-sm font-semibold tracking-[0.15em] text-[#1C1C1C] uppercase">
