@@ -1,5 +1,5 @@
 // apps/frontend/src/components/layout/Layout.tsx
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Receipt, Users,
@@ -254,6 +254,7 @@ function NavPopover({
 
   return (
     <div
+      id="nav-more-popover"
       ref={ref}
       style={{
         position: 'fixed',
@@ -334,7 +335,6 @@ export default function Layout() {
     g.items.push(item);
   }
 
-  const pinnedItems    = visibleItems.filter((i) => pinnedIds.includes(i.to));
   const unpinnedItems  = visibleItems.filter((i) => !pinnedIds.includes(i.to));
   const hasUnpinned    = unpinnedItems.length > 0;
 
@@ -354,75 +354,12 @@ export default function Layout() {
     setPopoverOpen((v) => !v);
   }
 
-  // Desktop sidebar: pinned items only + ··· row
-  const DesktopSidebarContent = () => (
-    <>
-      <nav className="flex-1 px-2 pb-4 overflow-y-auto">
-        {pinnedGroups.map(({ key, label, items }) => (
-          <NavGroup key={key} label={label}>
-            {items.map(({ to, icon, label: itemLabel }) => (
-              <NavItemLink
-                key={to}
-                to={to}
-                icon={icon}
-                label={itemLabel}
-                onUnpin={() => unpin(to)}
-              />
-            ))}
-          </NavGroup>
-        ))}
-        {hasUnpinned && (
-          <div ref={moreRef} className="pt-3 px-2">
-            <button
-              type="button"
-              onClick={handleMoreClick}
-              className={clsx(
-                "w-full flex items-center gap-3 px-1 py-2.5 text-sm font-medium transition-colors font-['DM_Sans']",
-                popoverOpen
-                  ? 'text-[#F5C218]'
-                  : 'text-gray-500 hover:text-gray-300 hover:bg-white/8',
-              )}
-            >
-              <MoreHorizontal className="w-4 h-4 shrink-0" />
-              <span className="flex-1 leading-none">Más</span>
-            </button>
-          </div>
-        )}
-      </nav>
-      <SidebarFooter
-        userRole={userRole}
-        isPreviewing={isPreviewing}
-        viewAsRole={viewAsRole ?? null}
-        userName={user?.name}
-        onLogout={handleLogout}
-      />
-    </>
-  );
+  const handlePin = useCallback((to: string) => {
+    pin(to);
+    setPopoverOpen(false);
+  }, [pin]);
 
-  // Mobile drawer: all items (unchanged behaviour)
-  const MobileSidebarContent = ({ onNavClick }: { onNavClick?: () => void }) => (
-    <>
-      <nav className="flex-1 px-2 pb-4 overflow-y-auto">
-        {groups.map(({ key, label, items }) => (
-          <NavGroup key={key} label={label}>
-            {items.map(({ to, icon, label: itemLabel }) => (
-              <NavItemLink key={to} to={to} icon={icon} label={itemLabel} onClick={onNavClick} />
-            ))}
-          </NavGroup>
-        ))}
-      </nav>
-      <SidebarFooter
-        userRole={userRole}
-        isPreviewing={isPreviewing}
-        viewAsRole={viewAsRole ?? null}
-        userName={user?.name}
-        onLogout={handleLogout}
-      />
-    </>
-  );
-
-  // Suppress unused-variable warning — pinnedItems used for derivation only
-  void pinnedItems;
+  const handleClose = useCallback(() => setPopoverOpen(false), []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
@@ -443,7 +380,49 @@ export default function Layout() {
             </p>
           </div>
         </div>
-        <DesktopSidebarContent />
+        <>
+          <nav className="flex-1 px-2 pb-4 overflow-y-auto">
+            {pinnedGroups.map(({ key, label, items }) => (
+              <NavGroup key={key} label={label}>
+                {items.map(({ to, icon, label: itemLabel }) => (
+                  <NavItemLink
+                    key={to}
+                    to={to}
+                    icon={icon}
+                    label={itemLabel}
+                    onUnpin={() => unpin(to)}
+                  />
+                ))}
+              </NavGroup>
+            ))}
+            {hasUnpinned && (
+              <div ref={moreRef} className="pt-3 px-2">
+                <button
+                  type="button"
+                  onClick={handleMoreClick}
+                  aria-expanded={popoverOpen}
+                  aria-controls="nav-more-popover"
+                  className={clsx(
+                    "w-full flex items-center gap-3 px-1 py-2.5 text-sm font-medium transition-colors font-['DM_Sans']",
+                    popoverOpen
+                      ? 'text-[#F5C218]'
+                      : 'text-gray-500 hover:text-gray-300 hover:bg-white/8',
+                  )}
+                >
+                  <MoreHorizontal className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 leading-none">Más</span>
+                </button>
+              </div>
+            )}
+          </nav>
+          <SidebarFooter
+            userRole={userRole}
+            isPreviewing={isPreviewing}
+            viewAsRole={viewAsRole ?? null}
+            userName={user?.name}
+            onLogout={handleLogout}
+          />
+        </>
       </aside>
 
       {/* Floating popover — rendered outside aside so it overflows correctly */}
@@ -451,8 +430,8 @@ export default function Layout() {
         <NavPopover
           unpinnedGroups={unpinnedGroups}
           anchorTop={anchorTop}
-          onPin={(to) => { pin(to); setPopoverOpen(false); }}
-          onClose={() => setPopoverOpen(false)}
+          onPin={handlePin}
+          onClose={handleClose}
         />
       )}
 
@@ -480,11 +459,28 @@ export default function Layout() {
               <p className="text-[10px] text-gray-500 uppercase tracking-widest font-['Barlow_Condensed']">Control de Gastos</p>
             </div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-white p-1">
+          <button onClick={() => setSidebarOpen(false)} aria-label="Cerrar menú" className="text-gray-400 hover:text-white p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
-        <MobileSidebarContent onNavClick={() => setSidebarOpen(false)} />
+        <>
+          <nav className="flex-1 px-2 pb-4 overflow-y-auto">
+            {groups.map(({ key, label, items }) => (
+              <NavGroup key={key} label={label}>
+                {items.map(({ to, icon, label: itemLabel }) => (
+                  <NavItemLink key={to} to={to} icon={icon} label={itemLabel} onClick={() => setSidebarOpen(false)} />
+                ))}
+              </NavGroup>
+            ))}
+          </nav>
+          <SidebarFooter
+            userRole={userRole}
+            isPreviewing={isPreviewing}
+            viewAsRole={viewAsRole ?? null}
+            userName={user?.name}
+            onLogout={handleLogout}
+          />
+        </>
       </aside>
 
       {/* ── Main content ─────────────────────────────────── */}

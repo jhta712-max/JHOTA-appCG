@@ -49,6 +49,7 @@ export function usePinnedNav(userId: string, role: string): {
   const unpin = useCallback((to: string) => {
     setPinnedIds((prev) => {
       const next = prev.filter((id) => id !== to);
+      if (next.length === 0) return prev;
       save(userId, next);
       return next;
     });
