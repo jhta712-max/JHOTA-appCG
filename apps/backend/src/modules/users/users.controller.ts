@@ -11,6 +11,11 @@ export async function list(req: Request, res: Response, next: NextFunction) {
 export async function getOne(req: Request, res: Response, next: NextFunction) {
   try {
     const id = req.params.id === 'me' ? req.user!.userId : req.params.id;
+    // Un usuario solo puede ver su propio perfil, salvo admin
+    if (req.user!.role !== 'admin' && req.user!.userId !== id) {
+      res.status(403).json({ success: false, error: 'No puedes ver otro usuario' });
+      return;
+    }
     const data = await service.getById(id);
     res.json({ success: true, data });
   } catch (err) { next(err); }

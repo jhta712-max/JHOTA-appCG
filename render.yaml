@@ -27,7 +27,8 @@ services:
 
     dockerfilePath: ./Dockerfile.backend
 
-    preDeployCommand: null
+    # Migraciones en pre-deploy: si fallan, Render no despliega y mantiene la versión anterior
+    preDeployCommand: node /app/node_modules/.bin/prisma migrate deploy --schema /app/prisma/schema.prisma
 
     envVars:
       - key: NODE_ENV

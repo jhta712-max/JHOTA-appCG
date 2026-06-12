@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { timingSafeEqual } from 'crypto';
 import nodemailer from 'nodemailer';
 import { authenticate } from '../../middlewares/authenticate';
 import { authorize }    from '../../middlewares/authorize';
@@ -60,7 +61,7 @@ async function generateBackup() {
 
 // GET /api/v1/backup/export — descarga manual (JWT admin)
 router.get('/export', authenticate, authorize('admin'), async (req: Request, res: Response) => {
-  console.log('[BACKUP] user:', JSON.stringify((req as any).user));
+  console.log('[BACKUP] export by user:', (req as any).user?.userId);
   try {
     const { tables, counts } = await generateBackup();
     const filename = 'backup_servingmi_' + new Date().toISOString().slice(0, 10) + '.json';
@@ -74,8 +75,14 @@ router.get('/export', authenticate, authorize('admin'), async (req: Request, res
 
 // POST /api/v1/backup/auto — cron-job.org (x-backup-secret)
 router.post('/auto', async (req: Request, res: Response) => {
-  const secret = req.headers['x-backup-secret'] as string;
-  if (!env.BACKUP_SECRET_KEY || secret !== env.BACKUP_SECRET_KEY) {
+  const secret = (req.headers['x-backup-secret'] as string) ?? '';
+  const expected = env.BACKUP_SECRET_KEY ?? '';
+  const secretBuf   = Buffer.from(secret);
+  const expectedBuf = Buffer.from(expected);
+  const valid = expected.length > 0
+    && secretBuf.length === expectedBuf.length
+    && timingSafeEqual(secretBuf, expectedBuf);
+  if (!valid) {
     res.status(401).json({ success: false, error: 'Clave invalida' }); return;
   }
   try {
