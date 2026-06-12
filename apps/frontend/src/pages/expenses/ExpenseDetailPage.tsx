@@ -7,6 +7,8 @@ import {
   Paperclip, Trash2, ExternalLink, Clock, ThumbsUp, ThumbsDown,
 } from 'lucide-react';
 import { expensesApi, quotationsApi } from '../../api';
+import { DetailPageSkeleton } from '../../components/ui/DetailPageSkeleton';
+import { PAGE_META }           from '../../utils/routeMeta';
 import { useRole } from '../../hooks/useRole';
 import { useAuthStore } from '../../stores/authStore';
 import { PAYMENT_METHOD_LABELS } from '../../types';
@@ -88,9 +90,24 @@ export default function ExpenseDetailPage() {
     onError: (err: any) => setRejectError(err.response?.data?.error || 'Error al rechazar'),
   });
 
-  if (isLoading) return (
-    <div className="text-center py-20 font-['DM_Sans'] text-gray-400">Cargando gasto...</div>
-  );
+  if (isLoading) {
+    const meta = PAGE_META['/expenses'];
+    return (
+      <div>
+        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+          <div>
+            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
+              {meta.module}
+            </p>
+            <h1 className="text-3xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {meta.title}
+            </h1>
+          </div>
+        </div>
+        <div className="p-6"><DetailPageSkeleton sections={3} /></div>
+      </div>
+    );
+  }
   if (error || !expense) return (
     <div className="text-center py-20 text-gray-400">
       <AlertCircle className="w-10 h-10 mx-auto mb-3 text-gray-300" />

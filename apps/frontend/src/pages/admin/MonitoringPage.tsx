@@ -8,6 +8,7 @@ import {
   Download, Plus,
 } from 'lucide-react';
 import { monitoringApi, serviceSubscriptionsApi, type SystemLog, type AiAnalysisResult } from '../../api';
+import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 import type { ServiceSubscription, SubscriptionsOverview } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
 import { useRole } from '../../hooks/useRole';
@@ -268,11 +269,7 @@ function SubscriptionsTab() {
   const totalMonthly = activeSubs.reduce((sum, s) => sum + Number(s.monthlyCost), 0);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <CreditCard className="w-7 h-7 animate-pulse mx-auto" style={{ color: '#F5C218' }} />
-      </div>
-    );
+    return <ProjectListSkeleton />;
   }
 
   return (
@@ -840,12 +837,7 @@ export default function MonitoringPage() {
       {activeTab === 'dashboard' && (
         <>
           {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="text-center">
-                <Activity className="w-8 h-8 animate-pulse mx-auto mb-2" style={{ color: '#F5C218' }} />
-                <p className="font-['DM_Sans'] text-sm text-gray-600">Cargando datos del sistema…</p>
-              </div>
-            </div>
+            <ProjectListSkeleton />
           ) : isError || !dashData ? (
             <div className="bg-red-950/30 border border-red-800 rounded-xl p-6 flex items-start gap-3">
               <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />

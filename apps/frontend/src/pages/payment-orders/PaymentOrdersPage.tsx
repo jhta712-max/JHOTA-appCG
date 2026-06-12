@@ -12,6 +12,7 @@ import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
 import { TransferPaymentForm } from '../../components/shared/TransferPaymentForm';
+import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 
 type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS' | 'PETTY_CASH';
 type ModalView = 'form' | 'success';
@@ -707,10 +708,7 @@ export default function PaymentOrdersPage() {
         {/* Lista de órdenes */}
         <div className="bg-white border border-gray-200 overflow-hidden">
           {loadingOrders ? (
-            <div className="flex items-center justify-center py-12 gap-2 text-gray-400">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="font-['Space_Mono'] text-sm">Cargando...</span>
-            </div>
+            <ProjectListSkeleton />
           ) : orders.length === 0 ? (
             <div className="bg-[#1C1C1C] text-center py-12">
               <FileText className="w-10 h-10 mx-auto mb-2 text-[#F5C218]" />

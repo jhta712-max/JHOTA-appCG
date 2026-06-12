@@ -13,6 +13,7 @@ import {
 } from '../../api';
 import { useOcrPolling } from '../../hooks/useOcrPolling';
 import { OcrEnrichmentAlerts } from '../../components/OcrEnrichmentAlerts';
+import { ExpenseListSkeleton } from '../../components/ui/ExpenseListSkeleton';
 import { fmtDate } from '../../utils/date';
 import { useRole } from '../../hooks/useRole';
 
@@ -364,10 +365,7 @@ export default function OfficeExpensesPage() {
 
         {/* List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-16 gap-2 text-gray-400">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="font-['Space_Mono'] text-sm">Cargando...</span>
-          </div>
+          <ExpenseListSkeleton />
         ) : expenses.length === 0 ? (
           <div className="bg-[#1C1C1C] p-16 text-center">
             <Sparkles className="w-10 h-10 text-[#F5C218] mx-auto mb-4" />

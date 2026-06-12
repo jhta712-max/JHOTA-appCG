@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import {
@@ -129,7 +130,7 @@ export default function CategoriesPage() {
         )}
 
         {isLoading ? (
-          <div className="text-center py-16 font-['DM_Sans'] text-gray-400">Cargando categorías...</div>
+          <ProjectListSkeleton />
         ) : (
           <>
             {/* Categorías del sistema */}

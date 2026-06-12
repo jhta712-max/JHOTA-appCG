@@ -7,6 +7,8 @@ import {
   Plus, CheckCircle, X, Loader2, ExternalLink, Receipt,
 } from 'lucide-react';
 import { quotationsApi } from '../../api';
+import { DetailPageSkeleton } from '../../components/ui/DetailPageSkeleton';
+import { PAGE_META }           from '../../utils/routeMeta';
 import { useRole } from '../../hooks/useRole';
 import {
   QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS,
@@ -129,11 +131,24 @@ export default function QuotationDetailPage() {
     qc.invalidateQueries({ queryKey: ['quotation', id] });
   };
 
-  if (isLoading) return (
-    <div className="flex items-center justify-center py-20 gap-3 font-['DM_Sans'] text-gray-400">
-      <Loader2 className="w-5 h-5 animate-spin" /> Cargando cotización...
-    </div>
-  );
+  if (isLoading) {
+    const meta = PAGE_META['/quotations'];
+    return (
+      <div>
+        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+          <div>
+            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
+              {meta.module}
+            </p>
+            <h1 className="text-3xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {meta.title}
+            </h1>
+          </div>
+        </div>
+        <div className="p-6"><DetailPageSkeleton sections={3} /></div>
+      </div>
+    );
+  }
   if (error || !quotation) return (
     <div className="text-center py-20 font-['DM_Sans'] text-gray-400">
       <AlertCircle className="w-10 h-10 mx-auto mb-3 text-gray-300" />

@@ -6,6 +6,7 @@ import {
   Phone, Mail, User, Send, RefreshCw,
 } from 'lucide-react';
 import { notificationContactsApi, notificationsApi } from '../../api';
+import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 import type { NotificationContact } from '../../types';
 
 // ── Notification type definitions ──────────────────────────────────────────────
@@ -242,7 +243,7 @@ export default function NotificationContactsPage() {
 
         {/* Lista */}
         {isLoading ? (
-          <div className="text-center py-16 font-['DM_Sans'] text-gray-400">Cargando contactos...</div>
+          <ProjectListSkeleton />
         ) : (contacts ?? []).length === 0 ? (
           <div className="bg-[#1C1C1C] border border-white/10 p-14 text-center">
             <Bell className="w-10 h-10 text-white/10 mx-auto mb-4" />

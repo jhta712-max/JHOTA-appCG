@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Receipt, Plus, Search, Upload, X, CheckCircle, AlertCircle, ArrowUpDown, Filter } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi } from '../../api';
 import { PAYMENT_METHOD_LABELS } from '../../types';
+import { ExpenseListSkeleton } from '../../components/ui/ExpenseListSkeleton';
+import { SkeletonBlock }       from '../../components/ui/Skeleton';
 import { fmtDate } from '../../utils/date';
 import api from '../../api/client';
 import { useRole } from '../../hooks/useRole';
@@ -129,10 +131,13 @@ export default function ExpensesPage() {
             Gastos
           </h1>
           <p
-            className="text-sm mt-1"
+            className="text-sm mt-1 h-5 flex items-center"
             style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
           >
-            {pagination?.total ?? 0} gastos registrados
+            {isLoading
+              ? <SkeletonBlock className="h-4 w-32 bg-gray-600" />
+              : `${pagination?.total ?? 0} gastos registrados`
+            }
           </p>
         </div>
         {canCreateExpense && (
@@ -388,12 +393,7 @@ export default function ExpensesPage() {
 
         {/* Lista */}
         {isLoading ? (
-          <div
-            className="text-center py-12 text-gray-400"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
-          >
-            Cargando gastos...
-          </div>
+          <ExpenseListSkeleton />
         ) : expenses.length === 0 ? (
           <div className="p-12 text-center border border-gray-100">
             <div

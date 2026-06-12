@@ -10,6 +10,8 @@ import { payrollApi, paymentOrdersApi, type Payroll, type PayrollLine } from '..
 import { useRole } from '../../hooks/useRole';
 import { PAYROLL_STATUS_LABEL as STATUS_LABEL, PAYROLL_STATUS_COLOR as STATUS_COLOR } from '../../utils/statusLabels';
 import api from '../../api/client';
+import { DetailPageSkeleton } from '../../components/ui/DetailPageSkeleton';
+import { PAGE_META }           from '../../utils/routeMeta';
 
 const TYPE_LABEL: Record<string, string> = { LABOR: 'Mano de obra', SERVICE: 'Servicios' };
 
@@ -96,7 +98,32 @@ export default function PayrollDetailPage() {
     enabled:  !!payroll && linkModal,
   });
 
-  if (isLoading) return <div className="text-center py-16 text-gray-400 text-sm" style={{ fontFamily: 'DM Sans, sans-serif' }}>Cargando nómina…</div>;
+  if (isLoading) {
+    const meta = PAGE_META['/payrolls'];
+    return (
+      <div>
+        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+          <div>
+            <p
+              className="text-xs uppercase tracking-widest mb-1"
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}
+            >
+              {meta.module}
+            </p>
+            <h1
+              className="text-3xl uppercase tracking-widest text-white leading-none"
+              style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+            >
+              {meta.title}
+            </h1>
+          </div>
+        </div>
+        <div className="p-6">
+          <DetailPageSkeleton sections={3} />
+        </div>
+      </div>
+    );
+  }
   if (!payroll)  return <div className="text-center py-16 text-red-500 text-sm" style={{ fontFamily: 'DM Sans, sans-serif' }}>Nómina no encontrada.</div>;
 
   const isDraft    = payroll.status === 'DRAFT';

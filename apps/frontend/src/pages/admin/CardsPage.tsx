@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CreditCard, Plus, Pencil, PowerOff, CheckCircle, AlertCircle, X, Loader2 } from 'lucide-react';
 import { cardsApi, type CompanyCard } from '../../api';
+import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 
 const CARD_TYPES = ['VISA', 'MASTERCARD', 'AMEX', 'DINERS', 'OTHER'] as const;
 
@@ -173,10 +174,7 @@ export default function CardsPage() {
         {/* Tabla */}
         <div className="bg-white border border-gray-200 overflow-hidden">
           {isLoading ? (
-            <div className="flex items-center justify-center py-16 gap-3 font-['DM_Sans'] text-gray-400">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-sm">Cargando tarjetas...</span>
-            </div>
+            <ProjectListSkeleton />
           ) : cards.length === 0 ? (
             <div className="text-center py-16">
               <CreditCard className="w-10 h-10 mx-auto mb-3 text-gray-200" />

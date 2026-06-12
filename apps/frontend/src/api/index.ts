@@ -575,6 +575,8 @@ export const suppliersApi = {
     api.delete(`/suppliers/${id}/bank-accounts/${accountId}`),
   setDefaultBankAccount: (id: string, accountId: string) =>
     api.patch<{ success: boolean; data: SupplierBankAccount }>(`/suppliers/${id}/bank-accounts/${accountId}/set-default`),
+  validateRNC: (rnc: string) =>
+    api.get<{ success: boolean; data: { found: boolean; rnc: string; name?: string; status?: string; category?: string | null; unreachable?: boolean } }>(`/suppliers/validate-rnc/${encodeURIComponent(rnc)}`),
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────

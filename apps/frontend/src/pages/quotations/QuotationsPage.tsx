@@ -10,6 +10,8 @@ import {
 } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
 import { useRole } from '../../hooks/useRole';
+import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
+import { SkeletonBlock }        from '../../components/ui/Skeleton';
 
 function fmt(n: number, currency = 'DOP') {
   return new Intl.NumberFormat('es-DO', {
@@ -93,9 +95,11 @@ export default function QuotationsPage() {
               <h1 className="font-['Barlow_Condensed'] text-white text-5xl font-bold tracking-tight leading-none uppercase">
                 COTIZACIONES
               </h1>
-              <p className="text-zinc-400 text-sm mt-2 font-['DM_Sans']">
-                <span className="font-['Space_Mono'] text-[#F5C218]">{pagination?.total ?? 0}</span>
-                {' '}cotizaciones registradas
+              <p className="text-zinc-400 text-sm mt-2 font-['DM_Sans'] h-5 flex items-center">
+                {isLoading
+                  ? <SkeletonBlock className="h-4 w-32 bg-gray-600" />
+                  : <><span className="font-['Space_Mono'] text-[#F5C218]">{pagination?.total ?? 0}</span>{' '}cotizaciones registradas</>
+                }
               </p>
             </div>
             {canCreateQuotation && (
@@ -173,18 +177,7 @@ export default function QuotationsPage() {
 
       {/* Lista */}
       {isLoading ? (
-        <div className="py-16 text-center">
-          <div className="inline-flex gap-1">
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="w-3 h-3 bg-[#F5C218] rounded-full animate-pulse"
-                style={{ animationDelay: `${i * 150}ms` }}
-              />
-            ))}
-          </div>
-          <p className="text-zinc-400 text-sm mt-3 font-['DM_Sans']">Cargando cotizaciones...</p>
-        </div>
+        <ProjectListSkeleton />
       ) : quotations.length === 0 ? (
         <div className="bg-white border border-zinc-200 py-16 px-6 text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-[#F5C218]/10 border border-[#F5C218]/30 mb-4">

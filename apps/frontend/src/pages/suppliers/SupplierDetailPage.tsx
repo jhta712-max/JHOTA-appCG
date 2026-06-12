@@ -8,6 +8,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { suppliersApi } from '../../api';
+import { DetailPageSkeleton } from '../../components/ui/DetailPageSkeleton';
+import { PAGE_META }           from '../../utils/routeMeta';
 import { useRole }       from '../../hooks/useRole';
 import { fmtDate }       from '../../utils/date';
 import type { Supplier } from '../../types';
@@ -157,10 +159,20 @@ export default function SupplierDetailPage() {
   }
 
   if (isLoading) {
+    const meta = PAGE_META['/suppliers'];
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-3 text-gray-400">
-        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#F5C218' }} />
-        <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-sm">Cargando suplidor…</p>
+      <div>
+        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+          <div>
+            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
+              {meta.module}
+            </p>
+            <h1 className="text-3xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {meta.title}
+            </h1>
+          </div>
+        </div>
+        <div className="p-6"><DetailPageSkeleton sections={4} /></div>
       </div>
     );
   }

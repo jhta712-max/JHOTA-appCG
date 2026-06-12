@@ -8,6 +8,7 @@ import * as ctrl from './suppliers.controller';
 const router = Router();
 router.use(authenticate);
 
+router.get('/validate-rnc/:rnc', ctrl.validateRnc);
 router.get('/',            ctrl.list);
 router.get('/:id/history', ctrl.getHistory);
 router.get('/:id',         ctrl.getOne);
