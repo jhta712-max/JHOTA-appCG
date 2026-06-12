@@ -11,6 +11,8 @@ import { useRole } from '../../hooks/useRole';
 import { PAYMENT_METHOD_LABELS, PROJECT_STATUS_LABELS } from '../../types';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
 import { fmtDate } from '../../utils/date';
+import { DetailPageSkeleton } from '../../components/ui/DetailPageSkeleton';
+import { PAGE_META }           from '../../utils/routeMeta';
 
 function fmt(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
@@ -82,11 +84,32 @@ export default function ProjectDetailPage() {
     enabled:  !!id,
   });
 
-  if (isLoading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <span className="text-gray-400 text-sm">Cargando proyecto...</span>
-    </div>
-  );
+  if (isLoading) {
+    const meta = PAGE_META['/projects'];
+    return (
+      <div>
+        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+          <div>
+            <p
+              className="text-xs uppercase tracking-widest mb-1"
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}
+            >
+              {meta.module}
+            </p>
+            <h1
+              className="text-3xl uppercase tracking-widest text-white leading-none"
+              style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+            >
+              {meta.title}
+            </h1>
+          </div>
+        </div>
+        <div className="p-6">
+          <DetailPageSkeleton sections={4} />
+        </div>
+      </div>
+    );
+  }
   if (!summaryData) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <span className="text-gray-400 text-sm">Proyecto no encontrado</span>
