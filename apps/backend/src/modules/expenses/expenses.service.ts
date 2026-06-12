@@ -219,7 +219,13 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
     };
   }
 
-  const { fiscalVoucher, ...expenseData } = data as any;
+  const { fiscalVoucher, projectItemId: rawItemId, ...expenseData } = data as any;
+
+  const resolvedItemId = await resolveProjectItemId(
+    expense.projectId,
+    rawItemId !== undefined ? rawItemId : (expense as any).projectItemId,
+    { inherited: true },
+  );
 
   // Si el gasto estaba REJECTED y se edita, vuelve a PENDING_APPROVAL
   const statusReset = expense.status === 'REJECTED'
@@ -230,6 +236,7 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
     where: { id },
     data: {
       ...expenseData,
+      projectItemId: resolvedItemId,
       expenseDate: data.expenseDate ? new Date(data.expenseDate) : undefined,
       ...fiscalVoucherOp,
       ...statusReset,
