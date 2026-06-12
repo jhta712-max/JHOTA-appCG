@@ -52,7 +52,7 @@ modules/
   payment-orders/ # Órdenes de pago (vinculadas a nóminas/gastos)
   suppliers/      # Proveedores (incluye beneficiarios); endpoint validate-rnc/:rnc → DGII
   quotations/     # Cotizaciones con OCR
-  office-expenses/# Gastos de oficina (texto libre, sin FK a suppliers)
+  office-expenses/# Gastos de oficina; tiene supplierId FK opcional + campo libre supplierName
   ocr/            # OCR síncrono: POST devuelve resultado inline (ver nota OCR)
   monitoring/     # Health check + análisis IA (Claude API)
   notifications/  # In-app + WhatsApp (UltraMsg) + Email (Gmail SMTP)
@@ -111,7 +111,7 @@ utils/
 
 1. **Docker:** Siempre `COPY apps ./apps` (TODO el workspace). Nunca `COPY apps/backend ./apps/backend`. Si cambia Dockerfile → test local: `docker build -f Dockerfile.backend .`
 
-2. **Prisma:** Si cambias `schema.prisma` → ejecuta `pnpm --filter backend db:generate` ANTES de push. Schema debe tener: `binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]`. Al quitar una relación de un modelo, buscar también el lado inverso en el modelo relacionado. Buscar además en todos los `*.service.ts` que puedan filtrar por el campo eliminado.
+2. **Prisma:** Si cambias `schema.prisma` → ejecuta `pnpm --filter backend db:generate` ANTES de push. Schema debe tener: `binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]`. Al quitar una relación de un modelo, buscar también el lado inverso en el modelo relacionado. Buscar además en todos los `*.service.ts` que puedan filtrar por el campo eliminado. **Si `pnpm build:backend` lanza `does not exist in type` para un campo que SÍ está en `schema.prisma`, el cliente Prisma está desactualizado — ejecuta `db:generate`.**
 
 3. **Migrations en producción:** usar `prisma migrate deploy` (no `dev`) en Render. Configurado como `preDeployCommand` en `render.yaml`. La startup migration en `entrypoint.sh` solo corre si `SKIP_STARTUP_MIGRATIONS` no está seteada.
 
@@ -127,7 +127,7 @@ utils/
 
 9. **Post-OCR Enrichment Agent** (`apps/backend/src/modules/ocr/ocr-enrichment.service.ts`): se llama después de OCR completo (no bloquea). Nivel 1 (alta confianza): match proveedor por RNC, duplicado NCF/eNCF, clasificación tipo comprobante (B01-B16 tradicional, E31-E45 eNCF electrónico), cruce con cotización abierta. Nivel 2 (solo warnings): validación ITBIS 10%-26%, tipos gubernamentales inusuales.
 
-10. **Gastos de oficina vs módulo de suplidores:** `OfficeExpense` usa texto libre `supplierName` — sin FK a la tabla `suppliers`. Los suplidores del módulo `/suppliers` son entidades continuas; los de office-expenses son ocasionales.
+10. **Gastos de oficina y suplidores:** `OfficeExpense` tiene un campo `supplierName` (texto libre) Y un `supplierId` FK opcional a `Supplier`. Los suplidores del módulo `/suppliers` son entidades continuas (mano de obra, materiales); los gastos de oficina pueden vincular un suplidor registrado o usar solo el nombre libre.
 
 ## Trampas conocidas (bugs que ya ocurrieron)
 
@@ -136,6 +136,8 @@ utils/
 **Vite/esbuild TDZ en producción:** Si en un componente React se usa una variable de `useForm` (ej: `watch`, `setValue`) ANTES de la línea donde se llama a `useForm({...})`, el build de producción falla con `ReferenceError: Cannot access 'X' before initialization`. Llamar siempre a `useForm()` ANTES de usar cualquiera de sus valores retornados.
 
 **Fallback numérico en nullish coalescing:** `String(valor ?? '0')` — si `valor` es `null`, resulta en `"null"`. El fallback debe ser numérico: `String(valor ?? 0)`.
+
+**Prisma client desactualizado:** Si `pnpm build:backend` muestra `does not exist in type 'SomeModelCreateInput'` para un campo que sí existe en `schema.prisma`, el cliente generado no está sincronizado — ejecuta `pnpm --filter backend db:generate`. Ocurre cuando el schema cambia pero el client no se regeneró (ej. después de un `git pull`).
 
 **Migración baseline en desarrollo local:** El repo tiene una migración `20260531000000_init_baseline` que es un snapshot completo del schema. `prisma migrate deploy` desde una BD vacía falla con `type "project_status" already exists` porque las migraciones `20260518*` también están presentes. Solución documentada en `.claude/skills/run-servingmi/SKILL.md` → Setup §4.
 
