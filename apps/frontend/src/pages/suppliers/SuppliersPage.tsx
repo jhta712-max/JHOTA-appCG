@@ -9,6 +9,8 @@ import {
 import { suppliersApi } from '../../api';
 import { useRole }          from '../../hooks/useRole';
 import { useRncValidation } from '../../hooks/useRncValidation';
+import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
+import { SkeletonBlock }        from '../../components/ui/Skeleton';
 import type { Supplier, SupplierBankAccount } from '../../types';
 
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'] as const;
@@ -184,8 +186,11 @@ export default function SuppliersPage() {
             <h1 className="font-['Barlow_Condensed'] text-4xl font-bold tracking-tight text-white uppercase">
               Directorio de Suplidores
             </h1>
-            <p className="font-['Space_Mono'] text-sm mt-1" style={{ color: '#F5C218' }}>
-              {count} suplidor{count !== 1 ? 'es' : ''} registrado{count !== 1 ? 's' : ''}
+            <p className="font-['Space_Mono'] text-sm mt-1 h-5 flex items-center" style={{ color: '#F5C218' }}>
+              {isLoading
+                ? <SkeletonBlock className="h-4 w-32 bg-gray-600" />
+                : `${count} suplidor${count !== 1 ? 'es' : ''} registrado${count !== 1 ? 's' : ''}`
+              }
             </p>
           </div>
           {role.canManageSuppliers && (
@@ -237,10 +242,7 @@ export default function SuppliersPage() {
 
         {/* List */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Building2 className="w-8 h-8 animate-pulse" style={{ color: '#F5C218' }} />
-            <p className="font-['DM_Sans'] text-sm text-gray-400">Cargando suplidores...</p>
-          </div>
+          <ProjectListSkeleton />
         ) : suppliers && suppliers.length > 0 ? (
           <div className="space-y-2">
             {suppliers.map((s) => (
