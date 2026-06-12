@@ -7,6 +7,7 @@ import {
   generateProjectsSummaryExcel,
   generateProjectPDF,
   generateFullExpensesExcel,
+  generate606Excel,
 } from './reports.service';
 
 const router = Router();
@@ -74,6 +75,21 @@ router.get('/expenses/complete.xlsx', async (req: Request, res: Response, next: 
       startDate:     req.query.startDate     as string | undefined,
       endDate:       req.query.endDate       as string | undefined,
     }, res);
+  } catch (err) { next(err); }
+});
+
+// ── GET /reports/606.xlsx?year=2026&month=5
+// Formato 606 DGII: compras con comprobante fiscal del mes
+router.get('/606.xlsx', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const now   = new Date();
+    const year  = Number(req.query.year)  || now.getFullYear();
+    const month = Number(req.query.month) || now.getMonth() + 1;
+    if (year < 2000 || year > 2100 || month < 1 || month > 12) {
+      res.status(400).json({ success: false, error: 'Período inválido', code: 'INVALID_PERIOD' });
+      return;
+    }
+    await generate606Excel(year, month, res);
   } catch (err) { next(err); }
 });
 
