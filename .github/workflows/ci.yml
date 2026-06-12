@@ -26,6 +26,9 @@ jobs:
       - name: Generar Prisma client
         run: pnpm --filter backend db:generate
 
+      - name: Tests backend
+        run: pnpm --filter backend test
+
       - name: Build backend (typecheck)
         run: pnpm build:backend
 
