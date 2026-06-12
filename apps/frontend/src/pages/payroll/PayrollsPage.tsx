@@ -8,6 +8,8 @@ import {
 import { payrollApi, projectsApi, type Payroll } from '../../api';
 import { useRole } from '../../hooks/useRole';
 import { PAYROLL_LIST_STATUS_LABEL as STATUS_LABEL, PAYROLL_LIST_STATUS_COLOR as STATUS_COLOR } from '../../utils/statusLabels';
+import { ListTableSkeleton } from '../../components/ui/ListTableSkeleton';
+import { SkeletonBlock }     from '../../components/ui/Skeleton';
 
 const TYPE_LABEL: Record<string, string> = { LABOR: 'Mano de obra', SERVICE: 'Servicios' };
 
@@ -89,10 +91,13 @@ export default function PayrollsPage() {
             Nóminas
           </h1>
           <p
-            className="text-sm mt-1"
+            className="text-sm mt-1 h-5 flex items-center"
             style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
           >
-            {total} nómina{total !== 1 ? 's' : ''} registrada{total !== 1 ? 's' : ''}
+            {isLoading
+              ? <SkeletonBlock className="h-4 w-28 bg-gray-600" />
+              : `${total} nómina${total !== 1 ? 's' : ''} registrada${total !== 1 ? 's' : ''}`
+            }
           </p>
         </div>
         {canCreatePayroll && (
@@ -205,12 +210,7 @@ export default function PayrollsPage() {
       {/* Table */}
       <div className="bg-white border border-gray-200 border-t-0 overflow-hidden">
         {isLoading ? (
-          <div
-            className="text-center py-12 text-gray-400 text-sm"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
-          >
-            Cargando nóminas…
-          </div>
+          <ListTableSkeleton cols={7} rows={6} />
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
             <div
