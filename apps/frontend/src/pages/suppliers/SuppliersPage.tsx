@@ -7,7 +7,8 @@ import {
   CreditCard, Trash2, Star, StarOff,
 } from 'lucide-react';
 import { suppliersApi } from '../../api';
-import { useRole }       from '../../hooks/useRole';
+import { useRole }          from '../../hooks/useRole';
+import { useRncValidation } from '../../hooks/useRncValidation';
 import type { Supplier, SupplierBankAccount } from '../../types';
 
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'] as const;
@@ -163,6 +164,8 @@ export default function SuppliersPage() {
   }
 
   function cancelBankForm() { setShowBankForm(false); setEditingAccount(null); setBankForm(EMPTY_BANK); setBankError(''); }
+
+  const rncValidation = useRncValidation(modal ? form.rnc : '');
 
   const isPending     = createMutation.isPending || updateMutation.isPending;
   const isBankPending = addBankMutation.isPending || updateBankMutation.isPending;
@@ -378,8 +381,48 @@ export default function SuppliersPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">RNC</label>
-                    <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="rnc" value={form.rnc} onChange={handleChange} placeholder="9 u 11 dígitos" maxLength={11} />
-                    <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">Empresa / contribuyente</p>
+                    <div className="relative">
+                      <input
+                        className={`w-full font-['Space_Mono'] text-sm border px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] pr-8 ${
+                          rncValidation.status === 'valid'         ? 'border-emerald-400' :
+                          rncValidation.status === 'not_found'     ? 'border-red-300' :
+                          rncValidation.status === 'invalid_format'? 'border-red-300' :
+                          'border-gray-200'
+                        }`}
+                        name="rnc" value={form.rnc} onChange={handleChange} placeholder="9 u 11 dígitos" maxLength={11}
+                      />
+                      {rncValidation.status === 'validating' && (
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 border-2 border-[#F5C218] border-t-transparent rounded-full animate-spin" />
+                      )}
+                    </div>
+                    {rncValidation.status === 'valid' && (
+                      <div className="mt-1 space-y-0.5">
+                        <p className="font-['DM_Sans'] text-xs text-emerald-700 font-semibold flex items-center gap-1">
+                          <span>✓</span> {rncValidation.name}
+                          {rncValidation.dgiiStatus && rncValidation.dgiiStatus !== 'NORMAL' && (
+                            <span className="ml-1 text-amber-600">({rncValidation.dgiiStatus})</span>
+                          )}
+                        </p>
+                        {!form.name && (
+                          <button
+                            type="button"
+                            onClick={() => setForm((p) => ({ ...p, name: rncValidation.name }))}
+                            className="font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide text-[#1C1C1C] underline hover:no-underline"
+                          >
+                            Auto-completar nombre
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {rncValidation.status === 'not_found' && (
+                      <p className="font-['DM_Sans'] text-xs text-red-600 mt-1">RNC no encontrado en DGII</p>
+                    )}
+                    {rncValidation.status === 'unreachable' && (
+                      <p className="font-['DM_Sans'] text-xs text-amber-600 mt-1">DGII no disponible — verifique manualmente</p>
+                    )}
+                    {rncValidation.status === 'idle' && (
+                      <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">Empresa / contribuyente</p>
+                    )}
                   </div>
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Cédula</label>

@@ -1,5 +1,6 @@
 import { Receipt } from 'lucide-react';
 import { NCF_REGEX, E_NCF_REGEX, RNC_REGEX } from '../../utils/fiscal';
+import { useRncValidation } from '../../hooks/useRncValidation';
 
 export interface FiscalVoucherValue {
   hasFiscal:    boolean;
@@ -21,11 +22,13 @@ interface Props {
 export function FiscalVoucherForm({ value, onChange, defaultRnc, defaultName, aiFields, error }: Props) {
   const set = (patch: Partial<FiscalVoucherValue>) => onChange({ ...value, ...patch });
 
+  const rncValidation = useRncValidation(value.hasFiscal ? value.supplierRnc : '');
+
   const ncfError = value.ncf
     ? (!NCF_REGEX.test(value.ncf.toUpperCase()) && !E_NCF_REGEX.test(value.ncf.toUpperCase())
         ? 'NCF inválido (B0100000001 o E310000000001)' : '')
     : '';
-  const rncError = value.supplierRnc
+  const rncFormatError = value.supplierRnc
     ? (!RNC_REGEX.test(value.supplierRnc) ? 'RNC inválido (9 u 11 dígitos)' : '')
     : '';
 
@@ -76,17 +79,50 @@ export function FiscalVoucherForm({ value, onChange, defaultRnc, defaultName, ai
               <label className="block text-xs font-semibold text-gray-600 mb-1">
                 RNC del suplidor <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={value.supplierRnc}
-                onChange={(e) => set({ supplierRnc: e.target.value })}
-                placeholder="101000000"
-                maxLength={11}
-                className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 ${
-                  aiFields?.has('supplierRnc') ? 'ring-2 ring-violet-400 border-violet-300' : 'border-gray-300'
-                }`}
-              />
-              {rncError && <p className="text-xs text-red-600 mt-0.5">{rncError}</p>}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={value.supplierRnc}
+                  onChange={(e) => set({ supplierRnc: e.target.value })}
+                  placeholder="101000000"
+                  maxLength={11}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 pr-8 ${
+                    rncValidation.status === 'valid'         ? 'border-emerald-400' :
+                    rncValidation.status === 'not_found'     ? 'border-red-400' :
+                    aiFields?.has('supplierRnc')             ? 'ring-2 ring-violet-400 border-violet-300' :
+                    'border-gray-300'
+                  }`}
+                />
+                {rncValidation.status === 'validating' && (
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+                )}
+              </div>
+              {rncFormatError && <p className="text-xs text-red-600 mt-0.5">{rncFormatError}</p>}
+              {!rncFormatError && rncValidation.status === 'valid' && (
+                <div className="mt-0.5 space-y-0.5">
+                  <p className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
+                    <span>✓</span> {rncValidation.name}
+                    {rncValidation.dgiiStatus && rncValidation.dgiiStatus !== 'NORMAL' && (
+                      <span className="ml-1 text-amber-600">({rncValidation.dgiiStatus})</span>
+                    )}
+                  </p>
+                  {!value.supplierName && (
+                    <button
+                      type="button"
+                      onClick={() => set({ supplierName: rncValidation.name })}
+                      className="text-xs font-bold text-gray-800 underline hover:no-underline"
+                    >
+                      Auto-completar nombre
+                    </button>
+                  )}
+                </div>
+              )}
+              {!rncFormatError && rncValidation.status === 'not_found' && (
+                <p className="text-xs text-red-600 mt-0.5">RNC no encontrado en DGII</p>
+              )}
+              {!rncFormatError && rncValidation.status === 'unreachable' && (
+                <p className="text-xs text-amber-600 mt-0.5">DGII no disponible</p>
+              )}
             </div>
 
             <div>

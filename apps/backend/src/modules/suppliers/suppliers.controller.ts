@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as service from './suppliers.service';
+import { lookupRNC } from '../../services/dgii.service';
+import { validateRNC } from '../../utils/fiscal.utils';
 import { createBankAccountSchema, updateBankAccountSchema } from './suppliers.schema';
 import type { CreateSupplierInput, UpdateSupplierInput } from './suppliers.schema';
 
@@ -35,6 +37,17 @@ export async function update(req: Request, res: Response, next: NextFunction) {
   try {
     const data = await service.updateSupplier(req.params.id, req.body as UpdateSupplierInput);
     res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function validateRnc(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { rnc } = req.params;
+    if (!validateRNC(rnc)) {
+      return res.status(400).json({ success: false, error: 'Formato de RNC inválido (9 u 11 dígitos)' });
+    }
+    const result = await lookupRNC(rnc);
+    res.json({ success: true, data: result });
   } catch (err) { next(err); }
 }
 
