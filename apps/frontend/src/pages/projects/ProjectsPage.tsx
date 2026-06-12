@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { FolderOpen, Plus, Search, ArrowRight } from 'lucide-react';
 import { projectsApi } from '../../api';
 import { useRole } from '../../hooks/useRole';
+import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
+import { SkeletonBlock }        from '../../components/ui/Skeleton';
 
 const STATUS_BADGE: Record<string, string> = {
   ACTIVE:    'bg-green-100 text-green-800 text-xs px-2 py-0.5',
@@ -53,10 +55,13 @@ export default function ProjectsPage() {
             Proyectos
           </h1>
           <p
-            className="text-sm mt-1"
+            className="text-sm mt-1 h-5 flex items-center"
             style={{ fontFamily: "'Space Mono', monospace", color: '#F5C218' }}
           >
-            {data?.pagination?.total ?? 0} proyectos registrados
+            {isLoading
+              ? <SkeletonBlock className="h-4 w-36 bg-gray-600" />
+              : `${data?.pagination?.total ?? 0} proyectos registrados`
+            }
           </p>
         </div>
         {canCreateProject && (
@@ -98,12 +103,7 @@ export default function ProjectsPage() {
 
       {/* Lista */}
       {isLoading ? (
-        <div
-          className="text-center py-12 text-gray-400"
-          style={{ fontFamily: "'DM Sans', sans-serif" }}
-        >
-          Cargando proyectos...
-        </div>
+        <ProjectListSkeleton />
       ) : projects.length === 0 ? (
         <div className="bg-white border border-gray-200 p-12 text-center">
           <div
