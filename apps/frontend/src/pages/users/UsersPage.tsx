@@ -6,6 +6,7 @@ import {
   ShieldCheck, Copy, Clock, Mail, Trash2, MessageCircle,
 } from 'lucide-react';
 import { usersApi } from '../../api';
+import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 import api from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import { useRole } from '../../hooks/useRole';
@@ -261,7 +262,7 @@ export default function UsersPage() {
 
       {/* Users list */}
       {isLoading ? (
-        <div className="text-center py-12 font-['DM_Sans'] text-gray-400">Cargando usuarios...</div>
+        <ProjectListSkeleton />
       ) : (
         <div className="border border-gray-200 divide-y divide-gray-100">
           {(users ?? []).map((u: any) => (
