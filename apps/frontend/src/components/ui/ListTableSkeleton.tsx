@@ -24,7 +24,7 @@ export function ListTableSkeleton({ cols, rows = 8, colWidths }: Props) {
           {Array.from({ length: rows }).map((_, r) => (
             <tr key={r}>
               {Array.from({ length: cols }).map((_, c) => (
-                <td key={c} className="px-4 py-3">
+                <td key={`${r}-${c}`} className="px-4 py-3">
                   <SkeletonBlock
                     className={`h-4 ${c === 0 ? 'w-20' : c === cols - 1 ? 'w-16 ml-auto' : 'w-full'}`}
                   />
