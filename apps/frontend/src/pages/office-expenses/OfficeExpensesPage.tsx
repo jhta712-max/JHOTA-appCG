@@ -5,6 +5,7 @@ import {
   Sparkles, AlertCircle, CreditCard, Camera, Loader2, Building2,
   ArrowUpDown, Filter,
 } from 'lucide-react';
+import FormModal from '../../components/ui/FormModal';
 import {
   officeExpensesApi, cardsApi,
   OFFICE_EXPENSE_CATEGORY_LABELS,
@@ -426,17 +427,10 @@ export default function OfficeExpensesPage() {
 
       {/* ── FORM MODAL ─────────────────────────────────── */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="bg-[#1C1C1C] flex items-center justify-between px-6 py-4">
-              <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">
-                {editingId ? 'Editar Gasto' : 'Nuevo Gasto de Oficina'}
-              </h2>
-              <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-gray-400 hover:text-white transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
+        <FormModal
+          title={editingId ? 'Editar Gasto' : 'Nuevo Gasto de Oficina'}
+          onClose={() => { setShowForm(false); setEditingId(null); }}
+        >
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
 
               {/* OCR button */}
@@ -582,8 +576,7 @@ export default function OfficeExpensesPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* ── DETAIL MODAL ──────────────────────────────── */}
