@@ -8,7 +8,7 @@ import {
   TrendingUp, ArrowLeft,
 } from 'lucide-react';
 import { projectsApi, categoriesApi } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import api from '../../api/client';
 
 // ─── Helper de descarga ───────────────────────────────────────────────────────
@@ -69,8 +69,7 @@ function DownloadButton({
 
 export default function ExportPage() {
   const navigate   = useNavigate();
-  const user       = useAuthStore((s) => s.user);
-  const canAccess  = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { isSupervisor: canAccess } = useRole();
 
   // Filtros
   const today    = new Date().toISOString().split('T')[0];
@@ -83,6 +82,11 @@ export default function ExportPage() {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [status,        setStatus]        = useState('ACTIVE');
   const [showAdvanced,  setShowAdvanced]  = useState(false);
+
+  // Período del formato 606 (por defecto: mes anterior, que es el que se reporta a la DGII)
+  const prevMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1);
+  const [p606Year,  setP606Year]  = useState(prevMonth.getFullYear());
+  const [p606Month, setP606Month] = useState(prevMonth.getMonth() + 1);
 
   const { data: projects }   = useQuery({
     queryKey: ['projects', 'all'],
@@ -390,6 +394,43 @@ export default function ExportPage() {
                   const q = qs();
                   return downloadFile(`/fiscal.xlsx${q ? '?' + q : ''}`, `comprobantes-ncf-${today}.xlsx`);
                 }}
+              />
+            </div>
+
+            {/* Formato 606 DGII */}
+            <div className="bg-white border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
+                  <FileSpreadsheet className="w-4 h-4 text-[#F5C218]" />
+                </div>
+                <div>
+                  <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
+                    Formato 606 (DGII)
+                  </h3>
+                  <p className="font-['DM_Sans'] text-xs text-gray-500">Compras con NCF del período fiscal</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <select
+                  className="flex-1 border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  value={p606Month} onChange={(e) => setP606Month(Number(e.target.value))}>
+                  {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+                    .map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
+                </select>
+                <select
+                  className="w-24 border border-gray-200 px-2 py-1.5 text-xs font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  value={p606Year} onChange={(e) => setP606Year(Number(e.target.value))}>
+                  {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
+                    .map((y) => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+              <DownloadButton
+                label="Excel 606"
+                icon={<FileSpreadsheet className="w-3.5 h-3.5" />}
+                onClick={() => downloadFile(
+                  `/606.xlsx?year=${p606Year}&month=${p606Month}`,
+                  `606-${p606Year}${String(p606Month).padStart(2, '0')}.xlsx`,
+                )}
               />
             </div>
 

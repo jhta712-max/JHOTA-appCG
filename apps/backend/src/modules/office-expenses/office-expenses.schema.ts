@@ -5,6 +5,7 @@ export const OFFICE_EXPENSE_CATEGORIES = [
   'CONSUMABLES',
   'OFFICE_SERVICES',
   'BIDDING',
+  'OFFICE_ASSETS',
   'OTHER',
 ] as const;
 
@@ -13,6 +14,7 @@ export const OFFICE_EXPENSE_CATEGORY_LABELS: Record<string, string> = {
   CONSUMABLES:       'Material gastable',
   OFFICE_SERVICES:   'Servicios de oficina',
   BIDDING:           'Licitacion',
+  OFFICE_ASSETS:     'Activos de oficina',
   OTHER:             'Otros gastos de oficina',
 };
 
@@ -22,10 +24,11 @@ export const createOfficeExpenseSchema = z.object({
   category:      z.enum(OFFICE_EXPENSE_CATEGORIES),
   description:   z.string().min(3).max(500),
   amount:        z.coerce.number().positive(),
+  itbisAmount:   z.coerce.number().min(0).default(0),
   expenseDate:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (YYYY-MM-DD)'),
   paymentMethod: z.enum(PAYMENT_METHODS),
   companyCardId: z.coerce.string().optional().nullable(),
-  supplierId:    z.string().uuid().optional().nullable(),
+  supplierName:  z.string().max(200).optional().nullable(),
   hasFiscalDoc:  z.boolean().default(false),
   fiscalDocNum:  z.string().max(50).optional().nullable(),
   notes:         z.string().max(1000).optional().nullable(),

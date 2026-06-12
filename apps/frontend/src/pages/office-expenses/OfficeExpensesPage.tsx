@@ -5,8 +5,9 @@ import {
   Sparkles, AlertCircle, CreditCard, Camera, Loader2, Building2,
   ArrowUpDown, Filter,
 } from 'lucide-react';
+import FormModal from '../../components/ui/FormModal';
 import {
-  officeExpensesApi, cardsApi, suppliersApi,
+  officeExpensesApi, cardsApi,
   OFFICE_EXPENSE_CATEGORY_LABELS,
   type OfficeExpense, type OfficeExpenseCategory,
 } from '../../api';
@@ -32,6 +33,7 @@ const CATEGORY_COLORS: Record<OfficeExpenseCategory, string> = {
   CONSUMABLES:       'bg-amber-100 text-amber-700',
   OFFICE_SERVICES:   'bg-purple-100 text-purple-700',
   BIDDING:           'bg-orange-100 text-orange-700',
+  OFFICE_ASSETS:     'bg-emerald-100 text-emerald-700',
   OTHER:             'bg-gray-100 text-gray-700',
 };
 
@@ -40,6 +42,7 @@ const CATEGORY_DOT: Record<OfficeExpenseCategory, string> = {
   CONSUMABLES:       'bg-amber-500',
   OFFICE_SERVICES:   'bg-purple-500',
   BIDDING:           'bg-orange-500',
+  OFFICE_ASSETS:     'bg-emerald-500',
   OTHER:             'bg-gray-400',
 };
 
@@ -47,10 +50,11 @@ const emptyForm = () => ({
   category:      'CONSUMABLES' as OfficeExpenseCategory,
   description:   '',
   amount:        '',
+  itbisAmount:   '',
   expenseDate:   new Date().toISOString().slice(0, 10),
   paymentMethod: 'CASH',
   companyCardId: '',
-  supplierId:    '',
+  supplierName:  '',
   hasFiscalDoc:  false,
   fiscalDocNum:  '',
   notes:         '',
@@ -106,15 +110,7 @@ export default function OfficeExpensesPage() {
     select:   (r) => r.data.data?.filter((c: any) => c.isActive) ?? [],
   });
 
-  const { data: suppliersData } = useQuery({
-    queryKey: ['suppliers-active'],
-    queryFn:  () => suppliersApi.list({ onlyActive: true }),
-    select:   (r) => r.data.data ?? [],
-    enabled:  showForm,
-  });
-
-  const expenses  = listData?.data ?? [];
-  const suppliers = suppliersData ?? [];
+  const expenses = listData?.data ?? [];
 
   function invalidate() {
     qc.invalidateQueries({ queryKey: ['office-expenses'] });
@@ -125,9 +121,9 @@ export default function OfficeExpensesPage() {
 
   const createMut = useMutation({
     mutationFn: () => officeExpensesApi.create({
-      ...form, amount: Number(form.amount),
+      ...form, amount: Number(form.amount), itbisAmount: Number(form.itbisAmount) || 0,
       companyCardId: form.companyCardId || null,
-      supplierId:    form.supplierId    || null,
+      supplierName:  form.supplierName  || null,
       fiscalDocNum:  form.fiscalDocNum  || null,
       notes:         form.notes         || null,
     }),
@@ -137,9 +133,9 @@ export default function OfficeExpensesPage() {
 
   const updateMut = useMutation({
     mutationFn: () => officeExpensesApi.update(editingId!, {
-      ...form, amount: Number(form.amount),
+      ...form, amount: Number(form.amount), itbisAmount: Number(form.itbisAmount) || 0,
       companyCardId: form.companyCardId || null,
-      supplierId:    form.supplierId    || null,
+      supplierName:  form.supplierName  || null,
       fiscalDocNum:  form.fiscalDocNum  || null,
       notes:         form.notes         || null,
     }),
@@ -160,8 +156,9 @@ export default function OfficeExpensesPage() {
     setEditingId(exp.id);
     setForm({
       category: exp.category, description: exp.description, amount: String(exp.amount),
+      itbisAmount: String(exp.itbisAmount ?? '0'),
       expenseDate: exp.expenseDate.slice(0, 10), paymentMethod: exp.paymentMethod,
-      companyCardId: exp.companyCardId ?? '', supplierId: exp.supplierId ?? '',
+      companyCardId: exp.companyCardId ?? '', supplierName: exp.supplierName ?? '',
       hasFiscalDoc: exp.hasFiscalDoc, fiscalDocNum: exp.fiscalDocNum ?? '', notes: exp.notes ?? '',
     });
     setActionError(''); resetOcr(); setOcrValidated(false); setShowForm(true); setViewingExp(null);
@@ -180,19 +177,14 @@ export default function OfficeExpensesPage() {
     if (!data) return;
     setForm((f) => ({
       ...f,
-      ...(data.amount      && { amount:      String(data.amount) }),
+      ...(data.amount      && { amount:       String(data.amount) }),
+      ...(data.itbisAmount !== undefined && data.itbisAmount !== null && { itbisAmount: String(data.itbisAmount) }),
       ...(data.date        && { expenseDate:  data.date }),
       ...(data.description && { description:  data.description }),
       ...(data.ncf         && { hasFiscalDoc: true, fiscalDocNum: data.ncf }),
       ...((!data.ncf && (data.supplierRnc || data.supplierName)) && { hasFiscalDoc: true }),
+      ...(data.supplierName && { supplierName: data.supplierName }),
     }));
-    if (data.supplierName && suppliers.length > 0) {
-      const match = suppliers.find((s: any) =>
-        s.name.toLowerCase().includes(data.supplierName!.toLowerCase()) ||
-        data.supplierName!.toLowerCase().includes(s.name.toLowerCase())
-      );
-      if (match) setForm((f) => ({ ...f, supplierId: match.id }));
-    }
   }
 
   const isSubmitting = createMut.isPending || updateMut.isPending;
@@ -415,9 +407,9 @@ export default function OfficeExpensesPage() {
                     <p className="text-sm text-gray-500 mt-0.5 font-['Space_Mono'] text-xs">
                       {fmtDate(exp.expenseDate)} · {PAYMENT_METHODS[exp.paymentMethod] ?? exp.paymentMethod}
                       {exp.hasFiscalDoc && <span className="ml-2 text-green-600 font-bold">· FACTURA</span>}
-                      {exp.supplier && (
+                      {exp.supplierName && (
                         <span className="ml-2 text-blue-600">
-                          · {exp.supplier.name}
+                          · {exp.supplierName}
                         </span>
                       )}
                     </p>
@@ -435,17 +427,10 @@ export default function OfficeExpensesPage() {
 
       {/* ── FORM MODAL ─────────────────────────────────── */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="bg-[#1C1C1C] flex items-center justify-between px-6 py-4">
-              <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">
-                {editingId ? 'Editar Gasto' : 'Nuevo Gasto de Oficina'}
-              </h2>
-              <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-gray-400 hover:text-white transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
+        <FormModal
+          title={editingId ? 'Editar Gasto' : 'Nuevo Gasto de Oficina'}
+          onClose={() => { setShowForm(false); setEditingId(null); }}
+        >
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
 
               {/* OCR button */}
@@ -494,19 +479,23 @@ export default function OfficeExpensesPage() {
                     placeholder="0.00" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} required />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha *</label>
-                  <input type="date" className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
-                    value={form.expenseDate} onChange={(e) => setForm((f) => ({ ...f, expenseDate: e.target.value }))} required />
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">ITBIS (DOP)</label>
+                  <input type="number" step="0.01" min="0" className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                    placeholder="0.00" value={form.itbisAmount} onChange={(e) => setForm((f) => ({ ...f, itbisAmount: e.target.value }))} />
                 </div>
               </div>
 
               <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha *</label>
+                <input type="date" className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  value={form.expenseDate} onChange={(e) => setForm((f) => ({ ...f, expenseDate: e.target.value }))} required />
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Suplidor (opcional)</label>
-                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
-                  value={form.supplierId} onChange={(e) => setForm((f) => ({ ...f, supplierId: e.target.value }))}>
-                  <option value="">Sin suplidor</option>
-                  {suppliers.map((s: any) => <option key={s.id} value={s.id}>{s.name}{s.rnc ? ` — RNC ${s.rnc}` : ''}</option>)}
-                </select>
+                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  placeholder="Nombre del suplidor o comercio"
+                  value={form.supplierName} onChange={(e) => setForm((f) => ({ ...f, supplierName: e.target.value }))} />
               </div>
 
               <div>
@@ -587,8 +576,7 @@ export default function OfficeExpensesPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* ── DETAIL MODAL ──────────────────────────────── */}
@@ -612,7 +600,12 @@ export default function OfficeExpensesPage() {
                   </span>
                   <p className="font-bold text-[#1C1C1C] mt-2 font-['Barlow_Condensed'] text-xl uppercase tracking-wide">{viewingExp.description}</p>
                 </div>
-                <p className="text-2xl font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(viewingExp.amount)}</p>
+                <div className="text-right">
+                  <p className="text-2xl font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(viewingExp.amount)}</p>
+                  {Number(viewingExp.itbisAmount) > 0 && (
+                    <p className="text-xs text-gray-500 font-['Space_Mono'] mt-0.5">ITBIS: {fmt(viewingExp.itbisAmount)}</p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -630,12 +623,12 @@ export default function OfficeExpensesPage() {
                     <p className="font-medium font-['Space_Mono'] text-xs">{viewingExp.companyCard.holderName} ···{viewingExp.companyCard.lastFour}</p>
                   </div>
                 )}
-                {viewingExp.supplier && (
+                {viewingExp.supplierName && (
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-0.5 font-['Space_Mono']">Suplidor</p>
                     <p className="font-medium flex items-center gap-1">
                       <Building2 className="w-3.5 h-3.5 text-gray-400" />
-                      {viewingExp.supplier.name}
+                      {viewingExp.supplierName}
                     </p>
                   </div>
                 )}

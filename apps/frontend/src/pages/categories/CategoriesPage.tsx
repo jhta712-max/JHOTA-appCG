@@ -5,7 +5,7 @@ import {
   Tag, Plus, Edit, X, CheckCircle, AlertCircle, Lock,
 } from 'lucide-react';
 import { categoriesApi } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 
 type CatForm = { name: string; description?: string; icon?: string };
 
@@ -13,8 +13,7 @@ const ICON_OPTIONS = ['🏗️','🔧','⚡','💧','🪟','🛗','🛡️','�
 
 export default function CategoriesPage() {
   const qc   = useQueryClient();
-  const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role?.name === 'admin';
+  const { isAdmin } = useRole();
 
   const [modal,    setModal]    = useState<'create' | 'edit' | null>(null);
   const [editing,  setEditing]  = useState<any>(null);

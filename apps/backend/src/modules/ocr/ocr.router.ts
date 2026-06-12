@@ -23,8 +23,9 @@ const upload = multer({
 });
 
 // ── POST /api/v1/ocr/analyze ───────────────────────────────────
-// Recibe imagen, crea un OcrJob y retorna 202 inmediatamente.
-// El análisis con IA corre en background — poll GET /jobs/:jobId.
+// Procesa la imagen sincrónicamente con IA y guarda el resultado en OcrJob.
+// Retorna 200 con jobId + resultado completo. El endpoint GET /jobs/:jobId
+// sigue disponible para compatibilidad con el hook de polling del frontend.
 router.post(
   '/analyze',
   authenticate,
@@ -35,62 +36,51 @@ router.post(
         throw new AppError(400, 'Se requiere una imagen de la factura', 'IMAGE_REQUIRED');
       }
 
-      const userId = req.user!.userId;
-
-      // Crear registro del job con estado "processing"
-      const job = await prisma.ocrJob.create({
-        data: {
-          userId,
-          status: 'processing',
-        },
-      });
-
-      // Capturar buffer y mimeType antes de que la respuesta cierre el ciclo
-      const fileBuffer  = req.file.buffer;
-      const mimeType    = req.file.mimetype;
+      const userId       = req.user!.userId;
+      const fileBuffer   = req.file.buffer;
+      const mimeType     = req.file.mimetype;
       const originalName = req.file.originalname;
       const fileSize     = req.file.size;
 
-      // Responder de inmediato — HTTP 202 Accepted
+      // Crear registro del job
+      const job = await prisma.ocrJob.create({
+        data: { userId, status: 'processing' },
+      });
+
+      const startMs = Date.now();
+      console.log(`[OCR] job ${job.id} started — mimeType=${mimeType} size=${fileBuffer.length}`);
+
+      let result: Awaited<ReturnType<typeof analyzeInvoice>>;
+      try {
+        result = await analyzeInvoice(fileBuffer, mimeType);
+        console.log(`[OCR] job ${job.id} completed in ${Date.now() - startMs}ms`);
+      } catch (aiErr) {
+        const msg = aiErr instanceof Error ? aiErr.message : String(aiErr);
+        console.error(`[OCR] job ${job.id} failed after ${Date.now() - startMs}ms — ${msg}`);
+        await prisma.ocrJob.update({
+          where: { id: job.id },
+          data:  { status: 'failed', error: msg, completedAt: new Date() },
+        }).catch(() => {});
+        throw new AppError(502, `Error al analizar la imagen: ${msg}`, 'OCR_AI_ERROR');
+      }
+
+      await prisma.ocrJob.update({
+        where: { id: job.id },
+        data:  { status: 'completed', result: result as any, completedAt: new Date() },
+      });
+
+      // Devolver resultado completo en la respuesta — el hook no necesita hacer polling
       res.status(202).json({
         success: true,
         jobId:   job.id,
-        status:  'processing',
+        status:  'completed',
+        result,
         meta: {
           fileName:    originalName,
           fileSize,
           submittedAt: new Date().toISOString(),
           submittedBy: userId,
         },
-      });
-
-      // ── Procesamiento asíncrono en background ──────────────────
-      // setImmediate garantiza que la respuesta ya fue enviada antes de
-      // comenzar la tarea costosa.
-      setImmediate(async () => {
-        try {
-          const result = await analyzeInvoice(fileBuffer, mimeType);
-
-          await prisma.ocrJob.update({
-            where: { id: job.id },
-            data: {
-              status:      'completed',
-              result:      result as any,
-              completedAt: new Date(),
-            },
-          });
-        } catch (err) {
-          await prisma.ocrJob.update({
-            where: { id: job.id },
-            data: {
-              status:      'failed',
-              error:       err instanceof Error ? err.message : String(err),
-              completedAt: new Date(),
-            },
-          }).catch(() => {
-            // No propagar errores de DB dentro del background task
-          });
-        }
       });
 
     } catch (err) {

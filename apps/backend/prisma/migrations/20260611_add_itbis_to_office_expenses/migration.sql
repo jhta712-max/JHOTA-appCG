@@ -1,0 +1,1 @@
+ALTER TABLE "office_expenses" ADD COLUMN IF NOT EXISTS "itbis_amount" DECIMAL(12, 2) NOT NULL DEFAULT 0;

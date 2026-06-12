@@ -953,3 +953,116 @@ export async function generateProjectPDF(
 
   doc.end();
 }
+
+// ─── REPORTE 606: Compras de bienes y servicios (DGII) ───────────────────────
+// Formato mensual de compras con comprobante fiscal para el envío 606.
+// Incluye solo gastos de proyecto con fiscalVoucher (los gastos de oficina
+// no capturan RNC estructurado y deben agregarse manualmente si aplican).
+
+export async function generate606Excel(year: number, month: number, res: Response) {
+  const start = new Date(Date.UTC(year, month - 1, 1));
+  const end   = new Date(Date.UTC(year, month, 0, 23, 59, 59));
+
+  const expenses = await prisma.expense.findMany({
+    where: {
+      status: 'ACTIVE',
+      hasFiscalDoc: true,
+      fiscalVoucher: { isNot: null },
+      expenseDate: { gte: start, lte: end },
+    },
+    include: { fiscalVoucher: true, project: { select: { code: true } } },
+    orderBy: { expenseDate: 'asc' },
+  });
+
+  const periodo = `${year}${String(month).padStart(2, '0')}`;
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet(`606 ${periodo}`, {
+    pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+  });
+
+  addLogoRow(ws, `Formato 606 — Compras (${periodo})`,
+    `Período fiscal: ${periodo}  |  ${expenses.length} comprobantes  |  Generado: ${fmtDate(new Date().toISOString())}`);
+
+  const headers = [
+    { header: 'RNC/Cédula',            key: 'rnc',      width: 14 },
+    { header: 'Tipo ID',               key: 'tipoId',   width: 8 },
+    { header: 'Tipo Bienes/Servicios', key: 'tipoBys',  width: 12 },
+    { header: 'NCF',                   key: 'ncf',      width: 16 },
+    { header: 'Fecha Comprobante',     key: 'fecha',    width: 14 },
+    { header: 'Fecha Pago',            key: 'fechaPago', width: 12 },
+    { header: 'Monto Facturado',       key: 'monto',    width: 16 },
+    { header: 'ITBIS Facturado',       key: 'itbis',    width: 16 },
+    { header: 'Suplidor (referencia)', key: 'supplier', width: 28 },
+    { header: 'Proyecto (referencia)', key: 'project',  width: 12 },
+  ];
+
+  ws.columns = headers.map(h => ({ key: h.key, width: h.width }));
+  const hRow = ws.getRow(6);
+  headers.forEach((h, i) => {
+    const cell = hRow.getCell(i + 1);
+    cell.value = h.header;
+    Object.assign(cell, headerStyle(wb));
+  });
+  hRow.height = 22;
+
+  let totalMonto = 0;
+  let totalITBIS = 0;
+
+  expenses.forEach((e, idx) => {
+    const fv  = e.fiscalVoucher!;
+    const rnc = (fv.supplierRnc ?? '').replace(/\D/g, '');
+    // Tipo ID DGII: 1 = RNC (9 dígitos), 2 = Cédula (11 dígitos)
+    const tipoId = rnc.length === 11 ? '2' : '1';
+    const d = new Date(e.expenseDate);
+    const fechaComprobante = `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}`;
+
+    const row = ws.addRow({
+      rnc,
+      tipoId,
+      tipoBys:  '09', // 09 = Compras y gastos que forman parte del costo de venta (ajustar según caso)
+      ncf:      fv.ncf,
+      fecha:    fechaComprobante,
+      fechaPago: fechaComprobante,
+      monto:    Number(e.amount),
+      itbis:    Number(fv.itbisAmount ?? 0),
+      supplier: fv.supplierName ?? '',
+      project:  e.project.code,
+    });
+
+    totalMonto += Number(e.amount);
+    totalITBIS += Number(fv.itbisAmount ?? 0);
+
+    const fill = idx % 2 === 0
+      ? { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF9FAFB' } }
+      : { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFFFFF' } };
+    row.eachCell(cell => { cell.fill = fill; cell.alignment = { vertical: 'middle' }; });
+    row.getCell('monto').numFmt = '#,##0.00';
+    row.getCell('itbis').numFmt = '#,##0.00';
+    row.getCell('monto').alignment = { horizontal: 'right' };
+    row.getCell('itbis').alignment = { horizontal: 'right' };
+    // RNC sin RNC registrado → resaltar para corrección manual
+    if (!rnc) {
+      row.getCell('rnc').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+    }
+  });
+
+  const totalRow = ws.addRow({
+    ncf:   `TOTAL (${expenses.length})`,
+    monto: totalMonto,
+    itbis: totalITBIS,
+  });
+  totalRow.getCell('ncf').font   = { bold: true };
+  totalRow.getCell('monto').numFmt = '#,##0.00';
+  totalRow.getCell('itbis').numFmt = '#,##0.00';
+  totalRow.getCell('monto').font = { bold: true };
+  totalRow.getCell('itbis').font = { bold: true, color: { argb: 'FF1D4ED8' } };
+  totalRow.getCell('monto').alignment = { horizontal: 'right' };
+  totalRow.getCell('itbis').alignment = { horizontal: 'right' };
+  totalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="606-${periodo}.xlsx"`);
+  await wb.xlsx.write(res);
+  res.end();
+}

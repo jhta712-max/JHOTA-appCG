@@ -700,7 +700,6 @@ model Supplier {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   createdBy          User                  @relation("SupplierCreatedBy", fields: [createdById], references: [id])
-  officeExpenses     OfficeExpense[]        @relation("OfficeExpenseSupplier")
   contratosAjustados ContratoAjustado[]     @relation("SupplierContratosAjustados")
   paymentOrders      PaymentOrder[]
   bankAccounts       SupplierBankAccount[]
@@ -790,10 +789,11 @@ model OfficeExpense {
   category      OfficeExpenseCategory
   description   String                @db.VarChar(500)
   amount        Decimal               @db.Decimal(12, 2)
+  itbisAmount   Decimal               @default(0) @map("itbis_amount") @db.Decimal(12, 2)
   expenseDate   DateTime              @map("expense_date") @db.Date
   paymentMethod PaymentMethod         @map("payment_method")
   companyCardId Int?                  @map("company_card_id")
-  supplierId    String?               @map("supplier_id") @db.Uuid
+  supplierName  String?               @map("supplier_name") @db.VarChar(200)
   hasFiscalDoc  Boolean               @default(false) @map("has_fiscal_doc")
   fiscalDocNum  String?               @map("fiscal_doc_num") @db.VarChar(50)
   notes         String?               @db.Text
@@ -805,11 +805,9 @@ model OfficeExpense {
 
   createdBy   User         @relation("OfficeExpenseCreatedBy", fields: [createdById], references: [id])
   companyCard CompanyCard? @relation(fields: [companyCardId], references: [id])
-  supplier    Supplier?    @relation("OfficeExpenseSupplier", fields: [supplierId], references: [id])
 
   @@index([category])
   @@index([expenseDate])
-  @@index([supplierId])
   @@index([createdAt])
   @@map("office_expenses")
 }
@@ -819,6 +817,7 @@ enum OfficeExpenseCategory {
   CONSUMABLES
   OFFICE_SERVICES
   BIDDING
+  OFFICE_ASSETS
   OTHER
 
   @@map("office_expense_category")

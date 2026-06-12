@@ -38,30 +38,14 @@ export async function sendTestWhatsApp(): Promise<void> {
     throw new Error('UltraMsg no está configurado (faltan ULTRAMSG_INSTANCE_ID o ULTRAMSG_TOKEN)');
   }
 
-  const [users, contacts] = await Promise.all([
-    prisma.user.findMany({
-      where: { isActive: true, whatsappOptIn: true, phone: { not: null } },
-      select: { name: true, phone: true },
-    }),
-    prisma.notificationContact.findMany({
-      where: { isActive: true, phone: { not: null } },
-      select: { name: true, phone: true },
-    }),
-  ]);
+  // El test se envía a todos los destinatarios activos sin filtrar por tipo
+  // (es un mensaje de prueba de conectividad, no una alerta de negocio)
+  const unique = await getWhatsAppRecipients();
 
-  const recipients: string[] = [];
-  for (const u of users)    if (u.phone) recipients.push(normalizePhone(u.phone));
-  for (const c of contacts) if (c.phone) recipients.push(normalizePhone(c.phone));
-
-  if (recipients.length === 0 && env.NOTIFY_WHATSAPP_TO) {
-    env.NOTIFY_WHATSAPP_TO.split(',').map((s) => s.trim()).filter(Boolean).forEach((n) => recipients.push(n));
-  }
-
-  if (recipients.length === 0) {
+  if (unique.length === 0) {
     throw new Error('No hay destinatarios WhatsApp configurados. Agrega contactos o activa el opt-in en usuarios.');
   }
 
-  const unique = [...new Set(recipients)];
   for (const to of unique) {
     const resp = await fetch(
       `https://api.ultramsg.com/${env.ULTRAMSG_INSTANCE_ID}/messages/chat`,

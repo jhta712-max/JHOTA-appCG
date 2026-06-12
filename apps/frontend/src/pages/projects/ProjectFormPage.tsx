@@ -7,7 +7,7 @@ import {
   ArrowLeft, Save, AlertCircle, Plus, Trash2, Pencil, Check, X, FileText, Users, UserPlus,
 } from 'lucide-react';
 import { projectsApi, usersApi } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import type { Addendum } from '../../types';
 
@@ -123,8 +123,7 @@ export default function ProjectFormPage() {
   const isEdit   = !!id;
   const navigate = useNavigate();
   const qc       = useQueryClient();
-  const user     = useAuthStore((s) => s.user);
-  const canEdit  = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { isSupervisor: canEdit } = useRole();
 
   const { data: existing } = useQuery({
     queryKey: ['project', id],

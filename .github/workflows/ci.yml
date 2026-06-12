@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build backend + frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generar Prisma client
+        run: pnpm --filter backend db:generate
+
+      - name: Tests backend
+        run: pnpm --filter backend test
+
+      - name: Build backend (typecheck)
+        run: pnpm build:backend
+
+      - name: Build frontend
+        run: pnpm build:frontend

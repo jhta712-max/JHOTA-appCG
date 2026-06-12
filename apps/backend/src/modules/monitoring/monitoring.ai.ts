@@ -16,6 +16,11 @@ import prisma from '../../config/database';
 
 const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
+// ── Caché en memoria (5 min) para evitar llamadas repetidas a la API ──
+interface CachedResult { result: AiAnalysisResult; expiresAt: number; }
+let _cache: CachedResult | null = null;
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
 export interface AiAnalysisResult {
   status:          'healthy' | 'warning' | 'critical';
   summary:         string;
@@ -37,9 +42,14 @@ export interface AiRecommendation {
   reason:   string;
 }
 
-export async function runAiAnalysis(): Promise<AiAnalysisResult> {
+export async function runAiAnalysis(forceRefresh = false): Promise<AiAnalysisResult> {
   if (!env.ANTHROPIC_API_KEY) {
     throw new Error('ANTHROPIC_API_KEY no está configurada');
+  }
+
+  // Retornar caché si aún es válido y no se fuerza refresh
+  if (!forceRefresh && _cache && Date.now() < _cache.expiresAt) {
+    return _cache.result;
   }
 
   // ── Recopilar datos del sistema ───────────────────────────────
@@ -81,6 +91,7 @@ Errores totales: ${metrics.errorCount}
 Tasa de error: ${metrics.errorRate.toFixed(2)}%
 Tiempo de respuesta promedio: ${metrics.avgResponseMs.toFixed(0)}ms
 Distribución de códigos: ${JSON.stringify(metrics.statusCodes)}
+NOTA TÉCNICA: Los códigos 3xx en este sistema son casi siempre 304 Not Modified (respuestas cacheadas de imágenes de facturas en /uploads). Esto es comportamiento normal de HTTP caching, NO son redirecciones problemáticas. Solo reportar 3xx como issue si la tasa de error HTTP real (5xx) es elevada.
 
 Top endpoints más usados:
 ${metrics.topEndpoints.slice(0, 5).map(e => `  - ${e.endpoint}: ${e.count} llamadas`).join('\n')}
@@ -141,7 +152,7 @@ Reglas:
 
   // ── Llamar a Claude ───────────────────────────────────────────
   const response = await client.messages.create({
-    model:      'claude-haiku-4-5-20251001',  // Rápido y económico para monitoreo
+    model:      'claude-haiku-4-5',
     max_tokens: 1500,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -166,5 +177,7 @@ Reglas:
     };
   }
 
-  return { ...parsed, analyzedAt: new Date().toISOString() };
+  const finalResult: AiAnalysisResult = { ...parsed, analyzedAt: new Date().toISOString() };
+  _cache = { result: finalResult, expiresAt: Date.now() + CACHE_TTL_MS };
+  return finalResult;
 }
