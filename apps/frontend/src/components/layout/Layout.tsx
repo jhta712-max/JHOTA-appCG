@@ -126,6 +126,46 @@ function RoleViewSwitcher({ compact = false, dropUp = false }: { compact?: boole
   );
 }
 
+function SidebarFooter({
+  userRole,
+  isPreviewing,
+  viewAsRole,
+  userName,
+  onLogout,
+}: {
+  userRole: string;
+  isPreviewing: boolean;
+  viewAsRole: string | null;
+  userName: string | undefined;
+  onLogout: () => void;
+}) {
+  return (
+    <div className="border-t border-white/10 p-3 space-y-2 shrink-0">
+      {userRole === 'admin' && (
+        <div className="px-1">
+          <RoleViewSwitcher dropUp />
+        </div>
+      )}
+      <div className="flex items-center gap-3 px-2 py-2">
+        <div className="w-8 h-8 flex items-center justify-center shrink-0" style={{ background: '#F5C218' }}>
+          <span className="text-[#1C1C1C] text-sm font-bold font-['Barlow_Condensed']">
+            {userName?.charAt(0).toUpperCase()}
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white truncate font-['DM_Sans'] leading-tight">{userName}</p>
+          <p className="text-[10px] text-gray-500 truncate uppercase tracking-wide font-['Barlow_Condensed'] leading-tight">
+            {isPreviewing ? `Admin · ${viewAsRole}` : userRole}
+          </p>
+        </div>
+        <button onClick={onLogout} className="text-gray-600 hover:text-red-400 transition-colors" title="Cerrar sesión">
+          <LogOut className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function NavGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="pt-3">
@@ -314,33 +354,6 @@ export default function Layout() {
     setPopoverOpen((v) => !v);
   }
 
-  // Shared footer — used by both desktop and mobile sidebars
-  const SidebarFooter = () => (
-    <div className="border-t border-white/10 p-3 space-y-2 shrink-0">
-      {userRole === 'admin' && (
-        <div className="px-1">
-          <RoleViewSwitcher dropUp />
-        </div>
-      )}
-      <div className="flex items-center gap-3 px-2 py-2">
-        <div className="w-8 h-8 flex items-center justify-center shrink-0" style={{ background: '#F5C218' }}>
-          <span className="text-[#1C1C1C] text-sm font-bold font-['Barlow_Condensed']">
-            {user?.name?.charAt(0).toUpperCase()}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-white truncate font-['DM_Sans'] leading-tight">{user?.name}</p>
-          <p className="text-[10px] text-gray-500 truncate uppercase tracking-wide font-['Barlow_Condensed'] leading-tight">
-            {isPreviewing ? `Admin · ${viewAsRole}` : userRole}
-          </p>
-        </div>
-        <button onClick={handleLogout} className="text-gray-600 hover:text-red-400 transition-colors" title="Cerrar sesión">
-          <LogOut className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-
   // Desktop sidebar: pinned items only + ··· row
   const DesktopSidebarContent = () => (
     <>
@@ -376,7 +389,13 @@ export default function Layout() {
           </div>
         )}
       </nav>
-      <SidebarFooter />
+      <SidebarFooter
+        userRole={userRole}
+        isPreviewing={isPreviewing}
+        viewAsRole={viewAsRole ?? null}
+        userName={user?.name}
+        onLogout={handleLogout}
+      />
     </>
   );
 
@@ -392,7 +411,13 @@ export default function Layout() {
           </NavGroup>
         ))}
       </nav>
-      <SidebarFooter />
+      <SidebarFooter
+        userRole={userRole}
+        isPreviewing={isPreviewing}
+        viewAsRole={viewAsRole ?? null}
+        userName={user?.name}
+        onLogout={handleLogout}
+      />
     </>
   );
 

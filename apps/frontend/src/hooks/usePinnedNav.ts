@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 const ROLE_DEFAULTS: Record<string, string[]> = {
   admin:      ['/', '/projects', '/expenses', '/payrolls', '/reports'],
@@ -32,6 +32,10 @@ export function usePinnedNav(userId: string, role: string): {
   unpin: (to: string) => void;
 } {
   const [pinnedIds, setPinnedIds] = useState<string[]>(() => load(userId, role));
+
+  useEffect(() => {
+    setPinnedIds(load(userId, role));
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pin = useCallback((to: string) => {
     setPinnedIds((prev) => {
