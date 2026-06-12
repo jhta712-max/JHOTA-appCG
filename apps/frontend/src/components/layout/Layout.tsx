@@ -1,12 +1,14 @@
+// apps/frontend/src/components/layout/Layout.tsx
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Receipt, Users,
-  Tag, LogOut, Menu, X, ChevronRight, BarChart3, Download, Wallet, Activity, FileText, CreditCard, Clock,
-  Eye, ChevronDown, Building2, Bell, FileCheck,
+  Tag, LogOut, Menu, X, BarChart3, Download, Wallet, Activity, FileText, CreditCard, Clock,
+  Eye, ChevronDown, Building2, Bell, FileCheck, MoreHorizontal, Pin,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
+import { usePinnedNav } from '../../hooks/usePinnedNav';
 import clsx from 'clsx';
 import NotificationBell from '../NotificationBell';
 
@@ -82,7 +84,7 @@ function RoleViewSwitcher({ compact = false, dropUp = false }: { compact?: boole
       <button
         onClick={() => setOpen((v) => !v)}
         className={clsx(
-          'flex items-center gap-1.5 border text-xs font-medium transition-colors font-[\'DM_Sans\']',
+          "flex items-center gap-1.5 border text-xs font-medium transition-colors font-['DM_Sans']",
           compact ? 'px-2 py-1.5' : 'px-3 py-2',
           isPreviewing
             ? 'bg-amber-100 border-amber-300 text-amber-800 hover:bg-amber-200'
@@ -108,7 +110,7 @@ function RoleViewSwitcher({ compact = false, dropUp = false }: { compact?: boole
               key={opt.value}
               onClick={() => { setViewAsRole(opt.value || null); setOpen(false); }}
               className={clsx(
-                'w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 font-[\'DM_Sans\']',
+                "w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 font-['DM_Sans']",
                 (viewAsRole ?? '') === opt.value
                   ? 'text-[#F5C218] bg-white/5 font-semibold'
                   : 'text-gray-400 hover:text-white hover:bg-white/5',
@@ -132,22 +134,27 @@ function NavGroup({ label, children }: { label: string; children: React.ReactNod
           {label}
         </p>
       )}
-      <div className="space-y-px">
-        {children}
-      </div>
+      <div className="space-y-px">{children}</div>
     </div>
   );
 }
 
-function NavItemLink({ to, icon: Icon, label, onClick }: { to: string; icon: React.ElementType; label: string; onClick?: () => void }) {
+function NavItemLink({
+  to, icon: Icon, label, onClick, onUnpin,
+}: {
+  to: string;
+  icon: React.ElementType;
+  label: string;
+  onClick?: () => void;
+  onUnpin?: () => void;
+}) {
   return (
     <NavLink
-      key={to}
       to={to}
       end={to === '/'}
       onClick={onClick}
       className={({ isActive }) => clsx(
-        'flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors relative font-[\'DM_Sans\']',
+        "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors relative group font-['DM_Sans']",
         isActive
           ? 'text-[#1C1C1C] font-semibold'
           : 'text-gray-400 hover:text-white hover:bg-white/8',
@@ -156,25 +163,120 @@ function NavItemLink({ to, icon: Icon, label, onClick }: { to: string; icon: Rea
     >
       {({ isActive }) => (
         <>
-          {!isActive && (
-            <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-transparent group-hover:bg-white/20" />
-          )}
           <Icon className="w-4 h-4 shrink-0" />
           <span className="flex-1 leading-none">{label}</span>
+          {onUnpin && (
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUnpin(); }}
+              className={clsx(
+                'opacity-0 group-hover:opacity-100 transition-opacity shrink-0',
+                isActive ? 'text-[#1C1C1C]/40 hover:text-[#1C1C1C]' : 'text-gray-600 hover:text-red-400',
+              )}
+              title="Quitar de favoritos"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </>
       )}
     </NavLink>
   );
 }
 
+function NavPopover({
+  unpinnedGroups,
+  anchorTop,
+  onPin,
+  onClose,
+}: {
+  unpinnedGroups: { key: string; label: string; items: NavItem[] }[];
+  anchorTop: number;
+  onPin: (to: string) => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onMouseDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: 'fixed',
+        left: '244px',
+        top: `${anchorTop}px`,
+        width: '220px',
+        background: '#1C1C1C',
+        border: '1px solid rgba(255,255,255,0.1)',
+        zIndex: 60,
+      }}
+      className="shadow-2xl py-1 max-h-[70vh] overflow-y-auto"
+    >
+      {unpinnedGroups.map((g) => (
+        <div key={g.key}>
+          {g.label && (
+            <p className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600 font-['Barlow_Condensed']">
+              {g.label}
+            </p>
+          )}
+          {g.items.map(({ to, icon: Icon, label }) => (
+            <div key={to} className="flex items-center group/row">
+              <NavLink
+                to={to}
+                end={to === '/'}
+                onClick={onClose}
+                className={({ isActive }) => clsx(
+                  "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors flex-1 font-['DM_Sans']",
+                  isActive ? 'text-[#F5C218]' : 'text-gray-400 hover:text-white hover:bg-white/8',
+                )}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="flex-1 leading-none">{label}</span>
+              </NavLink>
+              <button
+                type="button"
+                onClick={() => onPin(to)}
+                className="pr-3 text-gray-600 hover:text-[#F5C218] transition-colors opacity-0 group-hover/row:opacity-100"
+                title="Fijar en barra principal"
+              >
+                <Pin className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Layout() {
   const { user, viewAsRole, clearAuth, refreshToken } = useAuthStore();
   const navigate = useNavigate();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [anchorTop,   setAnchorTop]   = useState(0);
+  const moreRef = useRef<HTMLDivElement>(null);
 
   const userRole      = user?.role?.name ?? '';
   const effectiveRole = (userRole === 'admin' && viewAsRole) ? viewAsRole : userRole;
   const isPreviewing  = userRole === 'admin' && !!viewAsRole;
+
+  const { pinnedIds, pin, unpin } = usePinnedNav(user?.id ?? '', userRole);
 
   const handleLogout = async () => {
     try { if (refreshToken) await authApi.logout(refreshToken); } catch { /* ignore */ }
@@ -184,7 +286,6 @@ export default function Layout() {
 
   const visibleItems = navItems.filter((i) => !i.roles || i.roles.includes(effectiveRole));
 
-  // Group items preserving order
   const groups: { key: string; label: string; items: NavItem[] }[] = [];
   for (const item of visibleItems) {
     const gKey = item.group ?? 'principal';
@@ -193,9 +294,95 @@ export default function Layout() {
     g.items.push(item);
   }
 
-  const SidebarContent = ({ onNavClick }: { onNavClick?: () => void }) => (
+  const pinnedItems    = visibleItems.filter((i) => pinnedIds.includes(i.to));
+  const unpinnedItems  = visibleItems.filter((i) => !pinnedIds.includes(i.to));
+  const hasUnpinned    = unpinnedItems.length > 0;
+
+  const pinnedGroups = groups
+    .map((g) => ({ ...g, items: g.items.filter((i) => pinnedIds.includes(i.to)) }))
+    .filter((g) => g.items.length > 0);
+
+  const unpinnedGroups = groups
+    .map((g) => ({ ...g, items: g.items.filter((i) => !pinnedIds.includes(i.to)) }))
+    .filter((g) => g.items.length > 0);
+
+  function handleMoreClick() {
+    if (moreRef.current) {
+      const rect = moreRef.current.getBoundingClientRect();
+      setAnchorTop(rect.top);
+    }
+    setPopoverOpen((v) => !v);
+  }
+
+  // Shared footer — used by both desktop and mobile sidebars
+  const SidebarFooter = () => (
+    <div className="border-t border-white/10 p-3 space-y-2 shrink-0">
+      {userRole === 'admin' && (
+        <div className="px-1">
+          <RoleViewSwitcher dropUp />
+        </div>
+      )}
+      <div className="flex items-center gap-3 px-2 py-2">
+        <div className="w-8 h-8 flex items-center justify-center shrink-0" style={{ background: '#F5C218' }}>
+          <span className="text-[#1C1C1C] text-sm font-bold font-['Barlow_Condensed']">
+            {user?.name?.charAt(0).toUpperCase()}
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white truncate font-['DM_Sans'] leading-tight">{user?.name}</p>
+          <p className="text-[10px] text-gray-500 truncate uppercase tracking-wide font-['Barlow_Condensed'] leading-tight">
+            {isPreviewing ? `Admin · ${viewAsRole}` : userRole}
+          </p>
+        </div>
+        <button onClick={handleLogout} className="text-gray-600 hover:text-red-400 transition-colors" title="Cerrar sesión">
+          <LogOut className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
+  // Desktop sidebar: pinned items only + ··· row
+  const DesktopSidebarContent = () => (
     <>
-      {/* Nav */}
+      <nav className="flex-1 px-2 pb-4 overflow-y-auto">
+        {pinnedGroups.map(({ key, label, items }) => (
+          <NavGroup key={key} label={label}>
+            {items.map(({ to, icon, label: itemLabel }) => (
+              <NavItemLink
+                key={to}
+                to={to}
+                icon={icon}
+                label={itemLabel}
+                onUnpin={() => unpin(to)}
+              />
+            ))}
+          </NavGroup>
+        ))}
+        {hasUnpinned && (
+          <div ref={moreRef} className="pt-3 px-2">
+            <button
+              type="button"
+              onClick={handleMoreClick}
+              className={clsx(
+                "w-full flex items-center gap-3 px-1 py-2.5 text-sm font-medium transition-colors font-['DM_Sans']",
+                popoverOpen
+                  ? 'text-[#F5C218]'
+                  : 'text-gray-500 hover:text-gray-300 hover:bg-white/8',
+              )}
+            >
+              <MoreHorizontal className="w-4 h-4 shrink-0" />
+              <span className="flex-1 leading-none">Más</span>
+            </button>
+          </div>
+        )}
+      </nav>
+      <SidebarFooter />
+    </>
+  );
+
+  // Mobile drawer: all items (unchanged behaviour)
+  const MobileSidebarContent = ({ onNavClick }: { onNavClick?: () => void }) => (
+    <>
       <nav className="flex-1 px-2 pb-4 overflow-y-auto">
         {groups.map(({ key, label, items }) => (
           <NavGroup key={key} label={label}>
@@ -205,44 +392,21 @@ export default function Layout() {
           </NavGroup>
         ))}
       </nav>
-
-      {/* Footer */}
-      <div className="border-t border-white/10 p-3 space-y-2 shrink-0">
-        {userRole === 'admin' && (
-          <div className="px-1">
-            <RoleViewSwitcher dropUp />
-          </div>
-        )}
-        <div className="flex items-center gap-3 px-2 py-2">
-          {/* Square avatar — industrial */}
-          <div className="w-8 h-8 flex items-center justify-center shrink-0"
-               style={{ background: '#F5C218' }}>
-            <span className="text-[#1C1C1C] text-sm font-bold font-['Barlow_Condensed']">
-              {user?.name?.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white truncate font-['DM_Sans'] leading-tight">{user?.name}</p>
-            <p className="text-[10px] text-gray-500 truncate uppercase tracking-wide font-['Barlow_Condensed'] leading-tight">
-              {isPreviewing ? `Admin · ${viewAsRole}` : userRole}
-            </p>
-          </div>
-          <button onClick={handleLogout}
-            className="text-gray-600 hover:text-red-400 transition-colors" title="Cerrar sesión">
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      <SidebarFooter />
     </>
   );
+
+  // Suppress unused-variable warning — pinnedItems used for derivation only
+  void pinnedItems;
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
 
-      {/* ── Sidebar desktop ──────────────────────────────── */}
-      <aside className="hidden md:flex flex-col w-60 fixed inset-y-0 left-0 z-30"
-             style={{ background: '#1C1C1C' }}>
-        {/* Logo */}
+      {/* ── Desktop sidebar ──────────────────────────────── */}
+      <aside
+        className="hidden md:flex flex-col w-60 fixed inset-y-0 left-0 z-30"
+        style={{ background: '#1C1C1C' }}
+      >
         <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
           <AppIcon className="w-9 h-10 shrink-0" />
           <div className="min-w-0">
@@ -254,20 +418,35 @@ export default function Layout() {
             </p>
           </div>
         </div>
-
-        <SidebarContent />
+        <DesktopSidebarContent />
       </aside>
 
-      {/* ── Overlay móvil ────────────────────────────────── */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/70 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      {/* Floating popover — rendered outside aside so it overflows correctly */}
+      {popoverOpen && (
+        <NavPopover
+          unpinnedGroups={unpinnedGroups}
+          anchorTop={anchorTop}
+          onPin={(to) => { pin(to); setPopoverOpen(false); }}
+          onClose={() => setPopoverOpen(false)}
+        />
       )}
 
-      {/* ── Sidebar móvil (drawer) ────────────────────────── */}
-      <aside className={clsx(
-        'fixed inset-y-0 left-0 w-72 z-50 flex flex-col transition-transform duration-300 md:hidden',
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-      )} style={{ background: '#1C1C1C' }}>
+      {/* ── Mobile overlay ───────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* ── Mobile drawer ────────────────────────────────── */}
+      <aside
+        className={clsx(
+          'fixed inset-y-0 left-0 w-72 z-50 flex flex-col transition-transform duration-300 md:hidden',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+        style={{ background: '#1C1C1C' }}
+      >
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
             <AppIcon className="w-8 h-9 shrink-0" />
@@ -280,16 +459,17 @@ export default function Layout() {
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        <SidebarContent onNavClick={() => setSidebarOpen(false)} />
+        <MobileSidebarContent onNavClick={() => setSidebarOpen(false)} />
       </aside>
 
-      {/* ── Contenido principal ───────────────────────────── */}
+      {/* ── Main content ─────────────────────────────────── */}
       <div className="flex-1 flex flex-col md:ml-60 min-h-screen min-w-0">
 
-        {/* Header móvil */}
-        <header className="md:hidden sticky top-0 z-20 border-b border-white/10 px-4 py-3 flex items-center gap-3"
-                style={{ background: '#1C1C1C' }}>
+        {/* Mobile header */}
+        <header
+          className="md:hidden sticky top-0 z-20 border-b border-white/10 px-4 py-3 flex items-center gap-3"
+          style={{ background: '#1C1C1C' }}
+        >
           <button onClick={() => setSidebarOpen(true)} className="text-gray-400 hover:text-white p-1">
             <Menu className="w-5 h-5" />
           </button>
@@ -305,10 +485,12 @@ export default function Layout() {
           <NotificationBell />
         </div>
 
-        {/* Banner de vista previa */}
+        {/* Role preview banner */}
         {isPreviewing && (
-          <div className="hidden md:flex items-center justify-between border-b px-6 py-2"
-               style={{ background: '#F5C218' }}>
+          <div
+            className="hidden md:flex items-center justify-between border-b px-6 py-2"
+            style={{ background: '#F5C218' }}
+          >
             <p className="text-xs font-semibold text-[#1C1C1C] flex items-center gap-2 font-['DM_Sans']">
               <Eye className="w-3.5 h-3.5" />
               Viendo interfaz como <strong className="uppercase">{viewAsRole}</strong> — datos reales.
@@ -316,7 +498,7 @@ export default function Layout() {
           </div>
         )}
 
-        {/* Página */}
+        {/* Page content */}
         <main className="flex-1 p-4 md:p-6 max-w-6xl w-full mx-auto">
           <Outlet />
         </main>
