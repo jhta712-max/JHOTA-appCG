@@ -8,7 +8,7 @@ import {
   TrendingUp, ArrowLeft,
 } from 'lucide-react';
 import { projectsApi, categoriesApi } from '../../api';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import api from '../../api/client';
 
 // ─── Helper de descarga ───────────────────────────────────────────────────────
@@ -69,8 +69,7 @@ function DownloadButton({
 
 export default function ExportPage() {
   const navigate   = useNavigate();
-  const user       = useAuthStore((s) => s.user);
-  const canAccess  = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { isSupervisor: canAccess } = useRole();
 
   // Filtros
   const today    = new Date().toISOString().split('T')[0];

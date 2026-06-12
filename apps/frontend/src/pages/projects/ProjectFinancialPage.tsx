@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fmtDate } from '../../utils/date';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 import {
   ArrowLeft, Plus, Trash2, Pencil, Check, X,
   TrendingUp, TrendingDown, DollarSign, BarChart2,
@@ -149,8 +149,7 @@ export default function ProjectFinancialPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const user = useAuthStore((s) => s.user);
-  const canView = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { isSupervisor: canView } = useRole();
 
   // Redirigir operadores que intenten acceder directamente por URL
   useEffect(() => {

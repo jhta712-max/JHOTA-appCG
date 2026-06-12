@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -8,40 +8,54 @@ import { useAuthStore } from './stores/authStore';
 import { authApi }       from './api/index';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Layout             from './components/layout/Layout';
+// Login se carga eager: es la primera pantalla de cada sesión
 import LoginPage          from './pages/auth/LoginPage';
-import DashboardPage      from './pages/dashboard/DashboardPage';
-import ProjectsPage       from './pages/projects/ProjectsPage';
-import ProjectDetailPage  from './pages/projects/ProjectDetailPage';
-import ProjectFormPage     from './pages/projects/ProjectFormPage';
-import ProjectFinancialPage from './pages/projects/ProjectFinancialPage';
-import ExpensesPage       from './pages/expenses/ExpensesPage';
-import NewExpensePage     from './pages/expenses/NewExpensePage';
-import ExpenseDetailPage  from './pages/expenses/ExpenseDetailPage';
-import EditExpensePage    from './pages/expenses/EditExpensePage';
-import UsersPage          from './pages/users/UsersPage';
-import CategoriesPage     from './pages/categories/CategoriesPage';
-import ReportsPage        from './pages/reports/ReportsPage';
-import ExportPage         from './pages/reports/ExportPage';
-import AcceptInvitePage  from './pages/invitations/AcceptInvitePage';
-import SetupPage         from './pages/auth/SetupPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import ResetPasswordPage from './pages/auth/ResetPasswordPage';
-import PayrollsPage      from './pages/payroll/PayrollsPage';
-import PayrollDetailPage from './pages/payroll/PayrollDetailPage';
-import PayrollFormPage   from './pages/payroll/PayrollFormPage';
-import MonitoringPage    from './pages/admin/MonitoringPage';
-import CardsPage           from './pages/admin/CardsPage';
-import PaymentOrdersPage   from './pages/payment-orders/PaymentOrdersPage';
-import PendingOrdersPage   from './pages/payment-orders/PendingOrdersPage';
-import OfficeExpensesPage  from './pages/office-expenses/OfficeExpensesPage';
-import QuotationsPage    from './pages/quotations/QuotationsPage';
-import QuotationFormPage from './pages/quotations/QuotationFormPage';
-import QuotationDetailPage from './pages/quotations/QuotationDetailPage';
-import ImportBatchesPage   from './pages/projects/ImportBatchesPage';
-import SuppliersPage                from './pages/suppliers/SuppliersPage';
-import SupplierDetailPage           from './pages/suppliers/SupplierDetailPage';
-import NotificationContactsPage     from './pages/admin/NotificationContactsPage';
-import ContratosAjustadosPage       from './pages/contratos-ajustados/ContratosAjustadosPage';
+
+// Resto de páginas: lazy loading por ruta (code splitting).
+// Dashboard incluido — arrastra recharts (~400 kB) que no debe ir en el bundle inicial.
+const DashboardPage        = lazy(() => import('./pages/dashboard/DashboardPage'));
+const ProjectsPage         = lazy(() => import('./pages/projects/ProjectsPage'));
+const ProjectDetailPage    = lazy(() => import('./pages/projects/ProjectDetailPage'));
+const ProjectFormPage      = lazy(() => import('./pages/projects/ProjectFormPage'));
+const ProjectFinancialPage = lazy(() => import('./pages/projects/ProjectFinancialPage'));
+const ExpensesPage         = lazy(() => import('./pages/expenses/ExpensesPage'));
+const NewExpensePage       = lazy(() => import('./pages/expenses/NewExpensePage'));
+const ExpenseDetailPage    = lazy(() => import('./pages/expenses/ExpenseDetailPage'));
+const EditExpensePage      = lazy(() => import('./pages/expenses/EditExpensePage'));
+const UsersPage            = lazy(() => import('./pages/users/UsersPage'));
+const CategoriesPage       = lazy(() => import('./pages/categories/CategoriesPage'));
+const ReportsPage          = lazy(() => import('./pages/reports/ReportsPage'));
+const ExportPage           = lazy(() => import('./pages/reports/ExportPage'));
+const AcceptInvitePage     = lazy(() => import('./pages/invitations/AcceptInvitePage'));
+const SetupPage            = lazy(() => import('./pages/auth/SetupPage'));
+const ForgotPasswordPage   = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage    = lazy(() => import('./pages/auth/ResetPasswordPage'));
+const PayrollsPage         = lazy(() => import('./pages/payroll/PayrollsPage'));
+const PayrollDetailPage    = lazy(() => import('./pages/payroll/PayrollDetailPage'));
+const PayrollFormPage      = lazy(() => import('./pages/payroll/PayrollFormPage'));
+const MonitoringPage       = lazy(() => import('./pages/admin/MonitoringPage'));
+const CardsPage            = lazy(() => import('./pages/admin/CardsPage'));
+const PaymentOrdersPage    = lazy(() => import('./pages/payment-orders/PaymentOrdersPage'));
+const PendingOrdersPage    = lazy(() => import('./pages/payment-orders/PendingOrdersPage'));
+const OfficeExpensesPage   = lazy(() => import('./pages/office-expenses/OfficeExpensesPage'));
+const QuotationsPage       = lazy(() => import('./pages/quotations/QuotationsPage'));
+const QuotationFormPage    = lazy(() => import('./pages/quotations/QuotationFormPage'));
+const QuotationDetailPage  = lazy(() => import('./pages/quotations/QuotationDetailPage'));
+const ImportBatchesPage    = lazy(() => import('./pages/projects/ImportBatchesPage'));
+const SuppliersPage        = lazy(() => import('./pages/suppliers/SuppliersPage'));
+const SupplierDetailPage   = lazy(() => import('./pages/suppliers/SupplierDetailPage'));
+const NotificationContactsPage = lazy(() => import('./pages/admin/NotificationContactsPage'));
+const ContratosAjustadosPage   = lazy(() => import('./pages/contratos-ajustados/ContratosAjustadosPage'));
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] font-['Barlow_Condensed']">
+        Cargando…
+      </p>
+    </div>
+  );
+}
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -80,6 +94,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthHydrator>
+            <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/login"                element={<LoginPage />} />
               <Route path="/setup"                element={<SetupPage />} />
@@ -142,6 +157,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </Suspense>
           </AuthHydrator>
         </BrowserRouter>
       </QueryClientProvider>

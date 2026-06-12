@@ -682,9 +682,7 @@ type TabId = 'dashboard' | 'suscripciones';
 
 // ─── Main Page ────────────────────────────────────────────────
 export default function MonitoringPage() {
-  const user    = useAuthStore((s) => s.user);
-  const isAdmin = user?.role?.name === 'admin';
-  const isSupervisorOrAdmin = user?.role?.name === 'admin' || user?.role?.name === 'supervisor';
+  const { isAdmin, isSupervisor: isSupervisorOrAdmin } = useRole();
 
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
 

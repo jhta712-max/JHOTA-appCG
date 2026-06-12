@@ -8,6 +8,7 @@ import {
 import { usersApi } from '../../api';
 import api from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
+import { useRole } from '../../hooks/useRole';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -42,8 +43,7 @@ const labelCls = "block text-xs font-semibold uppercase tracking-wide text-gray-
 export default function UsersPage() {
   const qc   = useQueryClient();
   const self = useAuthStore((s) => s.user);
-  const isAdmin = self?.role?.name === 'admin';
-  const canManage = self?.role?.name === 'admin' || self?.role?.name === 'supervisor';
+  const { isAdmin, isSupervisor: canManage } = useRole();
 
   const [modal,       setModal]       = useState<'invite' | 'edit' | null>(null);
   const [editing,     setEditing]     = useState<any>(null);
