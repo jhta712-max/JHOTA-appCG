@@ -9,6 +9,8 @@ import {
   AlertCircle, Activity,
 } from 'lucide-react';
 import { projectsApi } from '../../api';
+import { DetailPageSkeleton } from '../../components/ui/DetailPageSkeleton';
+import { PAGE_META }           from '../../utils/routeMeta';
 import type { Cubicacion } from '../../types';
 
 // ── Utilidades ────────────────────────────────────────────────
@@ -210,11 +212,24 @@ export default function ProjectFinancialPage() {
     qc.invalidateQueries({ queryKey: ['project-summary', id] });
   };
 
-  if (isLoading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <span className="text-gray-400 text-sm">Cargando análisis...</span>
-    </div>
-  );
+  if (isLoading) {
+    const meta = PAGE_META['/projects'];
+    return (
+      <div>
+        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+          <div>
+            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
+              {meta.module}
+            </p>
+            <h1 className="text-3xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {meta.title}
+            </h1>
+          </div>
+        </div>
+        <div className="p-6"><DetailPageSkeleton sections={4} /></div>
+      </div>
+    );
+  }
   if (!financial) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <span className="text-gray-400 text-sm">Proyecto no encontrado</span>
