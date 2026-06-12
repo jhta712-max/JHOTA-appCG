@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Plus, Trash2, Wallet, AlertTriangle, X } from 'lucide-react';
 import { payrollApi, projectsApi, type Payroll } from '../../api';
 import { useRole } from '../../hooks/useRole';
+import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
 
 interface LineItem {
   id?:          string;
@@ -31,7 +32,8 @@ export default function PayrollFormPage() {
   const { canCreatePayroll, canApprovePayroll } = useRole();
 
   // ── Todos los hooks ANTES de cualquier return condicional ───
-  const [projectId,   setProjectId]   = useState('');
+  const [projectId,      setProjectId]      = useState('');
+  const [projectItemId,  setProjectItemId]  = useState('');
   const [periodStart, setPeriodStart] = useState('');
   const [periodEnd,   setPeriodEnd]   = useState('');
   const [type,        setType]        = useState<'LABOR' | 'SERVICE'>('LABOR');
@@ -141,6 +143,7 @@ export default function PayrollFormPage() {
     } else {
       createMut.mutate({
         projectId,
+        projectItemId: projectItemId || undefined,
         periodStart,
         periodEnd,
         type,
@@ -228,6 +231,14 @@ export default function PayrollFormPage() {
                   <p className="text-xs text-red-500 mt-1 font-['DM_Sans']">No se encontraron proyectos. Verifique que existan proyectos en el sistema.</p>
                 )}
               </div>
+            )}
+
+            {!isEdit && (
+              <ProjectItemSelect
+                projectId={projectId || undefined}
+                value={projectItemId}
+                onChange={setProjectItemId}
+              />
             )}
 
             {/* Tipo */}

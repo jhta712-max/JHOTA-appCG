@@ -1,6 +1,7 @@
 import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
+import { resolveProjectItemId, PROJECT_ITEM_SELECT } from '../../utils/projectItems';
 import type {
   CreateQuotationInput, UpdateQuotationInput, UpdateStatusInput,
   CreatePaymentInput, LinkExpenseInput, QuotationQuery,
@@ -33,6 +34,7 @@ const QUOTATION_INCLUDE = {
   attachments: {
     select: { id: true, fileName: true, mimeType: true, isPrimary: true, createdAt: true },
   },
+  projectItem: PROJECT_ITEM_SELECT,
 } as const;
 
 // ── Listar cotizaciones ────────────────────────────────────────
@@ -177,7 +179,8 @@ export async function createQuotation(data: CreateQuotationInput, userId: string
     orderBy: { number: 'desc' },
     select:  { number: true },
   });
-  const nextNumber = (last?.number ?? 0) + 1;
+  const nextNumber    = (last?.number ?? 0) + 1;
+  const projectItemId = await resolveProjectItemId(data.projectId, (data as any).projectItemId);
 
   const q = await prisma.quotation.create({
     data: {
@@ -199,6 +202,7 @@ export async function createQuotation(data: CreateQuotationInput, userId: string
       deliveryDays:   data.deliveryDays,
       observations:   data.observations,
       notes:          data.notes,
+      projectItemId:  projectItemId ?? null,
       createdById:    userId,
     },
     include: QUOTATION_INCLUDE,

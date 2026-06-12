@@ -105,6 +105,7 @@ model Project {
 
   createdBy          User                @relation("ProjectCreatedBy", fields: [createdById], references: [id])
   expenses           Expense[]
+  items              ProjectItem[]
   addendums          ProjectAddendum[]
   cubicaciones       ProjectCubicacion[]
   assignments        ProjectAssignment[]
@@ -196,6 +197,30 @@ enum ProjectStatus {
 }
 
 // ============================================================
+// ITEMS DE PROYECTO (partidas/lotes de licitación)
+// Identifican qué item del proyecto genera cada gasto/orden
+// ============================================================
+model ProjectItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  number    Int // Item 1, 2, 3... — autoincremental por proyecto
+  name      String   @db.VarChar(300)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  expenses      Expense[]
+  paymentOrders PaymentOrder[]
+  payrolls      Payroll[]
+  quotations    Quotation[]
+
+  @@unique([projectId, number])
+  @@index([projectId])
+  @@map("project_items")
+}
+
+// ============================================================
 // TARJETAS CORPORATIVAS
 // ============================================================
 model CompanyCard {
@@ -274,6 +299,8 @@ model Expense {
   batchItem          BatchItem?            @relation(fields: [batchItemId], references: [id], onDelete: SetNull)
   contratoAjustadoId String?               @map("contrato_ajustado_id") @db.Uuid
   contratoAjustado   ContratoAjustado?     @relation("ExpenseContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
+  projectItemId      String?               @map("project_item_id") @db.Uuid
+  projectItem        ProjectItem?          @relation(fields: [projectItemId], references: [id], onDelete: SetNull)
   fiscalVoucher      FiscalVoucher?
   attachments        Attachment[]
   payrollLine        PayrollLine?          @relation("PayrollLineExpense")
@@ -290,6 +317,7 @@ model Expense {
   @@index([companyCardId])
   @@index([batchItemId])
   @@index([contratoAjustadoId])
+  @@index([projectItemId])
   @@map("expenses")
 }
 
@@ -437,10 +465,12 @@ model Payroll {
   voidedAt         DateTime?     @map("voided_at")
   voidedById       String?       @map("voided_by") @db.Uuid
   voidReason       String?       @map("void_reason") @db.Text
+  projectItemId    String?       @map("project_item_id") @db.Uuid
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
   project      Project       @relation(fields: [projectId], references: [id])
+  projectItem  ProjectItem?  @relation(fields: [projectItemId], references: [id], onDelete: SetNull)
   createdBy    User          @relation("PayrollCreatedBy", fields: [createdById], references: [id])
   approvedBy   User?         @relation("PayrollApprovedBy", fields: [approvedById], references: [id])
   voidedBy     User?         @relation("PayrollVoidedBy", fields: [voidedById], references: [id])
@@ -452,6 +482,7 @@ model Payroll {
   @@index([projectId])
   @@index([status])
   @@index([periodStart])
+  @@index([projectItemId])
   @@map("payrolls")
 }
 
@@ -614,13 +645,15 @@ model Quotation {
   observations String?  @db.Text
 
   // Estado y trazabilidad
-  status      QuotationStatus @default(PENDING)
-  notes       String?         @db.Text
-  createdById String          @map("created_by") @db.Uuid
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
+  status        QuotationStatus @default(PENDING)
+  notes         String?         @db.Text
+  projectItemId String?         @map("project_item_id") @db.Uuid
+  createdById   String          @map("created_by") @db.Uuid
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
 
   project      Project                @relation(fields: [projectId], references: [id])
+  projectItem  ProjectItem?           @relation(fields: [projectItemId], references: [id], onDelete: SetNull)
   category     ExpenseCategory?       @relation(fields: [categoryId], references: [id])
   createdBy    User                   @relation("QuotationCreatedBy", fields: [createdById], references: [id])
   payments      QuotationPayment[]
@@ -632,6 +665,7 @@ model Quotation {
   @@index([projectId])
   @@index([status])
   @@index([supplierName])
+  @@index([projectItemId])
   @@map("quotations")
 }
 
@@ -757,6 +791,7 @@ model PaymentOrder {
   expenseId          String?   @unique @map("expense_id") @db.Uuid
   contratoAjustadoId String?   @map("contrato_ajustado_id") @db.Uuid
   quotationId        String?   @map("quotation_id") @db.Uuid
+  projectItemId      String?   @map("project_item_id") @db.Uuid
   createdById        String    @map("created_by_id") @db.Uuid
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
@@ -770,6 +805,7 @@ model PaymentOrder {
   expense          Expense?          @relation("PaymentOrderExpense", fields: [expenseId], references: [id])
   contratoAjustado          ContratoAjustado?      @relation("PaymentOrderContratoAjustado", fields: [contratoAjustadoId], references: [id], onDelete: SetNull)
   quotation                 Quotation?             @relation("PaymentOrderQuotation", fields: [quotationId], references: [id], onDelete: SetNull)
+  projectItem               ProjectItem?           @relation(fields: [projectItemId], references: [id], onDelete: SetNull)
   contratoAjustadoPagos     ContratoAjustadoPago[] @relation("ContratoAjustadoPagoOrdenPago")
 
   @@index([status])
@@ -777,6 +813,7 @@ model PaymentOrder {
   @@index([supplierId])
   @@index([contratoAjustadoId])
   @@index([quotationId])
+  @@index([projectItemId])
   @@index([createdAt])
   @@map("payment_orders")
 }

@@ -6,6 +6,7 @@ import {
   createProjectSchema, updateProjectSchema, projectQuerySchema,
   createAddendumSchema, updateAddendumSchema,
   createCubicacionSchema, updateCubicacionSchema,
+  createProjectItemSchema, updateProjectItemSchema,
 } from './projects.schema';
 import * as ctrl from './projects.controller';
 
@@ -109,6 +110,23 @@ router.put('/:id/cubicaciones/:cubicacionId',
 router.delete('/:id/cubicaciones/:cubicacionId',
   authorize('admin'),
   ctrl.removeCubicacion,
+);
+
+// GET    /api/v1/projects/:id/items — visible para todos los autenticados
+router.get('/:id/items', ctrl.listItems);
+
+// POST   /api/v1/projects/:id/items
+router.post('/:id/items',
+  authorize('admin', 'supervisor'),
+  validate(createProjectItemSchema),
+  ctrl.createItem,
+);
+
+// PATCH  /api/v1/projects/:id/items/:itemId — renombrar / activar / desactivar
+router.patch('/:id/items/:itemId',
+  authorize('admin', 'supervisor'),
+  validate(updateProjectItemSchema),
+  ctrl.updateItem,
 );
 
 export default router;

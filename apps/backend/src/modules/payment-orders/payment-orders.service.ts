@@ -1,5 +1,6 @@
 import prisma from '../../config/database';
 import Anthropic from '@anthropic-ai/sdk';
+import { resolveProjectItemId, PROJECT_ITEM_SELECT } from '../../utils/projectItems';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
@@ -20,6 +21,7 @@ interface ExpenseSourceData {
   hasFiscalDoc?:      boolean;
   notes?:             string | null;
   contratoAjustadoId?: string | null;
+  projectItemId?:     string | null;
   foreignAmount?:     number | { toString(): string } | null;
   foreignCurrency?:   string | null;
   exchangeRate?:      number | { toString(): string } | null;
@@ -37,6 +39,7 @@ export function buildExpenseData(src: ExpenseSourceData): Prisma.ExpenseUnchecke
     hasFiscalDoc:       src.hasFiscalDoc ?? false,
     ...(src.notes              != null ? { notes:          src.notes }                           : {}),
     ...(src.contratoAjustadoId != null ? { contratoAjustadoId: src.contratoAjustadoId }         : {}),
+    ...(src.projectItemId      != null ? { projectItemId: src.projectItemId }                   : {}),
     ...(src.foreignAmount      != null ? { foreignAmount:  Number(src.foreignAmount) }           : {}),
     ...(src.foreignCurrency    != null ? { foreignCurrency: src.foreignCurrency }               : {}),
     ...(src.exchangeRate       != null ? { exchangeRate:   Number(src.exchangeRate) }            : {}),
@@ -69,6 +72,7 @@ const INCLUDE = {
   payroll:                { select: { id: true, number: true, type: true, totalAmount: true, periodStart: true, periodEnd: true, status: true } },
   expense:                { select: { id: true, amount: true, expenseDate: true, description: true, status: true } },
   contratoAjustado:       { select: { id: true, descripcionTrabajo: true, montoContratado: true, estado: true } },
+  projectItem:            PROJECT_ITEM_SELECT,
 } as const;
 
 // ── Listar con filtros y paginación ───────────────────────────
@@ -176,6 +180,8 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
   const project = await prisma.project.findUnique({ where: { id: data.projectId } });
   if (!project)                    throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
   if (project.status !== 'ACTIVE') throw new AppError(400, 'El proyecto debe estar activo', 'PROJECT_INACTIVE');
+
+  const projectItemId = await resolveProjectItemId(data.projectId, data.projectItemId);
 
   const supplier = await prisma.supplier.findUnique({ where: { id: data.supplierId } });
   if (!supplier || !supplier.isActive) throw new AppError(404, 'Suplidor no encontrado o inactivo', 'NOT_FOUND');
@@ -302,6 +308,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
           hasFiscalDoc:       false,
           notes:              `Auto-generado al crear orden de pago de nómina ${nomRef}.`,
           contratoAjustadoId: data.contratoAjustadoId ?? null,
+          projectItemId:      projectItemId ?? null,
         },
       });
 
@@ -341,6 +348,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
           payrollId:          payroll.id,
           contratoAjustadoId: data.contratoAjustadoId ?? null,
           quotationId:        null,
+          projectItemId:      projectItemId ?? null,
           createdById:        userId,
         },
         include: INCLUDE,
@@ -363,6 +371,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
       payrollId:          data.orderType === 'PAYROLL' ? (data.payrollId ?? null) : null,
       contratoAjustadoId: data.contratoAjustadoId ?? null,
       quotationId:        data.orderType === 'SERVICIO' ? (data.quotationId ?? null) : null,
+      projectItemId:      projectItemId ?? null,
       createdById:        userId,
     },
     include: INCLUDE,
@@ -530,6 +539,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
             hasFiscalDoc:       hasFiscal,
             notes:              `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.${isForeign ? ` Divisa original: ${po.currency} ${Number(po.amount).toFixed(2)}${exchangeRate ? ` (TC: ${exchangeRate})` : ''}.` : ''}`,
             contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
+            projectItemId:      (po as any).projectItemId ?? null,
             ...(isForeign && foreignCurrencyISO ? {
               foreignAmount:   po.amount,
               foreignCurrency: foreignCurrencyISO,
@@ -648,6 +658,7 @@ export async function generateExpenseForOrder(id: string, userId: string) {
         description:        `[${opRef}] ${po.concept}`,
         notes:              `Generado retroactivamente para ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}.`,
         contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
+        projectItemId:      (po as any).projectItemId ?? null,
       }),
     });
 

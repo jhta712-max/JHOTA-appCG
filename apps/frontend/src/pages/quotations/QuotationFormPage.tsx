@@ -5,9 +5,11 @@ import {
   ArrowLeft, Save, Loader2, AlertCircle, Sparkles, X,
 } from 'lucide-react';
 import { quotationsApi, projectsApi, categoriesApi, ocrApi } from '../../api';
+import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
 
 interface FormData {
   projectId:       string;
+  projectItemId:   string;
   categoryId:      string;
   supplierName:    string;
   supplierRnc:     string;
@@ -31,7 +33,7 @@ const EMPTY: FormData = {
   quotationNumber: '', quotationDate: '', validUntil: '',
   currency: 'DOP', subtotal: '', itbisAmount: '0', total: '',
   description: '', paymentTerms: '', advancePct: '', deliveryDays: '',
-  observations: '', notes: '',
+  observations: '', notes: '', projectItemId: '',
 };
 
 const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white";
@@ -192,6 +194,7 @@ export default function QuotationFormPage() {
         deliveryDays:    form.deliveryDays   ? parseInt(form.deliveryDays)     : undefined,
         observations:    form.observations   || undefined,
         notes:           form.notes          || undefined,
+        projectItemId:   form.projectItemId  || undefined,
       };
       return isEdit
         ? quotationsApi.update(id!, payload)
@@ -296,6 +299,11 @@ export default function QuotationFormPage() {
               </select>
               {errors.projectId && <p className="text-xs text-red-500 mt-1 font-['DM_Sans']">{errors.projectId}</p>}
             </div>
+            <ProjectItemSelect
+              projectId={form.projectId || undefined}
+              value={form.projectItemId}
+              onChange={(v) => set('projectItemId', v)}
+            />
             <div>
               <label className={labelCls}>Categoría (opcional)</label>
               <select className={inputCls} value={form.categoryId}

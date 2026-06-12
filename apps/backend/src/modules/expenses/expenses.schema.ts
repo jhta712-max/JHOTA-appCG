@@ -40,6 +40,7 @@ const baseExpenseSchema = z.object({
   foreignAmount:   z.coerce.number().positive().optional().nullable(),
   foreignCurrency: z.string().max(10).optional().nullable(),
   exchangeRate:    z.coerce.number().positive().optional().nullable(),
+  projectItemId:   z.string().uuid().optional().nullable(),
 });
 
 // ---------------------------------------------------------------

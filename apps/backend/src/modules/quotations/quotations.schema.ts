@@ -31,6 +31,7 @@ const baseQuotationSchema = z.object({
   deliveryDays:   z.coerce.number().int().positive().optional(),
   observations:   z.string().max(2000).optional(),
   notes:          z.string().max(1000).optional(),
+  projectItemId:  z.string().uuid().optional().nullable(),
 });
 
 // ── Crear cotización ───────────────────────────────────────────

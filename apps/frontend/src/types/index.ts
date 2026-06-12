@@ -81,6 +81,16 @@ export interface Expense {
   rejectedAt?: string | null;
 }
 
+export interface ProjectItem {
+  id: string;
+  projectId: string;
+  number: number;
+  name: string;
+  active: boolean;
+  createdAt: string;
+  _count?: { expenses: number; paymentOrders: number; payrolls: number; quotations: number };
+}
+
 export interface Addendum {
   id: string;
   number: number;
