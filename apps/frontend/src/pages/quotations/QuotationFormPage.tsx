@@ -112,6 +112,7 @@ export default function QuotationFormPage() {
         deliveryDays:    existing.deliveryDays?.toString() ?? '',
         observations:    existing.observations ?? '',
         notes:           existing.notes ?? '',
+        projectItemId:   (existing as any).projectItemId ?? '',
       });
     }
   }, [existing]);

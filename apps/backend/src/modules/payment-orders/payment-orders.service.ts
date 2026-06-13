@@ -410,11 +410,19 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
     rnc:           supplier!.rnc,
   };
 
-  const { payrollId, ...rest } = data as any;
+  const { payrollId, projectItemId: rawItemId, ...rest } = data as any;
+
+  const resolvedItemId = rawItemId !== undefined
+    ? await resolveProjectItemId(po.projectId, rawItemId, { inherited: true })
+    : undefined;
 
   return prisma.paymentOrder.update({
     where:   { id },
-    data:    { ...rest, generatedText: buildOrderText(merged) },
+    data:    {
+      ...rest,
+      generatedText: buildOrderText(merged),
+      ...(resolvedItemId !== undefined && { projectItemId: resolvedItemId }),
+    },
     include: INCLUDE,
   });
 }

@@ -81,6 +81,7 @@ export default function PayrollFormPage() {
     if (!p) return;
     if (p.status !== 'DRAFT') { navigate(`/payrolls/${id}`); return; }
     setProjectId(p.projectId);
+    setProjectItemId((p as any).projectItemId ?? '');
     setPeriodStart(p.periodStart.slice(0, 10));
     setPeriodEnd(p.periodEnd.slice(0, 10));
     setType(p.type);
@@ -137,8 +138,9 @@ export default function PayrollFormPage() {
         periodStart,
         periodEnd,
         type,
-        description: description.trim(),
-        notes: notes.trim() || undefined,
+        description:   description.trim(),
+        notes:         notes.trim() || undefined,
+        projectItemId: projectItemId || null,
       });
     } else {
       createMut.mutate({
@@ -233,13 +235,11 @@ export default function PayrollFormPage() {
               </div>
             )}
 
-            {!isEdit && (
-              <ProjectItemSelect
-                projectId={projectId || undefined}
-                value={projectItemId}
-                onChange={setProjectItemId}
-              />
-            )}
+            <ProjectItemSelect
+              projectId={projectId || undefined}
+              value={projectItemId}
+              onChange={setProjectItemId}
+            />
 
             {/* Tipo */}
             <div>

@@ -169,14 +169,19 @@ export async function updatePayroll(id: string, data: UpdatePayrollInput) {
     throw new AppError(400, 'Solo se pueden editar nóminas en borrador', 'INVALID_STATUS');
   }
 
+  const resolvedItemId = 'projectItemId' in data
+    ? await resolveProjectItemId(payroll.projectId, data.projectItemId, { inherited: true })
+    : undefined;
+
   return prisma.payroll.update({
     where: { id },
     data: {
-      periodStart: data.periodStart ? new Date(data.periodStart) : undefined,
-      periodEnd:   data.periodEnd   ? new Date(data.periodEnd)   : undefined,
-      type:        data.type,
-      description: data.description,
-      notes:       data.notes,
+      periodStart:   data.periodStart ? new Date(data.periodStart) : undefined,
+      periodEnd:     data.periodEnd   ? new Date(data.periodEnd)   : undefined,
+      type:          data.type,
+      description:   data.description,
+      notes:         data.notes,
+      ...(resolvedItemId !== undefined && { projectItemId: resolvedItemId }),
     },
     include: PAYROLL_INCLUDE,
   });

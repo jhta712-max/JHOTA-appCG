@@ -373,6 +373,7 @@ export default function PaymentOrdersPage() {
       payrollPeriodStart: payroll?.periodStart ? payroll.periodStart.slice(0, 10) : '',
       payrollPeriodEnd:   payroll?.periodEnd   ? payroll.periodEnd.slice(0, 10)   : '',
       payrollType:        payroll?.type ?? 'LABOR',
+      projectItemId:      (o as any).projectItemId ?? '',
     } : EMPTY_ORDER);
     setModalView('form'); setSessionOrders([]); setLastCreatedOrder(null); setFormErr(''); setOrderModal(true);
   };

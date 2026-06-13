@@ -239,6 +239,9 @@ export async function updateQuotation(id: string, data: UpdateQuotationInput) {
       ...(data.observations    !== undefined && { observations:    data.observations }),
       ...(data.notes           !== undefined && { notes:           data.notes }),
       ...(data.categoryId      !== undefined && { categoryId:      data.categoryId }),
+      ...(data.projectItemId   !== undefined && {
+        projectItemId: await resolveProjectItemId(q.projectId, data.projectItemId, { inherited: true }),
+      }),
     },
     include: QUOTATION_INCLUDE,
   });

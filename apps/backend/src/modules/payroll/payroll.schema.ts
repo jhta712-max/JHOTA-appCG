@@ -27,11 +27,12 @@ export const createPayrollSchema = z.object({
 
 // ─── Update Payroll (solo en DRAFT) ──────────────────────────
 export const updatePayrollSchema = z.object({
-  periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  periodEnd:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  type:        PayrollTypeEnum.optional(),
-  description: z.string().min(5).max(500).optional(),
-  notes:       z.string().max(1000).optional().nullable(),
+  periodStart:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  periodEnd:     z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  type:          PayrollTypeEnum.optional(),
+  description:   z.string().min(5).max(500).optional(),
+  notes:         z.string().max(1000).optional().nullable(),
+  projectItemId: z.string().uuid().optional().nullable(),
 });
 
 // ─── Add / Update a single line ──────────────────────────────
