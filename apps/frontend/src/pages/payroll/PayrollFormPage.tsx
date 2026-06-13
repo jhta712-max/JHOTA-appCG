@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Plus, Trash2, Wallet, AlertTriangle, X } from 'lucide-react';
 import { payrollApi, projectsApi, type Payroll } from '../../api';
 import { useRole } from '../../hooks/useRole';
-import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
+import { BatchItemSelect } from '../../components/shared/BatchItemSelect';
 
 interface LineItem {
   id?:          string;
@@ -33,7 +33,7 @@ export default function PayrollFormPage() {
 
   // ── Todos los hooks ANTES de cualquier return condicional ───
   const [projectId,      setProjectId]      = useState('');
-  const [projectItemId,  setProjectItemId]  = useState('');
+  const [batchItemId, setBatchItemId]  = useState('');
   const [periodStart, setPeriodStart] = useState('');
   const [periodEnd,   setPeriodEnd]   = useState('');
   const [type,        setType]        = useState<'LABOR' | 'SERVICE'>('LABOR');
@@ -81,7 +81,7 @@ export default function PayrollFormPage() {
     if (!p) return;
     if (p.status !== 'DRAFT') { navigate(`/payrolls/${id}`); return; }
     setProjectId(p.projectId);
-    setProjectItemId((p as any).projectItemId ?? '');
+    setBatchItemId((p as any).batchItemId ?? '');
     setPeriodStart(p.periodStart.slice(0, 10));
     setPeriodEnd(p.periodEnd.slice(0, 10));
     setType(p.type);
@@ -140,12 +140,12 @@ export default function PayrollFormPage() {
         type,
         description:   description.trim(),
         notes:         notes.trim() || undefined,
-        projectItemId: projectItemId || null,
+        batchItemId: batchItemId || null,
       });
     } else {
       createMut.mutate({
         projectId,
-        projectItemId: projectItemId || undefined,
+        batchItemId: batchItemId || undefined,
         periodStart,
         periodEnd,
         type,
@@ -235,10 +235,10 @@ export default function PayrollFormPage() {
               </div>
             )}
 
-            <ProjectItemSelect
+            <BatchItemSelect
               projectId={projectId || undefined}
-              value={projectItemId}
-              onChange={setProjectItemId}
+              value={batchItemId}
+              onChange={setBatchItemId}
             />
 
             {/* Tipo */}

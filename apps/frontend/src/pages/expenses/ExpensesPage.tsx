@@ -9,7 +9,7 @@ import { SkeletonBlock }       from '../../components/ui/Skeleton';
 import { fmtDate } from '../../utils/date';
 import api from '../../api/client';
 import { useRole } from '../../hooks/useRole';
-import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
+import { BatchItemSelect } from '../../components/shared/BatchItemSelect';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
@@ -128,7 +128,7 @@ export default function ExpensesPage() {
     setBulkApplying(true);
     let done = 0;
     await Promise.all([...selectedIds].map(async (id) => {
-      await expensesApi.update(id, { projectItemId: bulkItemId } as any);
+      await expensesApi.update(id, { batchItemId: bulkItemId } as any);
       done++;
       setBulkDone(done);
     }));
@@ -626,7 +626,7 @@ export default function ExpensesPage() {
             <span className="font-['DM_Sans'] text-gray-400 text-sm">gastos seleccionados</span>
           </div>
           <div className="flex-1 max-w-xs">
-            <ProjectItemSelect
+            <BatchItemSelect
               projectId={selectedProjectId !== 'all' ? selectedProjectId : undefined}
               value={bulkItemId}
               onChange={setBulkItemId}

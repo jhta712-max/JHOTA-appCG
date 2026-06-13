@@ -115,6 +115,9 @@ router.delete('/:id/cubicaciones/:cubicacionId',
 // GET    /api/v1/projects/:id/items — visible para todos los autenticados
 router.get('/:id/items', ctrl.listItems);
 
+// GET    /api/v1/projects/:id/batch-items — batch items activos del proyecto
+router.get('/:id/batch-items', ctrl.listBatchItems);
+
 // POST   /api/v1/projects/:id/items
 router.post('/:id/items',
   authorize('admin', 'supervisor'),

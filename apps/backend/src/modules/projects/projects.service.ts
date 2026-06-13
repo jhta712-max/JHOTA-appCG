@@ -573,3 +573,12 @@ export async function updateProjectItem(projectId: string, itemId: string, data:
     },
   });
 }
+
+
+export async function getBatchItemsForProject(projectId: string) {
+  return prisma.batchItem.findMany({
+    where: { batch: { projectId }, status: 'ACTIVE' },
+    select: { id: true, code: true, description: true, provincia: true, sector: true, budget: true },
+    orderBy: { code: 'asc' },
+  });
+}
