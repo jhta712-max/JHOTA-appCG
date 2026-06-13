@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Receipt, Plus, Search, Upload, X, CheckCircle, AlertCircle, ArrowUpDown, Filter } from 'lucide-react';
+import { Receipt, Plus, Search, Upload, X, CheckCircle, AlertCircle, ArrowUpDown, Filter, Layers, Check } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi } from '../../api';
 import { PAYMENT_METHOD_LABELS } from '../../types';
 import { ExpenseListSkeleton } from '../../components/ui/ExpenseListSkeleton';
@@ -9,6 +9,7 @@ import { SkeletonBlock }       from '../../components/ui/Skeleton';
 import { fmtDate } from '../../utils/date';
 import api from '../../api/client';
 import { useRole } from '../../hooks/useRole';
+import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
@@ -39,6 +40,13 @@ export default function ExpensesPage() {
   const [dateFrom,    setDateFrom]    = useState('');
   const [dateTo,      setDateTo]      = useState('');
   const [showFilters, setShowFilters] = useState(false);
+
+  // Bulk item assignment mode
+  const [bulkMode,    setBulkMode]    = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkItemId,  setBulkItemId]  = useState('');
+  const [bulkDone,    setBulkDone]    = useState(0);
+  const [bulkApplying, setBulkApplying] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const [importRows,   setImportRows]   = useState<any[]>([]);
@@ -103,6 +111,32 @@ export default function ExpensesPage() {
     setCategoryId(''); setHasFiscalDoc(''); setDateFrom(''); setDateTo(''); setPage(1);
   }
 
+  function exitBulkMode() {
+    setBulkMode(false); setSelectedIds(new Set()); setBulkItemId(''); setBulkDone(0);
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  async function applyBulkItem() {
+    if (!bulkItemId || selectedIds.size === 0) return;
+    setBulkApplying(true);
+    let done = 0;
+    await Promise.all([...selectedIds].map(async (id) => {
+      await expensesApi.update(id, { projectItemId: bulkItemId } as any);
+      done++;
+      setBulkDone(done);
+    }));
+    setBulkApplying(false);
+    qc.invalidateQueries({ queryKey: ['expenses'] });
+    exitBulkMode();
+  }
+
   const expenses   = data?.data ?? [];
   const pagination = data?.pagination;
   const projects   = projectsData ?? [];
@@ -152,6 +186,17 @@ export default function ExpensesPage() {
             >
               <Upload className="w-4 h-4" /> Importar CSV
             </button>
+            {selectedProjectId !== 'all' && !bulkMode && (
+              <button
+                onClick={() => setBulkMode(true)}
+                className="flex items-center gap-2 px-3 py-2 border transition-colors"
+                style={{ fontFamily: 'DM Sans, sans-serif', borderColor: '#4b5563', color: '#d1d5db', fontSize: '0.875rem' }}
+                onMouseEnter={(ev) => { ev.currentTarget.style.borderColor = '#F5C218'; ev.currentTarget.style.color = '#F5C218'; }}
+                onMouseLeave={(ev) => { ev.currentTarget.style.borderColor = '#4b5563'; ev.currentTarget.style.color = '#d1d5db'; }}
+              >
+                <Layers className="w-4 h-4" /> Asignar Item
+              </button>
+            )}
             <Link
               to="/expenses/new"
               className="flex items-center gap-2 px-4 py-2 font-bold uppercase tracking-wide transition-opacity hover:opacity-90"
@@ -424,15 +469,34 @@ export default function ExpensesPage() {
         ) : (
           <>
             <div className="space-y-2">
-              {expenses.map((e) => (
-                <Link
+              {expenses.map((e) => {
+                const isSelected = selectedIds.has(e.id);
+                const isVoided   = e.status === 'VOIDED';
+                const CardEl = bulkMode ? 'div' : Link;
+                const cardProps = bulkMode
+                  ? { onClick: isVoided ? undefined : () => toggleSelect(e.id), style: { cursor: isVoided ? 'not-allowed' : 'pointer' } }
+                  : { to: `/expenses/${e.id}` };
+                return (
+                <CardEl
                   key={e.id}
-                  to={`/expenses/${e.id}`}
-                  className="bg-white border border-gray-100 hover:border-[#F5C218] p-4 flex items-center gap-3 group transition-colors"
+                  {...(cardProps as any)}
+                  className={`bg-white border p-4 flex items-center gap-3 group transition-colors ${
+                    bulkMode
+                      ? isSelected ? 'border-[#F5C218] bg-yellow-50' : isVoided ? 'border-gray-100 opacity-50' : 'border-gray-100 hover:border-[#F5C218]'
+                      : 'border-gray-100 hover:border-[#F5C218]'
+                  }`}
                 >
+                  {bulkMode && (
+                    <div
+                      className="w-5 h-5 shrink-0 border-2 flex items-center justify-center"
+                      style={{ borderColor: isSelected ? '#F5C218' : '#d1d5db', background: isSelected ? '#F5C218' : 'white' }}
+                    >
+                      {isSelected && <Check className="w-3 h-3" style={{ color: '#1C1C1C' }} />}
+                    </div>
+                  )}
                   <div
                     className="w-1 self-stretch shrink-0"
-                    style={{ background: e.status === 'VOIDED' ? '#ef4444' : '#22c55e' }}
+                    style={{ background: isVoided ? '#ef4444' : '#22c55e' }}
                   />
                   <div className="flex-1 min-w-0">
                     <p
@@ -515,8 +579,9 @@ export default function ExpensesPage() {
                       Anulado
                     </span>
                   )}
-                </Link>
-              ))}
+                </CardEl>
+                );
+              })}
             </div>
 
             {/* Paginación */}
@@ -549,6 +614,46 @@ export default function ExpensesPage() {
           </>
         )}
       </div>
+
+      {/* Floating bulk assignment bar */}
+      {bulkMode && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 flex items-center gap-4 px-6 py-4 shadow-2xl border-t border-[#F5C218]/30"
+          style={{ background: '#1C1C1C' }}
+        >
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="font-['Space_Mono'] text-[#F5C218] text-sm">{selectedIds.size}</span>
+            <span className="font-['DM_Sans'] text-gray-400 text-sm">gastos seleccionados</span>
+          </div>
+          <div className="flex-1 max-w-xs">
+            <ProjectItemSelect
+              projectId={selectedProjectId !== 'all' ? selectedProjectId : undefined}
+              value={bulkItemId}
+              onChange={setBulkItemId}
+              required={false}
+            />
+          </div>
+          <button
+            onClick={applyBulkItem}
+            disabled={bulkApplying || selectedIds.size === 0 || !bulkItemId}
+            className="flex items-center gap-2 px-4 py-2 font-bold uppercase tracking-wide disabled:opacity-40 transition-opacity hover:opacity-90"
+            style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}
+          >
+            {bulkApplying
+              ? <><span className="font-['Space_Mono'] text-xs">{bulkDone}/{selectedIds.size}</span> Aplicando…</>
+              : <><Check className="w-4 h-4" /> Aplicar a {selectedIds.size}</>
+            }
+          </button>
+          <button
+            onClick={exitBulkMode}
+            className="flex items-center gap-2 px-3 py-2 border border-gray-600 text-gray-400 hover:border-gray-400 transition-colors"
+            style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.875rem' }}
+          >
+            <X className="w-4 h-4" /> Cancelar
+          </button>
+        </div>
+      )}
+
 
       {/* MODAL IMPORTACIÓN CSV */}
       {importModal && (
