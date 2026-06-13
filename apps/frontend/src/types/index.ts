@@ -64,6 +64,8 @@ export interface Expense {
   notes?: string;
   project: { id: string; code: string; name: string };
   projectId: string;
+  projectItemId?: string | null;
+  projectItem?: { id: string; number: number; name: string; active: boolean } | null;
   category: { id: number; name: string; icon?: string };
   registeredBy: { id: string; name: string };
   companyCardId?: number;
