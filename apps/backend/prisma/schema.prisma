@@ -626,6 +626,7 @@ model Quotation {
   categoryId Int?   @map("category_id")
 
   // Datos del suplidor
+  supplierId   String? @map("supplier_id") @db.Uuid
   supplierName String  @map("supplier_name") @db.VarChar(200)
   supplierRnc  String? @map("supplier_rnc") @db.VarChar(11)
 
@@ -657,6 +658,7 @@ model Quotation {
   updatedAt     DateTime        @updatedAt @map("updated_at")
 
   project      Project                @relation(fields: [projectId], references: [id])
+  supplier     Supplier?              @relation("QuotationSupplier", fields: [supplierId], references: [id], onDelete: SetNull)
   projectItem  ProjectItem?           @relation(fields: [projectItemId], references: [id], onDelete: SetNull)
   batchItem    BatchItem?             @relation("QuotationBatchItem", fields: [batchItemId], references: [id], onDelete: SetNull)
   category     ExpenseCategory?       @relation(fields: [categoryId], references: [id])
@@ -668,6 +670,7 @@ model Quotation {
 
   @@unique([projectId, number])
   @@index([projectId])
+  @@index([supplierId])
   @@index([status])
   @@index([supplierName])
   @@index([projectItemId])
@@ -743,6 +746,7 @@ model Supplier {
   contratosAjustados ContratoAjustado[]     @relation("SupplierContratosAjustados")
   paymentOrders      PaymentOrder[]
   bankAccounts       SupplierBankAccount[]
+  quotations         Quotation[]            @relation("QuotationSupplier")
 
   @@index([name])
   @@index([rnc])

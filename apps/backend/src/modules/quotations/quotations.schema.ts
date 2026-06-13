@@ -7,6 +7,7 @@ const baseQuotationSchema = z.object({
   categoryId:     z.coerce.number().int().positive().optional(),
 
   // Suplidor
+  supplierId:     z.string().uuid().optional().nullable(),
   supplierName:   z.string({ required_error: 'El nombre del suplidor es requerido' }).min(2).max(200),
   supplierRnc:    z.string().max(11).optional(),
 
@@ -92,6 +93,7 @@ export const quotationQuerySchema = z.object({
   categoryId:   z.coerce.number().int().positive().optional(),
   status:       z.enum(['PENDING', 'APPROVED', 'ADVANCE_PAID', 'IN_PROGRESS',
                          'PARTIAL_INVOICED', 'INVOICED', 'PAID', 'CANCELLED']).optional(),
+  supplierId:   z.string().uuid().optional(),
   supplierName: z.string().optional(),
   dateFrom:     z.string().date().optional(),
   dateTo:       z.string().date().optional(),

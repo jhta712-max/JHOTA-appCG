@@ -4,12 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Save, Loader2, AlertCircle, Sparkles, X,
 } from 'lucide-react';
-import { quotationsApi, projectsApi, categoriesApi, ocrApi } from '../../api';
+import { quotationsApi, projectsApi, categoriesApi, suppliersApi, ocrApi } from '../../api';
 import { BatchItemSelect } from '../../components/shared/BatchItemSelect';
 
 interface FormData {
   projectId:       string;
-  batchItemId:   string;
+  batchItemId:     string;
+  supplierId:      string;
   categoryId:      string;
   supplierName:    string;
   supplierRnc:     string;
@@ -29,7 +30,7 @@ interface FormData {
 }
 
 const EMPTY: FormData = {
-  projectId: '', categoryId: '', supplierName: '', supplierRnc: '',
+  projectId: '', supplierId: '', categoryId: '', supplierName: '', supplierRnc: '',
   quotationNumber: '', quotationDate: '', validUntil: '',
   currency: 'DOP', subtotal: '', itbisAmount: '0', total: '',
   description: '', paymentTerms: '', advancePct: '', deliveryDays: '',
@@ -79,6 +80,12 @@ export default function QuotationFormPage() {
     select:   (r) => r.data.data,
   });
 
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ['suppliers', 'active'],
+    queryFn:  () => suppliersApi.list({ onlyActive: true }),
+    select:   (r) => r.data.data as any[],
+  });
+
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn:  () => categoriesApi.list(),
@@ -96,6 +103,7 @@ export default function QuotationFormPage() {
     if (existing) {
       setForm({
         projectId:       existing.projectId,
+        supplierId:      (existing as any).supplierId ?? '',
         categoryId:      existing.categoryId?.toString() ?? '',
         supplierName:    existing.supplierName,
         supplierRnc:     existing.supplierRnc ?? '',
@@ -179,6 +187,7 @@ export default function QuotationFormPage() {
     mutationFn: () => {
       const payload = {
         projectId:       form.projectId,
+        supplierId:      form.supplierId  || undefined,
         categoryId:      form.categoryId ? parseInt(form.categoryId) : undefined,
         supplierName:    form.supplierName,
         supplierRnc:     form.supplierRnc  || undefined,
@@ -325,7 +334,29 @@ export default function QuotationFormPage() {
         {/* 02 Suplidor */}
         <div className="border border-gray-200">
           <SectionHeader num="02" title="Suplidor" />
-          <div className="p-5 bg-white">
+          <div className="p-5 bg-white space-y-4">
+            {/* Vinculación al catálogo de suplidores */}
+            <div>
+              <label className={labelCls}>Suplidor del catálogo <span className="font-normal normal-case text-gray-400">(opcional — activa filtro en órdenes de pago)</span></label>
+              <select
+                className={inputCls}
+                value={form.supplierId}
+                onChange={(e) => {
+                  const s = suppliers.find((x: any) => x.id === e.target.value);
+                  setForm((f) => ({
+                    ...f,
+                    supplierId:   e.target.value,
+                    supplierName: s ? s.name : f.supplierName,
+                    supplierRnc:  s?.rnc ?? f.supplierRnc,
+                  }));
+                }}
+              >
+                <option value="">— Sin vincular al catálogo —</option>
+                {suppliers.map((s: any) => (
+                  <option key={s.id} value={s.id}>{s.name}{s.rnc ? ` · ${s.rnc}` : ''}</option>
+                ))}
+              </select>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Nombre del suplidor *</label>

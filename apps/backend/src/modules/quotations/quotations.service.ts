@@ -11,6 +11,7 @@ import type {
 
 const QUOTATION_INCLUDE = {
   project:      { select: { id: true, code: true, name: true } },
+  supplier:     { select: { id: true, name: true, rnc: true } },
   category:     { select: { id: true, name: true, icon: true } },
   createdBy:    { select: { id: true, name: true } },
   payments: {
@@ -46,6 +47,7 @@ export async function getQuotations(query: QuotationQuery, requestingUser: { use
   if (query.projectId)    where.projectId    = query.projectId;
   if (query.categoryId)   where.categoryId   = query.categoryId;
   if (query.status)       where.status       = query.status;
+  if ((query as any).supplierId)   where.supplierId   = (query as any).supplierId;
   if (query.supplierName) where.supplierName = { contains: query.supplierName, mode: 'insensitive' };
 
   if (query.dateFrom || query.dateTo) {
@@ -187,6 +189,7 @@ export async function createQuotation(data: CreateQuotationInput, userId: string
       projectId:      data.projectId,
       categoryId:     data.categoryId,
       number:         nextNumber,
+      supplierId:     (data as any).supplierId ?? null,
       supplierName:   data.supplierName,
       supplierRnc:    data.supplierRnc,
       quotationNumber: data.quotationNumber,
@@ -223,6 +226,7 @@ export async function updateQuotation(id: string, data: UpdateQuotationInput) {
   const updated = await prisma.quotation.update({
     where: { id },
     data: {
+      ...((data as any).supplierId !== undefined && { supplierId: (data as any).supplierId }),
       ...(data.supplierName    !== undefined && { supplierName:    data.supplierName }),
       ...(data.supplierRnc     !== undefined && { supplierRnc:     data.supplierRnc }),
       ...(data.quotationNumber !== undefined && { quotationNumber: data.quotationNumber }),

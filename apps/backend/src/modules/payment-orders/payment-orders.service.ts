@@ -143,15 +143,16 @@ export async function getAvailablePayrolls(projectId: string) {
 }
 
 // ── Cotizaciones abiertas para proyecto+suplidor ──────────────
-export async function getAvailableQuotations(projectId: string, _supplierId: string) {
+export async function getAvailableQuotations(projectId: string, supplierId?: string) {
   const openStatuses = ['PENDING', 'APPROVED', 'ADVANCE_PAID', 'IN_PROGRESS', 'PARTIAL_INVOICED', 'INVOICED'];
   return prisma.quotation.findMany({
     where: {
       projectId,
       status: { in: openStatuses as any },
+      ...(supplierId ? { supplierId } : {}),
     },
     orderBy: { quotationDate: 'desc' },
-    select: { id: true, number: true, description: true, total: true, currency: true, status: true, quotationDate: true, supplierName: true },
+    select: { id: true, number: true, description: true, total: true, currency: true, status: true, quotationDate: true, supplierName: true, supplierId: true },
   });
 }
 
