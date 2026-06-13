@@ -152,7 +152,12 @@ export async function createItem(req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 }
 
-export async function updateItem(req: Request, res: Response, next: NextFunction) {
+export async function listBatchItems(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.getBatchItemsForProject(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}export async function updateItem(req: Request, res: Response, next: NextFunction) {
   try {
     const data = await service.updateProjectItem(req.params.id, req.params.itemId, req.body);
     res.json({ success: true, data });

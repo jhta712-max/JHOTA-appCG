@@ -1,7 +1,7 @@
 import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildExpenseData } from '../payment-orders/payment-orders.service';
-import { resolveProjectItemId, PROJECT_ITEM_SELECT } from '../../utils/projectItems';
+import { resolveBatchItemId, BATCH_ITEM_SELECT } from '../../utils/batchItems';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import ExcelJS from 'exceljs';
 import {
@@ -39,7 +39,7 @@ const PAYROLL_INCLUDE = {
   paymentOrder: {
     select: { id: true, concept: true, amount: true, status: true, orderType: true, createdAt: true },
   },
-  projectItem: PROJECT_ITEM_SELECT,
+  batchItem: BATCH_ITEM_SELECT,
 } as const;
 
 // ─── Next payroll number per project ─────────────────────────
@@ -121,9 +121,9 @@ export async function createPayroll(data: CreatePayrollInput, userId: string) {
     throw new AppError(400, 'No se puede crear nómina en un proyecto cerrado', 'PROJECT_CLOSED');
   }
 
-  const number        = await nextPayrollNumber(data.projectId);
-  const total         = computeTotal(data.lines);
-  const projectItemId = await resolveProjectItemId(data.projectId, (data as any).projectItemId);
+  const number       = await nextPayrollNumber(data.projectId);
+  const total        = computeTotal(data.lines);
+  const batchItemId  = await resolveBatchItemId(data.projectId, (data as any).batchItemId ?? (data as any).projectItemId);
 
   const payroll = await prisma.$transaction(async (tx) => {
     const created = await tx.payroll.create({
@@ -136,7 +136,7 @@ export async function createPayroll(data: CreatePayrollInput, userId: string) {
         description:  data.description,
         notes:        data.notes,
         totalAmount:  total,
-        projectItemId: projectItemId ?? null,
+        batchItemId:  batchItemId ?? null,
         createdById:  userId,
         lines: {
           create: data.lines.map((l, idx) => ({
@@ -169,8 +169,10 @@ export async function updatePayroll(id: string, data: UpdatePayrollInput) {
     throw new AppError(400, 'Solo se pueden editar nóminas en borrador', 'INVALID_STATUS');
   }
 
-  const resolvedItemId = 'projectItemId' in data
-    ? await resolveProjectItemId(payroll.projectId, data.projectItemId, { inherited: true })
+  const resolvedItemId = 'batchItemId' in data
+    ? await resolveBatchItemId(payroll.projectId, (data as any).batchItemId, { inherited: true })
+    : 'projectItemId' in data
+    ? await resolveBatchItemId(payroll.projectId, (data as any).projectItemId, { inherited: true })
     : undefined;
 
   return prisma.payroll.update({
@@ -181,7 +183,7 @@ export async function updatePayroll(id: string, data: UpdatePayrollInput) {
       type:          data.type,
       description:   data.description,
       notes:         data.notes,
-      ...(resolvedItemId !== undefined && { projectItemId: resolvedItemId }),
+      ...(resolvedItemId !== undefined && { batchItemId: resolvedItemId }),
     },
     include: PAYROLL_INCLUDE,
   });

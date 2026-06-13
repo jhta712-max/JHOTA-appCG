@@ -1,7 +1,7 @@
 import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
-import { resolveProjectItemId, PROJECT_ITEM_SELECT } from '../../utils/projectItems';
+import { resolveBatchItemId, BATCH_ITEM_SELECT } from '../../utils/batchItems';
 import type {
   CreateQuotationInput, UpdateQuotationInput, UpdateStatusInput,
   CreatePaymentInput, LinkExpenseInput, QuotationQuery,
@@ -34,7 +34,7 @@ const QUOTATION_INCLUDE = {
   attachments: {
     select: { id: true, fileName: true, mimeType: true, isPrimary: true, createdAt: true },
   },
-  projectItem: PROJECT_ITEM_SELECT,
+  batchItem: BATCH_ITEM_SELECT,
 } as const;
 
 // ── Listar cotizaciones ────────────────────────────────────────
@@ -179,8 +179,8 @@ export async function createQuotation(data: CreateQuotationInput, userId: string
     orderBy: { number: 'desc' },
     select:  { number: true },
   });
-  const nextNumber    = (last?.number ?? 0) + 1;
-  const projectItemId = await resolveProjectItemId(data.projectId, (data as any).projectItemId);
+  const nextNumber  = (last?.number ?? 0) + 1;
+  const batchItemId = await resolveBatchItemId(data.projectId, (data as any).batchItemId ?? (data as any).projectItemId);
 
   const q = await prisma.quotation.create({
     data: {
@@ -202,7 +202,7 @@ export async function createQuotation(data: CreateQuotationInput, userId: string
       deliveryDays:   data.deliveryDays,
       observations:   data.observations,
       notes:          data.notes,
-      projectItemId:  projectItemId ?? null,
+      batchItemId:    batchItemId ?? null,
       createdById:    userId,
     },
     include: QUOTATION_INCLUDE,
@@ -239,8 +239,11 @@ export async function updateQuotation(id: string, data: UpdateQuotationInput) {
       ...(data.observations    !== undefined && { observations:    data.observations }),
       ...(data.notes           !== undefined && { notes:           data.notes }),
       ...(data.categoryId      !== undefined && { categoryId:      data.categoryId }),
-      ...(data.projectItemId   !== undefined && {
-        projectItemId: await resolveProjectItemId(q.projectId, data.projectItemId, { inherited: true }),
+      ...((data as any).batchItemId !== undefined && {
+        batchItemId: await resolveBatchItemId(q.projectId, (data as any).batchItemId, { inherited: true }),
+      }),
+      ...((data as any).projectItemId !== undefined && (data as any).batchItemId === undefined && {
+        batchItemId: await resolveBatchItemId(q.projectId, (data as any).projectItemId, { inherited: true }),
       }),
     },
     include: QUOTATION_INCLUDE,

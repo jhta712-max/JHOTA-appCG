@@ -56,6 +56,8 @@ export const projectsApi = {
     api.post<{ success: boolean; data: ProjectItem }>(`/projects/${projectId}/items`, data),
   updateItem:  (projectId: string, itemId: string, data: { name?: string; active?: boolean }) =>
     api.patch<{ success: boolean; data: ProjectItem }>(`/projects/${projectId}/items/${itemId}`, data),
+  getBatchItems: (projectId: string) =>
+    api.get<{ success: boolean; data: any[] }>(`/projects/${projectId}/batch-items`),
 };
 
 // ── Gastos ────────────────────────────────────────────────────

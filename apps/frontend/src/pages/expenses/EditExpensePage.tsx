@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { CheckCircle, AlertCircle, ArrowLeft, Receipt, Loader2 } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi } from '../../api';
-import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
+import { BatchItemSelect } from '../../components/shared/BatchItemSelect';
 
 type FV = { ncf: string; supplierRnc: string; supplierName: string; itbisAmount: number };
 type FormData = {
@@ -17,7 +17,7 @@ type FormData = {
   hasFiscalDoc:  boolean;
   notes:         string;
   fiscalVoucher?: FV;
-  projectItemId?: string;
+  batchItemId?: string;
 };
 
 const NCF_REGEX   = /^[A-Z]\d{10}$/;
@@ -35,7 +35,7 @@ export default function EditExpensePage() {
   const [useForeign,      setUseForeign]      = useState(false);
   const [foreignCurrency, setForeignCurrency] = useState('USD');
   const [apiError,        setApiError]        = useState('');
-  const [projectItemId,   setProjectItemId]   = useState<string>('');
+  const [batchItemId,   setProjectItemId]   = useState<string>('');
 
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>();
   const watchedProjectId = watch('projectId');
@@ -67,7 +67,7 @@ export default function EditExpensePage() {
       setUseForeign(true);
       setForeignCurrency((expense as any).foreignCurrency ?? 'USD');
     }
-    setProjectItemId((expense as any).projectItemId ?? '');
+    setProjectItemId((expense as any).batchItemId ?? '');
     reset({
       projectId:     expense.project?.id ?? expense.projectId,
       categoryId:    expense.category.id,
@@ -118,7 +118,7 @@ export default function EditExpensePage() {
         itbisAmount:  Number(data.fiscalVoucher?.itbisAmount ?? 0),
       };
     }
-    payload.projectItemId = projectItemId || null;
+    payload.batchItemId = batchItemId || null;
     mutation.mutate(payload);
   };
 
@@ -218,9 +218,9 @@ export default function EditExpensePage() {
             {errors.projectId && <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.projectId.message}</p>}
           </div>
 
-          <ProjectItemSelect
+          <BatchItemSelect
             projectId={watchedProjectId}
-            value={projectItemId}
+            value={batchItemId}
             onChange={setProjectItemId}
           />
 
