@@ -41,6 +41,7 @@ const baseExpenseSchema = z.object({
   foreignCurrency: z.string().max(10).optional().nullable(),
   exchangeRate:    z.coerce.number().positive().optional().nullable(),
   projectItemId:   z.string().uuid().optional().nullable(),
+  batchItemId:     z.string().uuid().optional().nullable(),
 });
 
 // ---------------------------------------------------------------

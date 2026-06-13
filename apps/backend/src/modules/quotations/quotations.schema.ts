@@ -32,6 +32,7 @@ const baseQuotationSchema = z.object({
   observations:   z.string().max(2000).optional(),
   notes:          z.string().max(1000).optional(),
   projectItemId:  z.string().uuid().optional().nullable(),
+  batchItemId:    z.string().uuid().optional().nullable(),
 });
 
 // ── Crear cotización ───────────────────────────────────────────

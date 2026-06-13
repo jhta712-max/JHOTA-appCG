@@ -13,6 +13,7 @@ export const createPayrollSchema = z.object({
   description: z.string().min(5, 'Mínimo 5 caracteres').max(500),
   notes:          z.string().max(1000).optional(),
   projectItemId:  z.string().uuid().optional().nullable(),
+  batchItemId:    z.string().uuid().optional().nullable(),
   lines:       z.array(z.object({
     description:  z.string().min(3).max(300),
     quantity:     z.number().positive(),
