@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle, AlertCircle, ArrowLeft, Receipt, Loader2 } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi } from '../../api';
 import { BatchItemSelect } from '../../components/shared/BatchItemSelect';
@@ -30,6 +30,7 @@ const labelCls = "block font-['Barlow_Condensed'] text-xs font-semibold uppercas
 export default function EditExpensePage() {
   const { id }   = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const qc       = useQueryClient();
 
   const [hasFiscal,       setHasFiscal]       = useState(false);
   const [useForeign,      setUseForeign]      = useState(false);
@@ -89,6 +90,8 @@ export default function EditExpensePage() {
   const mutation = useMutation({
     mutationFn: (data: any) => expensesApi.update(id!, data),
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['project-summary'] });
+      qc.invalidateQueries({ queryKey: ['expenses'] });
       navigate(`/expenses/${id}`, { replace: true });
     },
     onError: (err: any) => {

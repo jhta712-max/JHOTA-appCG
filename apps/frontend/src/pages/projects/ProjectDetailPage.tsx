@@ -88,6 +88,8 @@ export default function ProjectDetailPage() {
     queryFn:  () => projectsApi.summary(id!),
     select:   (r) => r.data.data,
     enabled:  !!id,
+    refetchOnWindowFocus: true,
+    staleTime: 30_000,
   });
 
   const { data: expensesData } = useQuery({
@@ -95,6 +97,8 @@ export default function ProjectDetailPage() {
     queryFn:  () => expensesApi.list({ projectId: id, limit: 20, status: 'ACTIVE', orderBy: 'expenseDate', order: 'desc' }),
     select:   (r) => r.data,
     enabled:  !!id,
+    refetchOnWindowFocus: true,
+    staleTime: 30_000,
   });
 
   const { data: projectData } = useQuery({
@@ -747,12 +751,26 @@ export default function ProjectDetailPage() {
                     style={{ background: '#22c55e', minHeight: '2rem' }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p
-                      className="text-sm font-medium text-gray-900 truncate group-hover:text-[#1C1C1C]"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
-                    >
-                      {e.description}
-                    </p>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p
+                        className="text-sm font-medium text-gray-900 truncate group-hover:text-[#1C1C1C]"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        {e.description}
+                      </p>
+                      {(e as any).batchItem && (
+                        <span
+                          className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold tracking-widest uppercase"
+                          style={{
+                            fontFamily: "'Space Mono', monospace",
+                            background: '#F5C218',
+                            color: '#1C1C1C',
+                          }}
+                        >
+                          {(e as any).batchItem.code}
+                        </span>
+                      )}
+                    </div>
                     <p
                       className="text-xs text-gray-400"
                       style={{ fontFamily: "'DM Sans', sans-serif" }}

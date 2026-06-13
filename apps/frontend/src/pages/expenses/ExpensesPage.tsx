@@ -134,6 +134,7 @@ export default function ExpensesPage() {
     }));
     setBulkApplying(false);
     qc.invalidateQueries({ queryKey: ['expenses'] });
+    qc.invalidateQueries({ queryKey: ['project-summary'] });
     exitBulkMode();
   }
 
