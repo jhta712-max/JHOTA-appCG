@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
 import { ForeignCurrencyInput, type ForeignCurrencyValue } from '../../components/shared/ForeignCurrencyInput';
+import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
 import { expensesApi, projectsApi, categoriesApi, cardsApi, type OcrResult } from '../../api';
 import { OcrEnrichmentAlerts } from '../../components/OcrEnrichmentAlerts';
 import { useRole } from '../../hooks/useRole';
@@ -20,6 +21,7 @@ type FormData = {
   companyCardId?: number;
   hasFiscalDoc: boolean; notes: string;
   fiscalVoucher?: FV;
+  projectItemId?: string;
 };
 
 const CONFIDENCE_CONFIG = {
@@ -162,6 +164,7 @@ export default function NewExpensePage() {
         itbisAmount:  Number(fiscalValues.itbisAmount ?? 0),
       };
     }
+    if (data.projectItemId) payload.projectItemId = data.projectItemId;
     mutation.mutate(payload);
   };
 
@@ -509,6 +512,13 @@ export default function NewExpensePage() {
                 <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.projectId.message}</p>
               )}
             </div>
+
+            <ProjectItemSelect
+              projectId={watchedProjectId}
+              value={watch('projectItemId') ?? ''}
+              onChange={(v) => setValue('projectItemId', v)}
+              className="mb-4"
+            />
 
             {/* Fecha + Monto */}
             <div className="grid grid-cols-2 gap-4">

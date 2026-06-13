@@ -5,6 +5,7 @@ import { buildPaginatedResponse, parsePagination } from '../../utils/pagination'
 import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
 import { createNotification } from '../notifications/notifications.service';
 import { env } from '../../config/env';
+import { resolveProjectItemId, PROJECT_ITEM_SELECT } from '../../utils/projectItems';
 import type { CreateExpenseInput, UpdateExpenseInput, VoidExpenseInput, ExpenseQuery } from './expenses.schema';
 
 const aiClient = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null;
@@ -19,6 +20,7 @@ const EXPENSE_INCLUDE = {
   fiscalVoucher: true,
   attachments:  { select: { id: true, fileName: true, mimeType: true, isPrimary: true, createdAt: true } },
   paymentOrder: { select: { id: true, paymentBank: true, paymentReference: true, paidAt: true } },
+  projectItem:  PROJECT_ITEM_SELECT,
 } as const;
 
 // Roles que requieren aprobación al crear gastos
@@ -112,6 +114,8 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
   const needsApproval = !data.hasFiscalDoc && ROLES_NEED_APPROVAL.has(userRole ?? '');
   const status = needsApproval ? 'PENDING_APPROVAL' : 'ACTIVE';
 
+  const projectItemId = await resolveProjectItemId(data.projectId, (data as any).projectItemId);
+
   const expense = await prisma.expense.create({
     data: {
       projectId:     data.projectId,
@@ -125,6 +129,7 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
       hasFiscalDoc:    data.hasFiscalDoc,
       notes:           data.notes,
       status,
+      projectItemId:   projectItemId ?? null,
       foreignAmount:   (data as any).foreignAmount   ?? null,
       foreignCurrency: (data as any).foreignCurrency ?? null,
       exchangeRate:    (data as any).exchangeRate    ?? null,
@@ -214,7 +219,13 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
     };
   }
 
-  const { fiscalVoucher, ...expenseData } = data as any;
+  const { fiscalVoucher, projectItemId: rawItemId, ...expenseData } = data as any;
+
+  const resolvedItemId = await resolveProjectItemId(
+    expense.projectId,
+    rawItemId !== undefined ? rawItemId : (expense as any).projectItemId,
+    { inherited: true },
+  );
 
   // Si el gasto estaba REJECTED y se edita, vuelve a PENDING_APPROVAL
   const statusReset = expense.status === 'REJECTED'
@@ -225,6 +236,7 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
     where: { id },
     data: {
       ...expenseData,
+      projectItemId: resolvedItemId,
       expenseDate: data.expenseDate ? new Date(data.expenseDate) : undefined,
       ...fiscalVoucherOp,
       ...statusReset,

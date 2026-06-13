@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useProjectItems, useCreateProjectItem, useUpdateProjectItem } from '../../hooks/useProjectItems';
 import {
   ArrowLeft, Plus, FolderOpen, MapPin, User,
   Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight, Upload,
@@ -35,6 +36,32 @@ export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isSupervisor: canEdit } = useRole();
+
+  // ── Items de proyecto ─────────────────────────────────────
+  const { data: items = [] }     = useProjectItems(id);
+  const createItem               = useCreateProjectItem(id!);
+  const updateItem               = useUpdateProjectItem(id!);
+  const [itemName, setItemName]  = useState('');
+  const [editingItem, setEditingItem] = useState<{ id: string; name: string } | null>(null);
+  const itemInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCreateItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!itemName.trim()) return;
+    await createItem.mutateAsync(itemName.trim());
+    setItemName('');
+  };
+
+  const handleToggleActive = (item: { id: string; active: boolean }) => {
+    updateItem.mutate({ id: item.id, active: !item.active });
+  };
+
+  const handleSaveEditItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem?.name.trim()) return;
+    await updateItem.mutateAsync({ id: editingItem.id, name: editingItem.name.trim() });
+    setEditingItem(null);
+  };
 
   const [aiSummaryText,    setAiSummaryText]    = useState<string | null>(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
@@ -791,6 +818,99 @@ export default function ProjectDetailPage() {
             </div>
           )}
         </div>
+
+      {/* ── Items del proyecto ─────────────────────────────────── */}
+      <div className="mt-8 bg-white border border-gray-200">
+        <div className="bg-[#1C1C1C] px-5 py-3 flex items-center justify-between">
+          <h2 className="font-['Barlow_Condensed'] text-sm font-bold text-white uppercase tracking-[0.15em]">
+            Items del Proyecto
+            <span className="ml-2 font-['Space_Mono'] text-[#F5C218] text-xs">{items.length}</span>
+          </h2>
+          <span className="text-xs text-gray-400 font-['DM_Sans']">Partidas / lotes de licitación</span>
+        </div>
+
+        {/* Add item form — admin/supervisor only */}
+        {canEdit && (
+          <form onSubmit={handleCreateItem} className="flex gap-2 px-5 py-3 border-b border-gray-100">
+            <input
+              ref={itemInputRef}
+              value={itemName}
+              onChange={(e) => setItemName(e.target.value)}
+              placeholder="Nombre del nuevo item…"
+              className="flex-1 border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+            />
+            <button
+              type="submit"
+              disabled={!itemName.trim() || createItem.isPending}
+              className="px-4 py-2 bg-[#F5C218] text-[#1C1C1C] text-sm font-bold font-['Barlow_Condensed'] uppercase tracking-wide disabled:opacity-40"
+            >
+              {createItem.isPending ? '…' : 'Agregar'}
+            </button>
+          </form>
+        )}
+
+        {items.length === 0 ? (
+          <p className="px-5 py-4 text-sm text-gray-400 font-['DM_Sans']">
+            No hay items definidos. {canEdit ? 'Agrega el primero arriba.' : ''}
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="px-5 py-2 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.12em] w-12">#</th>
+                <th className="px-5 py-2 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.12em]">Nombre</th>
+                <th className="px-5 py-2 text-right font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.12em]">Registros</th>
+                {canEdit && <th className="px-5 py-2 w-24"></th>}
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id} className={`border-b border-gray-50 ${!item.active ? 'opacity-50' : ''}`}>
+                  <td className="px-5 py-2 font-['Space_Mono'] text-xs text-gray-500">{item.number}</td>
+                  <td className="px-5 py-2 font-['DM_Sans']">
+                    {editingItem?.id === item.id ? (
+                      <form onSubmit={handleSaveEditItem} className="flex gap-2">
+                        <input
+                          value={editingItem.name}
+                          onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
+                          autoFocus
+                          className="flex-1 border border-[#F5C218] px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none"
+                        />
+                        <button type="submit" className="text-xs text-[#F5C218] font-bold px-2">Guardar</button>
+                        <button type="button" onClick={() => setEditingItem(null)} className="text-xs text-gray-400 px-1">✕</button>
+                      </form>
+                    ) : (
+                      <span className={!item.active ? 'line-through text-gray-400' : ''}>{item.name}</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-2 text-right font-['Space_Mono'] text-xs text-gray-500">
+                    {item._count ? (item._count.expenses + item._count.paymentOrders + item._count.payrolls + item._count.quotations) : '—'}
+                  </td>
+                  {canEdit && (
+                    <td className="px-5 py-2 text-right">
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => setEditingItem({ id: item.id, name: item.name })}
+                          className="text-xs text-gray-400 hover:text-[#F5C218] transition-colors"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleToggleActive(item)}
+                          disabled={updateItem.isPending}
+                          className={`text-xs transition-colors ${item.active ? 'text-gray-400 hover:text-red-500' : 'text-gray-400 hover:text-green-600'}`}
+                        >
+                          {item.active ? 'Desactivar' : 'Activar'}
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       </div>
     </div>

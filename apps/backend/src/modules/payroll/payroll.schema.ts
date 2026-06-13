@@ -11,7 +11,8 @@ export const createPayrollSchema = z.object({
   periodEnd:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato YYYY-MM-DD'),
   type:        PayrollTypeEnum.default('LABOR'),
   description: z.string().min(5, 'Mínimo 5 caracteres').max(500),
-  notes:       z.string().max(1000).optional(),
+  notes:          z.string().max(1000).optional(),
+  projectItemId:  z.string().uuid().optional().nullable(),
   lines:       z.array(z.object({
     description:  z.string().min(3).max(300),
     quantity:     z.number().positive(),
@@ -26,11 +27,12 @@ export const createPayrollSchema = z.object({
 
 // ─── Update Payroll (solo en DRAFT) ──────────────────────────
 export const updatePayrollSchema = z.object({
-  periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  periodEnd:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  type:        PayrollTypeEnum.optional(),
-  description: z.string().min(5).max(500).optional(),
-  notes:       z.string().max(1000).optional().nullable(),
+  periodStart:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  periodEnd:     z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  type:          PayrollTypeEnum.optional(),
+  description:   z.string().min(5).max(500).optional(),
+  notes:         z.string().max(1000).optional().nullable(),
+  projectItemId: z.string().uuid().optional().nullable(),
 });
 
 // ─── Add / Update a single line ──────────────────────────────

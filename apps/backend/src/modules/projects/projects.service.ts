@@ -9,6 +9,7 @@ import type {
   CreateProjectInput, UpdateProjectInput, ProjectQuery,
   CreateAddendumInput, UpdateAddendumInput,
   CreateCubicacionInput, UpdateCubicacionInput,
+  CreateProjectItemInput, UpdateProjectItemInput,
 } from './projects.schema';
 
 export async function getProjects(query: ProjectQuery, requestingUser: { userId: string; role: string }) {
@@ -531,4 +532,44 @@ ${context}`,
 
   const summary = ((msg.content[0] as any).text ?? '').trim();
   return { summary, generatedAt: new Date().toISOString() };
+}
+
+// ── Items de proyecto (partidas/lotes) ────────────────────────
+
+export async function getProjectItems(projectId: string) {
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true } });
+  if (!project) throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
+
+  return prisma.projectItem.findMany({
+    where:   { projectId },
+    orderBy: { number: 'asc' },
+    include: { _count: { select: { expenses: true, paymentOrders: true, payrolls: true, quotations: true } } },
+  });
+}
+
+export async function createProjectItem(projectId: string, data: CreateProjectItemInput) {
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true } });
+  if (!project) throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
+
+  const last = await prisma.projectItem.findFirst({
+    where:   { projectId },
+    orderBy: { number: 'desc' },
+    select:  { number: true },
+  });
+  return prisma.projectItem.create({
+    data: { projectId, number: (last?.number ?? 0) + 1, name: data.name },
+  });
+}
+
+export async function updateProjectItem(projectId: string, itemId: string, data: UpdateProjectItemInput) {
+  const existing = await prisma.projectItem.findFirst({ where: { id: itemId, projectId } });
+  if (!existing) throw new AppError(404, 'Item no encontrado', 'NOT_FOUND');
+
+  return prisma.projectItem.update({
+    where: { id: itemId },
+    data: {
+      ...(data.name   !== undefined && { name: data.name }),
+      ...(data.active !== undefined && { active: data.active }),
+    },
+  });
 }

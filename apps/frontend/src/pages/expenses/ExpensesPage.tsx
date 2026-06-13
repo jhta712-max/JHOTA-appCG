@@ -451,6 +451,14 @@ export default function ExpensesPage() {
                         </span>
                       )}
                       {e.category.name} · {PAYMENT_METHOD_LABELS[e.paymentMethod]}
+                      {e.projectItem && (
+                        <span
+                          className="ml-1"
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C', fontSize: '0.75rem', background: '#F5C218', padding: '0 4px' }}
+                        >
+                          #{e.projectItem.number} {e.projectItem.name}
+                        </span>
+                      )}
                       {e.hasFiscalDoc && e.fiscalVoucher && (
                         <span
                           className="ml-1"

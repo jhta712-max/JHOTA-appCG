@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { CheckCircle, AlertCircle, ArrowLeft, Receipt, Loader2 } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi } from '../../api';
+import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
 
 type FV = { ncf: string; supplierRnc: string; supplierName: string; itbisAmount: number };
 type FormData = {
@@ -16,6 +17,7 @@ type FormData = {
   hasFiscalDoc:  boolean;
   notes:         string;
   fiscalVoucher?: FV;
+  projectItemId?: string;
 };
 
 const NCF_REGEX   = /^[A-Z]\d{10}$/;
@@ -33,8 +35,10 @@ export default function EditExpensePage() {
   const [useForeign,      setUseForeign]      = useState(false);
   const [foreignCurrency, setForeignCurrency] = useState('USD');
   const [apiError,        setApiError]        = useState('');
+  const [projectItemId,   setProjectItemId]   = useState<string>('');
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>();
+  const watchedProjectId = watch('projectId');
 
   const { data: expense, isLoading: loadingExpense } = useQuery({
     queryKey: ['expense', id],
@@ -63,6 +67,7 @@ export default function EditExpensePage() {
       setUseForeign(true);
       setForeignCurrency((expense as any).foreignCurrency ?? 'USD');
     }
+    setProjectItemId((expense as any).projectItemId ?? '');
     reset({
       projectId:     expense.project?.id ?? expense.projectId,
       categoryId:    expense.category.id,
@@ -113,6 +118,7 @@ export default function EditExpensePage() {
         itbisAmount:  Number(data.fiscalVoucher?.itbisAmount ?? 0),
       };
     }
+    payload.projectItemId = projectItemId || null;
     mutation.mutate(payload);
   };
 
@@ -211,6 +217,12 @@ export default function EditExpensePage() {
             </select>
             {errors.projectId && <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.projectId.message}</p>}
           </div>
+
+          <ProjectItemSelect
+            projectId={watchedProjectId}
+            value={projectItemId}
+            onChange={setProjectItemId}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div>

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Edit, Receipt, Calendar, User, MapPin,
   CreditCard, FileText, AlertCircle, CheckCircle, XCircle,
-  Paperclip, Trash2, ExternalLink, Clock, ThumbsUp, ThumbsDown,
+  Paperclip, Trash2, ExternalLink, Clock, ThumbsUp, ThumbsDown, Layers,
 } from 'lucide-react';
 import { expensesApi, quotationsApi } from '../../api';
 import { DetailPageSkeleton } from '../../components/ui/DetailPageSkeleton';
@@ -232,6 +232,19 @@ export default function ExpenseDetailPage() {
               <p className="font-['DM_Sans'] font-medium text-gray-800">{expense.category?.name}</p>
             </div>
           </div>
+
+          {expense.projectItem && (
+            <div className="flex items-start gap-2">
+              <Layers className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-['DM_Sans'] text-xs text-gray-400">Item del proyecto</p>
+                <p className="font-['DM_Sans'] font-medium text-gray-800">
+                  <span className="font-['Space_Mono'] text-[#1C1C1C]">#{expense.projectItem.number}</span>{' '}
+                  {expense.projectItem.name}
+                </p>
+              </div>
+            </div>
+          )}
 
           {expense.registeredBy && (
             <div className="flex items-start gap-2 col-span-2">

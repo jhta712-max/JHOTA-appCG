@@ -61,3 +61,15 @@ export const updateCubicacionSchema = createCubicacionSchema.partial();
 
 export type CreateCubicacionInput = z.infer<typeof createCubicacionSchema>;
 export type UpdateCubicacionInput = z.infer<typeof updateCubicacionSchema>;
+
+// ── Items de proyecto ─────────────────────────────────────────
+export const createProjectItemSchema = z.object({
+  name: z.string().min(2).max(300),
+});
+export const updateProjectItemSchema = z.object({
+  name:   z.string().min(2).max(300).optional(),
+  active: z.boolean().optional(),
+});
+
+export type CreateProjectItemInput = z.infer<typeof createProjectItemSchema>;
+export type UpdateProjectItemInput = z.infer<typeof updateProjectItemSchema>;

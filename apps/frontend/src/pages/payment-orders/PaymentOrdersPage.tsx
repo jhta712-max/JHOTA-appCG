@@ -11,6 +11,7 @@ import { useOcrPolling } from '../../hooks/useOcrPolling';
 import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
+import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
 import { TransferPaymentForm } from '../../components/shared/TransferPaymentForm';
 import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 
@@ -22,11 +23,13 @@ type OrderForm = {
   projectId: string; amount: string; currency: string; concept: string;
   notes: string; payrollId: string; bankAccountId: string; contratoAjustadoId: string; quotationId: string;
   payrollPeriodStart: string; payrollPeriodEnd: string; payrollType: 'LABOR' | 'SERVICE';
+  projectItemId: string;
 };
 const EMPTY_ORDER: OrderForm = {
   orderType: 'SERVICIO', payingCompany: '', supplierId: '', projectId: '',
   amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '', bankAccountId: '', contratoAjustadoId: '', quotationId: '',
   payrollPeriodStart: '', payrollPeriodEnd: '', payrollType: 'LABOR',
+  projectItemId: '',
 };
 
 const CURRENCIES = ['RD$', 'US$', '€'];
@@ -370,6 +373,7 @@ export default function PaymentOrdersPage() {
       payrollPeriodStart: payroll?.periodStart ? payroll.periodStart.slice(0, 10) : '',
       payrollPeriodEnd:   payroll?.periodEnd   ? payroll.periodEnd.slice(0, 10)   : '',
       payrollType:        payroll?.type ?? 'LABOR',
+      projectItemId:      (o as any).projectItemId ?? '',
     } : EMPTY_ORDER);
     setModalView('form'); setSessionOrders([]); setLastCreatedOrder(null); setFormErr(''); setOrderModal(true);
   };
@@ -411,6 +415,7 @@ export default function PaymentOrdersPage() {
       bankAccountId:      orderForm.bankAccountId || undefined,
       contratoAjustadoId: orderForm.contratoAjustadoId || undefined,
       quotationId:        orderForm.orderType === 'SERVICIO' ? (orderForm.quotationId || undefined) : undefined,
+      projectItemId:      orderForm.projectItemId || undefined,
     };
 
     if (isNewPayroll) {
@@ -890,12 +895,19 @@ export default function PaymentOrdersPage() {
                 </Field>
                 <Field label="Proyecto *">
                   <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.projectId}
-                    onChange={(e) => setOrderForm((f) => ({ ...f, projectId: e.target.value, payrollId: '', contratoAjustadoId: '' }))}>
+                    onChange={(e) => setOrderForm((f) => ({ ...f, projectId: e.target.value, payrollId: '', contratoAjustadoId: '', projectItemId: '' }))}>
                     <option value="">— Selecciona —</option>
                     {projects.map((p) => <option key={p.id} value={p.id}>{p.code} — {p.name}</option>)}
                   </select>
                 </Field>
               </div>
+
+              <ProjectItemSelect
+                projectId={orderForm.projectId || undefined}
+                value={orderForm.projectItemId}
+                onChange={(v) => setOrderForm((f) => ({ ...f, projectItemId: v }))}
+                className="mb-3"
+              />
 
               {orderForm.orderType === 'PAYROLL' && !editingOrder && (
                 <div className="bg-blue-50 border-l-4 border-blue-400 p-4 space-y-3 mb-1">

@@ -1,5 +1,5 @@
 import api from './client';
-import type { Project, Expense, Category, ProjectSummary, PaginatedResponse, User, Addendum, Cubicacion, FinancialAnalysis, Assignment } from '../types';
+import type { Project, Expense, Category, ProjectSummary, PaginatedResponse, User, Addendum, Cubicacion, FinancialAnalysis, Assignment, ProjectItem } from '../types';
 
 // ── Auth ──────────────────────────────────────────────────────
 export const authApi = {
@@ -49,6 +49,13 @@ export const projectsApi = {
     api.delete(`/projects/${projectId}/assignments/${userId}`),
   aiSummary:       (projectId: string) =>
     api.post<{ success: boolean; data: { summary: string; generatedAt: string } }>(`/projects/${projectId}/ai-summary`),
+  // Items de proyecto (partidas/lotes)
+  getItems:    (projectId: string) =>
+    api.get<{ success: boolean; data: ProjectItem[] }>(`/projects/${projectId}/items`),
+  createItem:  (projectId: string, data: { name: string }) =>
+    api.post<{ success: boolean; data: ProjectItem }>(`/projects/${projectId}/items`, data),
+  updateItem:  (projectId: string, itemId: string, data: { name?: string; active?: boolean }) =>
+    api.patch<{ success: boolean; data: ProjectItem }>(`/projects/${projectId}/items/${itemId}`, data),
 };
 
 // ── Gastos ────────────────────────────────────────────────────

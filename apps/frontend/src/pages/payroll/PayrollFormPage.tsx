@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Plus, Trash2, Wallet, AlertTriangle, X } from 'lucide-react';
 import { payrollApi, projectsApi, type Payroll } from '../../api';
 import { useRole } from '../../hooks/useRole';
+import { ProjectItemSelect } from '../../components/shared/ProjectItemSelect';
 
 interface LineItem {
   id?:          string;
@@ -31,7 +32,8 @@ export default function PayrollFormPage() {
   const { canCreatePayroll, canApprovePayroll } = useRole();
 
   // ── Todos los hooks ANTES de cualquier return condicional ───
-  const [projectId,   setProjectId]   = useState('');
+  const [projectId,      setProjectId]      = useState('');
+  const [projectItemId,  setProjectItemId]  = useState('');
   const [periodStart, setPeriodStart] = useState('');
   const [periodEnd,   setPeriodEnd]   = useState('');
   const [type,        setType]        = useState<'LABOR' | 'SERVICE'>('LABOR');
@@ -79,6 +81,7 @@ export default function PayrollFormPage() {
     if (!p) return;
     if (p.status !== 'DRAFT') { navigate(`/payrolls/${id}`); return; }
     setProjectId(p.projectId);
+    setProjectItemId((p as any).projectItemId ?? '');
     setPeriodStart(p.periodStart.slice(0, 10));
     setPeriodEnd(p.periodEnd.slice(0, 10));
     setType(p.type);
@@ -135,12 +138,14 @@ export default function PayrollFormPage() {
         periodStart,
         periodEnd,
         type,
-        description: description.trim(),
-        notes: notes.trim() || undefined,
+        description:   description.trim(),
+        notes:         notes.trim() || undefined,
+        projectItemId: projectItemId || null,
       });
     } else {
       createMut.mutate({
         projectId,
+        projectItemId: projectItemId || undefined,
         periodStart,
         periodEnd,
         type,
@@ -229,6 +234,12 @@ export default function PayrollFormPage() {
                 )}
               </div>
             )}
+
+            <ProjectItemSelect
+              projectId={projectId || undefined}
+              value={projectItemId}
+              onChange={setProjectItemId}
+            />
 
             {/* Tipo */}
             <div>

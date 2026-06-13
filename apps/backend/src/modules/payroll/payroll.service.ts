@@ -1,6 +1,7 @@
 import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildExpenseData } from '../payment-orders/payment-orders.service';
+import { resolveProjectItemId, PROJECT_ITEM_SELECT } from '../../utils/projectItems';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import ExcelJS from 'exceljs';
 import {
@@ -38,6 +39,7 @@ const PAYROLL_INCLUDE = {
   paymentOrder: {
     select: { id: true, concept: true, amount: true, status: true, orderType: true, createdAt: true },
   },
+  projectItem: PROJECT_ITEM_SELECT,
 } as const;
 
 // ─── Next payroll number per project ─────────────────────────
@@ -119,8 +121,9 @@ export async function createPayroll(data: CreatePayrollInput, userId: string) {
     throw new AppError(400, 'No se puede crear nómina en un proyecto cerrado', 'PROJECT_CLOSED');
   }
 
-  const number = await nextPayrollNumber(data.projectId);
-  const total  = computeTotal(data.lines);
+  const number        = await nextPayrollNumber(data.projectId);
+  const total         = computeTotal(data.lines);
+  const projectItemId = await resolveProjectItemId(data.projectId, (data as any).projectItemId);
 
   const payroll = await prisma.$transaction(async (tx) => {
     const created = await tx.payroll.create({
@@ -130,10 +133,11 @@ export async function createPayroll(data: CreatePayrollInput, userId: string) {
         periodStart: new Date(data.periodStart),
         periodEnd:   new Date(data.periodEnd),
         type:        data.type,
-        description: data.description,
-        notes:       data.notes,
-        totalAmount: total,
-        createdById: userId,
+        description:  data.description,
+        notes:        data.notes,
+        totalAmount:  total,
+        projectItemId: projectItemId ?? null,
+        createdById:  userId,
         lines: {
           create: data.lines.map((l, idx) => ({
             lineNumber:   idx + 1,
@@ -165,14 +169,19 @@ export async function updatePayroll(id: string, data: UpdatePayrollInput) {
     throw new AppError(400, 'Solo se pueden editar nóminas en borrador', 'INVALID_STATUS');
   }
 
+  const resolvedItemId = 'projectItemId' in data
+    ? await resolveProjectItemId(payroll.projectId, data.projectItemId, { inherited: true })
+    : undefined;
+
   return prisma.payroll.update({
     where: { id },
     data: {
-      periodStart: data.periodStart ? new Date(data.periodStart) : undefined,
-      periodEnd:   data.periodEnd   ? new Date(data.periodEnd)   : undefined,
-      type:        data.type,
-      description: data.description,
-      notes:       data.notes,
+      periodStart:   data.periodStart ? new Date(data.periodStart) : undefined,
+      periodEnd:     data.periodEnd   ? new Date(data.periodEnd)   : undefined,
+      type:          data.type,
+      description:   data.description,
+      notes:         data.notes,
+      ...(resolvedItemId !== undefined && { projectItemId: resolvedItemId }),
     },
     include: PAYROLL_INCLUDE,
   });

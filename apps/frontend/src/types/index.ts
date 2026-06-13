@@ -64,6 +64,8 @@ export interface Expense {
   notes?: string;
   project: { id: string; code: string; name: string };
   projectId: string;
+  projectItemId?: string | null;
+  projectItem?: { id: string; number: number; name: string; active: boolean } | null;
   category: { id: number; name: string; icon?: string };
   registeredBy: { id: string; name: string };
   companyCardId?: number;
@@ -79,6 +81,16 @@ export interface Expense {
   approvedAt?: string | null;
   rejectedBy?: { id: string; name: string } | null;
   rejectedAt?: string | null;
+}
+
+export interface ProjectItem {
+  id: string;
+  projectId: string;
+  number: number;
+  name: string;
+  active: boolean;
+  createdAt: string;
+  _count?: { expenses: number; paymentOrders: number; payrolls: number; quotations: number };
 }
 
 export interface Addendum {
