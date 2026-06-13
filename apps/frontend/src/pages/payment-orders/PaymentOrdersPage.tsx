@@ -277,10 +277,10 @@ export default function PaymentOrdersPage() {
     enabled:  orderModal && !!orderForm.projectId && !!orderForm.supplierId,
   });
   const { data: availableQuotations = [] } = useQuery({
-    queryKey: ['payment-orders', 'quotations', orderForm.projectId, orderForm.supplierId],
+    queryKey: ['payment-orders', 'quotations', orderForm.projectId],
     queryFn:  () => paymentOrdersApi.availableQuotations(orderForm.projectId, orderForm.supplierId),
     select:   (r) => r.data.data as any[],
-    enabled:  orderModal && orderForm.orderType === 'SERVICIO' && !!orderForm.projectId && !!orderForm.supplierId,
+    enabled:  orderModal && orderForm.orderType === 'SERVICIO' && !!orderForm.projectId,
   });
 
   const createOrderMut = useMutation({
@@ -1025,7 +1025,7 @@ export default function PaymentOrdersPage() {
                     <option value="">— Sin cotización vinculada —</option>
                     {availableQuotations.map((q: any) => (
                       <option key={q.id} value={q.id}>
-                        COTI-{String(q.number).padStart(3, '0')} · {q.description?.slice(0, 50)}{q.description?.length > 50 ? '…' : ''} · {q.currency} {Number(q.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                        COTI-{String(q.number).padStart(3, '0')} · {q.supplierName?.slice(0, 30)} · {q.description?.slice(0, 40)}{q.description?.length > 40 ? '…' : ''} · {q.currency} {Number(q.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                       </option>
                     ))}
                   </select>
