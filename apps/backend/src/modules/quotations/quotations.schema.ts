@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normalizeRNC } from '../../utils/fiscal.utils';
 
 // ── Schema base de cotización ──────────────────────────────────
 
@@ -9,7 +10,7 @@ const baseQuotationSchema = z.object({
   // Suplidor
   supplierId:     z.string().uuid().optional().nullable(),
   supplierName:   z.string({ required_error: 'El nombre del suplidor es requerido' }).min(2).max(200),
-  supplierRnc:    z.string().max(11).optional(),
+  supplierRnc:    z.string().max(14).optional().transform(v => v ? normalizeRNC(v) : v),
 
   // Documento
   quotationNumber: z.string().max(50).optional(),

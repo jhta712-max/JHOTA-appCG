@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { validateNCF, validateRNC, extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
+import { validateNCF, validateRNC, normalizeRNC, extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
 
 // ---------------------------------------------------------------
 // Comprobante fiscal — validación NCF/e-NCF + RNC
@@ -12,6 +12,7 @@ const fiscalVoucherSchema = z.object({
     }),
   supplierRnc: z
     .string({ required_error: 'El RNC del suplidor es requerido' })
+    .transform(normalizeRNC)
     .refine(validateRNC, { message: 'RNC inválido. Debe tener 9 u 11 dígitos' }),
   supplierName: z
     .string({ required_error: 'El nombre del suplidor es requerido' })

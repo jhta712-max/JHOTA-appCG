@@ -30,9 +30,14 @@ export function extractNCFType(ncf: string): string {
   return ncf.substring(0, 3);  // ej. B01
 }
 
-/** Valida formato de RNC (9 u 11 dígitos) */
+/** Strips dashes, spaces and dots from an RNC/cédula string */
+export function normalizeRNC(value: string): string {
+  return value.replace(/[\s\-\.]/g, '');
+}
+
+/** Valida formato de RNC (9 u 11 dígitos). Acepta guiones — los elimina antes de validar. */
 export function validateRNC(value: string): boolean {
-  return RNC_REGEX.test(value);
+  return RNC_REGEX.test(normalizeRNC(value));
 }
 
 /** Descripción del tipo e-NCF según DGII */
