@@ -903,7 +903,11 @@ export default function PaymentOrdersPage() {
               </div>
 
               <BatchItemSelect
-                projectId={orderForm.projectId || undefined}
+                projectId={
+                  projects.find((p) => p.id === orderForm.projectId)?.batchesEnabled
+                    ? orderForm.projectId || undefined
+                    : undefined
+                }
                 value={orderForm.batchItemId}
                 onChange={(v) => setOrderForm((f) => ({ ...f, batchItemId: v }))}
                 className="mb-3"

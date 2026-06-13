@@ -52,6 +52,7 @@ export default function EditExpensePage() {
     queryFn:  () => projectsApi.list({ status: 'ACTIVE', limit: 100 }),
     select:   (r) => r.data.data,
   });
+  const selectedProjectBatchesEnabled = projects?.find((p) => p.id === watchedProjectId)?.batchesEnabled ?? false;
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -219,7 +220,7 @@ export default function EditExpensePage() {
           </div>
 
           <BatchItemSelect
-            projectId={watchedProjectId}
+            projectId={selectedProjectBatchesEnabled ? watchedProjectId : undefined}
             value={batchItemId}
             onChange={setProjectItemId}
           />

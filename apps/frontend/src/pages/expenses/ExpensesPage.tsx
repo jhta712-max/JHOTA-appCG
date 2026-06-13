@@ -627,7 +627,12 @@ export default function ExpensesPage() {
           </div>
           <div className="flex-1 max-w-xs">
             <BatchItemSelect
-              projectId={selectedProjectId !== 'all' ? selectedProjectId : undefined}
+              projectId={
+                selectedProjectId !== 'all' &&
+                projects.find((p) => p.id === selectedProjectId)?.batchesEnabled
+                  ? selectedProjectId
+                  : undefined
+              }
               value={bulkItemId}
               onChange={setBulkItemId}
               required={false}

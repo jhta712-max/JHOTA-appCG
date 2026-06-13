@@ -236,7 +236,11 @@ export default function PayrollFormPage() {
             )}
 
             <BatchItemSelect
-              projectId={projectId || undefined}
+              projectId={
+                projects.find((p: any) => p.id === projectId)?.batchesEnabled
+                  ? projectId || undefined
+                  : undefined
+              }
               value={batchItemId}
               onChange={setBatchItemId}
             />

@@ -301,7 +301,11 @@ export default function QuotationFormPage() {
               {errors.projectId && <p className="text-xs text-red-500 mt-1 font-['DM_Sans']">{errors.projectId}</p>}
             </div>
             <BatchItemSelect
-              projectId={form.projectId || undefined}
+              projectId={
+                (projects ?? []).find((p) => p.id === form.projectId)?.batchesEnabled
+                  ? form.projectId || undefined
+                  : undefined
+              }
               value={form.batchItemId}
               onChange={(v) => set('batchItemId', v)}
             />
