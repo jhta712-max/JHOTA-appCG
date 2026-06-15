@@ -1,5 +1,6 @@
 import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
+import { PaymentMethod } from '@prisma/client';
 import type { CreateCreditLineInput, UpdateCreditLineInput, AddPaymentInput } from './credit-lines.schema';
 
 const LINE_INCLUDE = {
@@ -9,6 +10,8 @@ const LINE_INCLUDE = {
 } as const;
 
 export async function listCreditLines(supplierId: string) {
+  const supplier = await prisma.supplier.findUnique({ where: { id: supplierId }, select: { id: true } });
+  if (!supplier) throw new AppError(404, 'Proveedor no encontrado', 'SUPPLIER_NOT_FOUND');
   return prisma.supplierCreditLine.findMany({
     where:   { supplierId },
     include: LINE_INCLUDE,
@@ -21,7 +24,7 @@ export async function getCreditLineBalance(lineId: string) {
     where:   { id: lineId },
     include: { payments: { select: { amount: true } } },
   });
-  if (!line) throw new AppError(404, 'Línea de crédito no encontrada', 'NOT_FOUND');
+  if (!line) throw new AppError(404, 'Línea de crédito no encontrada', 'CREDIT_LINE_NOT_FOUND');
 
   const consumed = Number(
     (await prisma.expense.aggregate({
@@ -38,7 +41,7 @@ export async function getCreditLineBalance(lineId: string) {
 
 export async function createCreditLine(supplierId: string, data: CreateCreditLineInput, userId: string) {
   const supplier = await prisma.supplier.findUnique({ where: { id: supplierId } });
-  if (!supplier) throw new AppError(404, 'Proveedor no encontrado', 'NOT_FOUND');
+  if (!supplier) throw new AppError(404, 'Proveedor no encontrado', 'SUPPLIER_NOT_FOUND');
 
   return prisma.supplierCreditLine.create({
     data: {
@@ -53,7 +56,7 @@ export async function createCreditLine(supplierId: string, data: CreateCreditLin
 
 export async function updateCreditLine(lineId: string, data: UpdateCreditLineInput) {
   const line = await prisma.supplierCreditLine.findUnique({ where: { id: lineId } });
-  if (!line) throw new AppError(404, 'Línea de crédito no encontrada', 'NOT_FOUND');
+  if (!line) throw new AppError(404, 'Línea de crédito no encontrada', 'CREDIT_LINE_NOT_FOUND');
 
   return prisma.supplierCreditLine.update({
     where:   { id: lineId },
@@ -64,7 +67,7 @@ export async function updateCreditLine(lineId: string, data: UpdateCreditLineInp
 
 export async function toggleCreditLine(lineId: string) {
   const line = await prisma.supplierCreditLine.findUnique({ where: { id: lineId } });
-  if (!line) throw new AppError(404, 'Línea de crédito no encontrada', 'NOT_FOUND');
+  if (!line) throw new AppError(404, 'Línea de crédito no encontrada', 'CREDIT_LINE_NOT_FOUND');
 
   return prisma.supplierCreditLine.update({
     where:   { id: lineId },
@@ -75,7 +78,10 @@ export async function toggleCreditLine(lineId: string) {
 
 export async function addPayment(lineId: string, data: AddPaymentInput, userId: string) {
   const bal = await getCreditLineBalance(lineId);
-  if (data.amount > bal.pending + 0.01) {
+  // Convert to integer cents to avoid floating-point issues
+  const amountCents  = Math.round(data.amount * 100);
+  const pendingCents = Math.round(bal.pending * 100);
+  if (bal.pending <= 0 || amountCents > pendingCents) {
     throw new AppError(400, `El pago (${data.amount}) supera la deuda pendiente (${bal.pending})`, 'EXCEEDS_BALANCE');
   }
 
@@ -84,7 +90,7 @@ export async function addPayment(lineId: string, data: AddPaymentInput, userId: 
       creditLineId:  lineId,
       amount:        data.amount,
       paymentDate:   new Date(data.paymentDate),
-      paymentMethod: data.paymentMethod as any,
+      paymentMethod: data.paymentMethod as PaymentMethod,
       reference:     data.reference ?? null,
       notes:         data.notes     ?? null,
       createdById:   userId,
