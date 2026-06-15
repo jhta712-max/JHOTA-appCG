@@ -810,10 +810,11 @@ model SupplierCreditLine {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  supplier  Supplier               @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  createdBy User                   @relation("CreditLineCreatedBy", fields: [createdById], references: [id])
-  expenses  Expense[]              @relation("ExpenseCreditLine")
-  payments  SupplierCreditPayment[]
+  supplier      Supplier               @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  createdBy     User                   @relation("CreditLineCreatedBy", fields: [createdById], references: [id])
+  expenses      Expense[]              @relation("ExpenseCreditLine")
+  payments      SupplierCreditPayment[]
+  paymentOrders PaymentOrder[]         @relation("PaymentOrderCreditLine")
 
   @@index([supplierId])
   @@map("supplier_credit_lines")
@@ -868,6 +869,7 @@ model PaymentOrder {
   quotationId        String?   @map("quotation_id") @db.Uuid
   projectItemId      String?   @map("project_item_id") @db.Uuid
   batchItemId        String?   @map("batch_item_id") @db.Uuid
+  creditLineId       String?   @map("credit_line_id") @db.Uuid
   createdById        String    @map("created_by_id") @db.Uuid
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
@@ -883,6 +885,7 @@ model PaymentOrder {
   quotation                 Quotation?             @relation("PaymentOrderQuotation", fields: [quotationId], references: [id], onDelete: SetNull)
   projectItem               ProjectItem?           @relation(fields: [projectItemId], references: [id], onDelete: SetNull)
   batchItem                 BatchItem?             @relation("PaymentOrderBatchItem", fields: [batchItemId], references: [id], onDelete: SetNull)
+  creditLine                SupplierCreditLine?    @relation("PaymentOrderCreditLine", fields: [creditLineId], references: [id], onDelete: SetNull)
   contratoAjustadoPagos     ContratoAjustadoPago[] @relation("ContratoAjustadoPagoOrdenPago")
 
   @@index([status])
@@ -892,6 +895,7 @@ model PaymentOrder {
   @@index([quotationId])
   @@index([projectItemId])
   @@index([batchItemId])
+  @@index([creditLineId])
   @@index([createdAt])
   @@map("payment_orders")
 }
