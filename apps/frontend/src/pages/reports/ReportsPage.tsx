@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart3, FileSpreadsheet, FileText, Download,
-  Calendar, FolderOpen, Receipt, TrendingUp, Loader2,
+  Calendar, FolderOpen, Receipt, TrendingUp, Loader2, Zap,
 } from 'lucide-react';
-import { projectsApi } from '../../api';
+import { projectsApi, suppliersApi } from '../../api';
 import api from '../../api/client';
+import { useRole } from '../../hooks/useRole';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -96,6 +97,8 @@ export default function ReportsPage() {
   const [startDate,  setStartDate]  = useState(firstDay);
   const [endDate,    setEndDate]    = useState(today);
 
+  const { isAdmin, isSupervisor } = useRole();
+
   const { data: projects } = useQuery({
     queryKey: ['projects', 'reports'],
     queryFn:  () => projectsApi.list({ limit: 200 }),
@@ -107,6 +110,21 @@ export default function ReportsPage() {
     const params: Record<string, string> = { startDate, endDate, ...extra };
     if (projectId) params.projectId = projectId;
     return Object.entries(params).filter(([, v]) => !!v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  }
+
+  async function handleDownloadCreditReport(status: 'active' | 'all') {
+    try {
+      const res = await suppliersApi.downloadCreditReport(status);
+      const blob = new Blob([res.data]);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `credito-suplidores-${status}-${today}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error descargando reporte de crédito', err);
+    }
   }
 
   return (
@@ -267,6 +285,30 @@ export default function ReportsPage() {
                 },
               ]}
             />
+
+            {/* Estado de crédito por suplidor */}
+            {(isAdmin || isSupervisor) && (
+              <ReportCard
+                index={4}
+                icon={<Zap className="w-5 h-5" />}
+                title="Estado de Crédito por Suplidor"
+                description="Snapshot actual de todas las líneas de crédito con suplidores — límite, consumido, pendiente y disponible."
+                actions={[
+                  {
+                    label: 'Activas',
+                    isPrimary: true,
+                    icon: <FileSpreadsheet className="w-3.5 h-3.5" />,
+                    onClick: () => handleDownloadCreditReport('active'),
+                  },
+                  {
+                    label: 'Todas',
+                    isPrimary: false,
+                    icon: <FileSpreadsheet className="w-3.5 h-3.5" />,
+                    onClick: () => handleDownloadCreditReport('all'),
+                  },
+                ]}
+              />
+            )}
           </div>
         </div>
 

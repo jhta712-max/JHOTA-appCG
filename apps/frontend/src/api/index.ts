@@ -601,6 +601,8 @@ export const suppliersApi = {
     api.post<{ success: boolean; data: SupplierCreditPayment }>(`/suppliers/${supplierId}/credit-lines/${lineId}/payments`, data),
   getCreditPayments: (supplierId: string, lineId: string) =>
     api.get<{ success: boolean; data: SupplierCreditPayment[] }>(`/suppliers/${supplierId}/credit-lines/${lineId}/payments`),
+  downloadCreditReport: (status: 'active' | 'all') =>
+    api.get(`/suppliers/credit-report.xlsx`, { params: { status }, responseType: 'blob' }),
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────
