@@ -8,7 +8,7 @@ import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
 } from 'recharts';
-import { projectsApi, expensesApi, quotationsApi, paymentOrdersApi } from '../../api';
+import { projectsApi, expensesApi, quotationsApi, paymentOrdersApi, suppliersApi } from '../../api';
 import { useAuthStore } from '../../stores/authStore';
 import { useRole } from '../../hooks/useRole';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
@@ -49,7 +49,18 @@ function ViewAllLink({ to, label = 'Ver todos' }: { to: string; label?: string }
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
-  const { canCreateExpense, canViewFinancials, isAuxiliar, canViewReports } = useRole();
+  const { canCreateExpense, canViewFinancials, isAuxiliar, canViewReports, isAdmin, isSupervisor } = useRole();
+
+  // Credit summary query — only for admin/supervisor
+  const { data: creditSummaryData } = useQuery({
+    queryKey: ['creditSummary'],
+    queryFn: () => suppliersApi.getCreditSummary('active'),
+    enabled: isAdmin || isSupervisor,
+    select: (res) => res.data.data,
+  });
+  const hasCriticalCreditLine = creditSummaryData?.lines?.some(
+    (l) => l.pending > 0 && l.available / l.creditLimit < 0.10
+  ) ?? false;
 
   const { data: projectsData } = useQuery({
     queryKey: ['projects', 'dashboard-all'],
@@ -183,6 +194,29 @@ export default function DashboardPage() {
             {totalPendingAmount > 0 ? fmt(totalPendingAmount) : 'ninguno pendiente'}
           </p>
         </Link>
+
+        {/* Deuda con suplidores */}
+        {(isAdmin || isSupervisor) && creditSummaryData && (
+          <div
+            className={`bg-white border p-5 cursor-pointer col-span-2 md:col-span-1 ${hasCriticalCreditLine ? 'border-[#F5C218]' : 'border-gray-200'}`}
+            onClick={() => {
+              document.getElementById('credit-section')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            <div className="text-xs font-['Barlow_Condensed'] tracking-[0.15em] text-gray-400 uppercase mb-1">
+              DEUDA CON SUPLIDORES
+            </div>
+            <div className="text-2xl font-['Space_Mono'] font-bold text-[#1C1C1C]">
+              RD$ {creditSummaryData.totalPending.toLocaleString()}
+            </div>
+            <div className="text-xs text-gray-500 mt-1 font-['DM_Sans']">
+              {creditSummaryData.activeLines} líneas activas · RD$ {creditSummaryData.totalAvailable.toLocaleString()} disponible
+            </div>
+            {hasCriticalCreditLine && (
+              <div className="text-xs text-[#F5C218] mt-1 font-['DM_Sans']">⚠ Línea(s) en estado crítico</div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Gráficas ─────────────────────────────────────────── */}
@@ -339,6 +373,55 @@ export default function DashboardPage() {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Crédito de suplidores ────────────────────────────── */}
+      {(isAdmin || isSupervisor) && creditSummaryData && creditSummaryData.lines.length > 0 && (
+        <div id="credit-section" className="mt-8">
+          <h2 className="font-['Barlow_Condensed'] text-2xl font-bold text-[#1C1C1C] uppercase tracking-tight mb-4">
+            CRÉDITO DE SUPLIDORES
+          </h2>
+          <div className="bg-white border border-gray-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-[#1C1C1C]">
+                  {['SUPLIDOR', 'LÍMITE', 'CONSUMIDO', 'PENDIENTE', 'DISPONIBLE', 'ESTADO'].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {creditSummaryData.lines.slice(0, 10).map((line) => {
+                  const ratio = line.creditLimit > 0 ? line.available / line.creditLimit : 1;
+                  const status =
+                    line.pending === 0 ? { label: 'SIN DEUDA', cls: 'bg-gray-100 text-gray-600' }
+                    : ratio >= 0.20 ? { label: 'EN ORDEN', cls: 'bg-green-100 text-green-700' }
+                    : ratio >= 0.10 ? { label: 'BAJO', cls: 'bg-yellow-100 text-yellow-700' }
+                    : { label: 'CRÍTICO', cls: 'bg-red-100 text-red-700' };
+                  return (
+                    <tr key={line.creditLineId} className="border-t border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-3 font-['DM_Sans'] font-medium text-[#1C1C1C]">{line.supplierName}</td>
+                      <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.creditLimit.toLocaleString()}</td>
+                      <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.consumed.toLocaleString()}</td>
+                      <td className="px-4 py-3 font-['Space_Mono'] font-bold text-[#1C1C1C]">RD$ {line.pending.toLocaleString()}</td>
+                      <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.available.toLocaleString()}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 text-xs font-['Barlow_Condensed'] font-bold uppercase tracking-wide ${status.cls}`}>
+                          {status.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <div className="px-4 py-3 border-t border-gray-100 text-right">
+              <a href="/suppliers" className="text-xs font-['DM_Sans'] text-[#1C1C1C] hover:text-[#F5C218] underline">
+                Ver todos en Suplidores →
+              </a>
+            </div>
+          </div>
         </div>
       )}
 
