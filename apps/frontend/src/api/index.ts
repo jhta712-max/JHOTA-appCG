@@ -567,7 +567,7 @@ export const officeExpensesApi = {
 };
 
 // ── Suplidores ────────────────────────────────────────────────
-import type { Supplier, SupplierHistory, SupplierBankAccount } from '../types';
+import type { Supplier, SupplierHistory, SupplierBankAccount, SupplierCreditLine, SupplierCreditPayment } from '../types';
 
 export const suppliersApi = {
   list:         (params?: { search?: string; onlyActive?: boolean }) =>
@@ -595,6 +595,21 @@ export const suppliersApi = {
     api.patch<{ success: boolean; data: SupplierBankAccount }>(`/suppliers/${id}/bank-accounts/${accountId}/set-default`),
   validateRNC: (rnc: string) =>
     api.get<{ success: boolean; data: { found: boolean; rnc: string; name?: string; status?: string; category?: string | null; unreachable?: boolean } }>(`/suppliers/validate-rnc/${encodeURIComponent(rnc)}`),
+  // Líneas de crédito
+  getCreditLines: (supplierId: string) =>
+    api.get<{ success: boolean; data: SupplierCreditLine[] }>(`/suppliers/${supplierId}/credit-lines`),
+  createCreditLine: (supplierId: string, data: { creditLimit: number; notes?: string }) =>
+    api.post<{ success: boolean; data: SupplierCreditLine }>(`/suppliers/${supplierId}/credit-lines`, data),
+  updateCreditLine: (supplierId: string, lineId: string, data: { creditLimit?: number; notes?: string }) =>
+    api.put<{ success: boolean; data: SupplierCreditLine }>(`/suppliers/${supplierId}/credit-lines/${lineId}`, data),
+  toggleCreditLine: (supplierId: string, lineId: string) =>
+    api.patch<{ success: boolean; data: SupplierCreditLine }>(`/suppliers/${supplierId}/credit-lines/${lineId}/toggle`),
+  getCreditLineBalance: (supplierId: string, lineId: string) =>
+    api.get<{ success: boolean; data: SupplierCreditLine['balance'] }>(`/suppliers/${supplierId}/credit-lines/${lineId}/balance`),
+  addCreditPayment: (supplierId: string, lineId: string, data: { amount: number; paymentDate: string; paymentMethod: string; reference?: string; notes?: string }) =>
+    api.post<{ success: boolean; data: SupplierCreditPayment }>(`/suppliers/${supplierId}/credit-lines/${lineId}/payments`, data),
+  getCreditPayments: (supplierId: string, lineId: string) =>
+    api.get<{ success: boolean; data: SupplierCreditPayment[] }>(`/suppliers/${supplierId}/credit-lines/${lineId}/payments`),
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────

@@ -74,6 +74,8 @@ export interface Expense {
   paymentOrder?: { id: string; paymentBank: string | null; paymentReference: string | null; paidAt: string | null } | null;
   attachments: Attachment[];
   createdAt: string;
+  creditLineId?: string | null;
+  creditLine?: { id: string; supplierId: string; creditLimit: number; supplier: { name: string } } | null;
   voidedAt?: string;
   voidReason?: string;
   rejectionReason?: string | null;
@@ -424,6 +426,37 @@ export interface BcrdRateResult {
   date:     string | null;
   fallback: boolean;
   source:   'bcrd' | 'fallback' | 'unavailable';
+}
+
+export interface SupplierCreditLine {
+  id: string;
+  supplierId: string;
+  creditLimit: number;
+  notes?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  supplier?: { id: string; name: string };
+  balance?: {
+    lineId: string;
+    creditLimit: number;
+    consumed: number;
+    paid: number;
+    pending: number;
+    available: number;
+  };
+  payments?: SupplierCreditPayment[];
+}
+
+export interface SupplierCreditPayment {
+  id: string;
+  creditLineId: string;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: string;
+  reference?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  createdBy?: { id: string; name: string };
 }
 
 export interface UpcomingPayment extends ServiceSubscription {
