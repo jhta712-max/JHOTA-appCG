@@ -1049,12 +1049,12 @@ export default function PaymentOrdersPage() {
                         </div>
                         <div className="bg-white border border-indigo-200 px-2 py-1.5 text-center">
                           <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total pagado</div>
-                          <div className="font-bold text-green-700">RD$ {Number(selectedContrato.totalPagado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
+                          <div className="font-bold text-green-700">RD$ {(selectedContrato.totalPagado ?? 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
                         </div>
-                        <div className={`bg-white border px-2 py-1.5 text-center ${Number(selectedContrato.pendiente) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
+                        <div className={`bg-white border px-2 py-1.5 text-center ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
                           <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Resta pagar</div>
-                          <div className={`font-bold ${Number(selectedContrato.pendiente) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
-                            RD$ {Number(selectedContrato.pendiente).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                          <div className={`font-bold ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
+                            RD$ {(selectedContrato.pendiente ?? selectedContrato.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                           </div>
                         </div>
                       </div>
@@ -1091,12 +1091,12 @@ export default function PaymentOrdersPage() {
                         </div>
                         <div className="bg-white border border-teal-200 px-2 py-1.5 text-center">
                           <div className="text-teal-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total pagado</div>
-                          <div className="font-bold text-green-700">RD$ {Number(selectedQuotation.totalPagado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
+                          <div className="font-bold text-green-700">RD$ {(selectedQuotation.totalPagado ?? 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
                         </div>
-                        <div className={`bg-white border px-2 py-1.5 text-center ${Number(selectedQuotation.pendiente) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
+                        <div className={`bg-white border px-2 py-1.5 text-center ${(selectedQuotation.pendiente ?? selectedQuotation.total) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
                           <div className="text-teal-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Resta pagar</div>
-                          <div className={`font-bold ${Number(selectedQuotation.pendiente) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
-                            RD$ {Number(selectedQuotation.pendiente).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                          <div className={`font-bold ${(selectedQuotation.pendiente ?? selectedQuotation.total) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
+                            RD$ {(selectedQuotation.pendiente ?? selectedQuotation.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                           </div>
                         </div>
                       </div>

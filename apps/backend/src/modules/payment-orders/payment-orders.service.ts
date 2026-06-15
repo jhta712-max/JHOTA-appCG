@@ -159,8 +159,9 @@ export async function getAvailableQuotations(projectId: string, supplierId?: str
     },
   });
   return quotations.map((q) => {
-    const totalPagado = q.paymentOrders.reduce((s, po) => s + Number(po.amount), 0);
-    return { id: q.id, number: q.number, description: q.description, total: Number(q.total), currency: q.currency, status: q.status, quotationDate: q.quotationDate, supplierName: q.supplierName, supplierId: q.supplierId, totalPagado, pendiente: Number(q.total) - totalPagado };
+    const total       = parseFloat(q.total.toString());
+    const totalPagado = q.paymentOrders.reduce((s, po) => s + parseFloat(po.amount.toString()), 0);
+    return { id: q.id, number: q.number, description: q.description, total, currency: q.currency, status: q.status, quotationDate: q.quotationDate, supplierName: q.supplierName, supplierId: q.supplierId, totalPagado, pendiente: total - totalPagado };
   });
 }
 
@@ -175,8 +176,9 @@ export async function getAvailableContracts(projectId: string, supplierId: strin
     },
   });
   return contratos.map((c) => {
-    const totalPagado = c.paymentOrders.reduce((s, po) => s + Number(po.amount), 0);
-    return { id: c.id, descripcionTrabajo: c.descripcionTrabajo, montoContratado: Number(c.montoContratado), fechaContrato: c.fechaContrato, totalPagado, pendiente: Number(c.montoContratado) - totalPagado };
+    const monto      = parseFloat(c.montoContratado.toString());
+    const totalPagado = c.paymentOrders.reduce((s, po) => s + parseFloat(po.amount.toString()), 0);
+    return { id: c.id, descripcionTrabajo: c.descripcionTrabajo, montoContratado: monto, fechaContrato: c.fechaContrato, totalPagado, pendiente: monto - totalPagado };
   });
 }
 
