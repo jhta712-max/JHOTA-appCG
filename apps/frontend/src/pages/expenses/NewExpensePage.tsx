@@ -9,7 +9,7 @@ import {
 import { FiscalVoucherForm, type FiscalVoucherValue } from '../../components/shared/FiscalVoucherForm';
 import { ForeignCurrencyInput, type ForeignCurrencyValue } from '../../components/shared/ForeignCurrencyInput';
 import { BatchItemSelect } from '../../components/shared/BatchItemSelect';
-import { expensesApi, projectsApi, categoriesApi, cardsApi, type OcrResult } from '../../api';
+import { expensesApi, projectsApi, categoriesApi, cardsApi, suppliersApi, type OcrResult } from '../../api';
 import { OcrEnrichmentAlerts } from '../../components/OcrEnrichmentAlerts';
 import { useRole } from '../../hooks/useRole';
 import { useOcrPolling } from '../../hooks/useOcrPolling';
@@ -68,6 +68,10 @@ export default function NewExpensePage() {
   const [success,     setSuccess]     = useState('');
   const [apiError,    setApiError]    = useState('');
 
+  const [useCreditLine,    setUseCreditLine]    = useState(false);
+  const [creditSupplierId, setCreditSupplierId] = useState('');
+  const [creditLineId,     setCreditLineId]     = useState('');
+
   const { register, handleSubmit, watch, formState: { errors }, reset, setValue, getValues } =
     useForm<FormData>({
       defaultValues: { expenseDate: new Date().toISOString().split('T')[0], hasFiscalDoc: false },
@@ -111,6 +115,18 @@ export default function NewExpensePage() {
     select:   (r) => r.data.data,
   });
 
+  const { data: suppliers } = useQuery({
+    queryKey: ['suppliers', 'select'],
+    queryFn:  () => suppliersApi.list(),
+    select:   (r) => r.data.data,
+  });
+
+  const { data: creditLinesForExpense } = useQuery({
+    queryKey: ['supplier-credit-lines-exp', creditSupplierId],
+    queryFn:  () => suppliersApi.getCreditLines(creditSupplierId).then(r => r.data.data.filter((l: any) => l.isActive)),
+    enabled:  !!creditSupplierId && useCreditLine,
+  });
+
   const mutation = useMutation({
     mutationFn: (data: any) => expensesApi.create(data),
     onSuccess:  async (res) => {
@@ -125,6 +141,9 @@ export default function NewExpensePage() {
       setPhotoPreview(null);
       resetOcr();
       setAiFields(new Set());
+      setUseCreditLine(false);
+      setCreditLineId('');
+      setCreditSupplierId('');
       setTimeout(() => navigate('/expenses'), 1500);
     },
     onError: (err: any) => {
@@ -166,6 +185,7 @@ export default function NewExpensePage() {
       };
     }
     if (data.batchItemId) payload.batchItemId = data.batchItemId;
+    if (useCreditLine && creditLineId) payload.creditLineId = creditLineId;
     mutation.mutate(payload);
   };
 
@@ -625,6 +645,48 @@ export default function NewExpensePage() {
                   <option value="OTHER">Otro</option>
                 </select>
               </AiField>
+            </div>
+
+            {/* Crédito de proveedor */}
+            <div className="border border-gray-100 p-3 bg-gray-50">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={useCreditLine} onChange={(e) => {
+                  setUseCreditLine(e.target.checked);
+                  if (!e.target.checked) { setCreditLineId(''); setCreditSupplierId(''); }
+                }} className="accent-[#F5C218]" />
+                <span className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide text-gray-700">
+                  Recibido a crédito de proveedor
+                </span>
+              </label>
+              {useCreditLine && (
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Proveedor</label>
+                    <select
+                      className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                      value={creditSupplierId}
+                      onChange={(e) => { setCreditSupplierId(e.target.value); setCreditLineId(''); }}>
+                      <option value="">— Selecciona proveedor —</option>
+                      {(suppliers as any[])?.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Línea de crédito</label>
+                    <select
+                      className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                      value={creditLineId}
+                      onChange={(e) => setCreditLineId(e.target.value)}
+                      disabled={!creditSupplierId}>
+                      <option value="">— Selecciona línea —</option>
+                      {(creditLinesForExpense as any[])?.map((l: any) => (
+                        <option key={l.id} value={l.id}>
+                          Límite RD${Number(l.creditLimit).toLocaleString('es-DO')} · Disp. RD${Number(l.balance?.available ?? l.creditLimit).toLocaleString('es-DO')}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Card selector — only when paymentMethod = CARD */}
