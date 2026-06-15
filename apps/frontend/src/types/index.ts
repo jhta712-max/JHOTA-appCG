@@ -157,7 +157,18 @@ export interface Cubicacion {
   progressPct: number;
   description: string;
   date: string;
+  ncf?: string | null;
   createdBy?: { id: string; name: string };
+  createdAt?: string;
+}
+
+export interface Anticipo {
+  id: string;
+  number: number;
+  amount: number;
+  date: string;
+  ncf?: string | null;
+  description?: string | null;
   createdAt?: string;
 }
 
@@ -173,8 +184,11 @@ export interface FinancialAnalysis {
     margenPct: number;
     lastProgressPct: number;
     expenseCount: number;
+    totalAnticipos: number;
+    totalCobrado: number;
   };
   cubicaciones: Cubicacion[];
+  anticipos: Anticipo[];
 }
 
 export type PaymentMethod = 'CASH' | 'TRANSFER' | 'CARD' | 'CHECK' | 'OTHER';
