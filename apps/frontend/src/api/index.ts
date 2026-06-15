@@ -567,7 +567,7 @@ export const officeExpensesApi = {
 };
 
 // ── Suplidores ────────────────────────────────────────────────
-import type { Supplier, SupplierHistory, SupplierBankAccount, SupplierCreditLine, SupplierCreditPayment } from '../types';
+import type { Supplier, SupplierHistory, SupplierBankAccount, SupplierCreditLine, SupplierCreditPayment, CreditSummary } from '../types';
 
 export const suppliersApi = {
   list:         (params?: { search?: string; onlyActive?: boolean }) =>
@@ -610,6 +610,15 @@ export const suppliersApi = {
     api.post<{ success: boolean; data: SupplierCreditPayment }>(`/suppliers/${supplierId}/credit-lines/${lineId}/payments`, data),
   getCreditPayments: (supplierId: string, lineId: string) =>
     api.get<{ success: boolean; data: SupplierCreditPayment[] }>(`/suppliers/${supplierId}/credit-lines/${lineId}/payments`),
+  getCreditSummary: (status?: 'active' | 'all') =>
+    api.get<{ success: boolean; data: CreditSummary }>('/suppliers/credit-summary', {
+      params: status ? { status } : undefined,
+    }),
+  downloadCreditReport: (status?: 'active' | 'all') =>
+    api.get('/suppliers/credit-report', {
+      responseType: 'blob',
+      params: status ? { status } : undefined,
+    }),
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────

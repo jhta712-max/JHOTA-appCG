@@ -469,3 +469,26 @@ export interface SubscriptionsOverview {
   upcoming:         UpcomingPayment[];
   totalMonthlyCost: number;
 }
+
+// ── Resumen de Líneas de Crédito ──────────────────────────────
+export interface CreditLineSummaryItem {
+  supplierId: string;
+  supplierName: string;
+  supplierRnc: string | null;
+  creditLineId: string;
+  creditLimit: number;
+  consumed: number;
+  paid: number;
+  pending: number;
+  available: number;
+  isActive: boolean;
+  updatedAt: string;
+}
+
+export interface CreditSummary {
+  totalPending: number;
+  totalAvailable: number;
+  totalLimit: number;
+  activeLines: number;
+  lines: CreditLineSummaryItem[];
+}
