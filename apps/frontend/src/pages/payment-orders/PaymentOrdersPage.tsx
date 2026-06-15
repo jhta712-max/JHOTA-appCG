@@ -1042,19 +1042,27 @@ export default function PaymentOrdersPage() {
                       ))}
                     </select>
                     {selectedContrato && (
-                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-['Space_Mono']">
-                        <div className="bg-white border border-indigo-200 px-2 py-1.5 text-center">
-                          <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total contrato</div>
-                          <div className="font-bold text-indigo-800">RD$ {Number(selectedContrato.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
-                        </div>
-                        <div className="bg-white border border-indigo-200 px-2 py-1.5 text-center">
-                          <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total pagado</div>
-                          <div className="font-bold text-green-700">RD$ {(selectedContrato.totalPagado ?? 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
-                        </div>
-                        <div className={`bg-white border px-2 py-1.5 text-center ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
-                          <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Resta pagar</div>
-                          <div className={`font-bold ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
-                            RD$ {(selectedContrato.pendiente ?? selectedContrato.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                      <div className="mt-2 space-y-1.5">
+                        {selectedContrato.adendas > 0 && (
+                          <div className="flex justify-between items-center text-[11px] font-['Space_Mono'] bg-indigo-100 px-2 py-1">
+                            <span className="text-indigo-500">Base RD$ {Number(selectedContrato.montoBase ?? selectedContrato.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
+                            <span className="text-indigo-700 font-bold">+ Adendas RD$ {Number(selectedContrato.adendas).toLocaleString('es-DO', { minimumFractionDigits: 2 })} → Total efectivo RD$ {Number(selectedContrato.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-3 gap-2 text-xs font-['Space_Mono']">
+                          <div className="bg-white border border-indigo-200 px-2 py-1.5 text-center">
+                            <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total contrato</div>
+                            <div className="font-bold text-indigo-800">RD$ {Number(selectedContrato.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
+                          </div>
+                          <div className="bg-white border border-indigo-200 px-2 py-1.5 text-center">
+                            <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total pagado</div>
+                            <div className="font-bold text-green-700">RD$ {(selectedContrato.totalPagado ?? 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
+                          </div>
+                          <div className={`bg-white border px-2 py-1.5 text-center ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
+                            <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Resta pagar</div>
+                            <div className={`font-bold ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
+                              RD$ {(selectedContrato.pendiente ?? selectedContrato.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                            </div>
                           </div>
                         </div>
                       </div>

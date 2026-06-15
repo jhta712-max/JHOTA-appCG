@@ -172,13 +172,16 @@ export async function getAvailableContracts(projectId: string, supplierId: strin
     orderBy: { fechaContrato: 'desc' },
     select:  {
       id: true, descripcionTrabajo: true, montoContratado: true, fechaContrato: true,
+      adendas:       { select: { monto: true } },
       paymentOrders: { where: { status: 'PAID' }, select: { amount: true } },
     },
   });
   return contratos.map((c) => {
-    const monto      = parseFloat(c.montoContratado.toString());
+    const montoBase   = parseFloat(c.montoContratado.toString());
+    const adendas     = c.adendas.reduce((s, a) => s + parseFloat(a.monto.toString()), 0);
+    const montoTotal  = montoBase + adendas;
     const totalPagado = c.paymentOrders.reduce((s, po) => s + parseFloat(po.amount.toString()), 0);
-    return { id: c.id, descripcionTrabajo: c.descripcionTrabajo, montoContratado: monto, fechaContrato: c.fechaContrato, totalPagado, pendiente: monto - totalPagado };
+    return { id: c.id, descripcionTrabajo: c.descripcionTrabajo, montoContratado: montoTotal, montoBase, adendas, fechaContrato: c.fechaContrato, totalPagado, pendiente: montoTotal - totalPagado };
   });
 }
 
