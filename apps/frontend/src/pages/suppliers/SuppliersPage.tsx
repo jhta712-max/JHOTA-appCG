@@ -145,8 +145,23 @@ export default function SuppliersPage() {
     const payload = { name: form.name.trim(), rnc: form.rnc.trim() || null, cedula: form.cedula.trim() || null, phone: form.phone.trim() || null, email: form.email.trim() || null, address: form.address.trim() || null, notes: form.notes.trim() || null };
     if (!payload.name || payload.name.length < 2) { setApiError('El nombre debe tener al menos 2 caracteres'); return; }
     if (payload.rnc && payload.rnc.length !== 9 && payload.rnc.length !== 11) { setApiError('El RNC debe tener 9 u 11 dígitos'); return; }
-    if (modal === 'create') createMutation.mutate(payload);
-    else if (editing) updateMutation.mutate({ id: editing.id, data: payload });
+    if (modal === 'create') {
+      const hasBankData = bankForm.bank.trim().length >= 2 && bankForm.accountNumber.trim().length >= 4;
+      if (hasBankData) {
+        createMutation.mutate(payload, {
+          onSuccess: async (res: any) => {
+            const supplierId = res.data?.data?.id ?? res.data?.id;
+            if (supplierId) {
+              const bankData = { bank: bankForm.bank.trim(), accountType: bankForm.accountType, accountNumber: bankForm.accountNumber.trim(), currency: bankForm.currency, notes: bankForm.notes.trim() || null, isDefault: bankForm.isDefault };
+              try { await suppliersApi.addBankAccount(supplierId, bankData); } catch { /* supplier already created; ignore bank error */ }
+            }
+            qc.invalidateQueries({ queryKey: ['suppliers'] }); setApiOk('Suplidor creado exitosamente'); closeModal();
+          },
+        });
+      } else {
+        createMutation.mutate(payload);
+      }
+    } else if (editing) updateMutation.mutate({ id: editing.id, data: payload });
   }
 
   function handleBankSubmit(e: React.FormEvent) {
@@ -453,6 +468,41 @@ export default function SuppliersPage() {
                   <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Notas</label>
                   <textarea className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] resize-none" name="notes" value={form.notes} onChange={handleChange} placeholder="Información adicional..." rows={2} maxLength={1000} />
                 </div>
+
+                {/* Cuenta bancaria opcional — solo en creación */}
+                {modal === 'create' && (
+                  <div className="border-t border-gray-100 pt-4">
+                    <p className="font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-widest text-gray-500 mb-3 flex items-center gap-1.5">
+                      <CreditCard className="w-3.5 h-3.5" /> Cuenta Bancaria <span className="font-normal normal-case">(opcional)</span>
+                    </p>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Banco</label>
+                          <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="bank" value={bankForm.bank} onChange={handleBankChange} placeholder="Banreservas, Popular…" maxLength={100} />
+                        </div>
+                        <div>
+                          <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Tipo</label>
+                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountType" value={bankForm.accountType} onChange={handleBankChange}>
+                            {ACCOUNT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Número de cuenta</label>
+                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountNumber" value={bankForm.accountNumber} onChange={handleBankChange} placeholder="000-000000-0" maxLength={50} />
+                        </div>
+                        <div>
+                          <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Moneda</label>
+                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="currency" value={bankForm.currency} onChange={handleBankChange}>
+                            {['RD$', 'US$', '€'].map((c) => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex gap-3 pt-2">
                   <button type="button" onClick={closeModal} className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-2.5 border-2 border-gray-200 hover:bg-gray-50 transition-colors">

@@ -5,10 +5,11 @@ import * as ctrl from './whatsapp.controller';
 const router = Router();
 
 const webhookLimiter = rateLimit({
-  windowMs: 60_000,
-  max: 100,
+  windowMs: 60 * 1000, // 1 minute
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  message: { success: false, error: 'Too many requests' },
 });
 
 // No authenticate middleware — UltraMsg doesn't send a JWT

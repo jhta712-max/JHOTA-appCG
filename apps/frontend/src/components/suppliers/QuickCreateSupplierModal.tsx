@@ -25,14 +25,15 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated }: Q
   const [error, setError]                 = useState('');
   const [saving, setSaving]               = useState(false);
 
-  const rncValidation = useRncValidation(rnc);
+  // Only validate RNC when modal is open — avoids DGII calls when closed
+  const rncValidation = useRncValidation(open ? rnc : '');
 
   // Auto-fill name from DGII when RNC is valid
   useEffect(() => {
     if (rncValidation.status === 'valid' && rncValidation.name) {
       setName(rncValidation.name);
     }
-  }, [rncValidation]);
+  }, [rncValidation.status, rncValidation.name]);
 
   const resetForm = () => {
     setName(''); setRnc(''); setPhone(''); setEmail('');
@@ -71,8 +72,9 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated }: Q
       });
       supplierId   = res.data.data.id;
       supplierName = res.data.data.name;
-    } catch (e: any) {
-      setError(e.response?.data?.error || 'Error al crear el suplidor');
+    } catch (e) {
+      const err = e as { response?: { data?: { error?: string } } };
+      setError(err.response?.data?.error || 'Error al crear el suplidor');
       setSaving(false);
       return;
     }
@@ -273,7 +275,8 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated }: Q
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2.5 text-sm font-bold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors uppercase tracking-wide"
+            disabled={saving}
+            className="px-4 py-2.5 text-sm font-bold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors uppercase tracking-wide disabled:opacity-50"
           >
             Cancelar
           </button>

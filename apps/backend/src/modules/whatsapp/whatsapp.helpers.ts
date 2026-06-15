@@ -47,13 +47,13 @@ export async function lookupUserByPhone(phone: string) {
 }
 
 // ── Find or create a WhatsApp conversation ─────────────────────
+// Uses upsert with phoneNumber unique constraint to avoid race conditions
 export async function findOrCreateConversation(phone: string, userId?: string) {
-  const conversation = await prisma.whatsAppConversation.upsert({
+  return prisma.whatsAppConversation.upsert({
     where: { phoneNumber: phone },
-    update: userId ? { userId } : {},
-    create: { phoneNumber: phone, userId: userId ?? null, status: 'ACTIVE', contextData: {} },
+    update: {},
+    create: { phoneNumber: phone, userId: userId ?? null, contextData: {} },
   });
-  return conversation;
 }
 
 // ── Save a message in the conversation log ─────────────────────
