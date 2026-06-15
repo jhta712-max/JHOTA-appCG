@@ -123,16 +123,16 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
   const status = needsApproval ? 'PENDING_APPROVAL' : 'ACTIVE';
 
   // Validate credit line if provided
-  if ((data as any).creditLineId) {
+  if (data.creditLineId) {
     const line = await prisma.supplierCreditLine.findUnique({
-      where: { id: (data as any).creditLineId },
+      where: { id: data.creditLineId },
     });
     if (!line || !line.isActive) {
       throw new AppError(400, 'Línea de crédito no encontrada o inactiva', 'INVALID_CREDIT_LINE');
     }
   }
 
-  const batchItemId = await resolveBatchItemId(data.projectId, (data as any).batchItemId ?? (data as any).projectItemId);
+  const batchItemId = await resolveBatchItemId(data.projectId, data.batchItemId ?? data.projectItemId);
 
   const expense = await prisma.expense.create({
     data: {
@@ -148,10 +148,10 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
       notes:           data.notes,
       status,
       batchItemId:     batchItemId ?? null,
-      foreignAmount:   (data as any).foreignAmount   ?? null,
-      foreignCurrency: (data as any).foreignCurrency ?? null,
-      exchangeRate:    (data as any).exchangeRate    ?? null,
-      creditLineId:    (data as any).creditLineId    ?? null,
+      foreignAmount:   data.foreignAmount   ?? null,
+      foreignCurrency: data.foreignCurrency ?? null,
+      exchangeRate:    data.exchangeRate    ?? null,
+      creditLineId:    data.creditLineId    ?? null,
       ...(data.hasFiscalDoc && data.fiscalVoucher && {
         fiscalVoucher: {
           create: {
@@ -238,7 +238,19 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
     };
   }
 
-  const { fiscalVoucher, batchItemId: rawItemId, projectItemId: _legacyItemId, ...expenseData } = data as any;
+  // Validate credit line if being changed
+  if (data.creditLineId !== undefined) {
+    if (data.creditLineId !== null) {
+      const line = await prisma.supplierCreditLine.findUnique({
+        where: { id: data.creditLineId },
+      });
+      if (!line || !line.isActive) {
+        throw new AppError(400, 'Línea de crédito no encontrada o inactiva', 'INVALID_CREDIT_LINE');
+      }
+    }
+  }
+
+  const { fiscalVoucher, batchItemId: rawItemId, projectItemId: _legacyItemId, ...expenseData } = data;
 
   const resolvedItemId = await resolveBatchItemId(
     expense.projectId,
@@ -248,7 +260,7 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
 
   // Si el gasto estaba REJECTED y se edita, vuelve a PENDING_APPROVAL
   const statusReset = expense.status === 'REJECTED'
-    ? { status: 'PENDING_APPROVAL', rejectionReason: null, rejectedById: null, rejectedAt: null }
+    ? { status: 'PENDING_APPROVAL' as const, rejectionReason: null, rejectedById: null, rejectedAt: null }
     : {};
 
   return prisma.expense.update({
