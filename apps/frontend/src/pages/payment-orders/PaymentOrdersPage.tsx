@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import QuickCreateSupplierModal from '../../components/suppliers/QuickCreateSupplierModal';
 import {
   FileText, Plus, CheckCircle, AlertCircle, Loader2,
   Pencil, ClipboardCopy, X,
@@ -178,6 +179,7 @@ export default function PaymentOrdersPage() {
   const [lastCreatedOrder, setLastCreatedOrder] = useState<PaymentOrder | null>(null);
   const [sessionOrders,    setSessionOrders]    = useState<PaymentOrder[]>([]);
 
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<PaymentOrder | null>(null);
   const [orderForm,    setOrderForm]    = useState<OrderForm>(EMPTY_ORDER);
   const [formErr,      setFormErr]      = useState('');
@@ -947,13 +949,22 @@ export default function PaymentOrdersPage() {
               )}
 
               <Field label="Suplidor / Beneficiario *">
-                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.supplierId}
-                  onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '', contratoAjustadoId: '' })); setSupplierSearch(''); }}>
-                  <option value="">— Selecciona suplidor —</option>
-                  {activeSuppliers
-                    .filter((s) => (s.bankAccounts && s.bankAccounts.length > 0) || (s.bank && s.accountNumber))
-                    .map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
+                <div className="flex gap-2 items-end">
+                  <select className="flex-1 border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.supplierId}
+                    onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '', contratoAjustadoId: '' })); setSupplierSearch(''); }}>
+                    <option value="">— Selecciona suplidor —</option>
+                    {activeSuppliers
+                      .filter((s) => (s.bankAccounts && s.bankAccounts.length > 0) || (s.bank && s.accountNumber))
+                      .map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setQuickCreateOpen(true)}
+                    className="shrink-0 px-3 py-2 bg-[#F5C218] text-[#1C1C1C] font-['Barlow_Condensed'] font-bold text-sm uppercase tracking-wide hover:bg-yellow-400 transition-colors"
+                  >
+                    + Nuevo
+                  </button>
+                </div>
                 {activeSuppliers.filter((s) => (!s.bankAccounts || s.bankAccounts.length === 0) && (!s.bank || !s.accountNumber)).length > 0 && (
                   <p className="text-xs text-amber-600 mt-1">Solo se muestran suplidores con datos bancarios.</p>
                 )}
@@ -1164,6 +1175,17 @@ export default function PaymentOrdersPage() {
           />
         </Modal>
       )}
+
+      {/* ── Modal: Crear suplidor rápido ─────────────── */}
+      <QuickCreateSupplierModal
+        open={quickCreateOpen}
+        onClose={() => setQuickCreateOpen(false)}
+        onCreated={(supplier) => {
+          qc.invalidateQueries({ queryKey: ['suppliers', 'active-with-bank'] });
+          setOrderForm((f) => ({ ...f, supplierId: supplier.id }));
+          setQuickCreateOpen(false);
+        }}
+      />
 
       {/* ── Modal: Confirmar pago ─────────────────────── */}
       {payModal && payingOrder && (
