@@ -1203,6 +1203,28 @@ export default function ProjectFinancialPage() {
                   {fmt(totalCubicado)}
                 </span>
               </div>
+              {(financials.totalAnticipos ?? 0) > 0 && (
+                <div className="flex justify-between py-2.5">
+                  <span className="text-gray-600">Anticipos recibidos</span>
+                  <span
+                    className="font-medium text-blue-700"
+                    style={{ fontFamily: "'Space Mono', monospace" }}
+                  >
+                    {fmt(financials.totalAnticipos ?? 0)}
+                  </span>
+                </div>
+              )}
+              {(financials.totalAnticipos ?? 0) > 0 && (
+                <div className="flex justify-between py-2.5 font-semibold">
+                  <span>Total cobrado del cliente</span>
+                  <span
+                    className="text-blue-800"
+                    style={{ fontFamily: "'Space Mono', monospace" }}
+                  >
+                    {fmt(financials.totalCobrado ?? totalCubicado)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between py-2.5">
                 <span className="text-gray-600">Total gastos del proyecto</span>
                 <span
@@ -1212,21 +1234,24 @@ export default function ProjectFinancialPage() {
                   - {fmt(totalGastado)}
                 </span>
               </div>
-              <div className={`flex justify-between py-3 px-3 font-bold text-base ${margenBg}`}>
-                <span>Margen del proyecto</span>
-                <span
-                  className={margenColor}
-                  style={{ fontFamily: "'Space Mono', monospace" }}
-                >
-                  {margen >= 0 ? '+' : ''}{fmt(margen)}
-                  <span
-                    className="text-sm font-normal ml-2"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    ({margenPct >= 0 ? '+' : ''}{margenPct.toFixed(1)}%)
-                  </span>
-                </span>
-              </div>
+              {(() => {
+                const totalCobrado = financials.totalCobrado ?? totalCubicado;
+                const margenReal = totalCobrado - totalGastado;
+                const margenRealPct = totalCobrado > 0 ? (margenReal / totalCobrado) * 100 : 0;
+                const colorReal = sinCubicaciones ? 'text-gray-500' : margenReal >= 0 ? 'text-green-700' : 'text-red-600';
+                const bgReal = sinCubicaciones ? 'bg-gray-50' : margenReal >= 0 ? 'bg-green-50' : 'bg-red-50';
+                return (
+                  <div className={`flex justify-between py-3 px-3 font-bold text-base ${bgReal}`}>
+                    <span>Margen del proyecto</span>
+                    <span className={colorReal} style={{ fontFamily: "'Space Mono', monospace" }}>
+                      {margenReal >= 0 ? '+' : ''}{fmt(margenReal)}
+                      <span className="text-sm font-normal ml-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                        ({margenRealPct >= 0 ? '+' : ''}{margenRealPct.toFixed(1)}%)
+                      </span>
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}
