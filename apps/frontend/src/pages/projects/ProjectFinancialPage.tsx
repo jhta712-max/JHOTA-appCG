@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fmtDate } from '../../utils/date';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRole } from '../../hooks/useRole';
 import {
   ArrowLeft, Plus, Trash2, Pencil, Check, X,
@@ -11,7 +11,7 @@ import {
 import { projectsApi } from '../../api';
 import { DetailPageSkeleton } from '../../components/ui/DetailPageSkeleton';
 import { PAGE_META }           from '../../utils/routeMeta';
-import type { Cubicacion } from '../../types';
+import type { Cubicacion, Anticipo } from '../../types';
 
 // ── Utilidades ────────────────────────────────────────────────
 const fmt = (n: number) =>
@@ -151,7 +151,8 @@ export default function ProjectFinancialPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { isSupervisor: canView } = useRole();
+  const { isSupervisor: canView, isAdmin } = useRole();
+  const canEdit = isAdmin;
 
   // Redirigir operadores que intenten acceder directamente por URL
   useEffect(() => {
@@ -210,6 +211,62 @@ export default function ProjectFinancialPage() {
     await projectsApi.deleteCubicacion(id!, cubId);
     refetch();
     qc.invalidateQueries({ queryKey: ['project-summary', id] });
+  };
+
+  // Anticipos state
+  const [anticipoForm, setAnticipoForm] = useState({
+    amount: '', date: '', ncf: '', description: '',
+  });
+  const [editingAnticipoId, setEditingAnticipoId] = useState<string | null>(null);
+  const [showAnticipoForm, setShowAnticipoForm] = useState(false);
+
+  const createAnticipoMutation = useMutation({
+    mutationFn: (data: unknown) => projectsApi.createAnticipo(id!, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['financial', id] });
+      setAnticipoForm({ amount: '', date: '', ncf: '', description: '' });
+      setShowAnticipoForm(false);
+    },
+  });
+
+  const updateAnticipoMutation = useMutation({
+    mutationFn: ({ aid, data }: { aid: string; data: unknown }) =>
+      projectsApi.updateAnticipo(id!, aid, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['financial', id] });
+      setEditingAnticipoId(null);
+      setAnticipoForm({ amount: '', date: '', ncf: '', description: '' });
+    },
+  });
+
+  const deleteAnticipoMutation = useMutation({
+    mutationFn: (aid: string) => projectsApi.deleteAnticipo(id!, aid),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['financial', id] }),
+  });
+
+  const handleSaveAnticipo = () => {
+    const payload = {
+      amount:      parseFloat(anticipoForm.amount),
+      date:        anticipoForm.date,
+      ncf:         anticipoForm.ncf.trim() || null,
+      description: anticipoForm.description.trim() || null,
+    };
+    if (editingAnticipoId) {
+      updateAnticipoMutation.mutate({ aid: editingAnticipoId, data: payload });
+    } else {
+      createAnticipoMutation.mutate(payload);
+    }
+  };
+
+  const handleEditAnticipo = (anticipo: Anticipo) => {
+    setEditingAnticipoId(anticipo.id);
+    setAnticipoForm({
+      amount:      String(anticipo.amount),
+      date:        anticipo.date ? anticipo.date.split('T')[0] : '',
+      ncf:         anticipo.ncf ?? '',
+      description: anticipo.description ?? '',
+    });
+    setShowAnticipoForm(true);
   };
 
   if (isLoading) {
@@ -306,7 +363,7 @@ export default function ProjectFinancialPage() {
       <div className="max-w-4xl mx-auto px-5 py-5 space-y-5">
 
         {/* Summary cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px" style={{ background: '#e5e7eb' }}>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-px" style={{ background: '#e5e7eb' }}>
 
           {/* Presupuesto total */}
           <div className="bg-white p-4">
@@ -382,6 +439,31 @@ export default function ProjectFinancialPage() {
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               {financials.expenseCount} registros
+            </p>
+          </div>
+
+          {/* Total Cobrado */}
+          <div className="bg-white p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4 text-green-600" />
+              <p
+                className="text-xs text-gray-500 uppercase tracking-wide"
+                style={{ fontFamily: "'Barlow_Condensed', sans-serif" }}
+              >
+                Total cobrado
+              </p>
+            </div>
+            <p
+              className="text-lg font-bold text-green-700"
+              style={{ fontFamily: "'Space Mono', monospace" }}
+            >
+              {fmt((financials as any).totalCobrado ?? 0)}
+            </p>
+            <p
+              className="text-xs text-gray-400 mt-0.5"
+              style={{ fontFamily: "'Space Mono', monospace" }}
+            >
+              Ant. {fmt((financials as any).totalAnticipos ?? 0)} + Cub. {fmt(totalCubicado)}
             </p>
           </div>
 
@@ -613,6 +695,170 @@ export default function ProjectFinancialPage() {
               Referencia (presupuesto / cubicado)
             </div>
           </div>
+        </div>
+
+        {/* ── Anticipos recibidos ─────────────────────────────── */}
+        <div className="bg-white border border-gray-200">
+          {/* Header */}
+          <div className="bg-[#1C1C1C] px-6 py-4 flex items-center justify-between">
+            <h2 className="font-['Barlow_Condensed'] text-lg font-bold text-white uppercase tracking-wide">
+              Anticipos recibidos
+            </h2>
+            {canEdit && (
+              <button
+                onClick={() => {
+                  setEditingAnticipoId(null);
+                  setAnticipoForm({ amount: '', date: '', ncf: '', description: '' });
+                  setShowAnticipoForm(v => !v);
+                }}
+                className="bg-[#F5C218] text-[#1C1C1C] px-3 py-1.5 text-xs font-['Barlow_Condensed'] font-bold uppercase tracking-wide hover:bg-yellow-400 transition-colors"
+              >
+                + Agregar anticipo
+              </button>
+            )}
+          </div>
+
+          {/* Form */}
+          {showAnticipoForm && canEdit && (
+            <div className="border-b border-gray-200 p-6 bg-gray-50">
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-wide block mb-1">
+                    Monto *
+                  </label>
+                  <input
+                    type="number"
+                    value={anticipoForm.amount}
+                    onChange={e => setAnticipoForm(f => ({ ...f, amount: e.target.value }))}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-wide block mb-1">
+                    Fecha *
+                  </label>
+                  <input
+                    type="date"
+                    value={anticipoForm.date}
+                    onChange={e => setAnticipoForm(f => ({ ...f, date: e.target.value }))}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-wide block mb-1">
+                    NCF
+                  </label>
+                  <input
+                    type="text"
+                    value={anticipoForm.ncf}
+                    onChange={e => setAnticipoForm(f => ({ ...f, ncf: e.target.value }))}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                    placeholder="B0100000001 o E310000000001"
+                    maxLength={19}
+                  />
+                </div>
+                <div>
+                  <label className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-wide block mb-1">
+                    Descripción
+                  </label>
+                  <input
+                    type="text"
+                    value={anticipoForm.description}
+                    onChange={e => setAnticipoForm(f => ({ ...f, description: e.target.value }))}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                    placeholder="Anticipo contractual 20% según contrato"
+                    maxLength={500}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => { setShowAnticipoForm(false); setEditingAnticipoId(null); }}
+                  className="px-4 py-2 text-sm border border-gray-200 text-gray-600 font-['DM_Sans'] hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveAnticipo}
+                  disabled={!anticipoForm.amount || !anticipoForm.date || createAnticipoMutation.isPending || updateAnticipoMutation.isPending}
+                  className="px-4 py-2 text-sm bg-[#F5C218] text-[#1C1C1C] font-['Barlow_Condensed'] font-bold uppercase tracking-wide hover:bg-yellow-400 disabled:opacity-50 transition-colors"
+                >
+                  {editingAnticipoId ? 'Guardar cambios' : 'Registrar anticipo'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Table */}
+          {(!financial.anticipos || financial.anticipos.length === 0) ? (
+            <div className="p-8 text-center text-gray-400 font-['DM_Sans'] text-sm">
+              No hay anticipos registrados
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-[#1C1C1C]">
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">N°</th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Fecha</th>
+                    <th className="px-4 py-3 text-right font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Monto</th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">NCF</th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Descripción</th>
+                    {canEdit && <th className="px-4 py-3"></th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {financial.anticipos.map((anticipo, idx) => (
+                    <tr key={anticipo.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-4 py-3 font-['Space_Mono'] text-sm text-gray-500">#{anticipo.number}</td>
+                      <td className="px-4 py-3 font-['DM_Sans'] text-sm text-gray-700">
+                        {new Date(anticipo.date).toLocaleDateString('es-DO')}
+                      </td>
+                      <td className="px-4 py-3 font-['Space_Mono'] text-sm font-bold text-[#1C1C1C] text-right">
+                        {fmt(anticipo.amount)}
+                      </td>
+                      <td className="px-4 py-3 font-['Space_Mono'] text-xs text-gray-500">
+                        {anticipo.ncf ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 font-['DM_Sans'] text-sm text-gray-600">
+                        {anticipo.description ?? '—'}
+                      </td>
+                      {canEdit && (
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              onClick={() => handleEditAnticipo(anticipo)}
+                              className="text-gray-400 hover:text-[#F5C218] transition-colors text-xs p-1"
+                              title="Editar"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => { if (confirm('¿Eliminar este anticipo?')) deleteAnticipoMutation.mutate(anticipo.id); }}
+                              className="text-gray-400 hover:text-red-500 transition-colors text-xs p-1"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-gray-200">
+                    <td colSpan={2} className="px-4 py-3 font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500">Total anticipos</td>
+                    <td className="px-4 py-3 font-['Space_Mono'] text-sm font-bold text-[#1C1C1C] text-right">
+                      {fmt((financials as any).totalAnticipos ?? 0)}
+                    </td>
+                    <td colSpan={canEdit ? 3 : 2}></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Formulario nueva cubicación */}
