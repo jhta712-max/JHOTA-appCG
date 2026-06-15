@@ -1183,7 +1183,6 @@ export default function PaymentOrdersPage() {
         onCreated={(supplier) => {
           qc.invalidateQueries({ queryKey: ['suppliers', 'active-with-bank'] });
           setOrderForm((f) => ({ ...f, supplierId: supplier.id }));
-          setQuickCreateOpen(false);
         }}
       />
 
