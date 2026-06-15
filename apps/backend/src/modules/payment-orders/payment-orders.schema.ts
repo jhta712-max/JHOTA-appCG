@@ -15,6 +15,7 @@ export const createPaymentOrderSchema = z.object({
   quotationId:        z.string().uuid().optional().nullable(),
   projectItemId:      z.string().uuid().optional().nullable(),
   batchItemId:        z.string().uuid().optional().nullable(),
+  creditLineId:       z.string().uuid().optional().nullable(),
   // Auto-create payroll data (only when orderType === 'PAYROLL')
   payrollData: z.object({
     periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

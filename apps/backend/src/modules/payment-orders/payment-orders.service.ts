@@ -348,6 +348,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
           contratoAjustadoId: data.contratoAjustadoId ?? null,
           quotationId:        null,
           batchItemId:        batchItemId ?? null,
+          creditLineId:       data.creditLineId ?? null,
           createdById:        userId,
         },
         include: INCLUDE,
@@ -371,6 +372,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
       contratoAjustadoId: data.contratoAjustadoId ?? null,
       quotationId:        data.orderType === 'SERVICIO' ? (data.quotationId ?? null) : null,
       batchItemId:        batchItemId ?? null,
+      creditLineId:       data.creditLineId ?? null,
       createdById:        userId,
     },
     include: INCLUDE,
@@ -513,6 +515,22 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
           },
         });
       }
+    }
+
+    // Auto-record credit payment if linked to a credit line
+    if ((po as any).creditLineId) {
+      const dateStr = new Date().toISOString().split('T')[0];
+      await tx.supplierCreditPayment.create({
+        data: {
+          creditLineId:  (po as any).creditLineId,
+          amount:        Number(po.amount),
+          paymentDate:   new Date(dateStr),
+          paymentMethod: (paymentInfo?.paymentMethod ?? 'TRANSFER') as any,
+          reference:     paymentInfo?.paymentReference ?? null,
+          notes:         `Auto-registrado desde Orden de Pago #${po.number ?? po.id}`,
+          createdById:   userId,
+        },
+      });
     }
 
     if (!po.expenseId && po.orderType !== 'PAYROLL') {
