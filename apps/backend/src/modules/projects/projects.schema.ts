@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validateNCF } from '../../utils/fiscal.utils';
 
 export const createProjectSchema = z.object({
   code: z
@@ -55,12 +56,29 @@ export const createCubicacionSchema = z.object({
   progressPct: z.coerce.number().min(0).max(100, 'El porcentaje debe estar entre 0 y 100').default(0),
   description: z.string().min(3, 'La descripción es requerida').max(1000),
   date:        z.string().date('Formato inválido, use YYYY-MM-DD'),
+  ncf:         z.string().max(19).optional().nullable()
+                 .refine(v => !v || validateNCF(v), 'NCF inválido'),
 });
 
 export const updateCubicacionSchema = createCubicacionSchema.partial();
 
 export type CreateCubicacionInput = z.infer<typeof createCubicacionSchema>;
 export type UpdateCubicacionInput = z.infer<typeof updateCubicacionSchema>;
+
+// ── Anticipos ─────────────────────────────────────────────────
+
+export const createAnticipoSchema = z.object({
+  amount:      z.coerce.number().positive('El monto debe ser mayor a 0'),
+  date:        z.string().date('Formato inválido, use YYYY-MM-DD'),
+  ncf:         z.string().max(19).optional().nullable()
+                 .refine(v => !v || validateNCF(v), 'NCF inválido'),
+  description: z.string().max(500).optional().nullable(),
+});
+
+export const updateAnticipoSchema = createAnticipoSchema.partial();
+
+export type CreateAnticipoInput = z.infer<typeof createAnticipoSchema>;
+export type UpdateAnticipoInput = z.infer<typeof updateAnticipoSchema>;
 
 // ── Items de proyecto ─────────────────────────────────────────
 export const createProjectItemSchema = z.object({
