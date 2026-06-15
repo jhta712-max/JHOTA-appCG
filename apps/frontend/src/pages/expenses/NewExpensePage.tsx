@@ -679,8 +679,16 @@ export default function NewExpensePage() {
                       disabled={!creditSupplierId}>
                       <option value="">— Selecciona línea —</option>
                       {(creditLinesForExpense as any[])?.map((l: any) => (
-                        <option key={l.id} value={l.id}>
-                          Límite RD${Number(l.creditLimit).toLocaleString('es-DO')} · Disp. RD${Number(l.balance?.available ?? l.creditLimit).toLocaleString('es-DO')}
+                        <option
+                          key={l.id}
+                          value={l.id}
+                          disabled={l.balance?.available !== undefined && l.balance.available <= 0}
+                        >
+                          Límite RD${Number(l.creditLimit).toLocaleString('es-DO')} · {
+                            l.balance?.available !== undefined && l.balance.available <= 0
+                              ? '(Sin disponible)'
+                              : `Disp. RD${Number(l.balance?.available ?? l.creditLimit).toLocaleString('es-DO')}`
+                          }
                         </option>
                       ))}
                     </select>
