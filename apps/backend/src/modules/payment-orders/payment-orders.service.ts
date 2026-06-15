@@ -145,23 +145,38 @@ export async function getAvailablePayrolls(projectId: string) {
 // ── Cotizaciones abiertas para proyecto+suplidor ──────────────
 export async function getAvailableQuotations(projectId: string, supplierId?: string) {
   const openStatuses = ['PENDING', 'APPROVED', 'ADVANCE_PAID', 'IN_PROGRESS', 'PARTIAL_INVOICED', 'INVOICED'];
-  return prisma.quotation.findMany({
+  const quotations = await prisma.quotation.findMany({
     where: {
       projectId,
       status: { in: openStatuses as any },
       ...(supplierId ? { supplierId } : {}),
     },
     orderBy: { quotationDate: 'desc' },
-    select: { id: true, number: true, description: true, total: true, currency: true, status: true, quotationDate: true, supplierName: true, supplierId: true },
+    select: {
+      id: true, number: true, description: true, total: true, currency: true,
+      status: true, quotationDate: true, supplierName: true, supplierId: true,
+      paymentOrders: { where: { status: 'PAID' }, select: { amount: true } },
+    },
+  });
+  return quotations.map((q) => {
+    const totalPagado = q.paymentOrders.reduce((s, po) => s + Number(po.amount), 0);
+    return { id: q.id, number: q.number, description: q.description, total: Number(q.total), currency: q.currency, status: q.status, quotationDate: q.quotationDate, supplierName: q.supplierName, supplierId: q.supplierId, totalPagado, pendiente: Number(q.total) - totalPagado };
   });
 }
 
 // ── Contratos ajustados ACTIVOS para proyecto+suplidor ────────
 export async function getAvailableContracts(projectId: string, supplierId: string) {
-  return prisma.contratoAjustado.findMany({
+  const contratos = await prisma.contratoAjustado.findMany({
     where:   { projectId, supplierId, estado: 'ACTIVO' },
     orderBy: { fechaContrato: 'desc' },
-    select:  { id: true, descripcionTrabajo: true, montoContratado: true, fechaContrato: true },
+    select:  {
+      id: true, descripcionTrabajo: true, montoContratado: true, fechaContrato: true,
+      paymentOrders: { where: { status: 'PAID' }, select: { amount: true } },
+    },
+  });
+  return contratos.map((c) => {
+    const totalPagado = c.paymentOrders.reduce((s, po) => s + Number(po.amount), 0);
+    return { id: c.id, descripcionTrabajo: c.descripcionTrabajo, montoContratado: Number(c.montoContratado), fechaContrato: c.fechaContrato, totalPagado, pendiente: Number(c.montoContratado) - totalPagado };
   });
 }
 

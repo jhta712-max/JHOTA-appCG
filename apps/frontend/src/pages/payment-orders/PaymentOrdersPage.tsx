@@ -1024,47 +1024,89 @@ export default function PaymentOrdersPage() {
                 );
               })()}
 
-              {availableContracts.length > 0 && (
-                <div className="bg-indigo-50 border-l-4 border-indigo-400 p-3 mb-1">
-                  <label className="block text-xs font-bold text-indigo-700 uppercase tracking-wide mb-1.5">
-                    Vincular a contrato ajustado <span className="font-normal normal-case">(opcional)</span>
-                  </label>
-                  <select className="w-full border border-indigo-200 px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500"
-                    value={orderForm.contratoAjustadoId}
-                    onChange={(e) => setOrderForm((f) => ({ ...f, contratoAjustadoId: e.target.value }))}>
-                    <option value="">— Sin contrato ajustado —</option>
-                    {availableContracts.map((c: any) => (
-                      <option key={c.id} value={c.id}>
-                        {c.descripcionTrabajo} · RD$ {Number(c.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
-                      </option>
-                    ))}
-                  </select>
-                  {orderForm.contratoAjustadoId && (
-                    <p className="text-xs text-indigo-600 mt-1">✅ El gasto generado quedará vinculado automáticamente a este contrato.</p>
-                  )}
-                </div>
-              )}
+              {availableContracts.length > 0 && (() => {
+                const selectedContrato = availableContracts.find((c: any) => c.id === orderForm.contratoAjustadoId);
+                return (
+                  <div className="bg-indigo-50 border-l-4 border-indigo-400 p-3 mb-1">
+                    <label className="block text-xs font-bold text-indigo-700 uppercase tracking-wide mb-1.5">
+                      Vincular a contrato ajustado <span className="font-normal normal-case">(opcional)</span>
+                    </label>
+                    <select className="w-full border border-indigo-200 px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500"
+                      value={orderForm.contratoAjustadoId}
+                      onChange={(e) => setOrderForm((f) => ({ ...f, contratoAjustadoId: e.target.value }))}>
+                      <option value="">— Sin contrato ajustado —</option>
+                      {availableContracts.map((c: any) => (
+                        <option key={c.id} value={c.id}>
+                          {c.descripcionTrabajo} · RD$ {Number(c.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedContrato && (
+                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-['Space_Mono']">
+                        <div className="bg-white border border-indigo-200 px-2 py-1.5 text-center">
+                          <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total contrato</div>
+                          <div className="font-bold text-indigo-800">RD$ {Number(selectedContrato.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
+                        </div>
+                        <div className="bg-white border border-indigo-200 px-2 py-1.5 text-center">
+                          <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total pagado</div>
+                          <div className="font-bold text-green-700">RD$ {Number(selectedContrato.totalPagado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
+                        </div>
+                        <div className={`bg-white border px-2 py-1.5 text-center ${Number(selectedContrato.pendiente) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
+                          <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Resta pagar</div>
+                          <div className={`font-bold ${Number(selectedContrato.pendiente) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
+                            RD$ {Number(selectedContrato.pendiente).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {orderForm.contratoAjustadoId && !selectedContrato && (
+                      <p className="text-xs text-indigo-600 mt-1">✅ El gasto generado quedará vinculado automáticamente a este contrato.</p>
+                    )}
+                  </div>
+                );
+              })()}
 
-              {orderForm.orderType === 'SERVICIO' && availableQuotations.length > 0 && (
-                <div className="bg-teal-50 border-l-4 border-teal-400 p-3 mb-1">
-                  <label className="block text-xs font-bold text-teal-700 uppercase tracking-wide mb-1.5">
-                    Vincular a cotización abierta <span className="font-normal normal-case">(opcional)</span>
-                  </label>
-                  <select className="w-full border border-teal-200 px-3 py-2.5 text-sm focus:outline-none focus:border-teal-500"
-                    value={orderForm.quotationId}
-                    onChange={(e) => setOrderForm((f) => ({ ...f, quotationId: e.target.value }))}>
-                    <option value="">— Sin cotización vinculada —</option>
-                    {availableQuotations.map((q: any) => (
-                      <option key={q.id} value={q.id}>
-                        COTI-{String(q.number).padStart(3, '0')} · {q.supplierName?.slice(0, 30)} · {q.description?.slice(0, 40)}{q.description?.length > 40 ? '…' : ''} · {q.currency} {Number(q.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
-                      </option>
-                    ))}
-                  </select>
-                  {orderForm.quotationId && (
-                    <p className="text-xs text-teal-600 mt-1">✅ Al confirmar el pago, el gasto quedará vinculado automáticamente a esta cotización.</p>
-                  )}
-                </div>
-              )}
+              {orderForm.orderType === 'SERVICIO' && availableQuotations.length > 0 && (() => {
+                const selectedQuotation = availableQuotations.find((q: any) => q.id === orderForm.quotationId);
+                return (
+                  <div className="bg-teal-50 border-l-4 border-teal-400 p-3 mb-1">
+                    <label className="block text-xs font-bold text-teal-700 uppercase tracking-wide mb-1.5">
+                      Vincular a cotización abierta <span className="font-normal normal-case">(opcional)</span>
+                    </label>
+                    <select className="w-full border border-teal-200 px-3 py-2.5 text-sm focus:outline-none focus:border-teal-500"
+                      value={orderForm.quotationId}
+                      onChange={(e) => setOrderForm((f) => ({ ...f, quotationId: e.target.value }))}>
+                      <option value="">— Sin cotización vinculada —</option>
+                      {availableQuotations.map((q: any) => (
+                        <option key={q.id} value={q.id}>
+                          COTI-{String(q.number).padStart(3, '0')} · {q.supplierName?.slice(0, 30)} · {q.description?.slice(0, 40)}{q.description?.length > 40 ? '…' : ''} · {q.currency} {Number(q.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedQuotation && (
+                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-['Space_Mono']">
+                        <div className="bg-white border border-teal-200 px-2 py-1.5 text-center">
+                          <div className="text-teal-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total cotización</div>
+                          <div className="font-bold text-teal-800">RD$ {Number(selectedQuotation.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
+                        </div>
+                        <div className="bg-white border border-teal-200 px-2 py-1.5 text-center">
+                          <div className="text-teal-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total pagado</div>
+                          <div className="font-bold text-green-700">RD$ {Number(selectedQuotation.totalPagado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
+                        </div>
+                        <div className={`bg-white border px-2 py-1.5 text-center ${Number(selectedQuotation.pendiente) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
+                          <div className="text-teal-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Resta pagar</div>
+                          <div className={`font-bold ${Number(selectedQuotation.pendiente) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
+                            RD$ {Number(selectedQuotation.pendiente).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {orderForm.quotationId && !selectedQuotation && (
+                      <p className="text-xs text-teal-600 mt-1">✅ Al confirmar el pago, el gasto quedará vinculado automáticamente a esta cotización.</p>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Monto *">
