@@ -38,6 +38,7 @@ function CubicacionRow({
     progressPct: String(cub.progressPct),
     description: cub.description,
     date:        cub.date?.split('T')[0] ?? '',
+    ncf:         cub.ncf ?? '',
   });
 
   const handleSave = async () => {
@@ -88,7 +89,17 @@ function CubicacionRow({
             onChange={(e) => setForm({ ...form, date: e.target.value })}
           />
         </td>
-        <td className="px-2 py-2 text-xs text-gray-400">—</td>
+        <td className="px-2 py-2">
+          <input
+            type="text"
+            maxLength={19}
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none bg-white"
+            style={{ fontFamily: "'Space Mono', monospace" }}
+            value={form.ncf ?? ''}
+            onChange={(e) => setForm({ ...form, ncf: e.target.value })}
+            placeholder="NCF"
+          />
+        </td>
         <td className="px-2 py-2">
           <div className="flex gap-1">
             <button
@@ -204,6 +215,7 @@ export default function ProjectFinancialPage() {
       progressPct: Number(data.progressPct || 0),
       description: data.description,
       date:        data.date,
+      ncf:         data.ncf?.trim() || null,
     });
     refetch();
     qc.invalidateQueries({ queryKey: ['project-summary', id] });
@@ -816,7 +828,7 @@ export default function ProjectFinancialPage() {
                     <tr key={anticipo.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                       <td className="px-4 py-3 font-['Space_Mono'] text-sm text-gray-500">#{anticipo.number}</td>
                       <td className="px-4 py-3 font-['DM_Sans'] text-sm text-gray-700">
-                        {new Date(anticipo.date).toLocaleDateString('es-DO')}
+                        {fmtDate(anticipo.date, { day: '2-digit', month: 'short', year: 'numeric' })}
                       </td>
                       <td className="px-4 py-3 font-['Space_Mono'] text-sm font-bold text-[#1C1C1C] text-right">
                         {fmt(anticipo.amount)}
