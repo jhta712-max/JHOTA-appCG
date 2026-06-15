@@ -286,6 +286,14 @@ export default function PaymentOrdersPage() {
     select:   (r) => r.data.data as any[],
     enabled:  orderModal && orderForm.orderType === 'SERVICIO' && !!orderForm.projectId,
   });
+  const { data: selectedSupplierCreditLines } = useQuery({
+    queryKey: ['supplierCreditLines', orderForm.supplierId],
+    queryFn:  () => suppliersApi.getCreditLines(orderForm.supplierId),
+    enabled:  orderModal && !!orderForm.supplierId,
+    select:   (r) => (r.data.data as any[]).filter((l: any) => l.isActive),
+  });
+  const supplierHasCreditLines = (selectedSupplierCreditLines?.length ?? 0) > 0;
+
   const { data: creditLinesData } = useQuery({
     queryKey: ['supplierCreditLines', creditLineSupplierId],
     queryFn:  () => suppliersApi.getCreditLines(creditLineSupplierId),
@@ -384,6 +392,7 @@ export default function PaymentOrdersPage() {
       payrollPeriodEnd:   payroll?.periodEnd   ? payroll.periodEnd.slice(0, 10)   : '',
       payrollType:        payroll?.type ?? 'LABOR',
       batchItemId:      (o as any).batchItemId ?? '',
+      creditLineId:     (o as any).creditLineId ?? null,
     } : EMPTY_ORDER);
     setModalView('form'); setSessionOrders([]); setLastCreatedOrder(null); setFormErr(''); setOrderModal(true);
   };
@@ -961,7 +970,7 @@ export default function PaymentOrdersPage() {
               <Field label="Suplidor / Beneficiario *">
                 <div className="flex gap-2 items-end">
                   <select className="flex-1 border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.supplierId}
-                    onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '', contratoAjustadoId: '' })); setSupplierSearch(''); }}>
+                    onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '', contratoAjustadoId: '', creditLineId: null })); setSupplierSearch(''); setLinkToCreditLine(false); setCreditLineSupplierId(''); }}>
                     <option value="">— Selecciona suplidor —</option>
                     {activeSuppliers
                       .filter((s) => (s.bankAccounts && s.bankAccounts.length > 0) || (s.bank && s.accountNumber))
@@ -1096,7 +1105,7 @@ export default function PaymentOrdersPage() {
                   onChange={(e) => setOrderForm((f) => ({ ...f, notes: e.target.value }))} />
               </Field>
 
-              {!editingOrder && (
+              {!editingOrder && supplierHasCreditLines && (
                 <div className="border-t border-gray-100 pt-4 mt-2">
                   <label className="flex items-center gap-2 cursor-pointer mb-3">
                     <input
@@ -1104,7 +1113,9 @@ export default function PaymentOrdersPage() {
                       checked={linkToCreditLine}
                       onChange={(e) => {
                         setLinkToCreditLine(e.target.checked);
-                        if (!e.target.checked) {
+                        if (e.target.checked) {
+                          setCreditLineSupplierId(orderForm.supplierId);
+                        } else {
                           setCreditLineSupplierId('');
                           setOrderForm((f) => ({ ...f, creditLineId: null }));
                         }
@@ -1116,24 +1127,7 @@ export default function PaymentOrdersPage() {
 
                   {linkToCreditLine && (
                     <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-['Barlow_Condensed'] uppercase tracking-[0.1em] text-gray-500 mb-1">SUPLIDOR</label>
-                        <select
-                          value={creditLineSupplierId}
-                          onChange={(e) => {
-                            setCreditLineSupplierId(e.target.value);
-                            setOrderForm((f) => ({ ...f, creditLineId: null }));
-                          }}
-                          className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] focus:outline-none"
-                        >
-                          <option value="">Seleccionar suplidor…</option>
-                          {activeSuppliers.map((s) => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {creditLineSupplierId && creditLinesData && (
+                      {selectedSupplierCreditLines && (
                         <div>
                           <label className="block text-xs font-['Barlow_Condensed'] uppercase tracking-[0.1em] text-gray-500 mb-1">LÍNEA DE CRÉDITO</label>
                           <select
@@ -1141,8 +1135,8 @@ export default function PaymentOrdersPage() {
                             onChange={(e) => setOrderForm((f) => ({ ...f, creditLineId: e.target.value || null }))}
                             className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] focus:outline-none"
                           >
-                            <option value="">Sin línea de crédito</option>
-                            {creditLinesData.filter((l: any) => l.isActive).map((l: any) => (
+                            <option value="">Seleccionar línea…</option>
+                            {selectedSupplierCreditLines.map((l: any) => (
                               <option key={l.id} value={l.id}>
                                 {l.notes || 'Línea'} — Disponible: RD$ {l.balance?.available?.toLocaleString() ?? '...'}
                               </option>
