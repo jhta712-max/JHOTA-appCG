@@ -80,6 +80,8 @@ model User {
   contratoAjustadoPagosCreadoPor ContratoAjustadoPago[]   @relation("ContratoAjustadoPagoCreadoPor")
   ocrJobs                        OcrJob[]
   whatsAppConversations          WhatsAppConversation[] @relation("WhatsAppConversationUser")
+  creditLinesCreated    SupplierCreditLine[]    @relation("CreditLineCreatedBy")
+  creditPaymentsCreated SupplierCreditPayment[] @relation("CreditPaymentCreatedBy")
 
   @@index([email])
   @@index([roleId])
@@ -330,6 +332,8 @@ model Expense {
   quotationLink      QuotationExpenseLink? @relation("QuotationExpenseLink")
   paymentOrder          PaymentOrder?          @relation("PaymentOrderExpense")
   contratoAjustadoPagos ContratoAjustadoPago[] @relation("ContratoAjustadoPagoGasto")
+  creditLineId   String?             @map("credit_line_id") @db.Uuid
+  creditLine     SupplierCreditLine? @relation("ExpenseCreditLine", fields: [creditLineId], references: [id], onDelete: SetNull)
 
   @@index([projectId])
   @@index([expenseDate])
@@ -340,6 +344,7 @@ model Expense {
   @@index([batchItemId])
   @@index([contratoAjustadoId])
   @@index([projectItemId])
+  @@index([creditLineId])
   @@map("expenses")
 }
 
@@ -769,6 +774,7 @@ model Supplier {
   paymentOrders      PaymentOrder[]
   bankAccounts       SupplierBankAccount[]
   quotations         Quotation[]            @relation("QuotationSupplier")
+  creditLines        SupplierCreditLine[]
 
   @@index([name])
   @@index([rnc])
@@ -792,6 +798,43 @@ model SupplierBankAccount {
 
   @@index([supplierId])
   @@map("supplier_bank_accounts")
+}
+
+model SupplierCreditLine {
+  id           String   @id @default(uuid()) @db.Uuid
+  supplierId   String   @map("supplier_id") @db.Uuid
+  creditLimit  Decimal  @map("credit_limit") @db.Decimal(15, 2)
+  notes        String?  @db.Text
+  isActive     Boolean  @default(true) @map("is_active")
+  createdById  String   @map("created_by") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  supplier  Supplier               @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  createdBy User                   @relation("CreditLineCreatedBy", fields: [createdById], references: [id])
+  expenses  Expense[]              @relation("ExpenseCreditLine")
+  payments  SupplierCreditPayment[]
+
+  @@index([supplierId])
+  @@map("supplier_credit_lines")
+}
+
+model SupplierCreditPayment {
+  id            String        @id @default(uuid()) @db.Uuid
+  creditLineId  String        @map("credit_line_id") @db.Uuid
+  amount        Decimal       @db.Decimal(15, 2)
+  paymentDate   DateTime      @map("payment_date") @db.Date
+  paymentMethod PaymentMethod @map("payment_method")
+  reference     String?       @db.VarChar(100)
+  notes         String?       @db.Text
+  createdById   String        @map("created_by") @db.Uuid
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  creditLine SupplierCreditLine @relation(fields: [creditLineId], references: [id], onDelete: Cascade)
+  createdBy  User               @relation("CreditPaymentCreatedBy", fields: [createdById], references: [id])
+
+  @@index([creditLineId])
+  @@map("supplier_credit_payments")
 }
 
 // ============================================================
