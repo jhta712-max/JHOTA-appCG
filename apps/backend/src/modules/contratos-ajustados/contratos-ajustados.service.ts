@@ -183,6 +183,7 @@ export async function getResumen() {
       project:  { select: { id: true, code: true, name: true } },
       supplier: { select: { id: true, name: true } },
       expenses: { where: { status: { not: 'VOIDED' } }, select: { amount: true } },
+      adendas:  { select: { monto: true } },
     },
   });
 
@@ -192,7 +193,8 @@ export async function getResumen() {
   let activos = 0, completados = 0, sobregirados = 0;
 
   for (const c of contratos) {
-    const monto  = Number(c.montoContratado);
+    const sumAdendas = c.adendas.reduce((s, a) => s + Number(a.monto), 0);
+    const monto  = Number(c.montoContratado) + sumAdendas;
     const pagado = c.expenses.reduce((s, e) => s + Number(e.amount), 0);
     totalContratado += monto;
     totalPagado     += pagado;

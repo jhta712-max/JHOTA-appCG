@@ -807,7 +807,10 @@ export default function ContratosAjustadosPage() {
                         <p className="text-gray-700 truncate max-w-[200px]">{c.descripcionTrabajo}</p>
                       </td>
                       <td className="px-4 py-3 text-right font-black text-[#1C1C1C] whitespace-nowrap font-['Space_Mono']">
-                        {fmt(c.montoContratado)}
+                        {fmt(c.montoEfectivo ?? c.montoContratado)}
+                        {c.sumAdendas > 0 && (
+                          <p className="text-[10px] text-indigo-400 font-normal">+{fmt(c.sumAdendas)} adendas</p>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right text-green-700 hidden md:table-cell whitespace-nowrap font-['Space_Mono'] font-bold">
                         {fmt(c.pagadoAcumulado)}
