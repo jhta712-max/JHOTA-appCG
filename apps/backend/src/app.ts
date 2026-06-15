@@ -28,6 +28,7 @@ import notificationsRouter         from './modules/notifications/notifications.r
 import notificationContactsRouter  from './modules/notification-contacts/notification-contacts.router';
 import contratosAjustadosRouter  from './modules/contratos-ajustados/contratos-ajustados.router';
 import serviceSubscriptionsRouter from './modules/service-subscriptions/service-subscriptions.router';
+import whatsappRouter from './modules/whatsapp/whatsapp.router';
 
 const app = express();
 
@@ -125,6 +126,8 @@ app.use('/api/v1/notification-contacts',  apiLimiter,  notificationContactsRoute
 app.use('/api/v1/contratos-ajustados',   apiLimiter,  contratosAjustadosRouter);
 app.use('/api/v1/service-subscriptions', apiLimiter,  serviceSubscriptionsRouter);
 app.use('/api/v1/monitoring', apiLimiter,  monitoringRouter);
+// WhatsApp webhook — no apiLimiter (UltraMsg needs fast ACK, token-validated inside)
+app.use('/api/v1/whatsapp', whatsappRouter);
 
 // ----------------------------------------------------------------
 // 404 handler
