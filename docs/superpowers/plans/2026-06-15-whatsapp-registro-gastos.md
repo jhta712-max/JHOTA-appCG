@@ -519,7 +519,7 @@ const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY ?? '' });
 export type ConversationMessage = { role: 'user' | 'assistant'; content: string };
 
 export type ConfirmationPayload = {
-  intent: 'CREATE_PROJECT' | 'CREATE_EXPENSE' | 'QUERY_BALANCE' | 'QUERY_EXPENSES';
+  intent: 'CREATE_PROJECT' | 'CREATE_EXPENSE' | 'CREATE_PAYMENT_ORDER' | 'QUERY_BALANCE' | 'QUERY_EXPENSES';
   payload: Record<string, unknown>;
   summary: string;
 };
@@ -537,6 +537,11 @@ const AGENT_TOOLS: Anthropic.Tool[] = [
     input_schema: { type: 'object' as const, properties: {}, required: [] },
   },
   {
+    name: 'list_suppliers',
+    description: 'Lista los suplidores activos del catálogo. Úsalo para resolver un nombre de suplidor a su UUID.',
+    input_schema: { type: 'object' as const, properties: {}, required: [] },
+  },
+  {
     name: 'get_project_balance',
     description: 'Obtiene balance financiero de un proyecto (presupuesto, gastos, disponible).',
     input_schema: {
@@ -548,11 +553,17 @@ const AGENT_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'list_suppliers',
+    description: 'Lista los suplidores activos del catálogo para resolver un nombre a su UUID.',
+    input_schema: { type: 'object' as const, properties: {}, required: [] },
+  },
+  {
     name: 'request_confirmation',
     description: [
       'Llama esta herramienta ÚNICAMENTE cuando tengas TODOS los datos necesarios para ejecutar una acción.',
       'Para CREATE_EXPENSE necesitas: projectId, amount, description, categoryId, paymentMethod.',
       'Para CREATE_PROJECT necesitas: name, code (generado automáticamente), startDate (hoy).',
+      'Para CREATE_PAYMENT_ORDER necesitas: supplierId, projectId, amount, concept, orderType (default SERVICIO), payingCompany (default SERVINGMI), currency (default RD$).',
       'No llames esta herramienta si aún faltan datos — en su lugar responde con una pregunta.',
     ].join(' '),
     input_schema: {
@@ -560,7 +571,7 @@ const AGENT_TOOLS: Anthropic.Tool[] = [
       properties: {
         intent: {
           type: 'string',
-          enum: ['CREATE_PROJECT', 'CREATE_EXPENSE', 'QUERY_BALANCE', 'QUERY_EXPENSES'],
+          enum: ['CREATE_PROJECT', 'CREATE_EXPENSE', 'CREATE_PAYMENT_ORDER', 'QUERY_BALANCE', 'QUERY_EXPENSES'],
         },
         payload: {
           type: 'object',
@@ -597,7 +608,21 @@ PARA GASTOS (CREATE_EXPENSE) necesitas:
 PARA PROYECTOS (CREATE_PROJECT) necesitas:
 1. name: el nombre que el usuario indica
 2. code: genera automáticamente como primeras 3 letras de cada palabra separadas por "-" (ej. "Torre Norte" → "TOR-NOR"), todo en mayúsculas, máximo 15 chars
-3. startDate: la fecha de hoy en formato YYYY-MM-DD`;
+3. startDate: la fecha de hoy en formato YYYY-MM-DD
+
+PARA ÓRDENES DE PAGO (CREATE_PAYMENT_ORDER) necesitas:
+1. supplierId (usa list_suppliers para buscar por nombre)
+2. projectId (usa list_projects para buscar por nombre)
+3. amount (número positivo en RD$ o la moneda indicada)
+4. concept (descripción del pago, mínimo 3 caracteres)
+5. orderType: SERVICIO | PAYROLL | MATERIALS | PETTY_CASH — infiere del concepto; default SERVICIO
+6. payingCompany: "SERVINGMI" por defecto si el usuario no indica
+7. currency: "RD$" | "US$" | "€" — default "RD$"
+
+Ejemplos de mensajes para orden de pago:
+- "Orden de pago 50000 a Cemex por Torre Norte"
+- "OP 25000 suplidor ABC concepto servicios eléctricos proyecto Vista Mar"
+- "Pagar 15000 a Torre Constructora por materiales en Torre Norte"`;
 
 // ── Build Anthropic messages array ─────────────────────────────
 export function buildMessages(
@@ -641,6 +666,14 @@ async function runTool(name: string, input: Record<string, string>): Promise<str
       orderBy: { name: 'asc' },
     });
     return JSON.stringify(cats);
+  }
+  if (name === 'list_suppliers') {
+    const suppliers = await prisma.supplier.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, rnc: true },
+      orderBy: { name: 'asc' },
+    });
+    return JSON.stringify(suppliers);
   }
   if (name === 'get_project_balance') {
     const project = await prisma.project.findUnique({
@@ -775,6 +808,7 @@ Context stored in `WhatsAppConversation.contextData` as:
 import prisma from '../../config/database';
 import { createExpense } from '../expenses/expenses.service';
 import { createProject } from '../projects/projects.service';
+import { createPaymentOrder } from '../payment-orders/payment-orders.service';
 import type { ConversationMessage, ConfirmationPayload } from './whatsapp.agent';
 import { runAgent } from './whatsapp.agent';
 import {
@@ -827,6 +861,32 @@ async function executeConfirmedAction(
     );
     await logAudit('CREATE_EXPENSE', 'expense', expense.id, p, { id: expense.id });
     return `✅ Gasto registrado exitosamente.\nID: ${expense.id.substring(0, 8)}...\nMonto: RD$${p.amount.toLocaleString('es-DO')}`;
+  }
+
+  if (confirmation.intent === 'CREATE_PAYMENT_ORDER') {
+    const p = confirmation.payload as {
+      supplierId:    string;
+      projectId:     string;
+      amount:        number;
+      concept:       string;
+      orderType:     string;
+      payingCompany: string;
+      currency:      string;
+    };
+    const order = await createPaymentOrder(
+      {
+        supplierId:    p.supplierId,
+        projectId:     p.projectId,
+        amount:        p.amount,
+        concept:       p.concept,
+        orderType:     (p.orderType ?? 'SERVICIO') as any,
+        payingCompany: p.payingCompany ?? 'SERVINGMI',
+        currency:      (p.currency ?? 'RD$') as any,
+      },
+      userId,
+    );
+    await logAudit('CREATE_PAYMENT_ORDER', 'payment_order', order.id, p, { id: order.id });
+    return `✅ Orden de pago #${order.number} creada.\nSuplidor: ${p.payingCompany}\nMonto: ${p.currency ?? 'RD$'}${Number(p.amount).toLocaleString('es-DO')}\nConcepto: ${p.concept}`;
   }
 
   if (confirmation.intent === 'CREATE_PROJECT') {

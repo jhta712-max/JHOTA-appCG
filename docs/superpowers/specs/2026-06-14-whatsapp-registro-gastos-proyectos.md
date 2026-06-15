@@ -44,6 +44,28 @@ POST /api/expenses
 }
 ```
 
+### Generar Orden de Pago
+
+Ejemplos:
+- "Orden de pago 50000 a Torre Constructora por Torre Norte"
+- "OP 25000 Cemex proyecto Vista Mar concepto materiales de construcción"
+- "Crear orden 15000 suplidor ABC por servicios eléctricos Torre Norte"
+
+IA identifica: suplidor, proyecto, monto, concepto, tipo (default SERVICIO)  
+Ejecuta:
+```json
+POST /api/payment-orders
+{
+  "supplierId":    "uuid",
+  "projectId":     "uuid",
+  "amount":        50000,
+  "concept":       "Servicios eléctricos",
+  "orderType":     "SERVICIO",
+  "payingCompany": "SERVINGMI",
+  "currency":      "RD$"
+}
+```
+
 ### Consulta de Proyecto
 
 Ejemplos:
@@ -76,6 +98,7 @@ WhatsApp → Webhook → Servicio de Mensajes → Agente IA → API Interna → 
 |---|---|
 | `CREATE_PROJECT` | "Crear proyecto", "Nuevo proyecto" |
 | `CREATE_EXPENSE` | "Registrar gasto", "Gasto", "Compré" |
+| `CREATE_PAYMENT_ORDER` | "Orden de pago", "OP", "Pagar a", "Crear orden" |
 | `PROJECT_BALANCE` | "Balance", "Estado financiero" |
 | `PROJECT_EXPENSES` | "Ver gastos", "Gastos del proyecto" |
 
