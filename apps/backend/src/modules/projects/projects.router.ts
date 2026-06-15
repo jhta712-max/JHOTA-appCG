@@ -6,6 +6,7 @@ import {
   createProjectSchema, updateProjectSchema, projectQuerySchema,
   createAddendumSchema, updateAddendumSchema,
   createCubicacionSchema, updateCubicacionSchema,
+  createAnticipoSchema, updateAnticipoSchema,
   createProjectItemSchema, updateProjectItemSchema,
 } from './projects.schema';
 import * as ctrl from './projects.controller';
@@ -110,6 +111,32 @@ router.put('/:id/cubicaciones/:cubicacionId',
 router.delete('/:id/cubicaciones/:cubicacionId',
   authorize('admin'),
   ctrl.removeCubicacion,
+);
+
+// ── Anticipos ─────────────────────────────────────────────────
+// GET    /api/v1/projects/:id/anticipos
+router.get('/:id/anticipos',
+  ctrl.listAnticipos,
+);
+
+// POST   /api/v1/projects/:id/anticipos
+router.post('/:id/anticipos',
+  authorize('admin', 'supervisor'),
+  validate(createAnticipoSchema),
+  ctrl.createAnticipo,
+);
+
+// PATCH  /api/v1/projects/:id/anticipos/:anticipoId
+router.patch('/:id/anticipos/:anticipoId',
+  authorize('admin', 'supervisor'),
+  validate(updateAnticipoSchema),
+  ctrl.updateAnticipo,
+);
+
+// DELETE /api/v1/projects/:id/anticipos/:anticipoId
+router.delete('/:id/anticipos/:anticipoId',
+  authorize('admin', 'supervisor'),
+  ctrl.removeAnticipo,
 );
 
 // GET    /api/v1/projects/:id/items — visible para todos los autenticados
