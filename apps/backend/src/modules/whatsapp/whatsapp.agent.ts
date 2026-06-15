@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { z } from 'zod';
 import { env } from '../../config/env';
 import prisma from '../../config/database';
 
@@ -11,6 +12,12 @@ export type ConfirmationPayload = {
   payload: Record<string, unknown>;
   summary: string;
 };
+
+const confirmationPayloadSchema = z.object({
+  intent: z.enum(['CREATE_PROJECT', 'CREATE_EXPENSE', 'CREATE_PAYMENT_ORDER', 'QUERY_BALANCE', 'QUERY_EXPENSES']),
+  payload: z.record(z.unknown()),
+  summary: z.string().min(1),
+});
 
 // ── Tool definitions Claude can call ──────────────────────────
 const AGENT_TOOLS: Anthropic.Tool[] = [
@@ -121,8 +128,12 @@ export function extractConfirmation(
 ): ConfirmationPayload | null {
   for (const block of content) {
     if (block.type === 'tool_use' && block.name === 'request_confirmation') {
-      const input = block.input as ConfirmationPayload;
-      return { intent: input.intent, payload: input.payload, summary: input.summary };
+      const parsed = confirmationPayloadSchema.safeParse(block.input);
+      if (!parsed.success) {
+        console.error('[whatsapp] Invalid confirmation payload from AI:', parsed.error.flatten());
+        return null;
+      }
+      return parsed.data;
     }
   }
   return null;

@@ -1126,7 +1126,7 @@ model WhatsAppConversation {
   user     User?             @relation("WhatsAppConversationUser", fields: [userId], references: [id], onDelete: SetNull)
   messages WhatsAppMessage[]
 
-  @@index([phoneNumber])
+  @@unique([phoneNumber])
   @@map("whatsapp_conversations")
 }
 

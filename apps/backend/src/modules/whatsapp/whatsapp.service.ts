@@ -29,6 +29,7 @@ async function executeConfirmedAction(
   userRole: string,
 ): Promise<string> {
   const today = new Date().toISOString().split('T')[0];
+  const PRIVILEGED_ROLES = ['admin', 'supervisor'];
 
   if (confirmation.intent === 'CREATE_EXPENSE') {
     const p = confirmation.payload as {
@@ -53,6 +54,9 @@ async function executeConfirmedAction(
   }
 
   if (confirmation.intent === 'CREATE_PAYMENT_ORDER') {
+    if (!PRIVILEGED_ROLES.includes(userRole)) {
+      return '❌ No tienes permisos para crear órdenes de pago. Contacta a un administrador.';
+    }
     const p = confirmation.payload as {
       supplierId: string; projectId: string; amount: number;
       concept: string; orderType: string; payingCompany: string; currency: string;
@@ -74,6 +78,9 @@ async function executeConfirmedAction(
   }
 
   if (confirmation.intent === 'CREATE_PROJECT') {
+    if (!PRIVILEGED_ROLES.includes(userRole)) {
+      return '❌ No tienes permisos para crear proyectos. Contacta a un administrador.';
+    }
     const p = confirmation.payload as { name: string; code: string; startDate?: string };
     const project = await createProject(
       {

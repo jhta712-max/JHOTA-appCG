@@ -1,0 +1,1 @@
+ALTER TABLE whatsapp_conversations ADD CONSTRAINT whatsapp_conversations_phone_number_key UNIQUE (phone_number);
