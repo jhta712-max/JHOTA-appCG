@@ -325,6 +325,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['contratos-ajustados'] });
       qc.invalidateQueries({ queryKey: ['contrato-detail', contrato.id] });
+      qc.invalidateQueries({ queryKey: ['payment-orders', 'contracts'] });
       setShowAdendaForm(false); setAdendaError('');
       setAdendaForm({ monto: '', descripcion: '', fecha: new Date().toISOString().split('T')[0] });
     },
@@ -333,7 +334,11 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
 
   const deleteAdendaMut = useMutation({
     mutationFn: (adendaId: string) => contratosAjustadosApi.deleteAdenda(contrato.id, adendaId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['contratos-ajustados'] }); qc.invalidateQueries({ queryKey: ['contrato-detail', contrato.id] }); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['contratos-ajustados'] });
+      qc.invalidateQueries({ queryKey: ['contrato-detail', contrato.id] });
+      qc.invalidateQueries({ queryKey: ['payment-orders', 'contracts'] });
+    },
   });
 
   return (

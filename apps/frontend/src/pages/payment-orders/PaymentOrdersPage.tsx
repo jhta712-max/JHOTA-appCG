@@ -279,6 +279,7 @@ export default function PaymentOrdersPage() {
     queryFn:  () => paymentOrdersApi.availableContracts(orderForm.projectId, orderForm.supplierId),
     select:   (r) => r.data.data as any[],
     enabled:  orderModal && !!orderForm.projectId && !!orderForm.supplierId,
+    staleTime: 0,
   });
   const { data: availableQuotations = [] } = useQuery({
     queryKey: ['payment-orders', 'quotations', orderForm.projectId, orderForm.supplierId],
