@@ -79,6 +79,7 @@ model User {
   contratoAdendas                ContratoAjustadoAdenda[] @relation("ContratoAdendaCreatedBy")
   contratoAjustadoPagosCreadoPor ContratoAjustadoPago[]   @relation("ContratoAjustadoPagoCreadoPor")
   ocrJobs                        OcrJob[]
+  whatsAppConversations          WhatsAppConversation[] @relation("WhatsAppConversationUser")
 
   @@index([email])
   @@index([roleId])
@@ -1109,4 +1110,49 @@ model ServiceSubscription {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@map("service_subscriptions")
+}
+
+// ── WhatsApp Integration ───────────────────────────────────────
+
+model WhatsAppConversation {
+  id          String   @id @default(uuid()) @db.Uuid
+  phoneNumber String   @db.VarChar(30) @map("phone_number")
+  userId      String?  @map("user_id") @db.Uuid
+  status      String   @default("ACTIVE") @db.VarChar(20)
+  contextData Json     @default("{}") @map("context_data")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user     User?             @relation("WhatsAppConversationUser", fields: [userId], references: [id], onDelete: SetNull)
+  messages WhatsAppMessage[]
+
+  @@index([phoneNumber])
+  @@map("whatsapp_conversations")
+}
+
+model WhatsAppMessage {
+  id             String   @id @default(uuid()) @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  direction      String   @db.VarChar(10)
+  content        String   @db.Text
+  aiIntent       String?  @map("ai_intent") @db.VarChar(50)
+  processed      Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("whatsapp_messages")
+}
+
+model WhatsAppAuditLog {
+  id              String   @id @default(uuid()) @db.Uuid
+  action          String   @db.VarChar(50)
+  entityType      String?  @map("entity_type") @db.VarChar(50)
+  entityId        String?  @map("entity_id") @db.VarChar(100)
+  requestPayload  Json     @map("request_payload")
+  responsePayload Json     @map("response_payload")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("whatsapp_audit_logs")
 }
