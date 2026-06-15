@@ -724,3 +724,254 @@ git add apps/frontend/src/pages/reports/ReportsPage.tsx
 git commit -m "feat: credit report Excel download in ReportsPage"
 git push origin main
 ```
+
+---
+
+## Task 7: Backend — vincular orden de pago a línea de crédito
+
+Cuando una orden de pago se marca como PAGADA y tiene `creditLineId`, el sistema registra automáticamente un `SupplierCreditPayment`, reduciendo la deuda pendiente.
+
+**Files:**
+- Modify: `apps/backend/prisma/schema.prisma`
+- Create: `apps/backend/prisma/migrations/20260615000004_payment_order_credit_line/migration.sql`
+- Modify: `apps/backend/src/modules/payment-orders/payment-orders.schema.ts`
+- Modify: `apps/backend/src/modules/payment-orders/payment-orders.service.ts`
+
+- [ ] **Step 1: Agregar campo creditLineId al schema Prisma**
+
+En `apps/backend/prisma/schema.prisma`, dentro del modelo `PaymentOrder`, agregar después de `quotationId`:
+
+```prisma
+  creditLineId       String?   @map("credit_line_id") @db.Uuid
+```
+
+Y después del bloque de relaciones, agregar:
+
+```prisma
+  creditLine         SupplierCreditLine? @relation("PaymentOrderCreditLine", fields: [creditLineId], references: [id], onDelete: SetNull)
+```
+
+Y en el modelo `SupplierCreditLine` (busca ese modelo), agregar la relación inversa:
+
+```prisma
+  paymentOrders SupmentOrderspayment PaymentOrder[] @relation("PaymentOrderCreditLine")
+```
+
+**IMPORTANTE:** La relación inversa en `SupplierCreditLine` se agrega así:
+
+```prisma
+  paymentOrders PaymentOrder[] @relation("PaymentOrderCreditLine")
+```
+
+Y en los índices de `PaymentOrder`:
+
+```prisma
+  @@index([creditLineId])
+```
+
+- [ ] **Step 2: Crear migración SQL**
+
+Crear `apps/backend/prisma/migrations/20260615000004_payment_order_credit_line/migration.sql`:
+
+```sql
+-- Add creditLineId to payment_orders
+ALTER TABLE "payment_orders" ADD COLUMN "credit_line_id" UUID;
+ALTER TABLE "payment_orders" ADD CONSTRAINT "payment_orders_credit_line_id_fkey"
+  FOREIGN KEY ("credit_line_id") REFERENCES "supplier_credit_lines"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+CREATE INDEX "payment_orders_credit_line_id_idx" ON "payment_orders"("credit_line_id");
+```
+
+- [ ] **Step 3: Regenerar Prisma client**
+
+```bash
+pnpm --filter backend db:generate
+```
+
+Expected: `Generated Prisma Client` sin errores.
+
+- [ ] **Step 4: Actualizar el schema Zod de payment-orders**
+
+En `apps/backend/src/modules/payment-orders/payment-orders.schema.ts`, busca el schema de creación (probablemente `createPaymentOrderSchema`) y agregar:
+
+```typescript
+  creditLineId: z.string().uuid().optional().nullable(),
+```
+
+- [ ] **Step 5: Registrar SupplierCreditPayment en markAsPaid**
+
+En `apps/backend/src/modules/payment-orders/payment-orders.service.ts`, dentro de la función `markAsPaid`, buscar el `prisma.$transaction(async (tx) => {`. 
+
+Agregar al principio del bloque de transacción, ANTES del `tx.paymentOrder.update`:
+
+```typescript
+// Importar PaymentMethod al inicio del archivo si no está:
+// import { PaymentMethod } from '@prisma/client';
+```
+
+Al final del bloque de transacción, ANTES del `return tx.paymentOrder.findUniqueOrThrow(...)`:
+
+```typescript
+// Si la orden tiene línea de crédito, registrar el pago contra la línea
+if ((po as any).creditLineId) {
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+  await tx.supplierCreditPayment.create({
+    data: {
+      creditLineId:  (po as any).creditLineId,
+      amount:        Number(po.amount),
+      paymentDate:   new Date(dateStr),
+      paymentMethod: (paymentInfo?.paymentMethod ?? 'TRANSFER') as any,
+      reference:     paymentInfo?.paymentReference ?? null,
+      notes:         `Auto-registrado desde Orden de Pago #${po.number}`,
+      createdById:   userId,
+    },
+  });
+}
+```
+
+- [ ] **Step 6: Verificar que compila**
+
+```bash
+pnpm build:backend
+```
+
+Expected: sin errores TypeScript. Si hay error de tipo en `creditLineId`, añadir `(po as any).creditLineId` para acceder al campo.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add apps/backend/prisma/schema.prisma \
+        apps/backend/prisma/migrations/20260615000004_payment_order_credit_line/ \
+        apps/backend/src/modules/payment-orders/payment-orders.schema.ts \
+        apps/backend/src/modules/payment-orders/payment-orders.service.ts
+git commit -m "feat: link payment order to credit line — auto-record SupplierCreditPayment on markAsPaid"
+```
+
+---
+
+## Task 8: Frontend — selector de línea de crédito en PaymentOrdersPage
+
+Cuando el usuario selecciona un suplidor y el tipo de orden es MATERIALS o SERVICIO, mostrar un toggle "Aplicar a línea de crédito" que carga las líneas activas del suplidor.
+
+**Files:**
+- Modify: `apps/frontend/src/pages/payment-orders/PaymentOrdersPage.tsx`
+
+- [ ] **Step 1: Leer PaymentOrdersPage.tsx**
+
+Leer el archivo completo. Necesitas entender:
+1. Dónde está el estado del formulario (`orderForm` + `setOrderForm`)
+2. Dónde se define `EMPTY_ORDER` (para agregar `creditLineId: ''` al estado inicial)
+3. Dónde está el selector de suplidor (busca `Field label="Suplidor / Beneficiario *"`)
+4. Dónde se llama `createMutation.mutate(...)` (para agregar `creditLineId`)
+5. Qué imports ya existen
+
+- [ ] **Step 2: Agregar creditLineId a OrderForm y EMPTY_ORDER**
+
+Busca `type OrderForm = {` y agregar al final de la definición:
+
+```typescript
+  creditLineId: string;
+```
+
+Busca `const EMPTY_ORDER: OrderForm = {` y agregar al final del objeto:
+
+```typescript
+  creditLineId: '',
+```
+
+- [ ] **Step 3: Agregar estado y query de líneas de crédito**
+
+Dentro del componente (después de los otros useState), agregar:
+
+```typescript
+const [useCreditLine, setUseCreditLine] = useState(false);
+
+const { data: supplierCreditLines } = useQuery({
+  queryKey: ['supplier-credit-lines-po', orderForm.supplierId],
+  queryFn:  () => suppliersApi.getCreditLines(orderForm.supplierId).then(r => r.data.data.filter((l: any) => l.isActive)),
+  enabled:  !!orderForm.supplierId && useCreditLine,
+});
+```
+
+- [ ] **Step 4: Agregar toggle y selector en el formulario**
+
+Busca el bloque que muestra los datos bancarios del suplidor (la sección que renderiza `🏦 banco · cuenta`). Después de ese bloque (y antes del siguiente Field), agregar:
+
+```tsx
+{/* Vincular a línea de crédito — solo si el suplidor tiene líneas activas */}
+{orderForm.supplierId && ['MATERIALS', 'SERVICIO'].includes(orderForm.orderType) && (
+  <div className="border border-gray-100 p-3 bg-gray-50 mb-3">
+    <label className="flex items-center gap-2 cursor-pointer">
+      <input
+        type="checkbox"
+        checked={useCreditLine}
+        onChange={(e) => {
+          setUseCreditLine(e.target.checked);
+          if (!e.target.checked) setOrderForm(f => ({ ...f, creditLineId: '' }));
+        }}
+        className="accent-[#F5C218]"
+      />
+      <span className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide text-gray-700">
+        Aplicar a línea de crédito
+      </span>
+    </label>
+    {useCreditLine && (
+      <div className="mt-3">
+        <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">
+          Línea de crédito *
+        </label>
+        <select
+          className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+          value={orderForm.creditLineId}
+          onChange={(e) => setOrderForm(f => ({ ...f, creditLineId: e.target.value }))}>
+          <option value="">— Selecciona línea —</option>
+          {(supplierCreditLines as any[])?.map((l: any) => {
+            const available = Number(l.balance?.available ?? l.creditLimit);
+            const disabled  = available <= 0;
+            return (
+              <option key={l.id} value={l.id} disabled={disabled}>
+                {disabled
+                  ? `Sin disponible (Límite RD$${Number(l.creditLimit).toLocaleString('es-DO')})`
+                  : `Límite RD$${Number(l.creditLimit).toLocaleString('es-DO')} · Disponible RD$${available.toLocaleString('es-DO')}`}
+              </option>
+            );
+          })}
+        </select>
+        {!supplierCreditLines?.length && (
+          <p className="text-xs text-gray-400 mt-1 font-['DM_Sans']">
+            Este suplidor no tiene líneas de crédito activas.
+          </p>
+        )}
+      </div>
+    )}
+  </div>
+)}
+```
+
+- [ ] **Step 5: Pasar creditLineId al create mutation**
+
+Busca donde se llama `createMutation.mutate(...)` o `paymentOrdersApi.create(...)`. Agregar `creditLineId: useCreditLine && orderForm.creditLineId ? orderForm.creditLineId : undefined` al objeto de datos.
+
+- [ ] **Step 6: Resetear en closeModal o al limpiar el formulario**
+
+Busca donde se resetea el formulario (probablemente `setOrderForm(EMPTY_ORDER)` o similar). Agregar después:
+
+```typescript
+setUseCreditLine(false);
+```
+
+- [ ] **Step 7: Verificar build**
+
+```bash
+pnpm build:frontend
+```
+
+Expected: `✓ built` sin errores TypeScript.
+
+- [ ] **Step 8: Commit y push**
+
+```bash
+git add apps/frontend/src/pages/payment-orders/PaymentOrdersPage.tsx
+git commit -m "feat: link payment order to supplier credit line in form"
+git push origin main
+```
