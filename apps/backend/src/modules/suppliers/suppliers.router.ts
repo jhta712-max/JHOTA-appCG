@@ -10,6 +10,8 @@ import * as creditCtrl from './credit-lines.controller';
 const router = Router();
 router.use(authenticate);
 
+router.get('/credit-summary', authorize('admin', 'supervisor'), ctrl.getCreditSummaryHandler);
+router.get('/credit-report',  authorize('admin', 'supervisor'), ctrl.getCreditReportHandler);
 router.get('/validate-rnc/:rnc', ctrl.validateRnc);
 router.get('/',            ctrl.list);
 router.get('/:id/history', ctrl.getHistory);
