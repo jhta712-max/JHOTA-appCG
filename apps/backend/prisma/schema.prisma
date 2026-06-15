@@ -109,6 +109,7 @@ model Project {
   items              ProjectItem[]
   addendums          ProjectAddendum[]
   cubicaciones       ProjectCubicacion[]
+  anticipos          ProjectAnticipo[]
   assignments        ProjectAssignment[]
   payrolls           Payroll[]
   quotations         Quotation[]
@@ -180,12 +181,32 @@ model ProjectCubicacion {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  ncf         String?  @db.VarChar(19)
+
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdBy User    @relation("CubicacionCreatedBy", fields: [createdById], references: [id])
 
   @@unique([projectId, number])
   @@index([projectId])
   @@map("project_cubicaciones")
+}
+
+model ProjectAnticipo {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  number      Int
+  amount      Decimal  @db.Decimal(15, 2)
+  date        DateTime @db.Date
+  ncf         String?  @db.VarChar(19)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, number])
+  @@index([projectId])
+  @@map("project_anticipos")
 }
 
 enum ProjectStatus {
