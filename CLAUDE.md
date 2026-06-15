@@ -63,6 +63,7 @@ modules/
   cards/          # Tarjetas de crédito empresariales
   service-subscriptions/ # Suscripciones de servicios con alertas de vencimiento
   contratos-ajustados/   # Contratos ajustados de proyectos
+  whatsapp/       # Chatbot WhatsApp: webhook UltraMsg → agente IA (Claude Haiku tool_use) → ejecuta acciones
 services/
   dgii.service.ts         # Lookup RNC → DGII API con cache in-memory 24h
 jobs/
@@ -125,7 +126,14 @@ utils/
 
 5. **Modelo de notificaciones WhatsApp — dos implementaciones:** `apps/backend/src/services/notifications.service.ts` (alertas del sistema/jobs) y `apps/backend/src/modules/notifications/notifications.service.ts` (in-app + WhatsApp con `getWhatsAppRecipients`). Ambas deben usar `getWhatsAppRecipients(type?)` del módulo para respetar los `notifTypes` configurados en la BD. Si se agrega una alerta nueva, asegurarse de pasar el tipo correcto a `sendWhatsApp(message, 'TIPO')`. Tipos válidos: `BUDGET`, `PAYROLL`, `ORDERS`, `SERVICE_PAYMENTS`, `SYSTEM`, `SECURITY`.
 
-6. **WhatsApp (UltraMsg):** Env vars: `ULTRAMSG_INSTANCE_ID`, `ULTRAMSG_TOKEN`, `NOTIFY_WHATSAPP_TO` (fallback). Los destinatarios reales vienen de la BD (`notificationContact` + usuarios con `whatsappOptIn`). El endpoint `GET /api/v1/notifications/whatsapp-recipients` devuelve la lista combinada filtrable por tipo (`?type=BUDGET`). Campo `notifTypes String[]` en User y NotificationContact — array vacío = recibe todos.
+6. **WhatsApp (UltraMsg) — notificaciones salientes:** Env vars: `ULTRAMSG_INSTANCE_ID`, `ULTRAMSG_TOKEN`, `NOTIFY_WHATSAPP_TO` (fallback). Los destinatarios reales vienen de la BD (`notificationContact` + usuarios con `whatsappOptIn`). El endpoint `GET /api/v1/notifications/whatsapp-recipients` devuelve la lista combinada filtrable por tipo (`?type=BUDGET`). Campo `notifTypes String[]` en User y NotificationContact — array vacío = recibe todos.
+
+10. **Módulo WhatsApp chatbot** (`modules/whatsapp/`): Webhook en `POST /api/v1/whatsapp/webhook` (sin `authenticate`, sin `apiLimiter`, rate limit propio 30 req/min). Flujo: UltraMsg → `whatsapp.controller.ts` valida token con `timingSafeEqual` → ACK inmediato con 200 → `setImmediate` procesa async → `whatsapp.service.ts` maneja máquina de estados (ACTIVE / AWAITING_CONFIRMATION) → `whatsapp.agent.ts` corre Claude Haiku con 5 tools read-only (`list_projects`, `list_expense_categories`, `list_suppliers`, `get_project_balance`, `request_confirmation`) → usuario confirma con "Sí/No" → service ejecuta write contra los módulos existentes.
+    - Contexto multi-turno en `WhatsAppConversation.contextData` (JSON). Historial limitado a últimos 10 mensajes.
+    - `CREATE_PROJECT` y `CREATE_PAYMENT_ORDER` requieren rol `admin` o `supervisor`.
+    - `lookupUserByPhone` compara número normalizado (`+1849...`) con campo `phone` del User. Si no hay match, usuario es `guest` y solo puede hacer consultas de balance.
+    - El agente **nunca escribe en BD directamente** — solo llama `request_confirmation` y el service hace el write tras confirmación explícita.
+    - Tablas: `whatsapp_conversations` (upsert por `phoneNumber` único), `whatsapp_messages`, `whatsapp_audit_logs`.
 
 7. **Agente de mantenimiento** (`scripts/maintenance-agent.ts`): corre en GitHub Actions (`.github/workflows/maintenance.yml`). Cache en `.maintenance-cache.json` en raíz del repo. Path calculado con `__dirname` (no `process.cwd()`). Triggers: cron semanal + `on: push: branches: [main]` (post-deploy). En modo post-deploy solo crea issue si hay degradación.
 
