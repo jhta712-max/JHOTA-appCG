@@ -19,7 +19,7 @@ const fmt = (n: number) =>
 
 // fmtDate importado desde utils/date (evita desplazamiento UTC)
 
-type CubForm = { amount: string; progressPct: string; description: string; date: string };
+type CubForm = { amount: string; progressPct: string; description: string; date: string; ncf: string };
 
 // ── Fila de cubicación con edición inline ─────────────────────
 function CubicacionRow({
@@ -88,6 +88,7 @@ function CubicacionRow({
             onChange={(e) => setForm({ ...form, date: e.target.value })}
           />
         </td>
+        <td className="px-2 py-2 text-xs text-gray-400">—</td>
         <td className="px-2 py-2">
           <div className="flex gap-1">
             <button
@@ -126,6 +127,7 @@ function CubicacionRow({
       </td>
       <td className="px-3 py-3 text-sm text-gray-700 max-w-xs truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>{cub.description}</td>
       <td className="px-3 py-3 text-sm text-gray-500 whitespace-nowrap" style={{ fontFamily: "'Space Mono', monospace" }}>{fmtDate(cub.date, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+      <td className="px-4 py-3 font-['Space_Mono'] text-xs text-gray-500">{cub.ncf ?? '—'}</td>
       <td className="px-3 py-3">
         <div className="flex gap-1">
           <button
@@ -168,7 +170,7 @@ export default function ProjectFinancialPage() {
 
   // Formulario nueva cubicación
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm]   = useState<CubForm>({ amount: '', progressPct: '', description: '', date: '' });
+  const [form, setForm]   = useState<CubForm>({ amount: '', progressPct: '', description: '', date: '', ncf: '' });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -185,8 +187,9 @@ export default function ProjectFinancialPage() {
         progressPct: Number(form.progressPct || 0),
         description: form.description,
         date:        form.date,
+        ncf:         form.ncf?.trim() || null,
       });
-      setForm({ amount: '', progressPct: '', description: '', date: '' });
+      setForm({ amount: '', progressPct: '', description: '', date: '', ncf: '' });
       setShowForm(false);
       refetch();
       qc.invalidateQueries({ queryKey: ['project-summary', id] });
@@ -457,13 +460,13 @@ export default function ProjectFinancialPage() {
               className="text-lg font-bold text-green-700"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
-              {fmt((financials as any).totalCobrado ?? 0)}
+              {fmt(financials.totalCobrado ?? 0)}
             </p>
             <p
               className="text-xs text-gray-400 mt-0.5"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
-              Ant. {fmt((financials as any).totalAnticipos ?? 0)} + Cub. {fmt(totalCubicado)}
+              Ant. {fmt(financials.totalAnticipos ?? 0)} + Cub. {fmt(totalCubicado)}
             </p>
           </div>
 
@@ -851,7 +854,7 @@ export default function ProjectFinancialPage() {
                   <tr className="border-t-2 border-gray-200">
                     <td colSpan={2} className="px-4 py-3 font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500">Total anticipos</td>
                     <td className="px-4 py-3 font-['Space_Mono'] text-sm font-bold text-[#1C1C1C] text-right">
-                      {fmt((financials as any).totalAnticipos ?? 0)}
+                      {fmt(financials.totalAnticipos ?? 0)}
                     </td>
                     <td colSpan={canEdit ? 3 : 2}></td>
                   </tr>
@@ -958,6 +961,21 @@ export default function ProjectFinancialPage() {
                   style={{ fontFamily: "'Space Mono', monospace" }}
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-wide block mb-1">
+                  NCF
+                </label>
+                <input
+                  type="text"
+                  value={form.ncf ?? ''}
+                  onChange={e => setForm(f => ({ ...f, ncf: e.target.value }))}
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                  placeholder="B0100000001 o E310000000001"
+                  maxLength={19}
                 />
               </div>
             </div>
@@ -1081,6 +1099,7 @@ export default function ProjectFinancialPage() {
                     >
                       Fecha
                     </th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">NCF</th>
                     <th
                       className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-[0.15em] w-20"
                       style={{ fontFamily: "'Barlow_Condensed', sans-serif" }}
@@ -1119,7 +1138,7 @@ export default function ProjectFinancialPage() {
                     >
                       {lastProgressPct.toFixed(1)}% avance
                     </td>
-                    <td colSpan={3} />
+                    <td colSpan={4} />
                   </tr>
                 </tfoot>
               </table>
