@@ -41,3 +41,20 @@ describe('ultramsgWebhookSchema', () => {
     expect(r.success).toBe(true);
   });
 });
+
+import { normalizePhone } from '../whatsapp.helpers';
+
+describe('normalizePhone', () => {
+  it('strips spaces and dashes', () => {
+    expect(normalizePhone('(809) 555-1234')).toBe('+8095551234');
+  });
+  it('adds + prefix when missing', () => {
+    expect(normalizePhone('18095551234')).toBe('+18095551234');
+  });
+  it('keeps existing + prefix', () => {
+    expect(normalizePhone('+18095551234')).toBe('+18095551234');
+  });
+  it('removes whatsapp: prefix', () => {
+    expect(normalizePhone('whatsapp:+18095551234')).toBe('+18095551234');
+  });
+});
