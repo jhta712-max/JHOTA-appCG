@@ -19,7 +19,7 @@ export default function FormModal({
   maxWidth?: string;
 }) {
   return (
-    <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
       <div className={`bg-white w-full ${maxWidth} max-h-[90vh] overflow-y-auto shadow-2xl`}>
         <div className="bg-[#1C1C1C] flex items-center justify-between px-6 py-4">
           <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">
