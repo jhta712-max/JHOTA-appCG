@@ -21,6 +21,14 @@ const EXPENSE_INCLUDE = {
   attachments:  { select: { id: true, fileName: true, mimeType: true, isPrimary: true, createdAt: true } },
   paymentOrder: { select: { id: true, paymentBank: true, paymentReference: true, paidAt: true } },
   batchItem:    BATCH_ITEM_SELECT,
+  creditLine: {
+    select: {
+      id: true,
+      supplierId: true,
+      creditLimit: true,
+      supplier: { select: { name: true } },
+    },
+  },
 } as const;
 
 // Roles que requieren aprobación al crear gastos
@@ -114,6 +122,16 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
   const needsApproval = !data.hasFiscalDoc && ROLES_NEED_APPROVAL.has(userRole ?? '');
   const status = needsApproval ? 'PENDING_APPROVAL' : 'ACTIVE';
 
+  // Validate credit line if provided
+  if ((data as any).creditLineId) {
+    const line = await prisma.supplierCreditLine.findUnique({
+      where: { id: (data as any).creditLineId },
+    });
+    if (!line || !line.isActive) {
+      throw new AppError(400, 'Línea de crédito no encontrada o inactiva', 'INVALID_CREDIT_LINE');
+    }
+  }
+
   const batchItemId = await resolveBatchItemId(data.projectId, (data as any).batchItemId ?? (data as any).projectItemId);
 
   const expense = await prisma.expense.create({
@@ -133,6 +151,7 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
       foreignAmount:   (data as any).foreignAmount   ?? null,
       foreignCurrency: (data as any).foreignCurrency ?? null,
       exchangeRate:    (data as any).exchangeRate    ?? null,
+      creditLineId:    (data as any).creditLineId    ?? null,
       ...(data.hasFiscalDoc && data.fiscalVoucher && {
         fiscalVoucher: {
           create: {
