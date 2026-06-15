@@ -50,7 +50,7 @@ modules/
   expenses/       # Gastos de proyectos (con OCR de facturas)
   payroll/        # Nóminas vinculadas a proyectos
   payment-orders/ # Órdenes de pago (vinculadas a nóminas/gastos)
-  suppliers/      # Proveedores (incluye beneficiarios); endpoint validate-rnc/:rnc → DGII
+  suppliers/      # Proveedores (incluye beneficiarios); endpoint validate-rnc/:rnc → DGII; crédito: GET /credit-summary + /credit-report
   quotations/     # Cotizaciones con OCR
   office-expenses/# Gastos de oficina; usa texto libre supplierName (no FK a suppliers)
   ocr/            # OCR síncrono: POST devuelve resultado inline (ver nota OCR)
@@ -112,6 +112,8 @@ utils/
 
 **Vite/esbuild TDZ en producción:** Si en un componente React se usa una variable de `useForm` (ej: `watch`, `setValue`) ANTES de la línea donde se llama a `useForm({...})`, el build de producción falla con `ReferenceError: Cannot access 'X' before initialization`. El minificador combina las declaraciones `const` en una sola cadena, haciendo visible el TDZ. Regla: llamar siempre a `useForm()` ANTES de usar cualquiera de sus valores retornados (`watch`, `setValue`, etc.).
 
+**Líneas de crédito de suplidores:** Modelos `SupplierCreditLine` y `SupplierCreditPayment`. Balance calculado en runtime: `consumed` = suma de `Expense` no-VOID con `creditLineId`; `paid` = suma de `SupplierCreditPayment.amount`; `pending = consumed - paid`; `available = creditLimit - pending`. La lógica de agregación global está en `modules/suppliers/credit-summary.service.ts`. Cuando una `PaymentOrder` con `creditLineId` se marca como pagada (`markAsPaid`), se auto-crea un `SupplierCreditPayment` dentro de la misma transacción. Rutas `/credit-summary` y `/credit-report` deben ir ANTES de `/:id` en el router o Express las captura como parámetro.
+
 **Gastos de oficina vs Módulo de suplidores:** Los suplidores del módulo `/suppliers` son entidades continuas (servicios, materiales, mano de obra). Los gastos de oficina (`/office-expenses`) usan texto libre `supplierName` — no FK a la tabla `suppliers` — porque sus proveedores son ocasionales y no continuos.
 
 ## Reglas concretas
@@ -128,24 +130,20 @@ utils/
 
 6. **WhatsApp (UltraMsg) — notificaciones salientes:** Env vars: `ULTRAMSG_INSTANCE_ID`, `ULTRAMSG_TOKEN`, `NOTIFY_WHATSAPP_TO` (fallback). Los destinatarios reales vienen de la BD (`notificationContact` + usuarios con `whatsappOptIn`). El endpoint `GET /api/v1/notifications/whatsapp-recipients` devuelve la lista combinada filtrable por tipo (`?type=BUDGET`). Campo `notifTypes String[]` en User y NotificationContact — array vacío = recibe todos.
 
-10. **Módulo WhatsApp chatbot** (`modules/whatsapp/`): Webhook en `POST /api/v1/whatsapp/webhook` (sin `authenticate`, sin `apiLimiter`, rate limit propio 30 req/min). Flujo: UltraMsg → `whatsapp.controller.ts` valida token con `timingSafeEqual` → ACK inmediato con 200 → `setImmediate` procesa async → `whatsapp.service.ts` maneja máquina de estados (ACTIVE / AWAITING_CONFIRMATION) → `whatsapp.agent.ts` corre Claude Haiku con 5 tools read-only (`list_projects`, `list_expense_categories`, `list_suppliers`, `get_project_balance`, `request_confirmation`) → usuario confirma con "Sí/No" → service ejecuta write contra los módulos existentes.
+7. **Módulo WhatsApp chatbot** (`modules/whatsapp/`): Webhook en `POST /api/v1/whatsapp/webhook` (sin `authenticate`, sin `apiLimiter`, rate limit propio 30 req/min). Flujo: UltraMsg → `whatsapp.controller.ts` valida token con `timingSafeEqual` → ACK inmediato con 200 → `setImmediate` procesa async → `whatsapp.service.ts` maneja máquina de estados (ACTIVE / AWAITING_CONFIRMATION) → `whatsapp.agent.ts` corre Claude Haiku con 5 tools read-only (`list_projects`, `list_expense_categories`, `list_suppliers`, `get_project_balance`, `request_confirmation`) → usuario confirma con "Sí/No" → service ejecuta write contra los módulos existentes.
     - Contexto multi-turno en `WhatsAppConversation.contextData` (JSON). Historial limitado a últimos 10 mensajes.
     - `CREATE_PROJECT` y `CREATE_PAYMENT_ORDER` requieren rol `admin` o `supervisor`.
     - `lookupUserByPhone` compara número normalizado (`+1849...`) con campo `phone` del User. Si no hay match, usuario es `guest` y solo puede hacer consultas de balance.
     - El agente **nunca escribe en BD directamente** — solo llama `request_confirmation` y el service hace el write tras confirmación explícita.
     - Tablas: `whatsapp_conversations` (upsert por `phoneNumber` único), `whatsapp_messages`, `whatsapp_audit_logs`.
 
-7. **Agente de mantenimiento** (`scripts/maintenance-agent.ts`): corre en GitHub Actions (`.github/workflows/maintenance.yml`). Cache en `.maintenance-cache.json` en raíz del repo. Path calculado con `__dirname` (no `process.cwd()`). Triggers: cron semanal + `on: push: branches: [main]` (post-deploy). En modo post-deploy solo crea issue si hay degradación.
+8. **Agente de mantenimiento** (`scripts/maintenance-agent.ts`): corre en GitHub Actions (`.github/workflows/maintenance.yml`). Cache en `.maintenance-cache.json` en raíz del repo. Path calculado con `__dirname` (no `process.cwd()`). Triggers: cron semanal + `on: push: branches: [main]` (post-deploy). En modo post-deploy solo crea issue si hay degradación.
 
-8. **Agente de validación RNC/DGII** (`apps/backend/src/services/dgii.service.ts`): `lookupRNC(rnc)` consulta `api.dgii.gov.do/api/contribuyentes`, cache in-memory 24h, timeout 6s. Endpoint: `GET /suppliers/validate-rnc/:rnc`. Frontend: hook `useRncValidation(rnc)` con debounce 800ms. Integrado en `SuppliersPage` y `FiscalVoucherForm`. Si DGII no responde, devuelve `{ unreachable: true }` — no bloquea el formulario.
+9. **Agente de validación RNC/DGII** (`apps/backend/src/services/dgii.service.ts`): `lookupRNC(rnc)` consulta `api.dgii.gov.do/api/contribuyentes`, cache in-memory 24h, timeout 6s. Endpoint: `GET /suppliers/validate-rnc/:rnc`. Frontend: hook `useRncValidation(rnc)` con debounce 800ms. Integrado en `SuppliersPage` y `FiscalVoucherForm`. Si DGII no responde, devuelve `{ unreachable: true }` — no bloquea el formulario.
 
-9. **Post-OCR Enrichment Agent** (`apps/backend/src/modules/ocr/ocr-enrichment.service.ts`): se llama después de OCR completo (no bloquea). Nivel 1 (alta confianza): match proveedor por RNC, duplicado NCF/eNCF, clasificación tipo comprobante (B01-B16 tradicional, E31-E45 eNCF electrónico), cruce con cotización abierta. Nivel 2 (solo warnings): validación ITBIS 10%-26%, tipos gubernamentales inusuales.
+10. **Post-OCR Enrichment Agent** (`apps/backend/src/modules/ocr/ocr-enrichment.service.ts`): se llama después de OCR completo (no bloquea). Nivel 1 (alta confianza): match proveedor por RNC, duplicado NCF/eNCF, clasificación tipo comprobante (B01-B16 tradicional, E31-E45 eNCF electrónico), cruce con cotización abierta. Nivel 2 (solo warnings): validación ITBIS 10%-26%, tipos gubernamentales inusuales.
 
 ## Trampas conocidas (bugs que ya ocurrieron)
-
-**Axios generics y el wrapper de respuesta:** `api.post<T>` donde `T` es el tipo de `res.data` completo. El backend siempre devuelve `{ success, data: T }`. Por tanto: `api.post<{ success: boolean; data: MiTipo }>('/ruta', body)` y acceder con `res.data.data`. Tipar solo el dato interno (`api.post<MiTipo>`) causa que `res.data.data` sea `undefined` en runtime.
-
-**Vite/esbuild TDZ en producción:** Si en un componente React se usa una variable de `useForm` (ej: `watch`, `setValue`) ANTES de la línea donde se llama a `useForm({...})`, el build de producción falla con `ReferenceError: Cannot access 'X' before initialization`. Llamar siempre a `useForm()` ANTES de usar cualquiera de sus valores retornados.
 
 **Fallback numérico en nullish coalescing:** `String(valor ?? '0')` — si `valor` es `null`, resulta en `"null"`. El fallback debe ser numérico: `String(valor ?? 0)`.
 
