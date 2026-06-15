@@ -605,7 +605,7 @@ export const suppliersApi = {
   toggleCreditLine: (supplierId: string, lineId: string) =>
     api.patch<{ success: boolean; data: SupplierCreditLine }>(`/suppliers/${supplierId}/credit-lines/${lineId}/toggle`),
   getCreditLineBalance: (supplierId: string, lineId: string) =>
-    api.get<{ success: boolean; data: SupplierCreditLine['balance'] }>(`/suppliers/${supplierId}/credit-lines/${lineId}/balance`),
+    api.get<{ success: boolean; data: { lineId: string; creditLimit: number; consumed: number; paid: number; pending: number; available: number } }>(`/suppliers/${supplierId}/credit-lines/${lineId}/balance`),
   addCreditPayment: (supplierId: string, lineId: string, data: { amount: number; paymentDate: string; paymentMethod: string; reference?: string; notes?: string }) =>
     api.post<{ success: boolean; data: SupplierCreditPayment }>(`/suppliers/${supplierId}/credit-lines/${lineId}/payments`, data),
   getCreditPayments: (supplierId: string, lineId: string) =>
