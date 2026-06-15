@@ -11,7 +11,7 @@ import { useRole }          from '../../hooks/useRole';
 import { useRncValidation } from '../../hooks/useRncValidation';
 import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 import { SkeletonBlock }        from '../../components/ui/Skeleton';
-import type { Supplier, SupplierBankAccount } from '../../types';
+import type { Supplier, SupplierBankAccount, SupplierCreditLine } from '../../types';
 
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'] as const;
 
@@ -49,6 +49,14 @@ export default function SuppliersPage() {
   const [bankForm,        setBankForm]        = useState<BankForm>(EMPTY_BANK);
   const [bankError,       setBankError]       = useState('');
 
+  const [showCreditForm,    setShowCreditForm]    = useState(false);
+  const [creditForm,        setCreditForm]        = useState({ creditLimit: '', notes: '' });
+  const [creditError,       setCreditError]       = useState('');
+  const [showPaymentForm,   setShowPaymentForm]   = useState(false);
+  const [paymentForm,       setPaymentForm]       = useState({ amount: '', paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'TRANSFER', reference: '', notes: '' });
+  const [paymentError,      setPaymentError]      = useState('');
+  const [selectedLineId,    setSelectedLineId]    = useState<string | null>(null);
+
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -68,6 +76,12 @@ export default function SuppliersPage() {
     queryFn:  () => suppliersApi.getBankAccounts(editing!.id),
     enabled:  !!editing?.id,
     select:   (r) => r.data.data,
+  });
+
+  const { data: creditLines, refetch: refetchCreditLines } = useQuery({
+    queryKey: ['supplier-credit-lines', editing?.id],
+    queryFn:  () => suppliersApi.getCreditLines(editing!.id).then(r => r.data.data),
+    enabled:  !!editing?.id && modal === 'edit',
   });
 
   const createMutation = useMutation({
@@ -112,9 +126,46 @@ export default function SuppliersPage() {
     onError: (e: any) => setBankError(e.response?.data?.error ?? 'Error'),
   });
 
+  const createCreditLineMutation = useMutation({
+    mutationFn: (data: { creditLimit: number; notes?: string }) =>
+      suppliersApi.createCreditLine(editing!.id, data),
+    onSuccess: () => {
+      refetchCreditLines();
+      setShowCreditForm(false);
+      setCreditForm({ creditLimit: '', notes: '' });
+      setCreditError('');
+    },
+    onError: (e: any) => setCreditError(e.response?.data?.error ?? 'Error al crear línea de crédito'),
+  });
+
+  const toggleCreditLineMutation = useMutation({
+    mutationFn: (lineId: string) => suppliersApi.toggleCreditLine(editing!.id, lineId),
+    onSuccess: () => refetchCreditLines(),
+    onError:   (e: any) => setCreditError(e.response?.data?.error ?? 'Error'),
+  });
+
+  const addPaymentMutation = useMutation({
+    mutationFn: (data: { lineId: string; amount: number; paymentDate: string; paymentMethod: string; reference?: string; notes?: string }) =>
+      suppliersApi.addCreditPayment(editing!.id, data.lineId, data),
+    onSuccess: () => {
+      refetchCreditLines();
+      setShowPaymentForm(false);
+      setSelectedLineId(null);
+      setPaymentForm({ amount: '', paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'TRANSFER', reference: '', notes: '' });
+      setPaymentError('');
+    },
+    onError: (e: any) => setPaymentError(e.response?.data?.error ?? 'Error al registrar pago'),
+  });
+
+  function resetCreditState() {
+    setShowCreditForm(false); setCreditForm({ creditLimit: '', notes: '' }); setCreditError('');
+    setShowPaymentForm(false); setPaymentForm({ amount: '', paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'TRANSFER', reference: '', notes: '' }); setPaymentError(''); setSelectedLineId(null);
+  }
+
   function openCreate() {
     setEditing(null); setForm(EMPTY_FORM); setApiError('');
     setShowBankForm(false); setEditingAccount(null); setBankForm(EMPTY_BANK); setBankError('');
+    resetCreditState();
     setModal('create');
   }
 
@@ -122,12 +173,14 @@ export default function SuppliersPage() {
     setEditing(s);
     setForm({ name: s.name, rnc: s.rnc ?? '', cedula: s.cedula ?? '', phone: s.phone ?? '', email: s.email ?? '', address: s.address ?? '', notes: s.notes ?? '' });
     setApiError(''); setShowBankForm(false); setEditingAccount(null); setBankForm(EMPTY_BANK); setBankError('');
+    resetCreditState();
     setModal('edit');
   }
 
   function closeModal() {
     setModal(null); setEditing(null); setApiError(''); setForm(EMPTY_FORM);
     setShowBankForm(false); setEditingAccount(null); setBankForm(EMPTY_BANK); setBankError('');
+    resetCreditState();
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -640,6 +693,157 @@ export default function SuppliersPage() {
                           style={{ background: '#F5C218', color: '#1C1C1C' }}>
                           {isBankPending ? <span className="w-3.5 h-3.5 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
                           {editingAccount ? 'Guardar' : 'Agregar'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+
+              {/* Credit lines section */}
+              {modal === 'edit' && editing && role.canManageSuppliers && (
+                <div className="border-t border-gray-100 px-6 pb-6 pt-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide text-gray-700 flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-gray-400" />
+                      Línea de Crédito
+                    </p>
+                    {!showCreditForm && (
+                      <button type="button" onClick={() => setShowCreditForm(true)}
+                        className="text-xs font-bold uppercase tracking-wide px-3 py-1.5 bg-[#F5C218] text-[#1C1C1C] hover:opacity-90 transition-opacity">
+                        + Nueva línea
+                      </button>
+                    )}
+                  </div>
+
+                  {creditLines && creditLines.length > 0 && (creditLines as SupplierCreditLine[]).map((line) => (
+                    <div key={line.id} className={`mb-3 border ${line.isActive ? 'border-gray-200' : 'border-gray-100 opacity-60'} p-3`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-['Barlow_Condensed'] text-sm font-bold uppercase">
+                          Límite: {(line as any).balance ? `RD$ ${Number((line as any).balance.creditLimit).toLocaleString('es-DO')}` : `RD$ ${Number(line.creditLimit).toLocaleString('es-DO')}`}
+                        </span>
+                        <div className="flex gap-2 items-center">
+                          <span className={`text-xs px-2 py-0.5 font-bold ${line.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {line.isActive ? 'Activa' : 'Inactiva'}
+                          </span>
+                          <button type="button" onClick={() => toggleCreditLineMutation.mutate(line.id)}
+                            className="text-xs text-gray-400 hover:text-gray-700 underline">
+                            {line.isActive ? 'Desactivar' : 'Activar'}
+                          </button>
+                        </div>
+                      </div>
+                      {(line as any).balance && (
+                        <div className="grid grid-cols-3 gap-2 text-xs font-['Space_Mono']">
+                          <div className="bg-gray-50 p-2">
+                            <div className="text-gray-400 uppercase text-[10px] font-['Barlow_Condensed']">Consumido</div>
+                            <div className="font-bold text-gray-800">{Number((line as any).balance.consumed).toLocaleString('es-DO')}</div>
+                          </div>
+                          <div className="bg-red-50 p-2">
+                            <div className="text-red-400 uppercase text-[10px] font-['Barlow_Condensed']">Pendiente</div>
+                            <div className="font-bold text-red-700">{Number((line as any).balance.pending).toLocaleString('es-DO')}</div>
+                          </div>
+                          <div className="bg-green-50 p-2">
+                            <div className="text-green-400 uppercase text-[10px] font-['Barlow_Condensed']">Disponible</div>
+                            <div className="font-bold text-green-700">{Number((line as any).balance.available).toLocaleString('es-DO')}</div>
+                          </div>
+                        </div>
+                      )}
+                      {line.isActive && (line as any).balance && (line as any).balance.pending > 0 && (
+                        <button type="button" onClick={() => { setSelectedLineId(line.id); setShowPaymentForm(true); }}
+                          className="mt-2 text-xs font-bold uppercase tracking-wide px-3 py-1 bg-[#1C1C1C] text-white hover:bg-gray-800 transition-colors">
+                          Registrar pago
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {!creditLines?.length && !showCreditForm && (
+                    <p className="text-xs text-gray-400 font-['DM_Sans']">Sin líneas de crédito registradas.</p>
+                  )}
+
+                  {showCreditForm && (
+                    <form onSubmit={(e) => {
+                      e.preventDefault(); setCreditError('');
+                      const limit = Number(creditForm.creditLimit.replace(/,/g, ''));
+                      if (!limit || limit <= 0) { setCreditError('El límite debe ser mayor a 0'); return; }
+                      createCreditLineMutation.mutate({ creditLimit: limit, notes: creditForm.notes || undefined });
+                    }} className="border border-gray-200 p-4 space-y-3 mt-2">
+                      {creditError && <p className="text-xs text-red-600">{creditError}</p>}
+                      <div>
+                        <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Límite de crédito *</label>
+                        <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                          value={creditForm.creditLimit}
+                          onChange={(e) => setCreditForm(f => ({ ...f, creditLimit: e.target.value }))}
+                          placeholder="300,000.00" />
+                      </div>
+                      <div>
+                        <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Notas</label>
+                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                          value={creditForm.notes}
+                          onChange={(e) => setCreditForm(f => ({ ...f, notes: e.target.value }))}
+                          placeholder="Condiciones, plazo, etc." />
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => { setShowCreditForm(false); setCreditError(''); }}
+                          className="flex-1 text-xs font-bold uppercase py-2 border border-gray-200 hover:bg-gray-50">Cancelar</button>
+                        <button type="submit" disabled={createCreditLineMutation.isPending}
+                          className="flex-1 text-xs font-bold uppercase py-2 bg-[#F5C218] text-[#1C1C1C] hover:opacity-90 disabled:opacity-50">
+                          {createCreditLineMutation.isPending ? 'Guardando…' : 'Guardar'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {showPaymentForm && selectedLineId && (
+                    <form onSubmit={(e) => {
+                      e.preventDefault(); setPaymentError('');
+                      const amount = Number(paymentForm.amount.replace(/,/g, ''));
+                      if (!amount || amount <= 0) { setPaymentError('El monto debe ser mayor a 0'); return; }
+                      addPaymentMutation.mutate({ lineId: selectedLineId, amount, paymentDate: paymentForm.paymentDate, paymentMethod: paymentForm.paymentMethod, reference: paymentForm.reference || undefined, notes: paymentForm.notes || undefined });
+                    }} className="border border-[#F5C218]/40 p-4 space-y-3 mt-2 bg-yellow-50/30">
+                      <p className="font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide text-gray-700">Registrar pago / abono</p>
+                      {paymentError && <p className="text-xs text-red-600">{paymentError}</p>}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Monto *</label>
+                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                            value={paymentForm.amount}
+                            onChange={(e) => setPaymentForm(f => ({ ...f, amount: e.target.value }))}
+                            placeholder="100,000.00" />
+                        </div>
+                        <div>
+                          <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Fecha *</label>
+                          <input type="date" className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                            value={paymentForm.paymentDate}
+                            onChange={(e) => setPaymentForm(f => ({ ...f, paymentDate: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Método *</label>
+                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                            value={paymentForm.paymentMethod}
+                            onChange={(e) => setPaymentForm(f => ({ ...f, paymentMethod: e.target.value }))}>
+                            <option value="TRANSFER">Transferencia</option>
+                            <option value="CHECK">Cheque</option>
+                            <option value="CASH">Efectivo</option>
+                            <option value="OTHER">Otro</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Referencia</label>
+                          <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                            value={paymentForm.reference}
+                            onChange={(e) => setPaymentForm(f => ({ ...f, reference: e.target.value }))}
+                            placeholder="No. cheque / transferencia" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => { setShowPaymentForm(false); setSelectedLineId(null); setPaymentError(''); }}
+                          className="flex-1 text-xs font-bold uppercase py-2 border border-gray-200 hover:bg-gray-50">Cancelar</button>
+                        <button type="submit" disabled={addPaymentMutation.isPending}
+                          className="flex-1 text-xs font-bold uppercase py-2 bg-[#1C1C1C] text-white hover:bg-gray-800 disabled:opacity-50">
+                          {addPaymentMutation.isPending ? 'Guardando…' : 'Registrar pago'}
                         </button>
                       </div>
                     </form>
