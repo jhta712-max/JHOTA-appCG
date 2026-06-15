@@ -24,13 +24,13 @@ type OrderForm = {
   projectId: string; amount: string; currency: string; concept: string;
   notes: string; payrollId: string; bankAccountId: string; contratoAjustadoId: string; quotationId: string;
   payrollPeriodStart: string; payrollPeriodEnd: string; payrollType: 'LABOR' | 'SERVICE';
-  batchItemId: string;
+  batchItemId: string; creditLineId: string | null;
 };
 const EMPTY_ORDER: OrderForm = {
   orderType: 'SERVICIO', payingCompany: '', supplierId: '', projectId: '',
   amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '', bankAccountId: '', contratoAjustadoId: '', quotationId: '',
   payrollPeriodStart: '', payrollPeriodEnd: '', payrollType: 'LABOR',
-  batchItemId: '',
+  batchItemId: '', creditLineId: null,
 };
 
 const CURRENCIES = ['RD$', 'US$', '€'];
@@ -186,6 +186,8 @@ export default function PaymentOrdersPage() {
   const [selectedExpenseId, setSelectedExpenseId] = useState('');
   const [selectedPayrollId, setSelectedPayrollId] = useState('');
   const [supplierSearch,    setSupplierSearch]    = useState('');
+  const [linkToCreditLine,  setLinkToCreditLine]  = useState(false);
+  const [creditLineSupplierId, setCreditLineSupplierId] = useState('');
 
   const [payModal,     setPayModal]     = useState(false);
   const [payingOrder,  setPayingOrder]  = useState<PaymentOrder | null>(null);
@@ -283,6 +285,12 @@ export default function PaymentOrdersPage() {
     queryFn:  () => paymentOrdersApi.availableQuotations(orderForm.projectId, orderForm.supplierId),
     select:   (r) => r.data.data as any[],
     enabled:  orderModal && orderForm.orderType === 'SERVICIO' && !!orderForm.projectId,
+  });
+  const { data: creditLinesData } = useQuery({
+    queryKey: ['supplierCreditLines', creditLineSupplierId],
+    queryFn:  () => suppliersApi.getCreditLines(creditLineSupplierId),
+    enabled:  linkToCreditLine && !!creditLineSupplierId,
+    select:   (r) => r.data.data as any[],
   });
 
   const createOrderMut = useMutation({
@@ -383,6 +391,7 @@ export default function PaymentOrdersPage() {
   const closeOrderModal = () => {
     setOrderModal(false); setEditingOrder(null); setOrderForm(EMPTY_ORDER);
     setFormErr(''); setModalView('form'); setSessionOrders([]); setLastCreatedOrder(null);
+    setLinkToCreditLine(false); setCreditLineSupplierId('');
   };
 
   const crearOtraOrden = () => {
@@ -418,6 +427,7 @@ export default function PaymentOrdersPage() {
       contratoAjustadoId: orderForm.contratoAjustadoId || undefined,
       quotationId:        orderForm.orderType === 'SERVICIO' ? (orderForm.quotationId || undefined) : undefined,
       batchItemId:      orderForm.batchItemId || undefined,
+      creditLineId:     linkToCreditLine ? (orderForm.creditLineId || undefined) : undefined,
     };
 
     if (isNewPayroll) {
@@ -1085,6 +1095,65 @@ export default function PaymentOrdersPage() {
                   placeholder="Información adicional" value={orderForm.notes}
                   onChange={(e) => setOrderForm((f) => ({ ...f, notes: e.target.value }))} />
               </Field>
+
+              {!editingOrder && (
+                <div className="border-t border-gray-100 pt-4 mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer mb-3">
+                    <input
+                      type="checkbox"
+                      checked={linkToCreditLine}
+                      onChange={(e) => {
+                        setLinkToCreditLine(e.target.checked);
+                        if (!e.target.checked) {
+                          setCreditLineSupplierId('');
+                          setOrderForm((f) => ({ ...f, creditLineId: null }));
+                        }
+                      }}
+                      className="accent-[#F5C218]"
+                    />
+                    <span className="text-sm font-['DM_Sans'] text-gray-700">Vincular a línea de crédito de suplidor</span>
+                  </label>
+
+                  {linkToCreditLine && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-['Barlow_Condensed'] uppercase tracking-[0.1em] text-gray-500 mb-1">SUPLIDOR</label>
+                        <select
+                          value={creditLineSupplierId}
+                          onChange={(e) => {
+                            setCreditLineSupplierId(e.target.value);
+                            setOrderForm((f) => ({ ...f, creditLineId: null }));
+                          }}
+                          className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] focus:outline-none"
+                        >
+                          <option value="">Seleccionar suplidor…</option>
+                          {activeSuppliers.map((s) => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {creditLineSupplierId && creditLinesData && (
+                        <div>
+                          <label className="block text-xs font-['Barlow_Condensed'] uppercase tracking-[0.1em] text-gray-500 mb-1">LÍNEA DE CRÉDITO</label>
+                          <select
+                            value={orderForm.creditLineId ?? ''}
+                            onChange={(e) => setOrderForm((f) => ({ ...f, creditLineId: e.target.value || null }))}
+                            className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] focus:outline-none"
+                          >
+                            <option value="">Sin línea de crédito</option>
+                            {creditLinesData.filter((l: any) => l.isActive).map((l: any) => (
+                              <option key={l.id} value={l.id}>
+                                {l.notes || 'Línea'} — Disponible: RD$ {l.balance?.available?.toLocaleString() ?? '...'}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <ModalFooter onCancel={closeOrderModal} onSave={saveOrder}
                 saving={createOrderMut.isPending || updateOrderMut.isPending}
