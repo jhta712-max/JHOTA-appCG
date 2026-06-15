@@ -15,6 +15,20 @@ function isValidToken(provided: unknown): boolean {
   }
 }
 
+// Meta Cloud API GET verification — responds with hub.challenge
+export function verifyWebhook(req: Request, res: Response): void {
+  const mode      = req.query['hub.mode'];
+  const token     = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  const verifyToken = env.META_WEBHOOK_VERIFY_TOKEN;
+  if (mode === 'subscribe' && verifyToken && token === verifyToken) {
+    res.status(200).send(challenge);
+  } else {
+    res.status(403).json({ success: false, error: 'Verification failed' });
+  }
+}
+
 export async function webhook(req: Request, res: Response): Promise<void> {
   const raw = req.body;
   if (!raw?.token || !isValidToken(raw.token)) {
