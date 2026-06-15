@@ -88,7 +88,6 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated }: Q
       // Bank account failed — supplier was created, inform user
       setError('Suplidor creado, pero hubo un error al registrar la cuenta bancaria. Puedes agregarla manualmente en el módulo de Suplidores.');
       setSaving(false);
-      onCreated({ id: supplierId, name: supplierName });
       return;
     }
 
