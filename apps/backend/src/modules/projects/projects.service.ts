@@ -9,6 +9,7 @@ import type {
   CreateProjectInput, UpdateProjectInput, ProjectQuery,
   CreateAddendumInput, UpdateAddendumInput,
   CreateCubicacionInput, UpdateCubicacionInput,
+  CreateAnticipoInput, UpdateAnticipoInput,
   CreateProjectItemInput, UpdateProjectItemInput,
 } from './projects.schema';
 
@@ -324,6 +325,7 @@ export async function updateCubicacion(projectId: string, cubicacionId: string, 
       ...(data.progressPct !== undefined && { progressPct: data.progressPct }),
       ...(data.description !== undefined && { description: data.description }),
       ...(data.date        !== undefined && { date: new Date(data.date) }),
+      ...(data.ncf         !== undefined && { ncf: data.ncf ?? null }),
     },
     include: { createdBy: { select: { id: true, name: true } } },
   });
@@ -336,6 +338,67 @@ export async function deleteCubicacion(projectId: string, cubicacionId: string) 
   });
   if (!existing) throw new AppError(404, 'Cubicación no encontrada', 'NOT_FOUND');
   await prisma.projectCubicacion.delete({ where: { id: cubicacionId } });
+  return existing;
+}
+
+// ── Anticipos ─────────────────────────────────────────────────
+
+export async function getAnticipos(projectId: string) {
+  await getProjectById(projectId);
+  const rows = await prisma.projectAnticipo.findMany({
+    where:   { projectId },
+    orderBy: { number: 'asc' },
+  });
+  return rows.map((a) => ({ ...a, amount: Number(a.amount) }));
+}
+
+export async function createAnticipo(projectId: string, data: CreateAnticipoInput) {
+  await getProjectById(projectId);
+
+  const last = await prisma.projectAnticipo.findFirst({
+    where:   { projectId },
+    orderBy: { number: 'desc' },
+    select:  { number: true },
+  });
+  const nextNumber = (last?.number ?? 0) + 1;
+
+  const row = await prisma.projectAnticipo.create({
+    data: {
+      projectId,
+      number:      nextNumber,
+      amount:      data.amount,
+      date:        new Date(data.date),
+      ncf:         data.ncf ?? null,
+      description: data.description ?? null,
+    },
+  });
+  return { ...row, amount: Number(row.amount) };
+}
+
+export async function updateAnticipo(projectId: string, anticipoId: string, data: UpdateAnticipoInput) {
+  const existing = await prisma.projectAnticipo.findFirst({
+    where: { id: anticipoId, projectId },
+  });
+  if (!existing) throw new AppError(404, 'Anticipo no encontrado', 'NOT_FOUND');
+
+  const updated = await prisma.projectAnticipo.update({
+    where: { id: anticipoId },
+    data: {
+      ...(data.amount      !== undefined && { amount: data.amount }),
+      ...(data.date        !== undefined && { date: new Date(data.date) }),
+      ...(data.ncf         !== undefined && { ncf: data.ncf ?? null }),
+      ...(data.description !== undefined && { description: data.description ?? null }),
+    },
+  });
+  return { ...updated, amount: Number(updated.amount) };
+}
+
+export async function deleteAnticipo(projectId: string, anticipoId: string) {
+  const existing = await prisma.projectAnticipo.findFirst({
+    where: { id: anticipoId, projectId },
+  });
+  if (!existing) throw new AppError(404, 'Anticipo no encontrado', 'NOT_FOUND');
+  await prisma.projectAnticipo.delete({ where: { id: anticipoId } });
   return existing;
 }
 
@@ -395,6 +458,7 @@ export async function getFinancialAnalysis(projectId: string) {
     include: {
       addendums:    { select: { amount: true } },
       cubicaciones: { orderBy: { number: 'asc' } },
+      anticipos:    { orderBy: { number: 'asc' } },
     },
   });
   if (!project) throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
@@ -410,6 +474,8 @@ export async function getFinancialAnalysis(projectId: string) {
 
   const totalGastado    = Number(expenseStats._sum.amount ?? 0);
   const totalCubicado   = project.cubicaciones.reduce((s: number, c: any) => s + Number(c.amount), 0);
+  const totalAnticipos  = project.anticipos.reduce((s: number, a: any) => s + Number(a.amount), 0);
+  const totalCobrado    = totalAnticipos + totalCubicado;
   const margen          = totalCubicado - totalGastado;
   const lastProgress    = project.cubicaciones.length > 0
     ? Number(project.cubicaciones[project.cubicaciones.length - 1].progressPct)
@@ -426,6 +492,8 @@ export async function getFinancialAnalysis(projectId: string) {
     },
     financials: {
       totalCubicado,
+      totalAnticipos,
+      totalCobrado,
       totalGastado,
       margen,
       margenPct:      totalCubicado > 0 ? Math.round((margen / totalCubicado) * 10000) / 100 : 0,
@@ -439,7 +507,17 @@ export async function getFinancialAnalysis(projectId: string) {
       progressPct: Number(c.progressPct),
       description: c.description,
       date:        c.date,
+      ncf:         c.ncf ?? null,
       createdAt:   c.createdAt,
+    })),
+    anticipos: project.anticipos.map((a: any) => ({
+      id:          a.id,
+      number:      a.number,
+      amount:      Number(a.amount),
+      date:        a.date,
+      ncf:         a.ncf ?? null,
+      description: a.description ?? null,
+      createdAt:   a.createdAt,
     })),
   };
 }
