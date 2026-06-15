@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../../config/env';
 import prisma from '../../config/database';
+import { confirmationPayloadSchema } from './whatsapp.schema';
 
 const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY ?? '' });
 
@@ -121,8 +122,11 @@ export function extractConfirmation(
 ): ConfirmationPayload | null {
   for (const block of content) {
     if (block.type === 'tool_use' && block.name === 'request_confirmation') {
-      const input = block.input as ConfirmationPayload;
-      return { intent: input.intent, payload: input.payload, summary: input.summary };
+      const parsed = confirmationPayloadSchema.safeParse(block.input);
+      if (parsed.success) {
+        return { intent: parsed.data.intent, payload: parsed.data.payload, summary: parsed.data.summary };
+      }
+      console.error('[whatsapp] Invalid confirmation payload from AI:', parsed.error);
     }
   }
   return null;

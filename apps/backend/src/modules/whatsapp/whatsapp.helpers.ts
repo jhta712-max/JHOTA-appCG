@@ -38,7 +38,7 @@ export async function sendWhatsAppReply(to: string, message: string): Promise<vo
 // User.role is a Relation (Role model), not a string — access .role.name
 export async function lookupUserByPhone(phone: string) {
   const users = await prisma.user.findMany({
-    where: { isActive: true },
+    where: { isActive: true, phone: { not: null } },
     select: { id: true, name: true, phone: true, role: { select: { name: true } } },
   });
   const found = users.find(u => u.phone && normalizePhone(u.phone) === phone) ?? null;
@@ -48,13 +48,12 @@ export async function lookupUserByPhone(phone: string) {
 
 // ── Find or create a WhatsApp conversation ─────────────────────
 export async function findOrCreateConversation(phone: string, userId?: string) {
-  const existing = await prisma.whatsAppConversation.findFirst({
-    where: { phoneNumber: phone, status: 'ACTIVE' },
+  const conversation = await prisma.whatsAppConversation.upsert({
+    where: { phoneNumber: phone },
+    update: userId ? { userId } : {},
+    create: { phoneNumber: phone, userId: userId ?? null, status: 'ACTIVE', contextData: {} },
   });
-  if (existing) return existing;
-  return prisma.whatsAppConversation.create({
-    data: { phoneNumber: phone, userId: userId ?? null, contextData: {} },
-  });
+  return conversation;
 }
 
 // ── Save a message in the conversation log ─────────────────────

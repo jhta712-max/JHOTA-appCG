@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+export const confirmationPayloadSchema = z.object({
+  intent: z.enum(['CREATE_PROJECT', 'CREATE_EXPENSE', 'CREATE_PAYMENT_ORDER', 'QUERY_BALANCE', 'QUERY_EXPENSES']),
+  payload: z.record(z.unknown()),
+  summary: z.string(),
+});
+
 export const ultramsgWebhookSchema = z.object({
   token:      z.string(),
   instanceId: z.string(),

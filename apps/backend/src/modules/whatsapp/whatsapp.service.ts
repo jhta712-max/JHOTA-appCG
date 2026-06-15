@@ -52,6 +52,14 @@ async function executeConfirmedAction(
     return `✅ Gasto registrado.\nID: ${expense.id.substring(0, 8)}...\nMonto: RD$${Number(p.amount).toLocaleString('es-DO')}`;
   }
 
+  if (confirmation.intent === 'CREATE_PROJECT' && !['admin', 'supervisor'].includes(userRole)) {
+    return 'No tienes permisos para crear proyectos.';
+  }
+
+  if (confirmation.intent === 'CREATE_PAYMENT_ORDER' && !['admin', 'supervisor'].includes(userRole)) {
+    return 'No tienes permisos para generar órdenes de pago.';
+  }
+
   if (confirmation.intent === 'CREATE_PAYMENT_ORDER') {
     const p = confirmation.payload as {
       supplierId: string; projectId: string; amount: number;

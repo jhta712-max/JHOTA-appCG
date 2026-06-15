@@ -1,11 +1,19 @@
 import { Request, Response } from 'express';
+import { timingSafeEqual } from 'crypto';
 import { env } from '../../config/env';
 import { ultramsgWebhookSchema } from './whatsapp.schema';
 import { processIncomingMessage } from './whatsapp.service';
 
 export async function webhook(req: Request, res: Response): Promise<void> {
   const raw = req.body;
-  if (!raw?.token || raw.token !== env.ULTRAMSG_TOKEN) {
+  if (!raw?.token || !env.ULTRAMSG_TOKEN) {
+    res.status(403).json({ success: false, error: 'Invalid token' });
+    return;
+  }
+  const a = Buffer.from(raw.token);
+  const b = Buffer.from(env.ULTRAMSG_TOKEN);
+  const tokenValid = a.length === b.length && timingSafeEqual(a, b);
+  if (!tokenValid) {
     res.status(403).json({ success: false, error: 'Invalid token' });
     return;
   }
