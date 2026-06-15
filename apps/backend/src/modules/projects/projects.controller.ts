@@ -108,6 +108,36 @@ export async function removeCubicacion(req: Request, res: Response, next: NextFu
   } catch (err) { next(err); }
 }
 
+// ── Anticipos ─────────────────────────────────────────────────
+
+export async function listAnticipos(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.getAnticipos(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function createAnticipo(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.createAnticipo(req.params.id, req.body);
+    res.status(201).json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function updateAnticipo(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.updateAnticipo(req.params.id, req.params.anticipoId, req.body);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function removeAnticipo(req: Request, res: Response, next: NextFunction) {
+  try {
+    await service.deleteAnticipo(req.params.id, req.params.anticipoId);
+    res.json({ success: true, message: 'Anticipo eliminado' });
+  } catch (err) { next(err); }
+}
+
 // ── Asignaciones de operadores ────────────────────────────────
 export async function listAssignments(req: Request, res: Response, next: NextFunction) {
   try {

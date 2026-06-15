@@ -12,7 +12,10 @@ const webhookLimiter = rateLimit({
   message: { success: false, error: 'Too many requests' },
 });
 
-// No authenticate middleware — UltraMsg doesn't send a JWT
+// GET /webhook — Meta Cloud API hub.challenge verification
+router.get('/webhook', ctrl.verifyWebhook);
+
+// POST /webhook — incoming messages (UltraMsg or Meta Cloud API)
 // Token validation is handled inside the controller
 router.post('/webhook', webhookLimiter, ctrl.webhook);
 

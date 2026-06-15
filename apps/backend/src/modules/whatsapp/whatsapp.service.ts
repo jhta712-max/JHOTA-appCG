@@ -43,7 +43,7 @@ async function executeConfirmedAction(
         expenseDate:   today,
         amount:        p.amount,
         description:   p.description,
-        paymentMethod: (p.paymentMethod ?? 'CASH') as any,
+        paymentMethod: (p.paymentMethod ?? 'CASH') as 'CASH' | 'TRANSFER' | 'CARD' | 'CHECK' | 'OTHER',
         hasFiscalDoc:  false,
       },
       userId,
@@ -51,6 +51,14 @@ async function executeConfirmedAction(
     );
     await logAudit('CREATE_EXPENSE', 'expense', expense.id, p, { id: expense.id });
     return `✅ Gasto registrado.\nID: ${expense.id.substring(0, 8)}...\nMonto: RD$${Number(p.amount).toLocaleString('es-DO')}`;
+  }
+
+  if (confirmation.intent === 'CREATE_PROJECT' && !['admin', 'supervisor'].includes(userRole)) {
+    return 'No tienes permisos para crear proyectos.';
+  }
+
+  if (confirmation.intent === 'CREATE_PAYMENT_ORDER' && !['admin', 'supervisor'].includes(userRole)) {
+    return 'No tienes permisos para generar órdenes de pago.';
   }
 
   if (confirmation.intent === 'CREATE_PAYMENT_ORDER') {
@@ -67,14 +75,14 @@ async function executeConfirmedAction(
         projectId:     p.projectId,
         amount:        p.amount,
         concept:       p.concept,
-        orderType:     (p.orderType ?? 'SERVICIO') as any,
+        orderType:     (p.orderType ?? 'SERVICIO') as 'SERVICIO' | 'PAYROLL' | 'MATERIALS' | 'PETTY_CASH',
         payingCompany: p.payingCompany ?? 'SERVINGMI',
-        currency:      (p.currency ?? 'RD$') as any,
+        currency:      (p.currency ?? 'RD$') as 'RD$' | 'US$' | '€',
       },
       userId,
     );
     await logAudit('CREATE_PAYMENT_ORDER', 'payment_order', order.id, p, { id: order.id });
-    return `✅ Orden de pago #${(order as any).number} creada.\nMonto: ${p.currency ?? 'RD$'}${Number(p.amount).toLocaleString('es-DO')}\nConcepto: ${p.concept}`;
+    return `✅ Orden de pago #${(order as { number: number }).number} creada.\nMonto: ${p.currency ?? 'RD$'}${Number(p.amount).toLocaleString('es-DO')}\nConcepto: ${p.concept}`;
   }
 
   if (confirmation.intent === 'CREATE_PROJECT') {
@@ -88,7 +96,7 @@ async function executeConfirmedAction(
         code:            p.code,
         startDate:       p.startDate ?? today,
         estimatedBudget: 0,
-      } as any,
+      },
       userId,
     );
     await logAudit('CREATE_PROJECT', 'project', project.id, p, { id: project.id });

@@ -30,9 +30,13 @@ const envSchema = z.object({
   BACKUP_SECRET_KEY:      z.string().optional(),
   BACKUP_EMAIL:           z.string().email().optional(),
   // Notificaciones WhatsApp (UltraMsg)
-  ULTRAMSG_INSTANCE_ID:   z.string().optional(),  // Instance ID del dashboard UltraMsg
-  ULTRAMSG_TOKEN:         z.string().optional(),  // Token del dashboard UltraMsg
-  NOTIFY_WHATSAPP_TO:     z.string().optional(),  // comma-separated: "+18095551234,+18095555678"
+  ULTRAMSG_INSTANCE_ID:        z.string().optional(),
+  ULTRAMSG_TOKEN:              z.string().optional(),
+  NOTIFY_WHATSAPP_TO:          z.string().optional(),
+  // Meta Cloud API
+  META_WEBHOOK_VERIFY_TOKEN:   z.string().optional(),
+  META_WHATSAPP_TOKEN:         z.string().optional(),
+  META_PHONE_NUMBER_ID:        z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

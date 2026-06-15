@@ -4,6 +4,7 @@ import { lookupRNC } from '../../services/dgii.service';
 import { validateRNC, normalizeRNC } from '../../utils/fiscal.utils';
 import { createBankAccountSchema, updateBankAccountSchema } from './suppliers.schema';
 import type { CreateSupplierInput, UpdateSupplierInput } from './suppliers.schema';
+import { getCreditSummary, generateCreditReportXlsx } from './credit-summary.service';
 
 export async function list(req: Request, res: Response, next: NextFunction) {
   try {
@@ -92,5 +93,20 @@ export async function setDefaultBankAccount(req: Request, res: Response, next: N
   try {
     const data = await service.setDefaultBankAccount(req.params.id, req.params.accountId);
     res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function getCreditSummaryHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const includeInactive = req.query.status === 'all';
+    const data = await getCreditSummary(includeInactive);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function getCreditReportHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const includeInactive = req.query.status === 'all';
+    await generateCreditReportXlsx(res, includeInactive);
   } catch (err) { next(err); }
 }

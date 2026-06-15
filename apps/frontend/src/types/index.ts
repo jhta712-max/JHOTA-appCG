@@ -159,7 +159,18 @@ export interface Cubicacion {
   progressPct: number;
   description: string;
   date: string;
+  ncf?: string | null;
   createdBy?: { id: string; name: string };
+  createdAt?: string;
+}
+
+export interface Anticipo {
+  id: string;
+  number: number;
+  amount: number;
+  date: string;
+  ncf?: string | null;
+  description?: string | null;
   createdAt?: string;
 }
 
@@ -175,8 +186,11 @@ export interface FinancialAnalysis {
     margenPct: number;
     lastProgressPct: number;
     expenseCount: number;
+    totalAnticipos: number;
+    totalCobrado: number;
   };
   cubicaciones: Cubicacion[];
+  anticipos: Anticipo[];
 }
 
 export type PaymentMethod = 'CASH' | 'TRANSFER' | 'CARD' | 'CHECK' | 'OTHER';
@@ -454,4 +468,27 @@ export interface SubscriptionsOverview {
   all:              ServiceSubscription[];
   upcoming:         UpcomingPayment[];
   totalMonthlyCost: number;
+}
+
+// ── Resumen de Líneas de Crédito ──────────────────────────────
+export interface CreditLineSummaryItem {
+  supplierId: string;
+  supplierName: string;
+  supplierRnc: string | null;
+  creditLineId: string;
+  creditLimit: number;
+  consumed: number;
+  paid: number;
+  pending: number;
+  available: number;
+  isActive: boolean;
+  updatedAt: string;
+}
+
+export interface CreditSummary {
+  totalPending: number;
+  totalAvailable: number;
+  totalLimit: number;
+  activeLines: number;
+  lines: CreditLineSummaryItem[];
 }

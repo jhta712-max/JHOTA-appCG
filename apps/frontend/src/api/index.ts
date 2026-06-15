@@ -1,5 +1,5 @@
 import api from './client';
-import type { Project, Expense, Category, ProjectSummary, PaginatedResponse, User, Addendum, Cubicacion, FinancialAnalysis, Assignment, ProjectItem } from '../types';
+import type { Project, Expense, Category, ProjectSummary, PaginatedResponse, User, Addendum, Cubicacion, Anticipo, FinancialAnalysis, Assignment, ProjectItem } from '../types';
 
 // ── Auth ──────────────────────────────────────────────────────
 export const authApi = {
@@ -40,6 +40,15 @@ export const projectsApi = {
     api.put<{ success: boolean; data: Cubicacion }>(`/projects/${projectId}/cubicaciones/${cubicacionId}`, data),
   deleteCubicacion:   (projectId: string, cubicacionId: string) =>
     api.delete(`/projects/${projectId}/cubicaciones/${cubicacionId}`),
+  // Anticipos
+  getAnticipos:   (projectId: string) =>
+    api.get<{ success: boolean; data: Anticipo[] }>(`/projects/${projectId}/anticipos`),
+  createAnticipo: (projectId: string, data: unknown) =>
+    api.post<{ success: boolean; data: Anticipo }>(`/projects/${projectId}/anticipos`, data),
+  updateAnticipo: (projectId: string, anticipoId: string, data: unknown) =>
+    api.patch<{ success: boolean; data: Anticipo }>(`/projects/${projectId}/anticipos/${anticipoId}`, data),
+  deleteAnticipo: (projectId: string, anticipoId: string) =>
+    api.delete(`/projects/${projectId}/anticipos/${anticipoId}`),
   // Asignaciones de operadores
   getAssignments:  (projectId: string) =>
     api.get<{ success: boolean; data: Assignment[] }>(`/projects/${projectId}/assignments`),
@@ -558,7 +567,7 @@ export const officeExpensesApi = {
 };
 
 // ── Suplidores ────────────────────────────────────────────────
-import type { Supplier, SupplierHistory, SupplierBankAccount, SupplierCreditLine, SupplierCreditPayment } from '../types';
+import type { Supplier, SupplierHistory, SupplierBankAccount, SupplierCreditLine, SupplierCreditPayment, CreditSummary } from '../types';
 
 export const suppliersApi = {
   list:         (params?: { search?: string; onlyActive?: boolean }) =>
@@ -601,8 +610,15 @@ export const suppliersApi = {
     api.post<{ success: boolean; data: SupplierCreditPayment }>(`/suppliers/${supplierId}/credit-lines/${lineId}/payments`, data),
   getCreditPayments: (supplierId: string, lineId: string) =>
     api.get<{ success: boolean; data: SupplierCreditPayment[] }>(`/suppliers/${supplierId}/credit-lines/${lineId}/payments`),
-  downloadCreditReport: (status: 'active' | 'all') =>
-    api.get(`/suppliers/credit-report.xlsx`, { params: { status }, responseType: 'blob' }),
+  getCreditSummary: (status?: 'active' | 'all') =>
+    api.get<{ success: boolean; data: CreditSummary }>('/suppliers/credit-summary', {
+      params: status ? { status } : undefined,
+    }),
+  downloadCreditReport: (status?: 'active' | 'all') =>
+    api.get('/suppliers/credit-report', {
+      responseType: 'blob',
+      params: status ? { status } : undefined,
+    }),
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────

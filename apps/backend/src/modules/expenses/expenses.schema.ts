@@ -43,6 +43,7 @@ const baseExpenseSchema = z.object({
   exchangeRate:    z.coerce.number().positive().optional().nullable(),
   projectItemId:   z.string().uuid().optional().nullable(),
   batchItemId:     z.string().uuid().optional().nullable(),
+  creditLineId:    z.string().uuid().optional().nullable(),
 });
 
 // ---------------------------------------------------------------
