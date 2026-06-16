@@ -118,9 +118,10 @@ model Project {
   quotations         Quotation[]
   paymentOrders      PaymentOrder[]
   batches            Batch[]
-  contratosAjustados  ContratoAjustado[]      @relation("ProjectContratosAjustados")
-  categoryBudgets     ProjectCategoryBudget[]
-  batchesEnabled      Boolean                 @default(false) @map("batches_enabled")
+  contratosAjustados    ContratoAjustado[]              @relation("ProjectContratosAjustados")
+  categoryBudgets       ProjectCategoryBudget[]
+  batchesEnabled        Boolean                         @default(false) @map("batches_enabled")
+  extraordinaryExpenses ProjectExtraordinaryExpense[]
 
   deletedAt  DateTime? @map("deleted_at")
   @@index([code])
@@ -221,6 +222,14 @@ enum ProjectStatus {
   CANCELLED
 
   @@map("project_status")
+}
+
+enum ExtraordinaryExpenseCategory {
+  COMISION
+  PRESTAMO
+  IMPUESTO
+  MULTA
+  OTRO
 }
 
 // ============================================================
@@ -1251,4 +1260,24 @@ model WhatsAppAuditLog {
   createdAt       DateTime @default(now()) @map("created_at")
 
   @@map("whatsapp_audit_logs")
+}
+
+// ============================================================
+// GASTOS EXTRAORDINARIOS DE PROYECTO
+// ============================================================
+model ProjectExtraordinaryExpense {
+  id          String                       @id @default(cuid())
+  projectId   String
+  project     Project                      @relation(fields: [projectId], references: [id])
+  description String
+  amount      Decimal                      @db.Decimal(15, 2)
+  date        DateTime                     @db.Date
+  category    ExtraordinaryExpenseCategory
+  notes       String?
+  createdBy   String
+  createdAt   DateTime                     @default(now())
+  updatedAt   DateTime                     @updatedAt
+
+  @@index([projectId])
+  @@map("project_extraordinary_expenses")
 }
