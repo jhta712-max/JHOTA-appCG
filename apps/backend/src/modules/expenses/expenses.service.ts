@@ -431,13 +431,23 @@ export async function bulkImportExpenses(rows: BulkExpenseRow[], userId: string)
         return id;
       }
     }
-    // 3. Remove trailing segment(s) and try again
+    // 3. Remove trailing segment(s) and try exact match
     const parts = csvCode.split('-');
     for (let trim = 1; trim < parts.length; trim++) {
       const candidate = parts.slice(0, -trim).join('-').toLowerCase();
       if (projectByCode.has(candidate)) {
         resolvedProjectCache.set(csvCode, projectByCode.get(candidate)!);
         return projectByCode.get(candidate)!;
+      }
+    }
+    // 4. Sibling match: same base prefix (all segments except last numeric)
+    //    e.g. CSV "PROJ-2025-0010" and DB "PROJ-2025-0009" share prefix "PROJ-2025"
+    const csvBase = parts.slice(0, -1).join('-').toLowerCase();
+    for (const [code, id] of projectByCode.entries()) {
+      const projBase = code.split('-').slice(0, -1).join('-');
+      if (projBase === csvBase) {
+        resolvedProjectCache.set(csvCode, id);
+        return id;
       }
     }
     throw new Error(`Proyecto '${csvCode}' no encontrado. Proyectos disponibles: ${allProjects.map((p) => p.code).join(', ')}`);
