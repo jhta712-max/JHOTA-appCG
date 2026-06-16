@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
-
-const prisma = new PrismaClient();
 
 export const batchesService = {
   // ============ BATCHES ============
@@ -92,7 +90,7 @@ export const batchesService = {
       throw new AppError(400, 'No se puede eliminar un lote con gastos vinculados');
     }
 
-    return prisma.batch.delete({ where: { id: batchId } });
+    return prisma.batch.update({ where: { id: batchId }, data: { deletedAt: new Date() } });
   },
 
   // ============ BATCH ITEMS ============

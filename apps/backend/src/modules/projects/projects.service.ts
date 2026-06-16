@@ -202,7 +202,7 @@ export async function deleteProject(id: string) {
       'HAS_EXPENSES',
     );
   }
-  await prisma.project.delete({ where: { id } });
+  await prisma.project.update({ where: { id }, data: { deletedAt: new Date() } });
   return project;
 }
 

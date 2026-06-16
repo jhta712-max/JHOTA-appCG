@@ -376,7 +376,7 @@ export async function hardDeleteExpense(id: string) {
   await prisma.attachment.deleteMany({ where: { expenseId: id } });
   // Desvincular de órdenes de pago sin borrarlas
   await prisma.paymentOrder.updateMany({ where: { expenseId: id }, data: { expenseId: null } });
-  await prisma.expense.delete({ where: { id } });
+  await prisma.expense.update({ where: { id }, data: { deletedAt: new Date() } });
 }
 
 // ── Importación masiva desde CSV ──────────────────────────────

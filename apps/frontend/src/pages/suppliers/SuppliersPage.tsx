@@ -56,6 +56,7 @@ export default function SuppliersPage() {
   const [paymentForm,       setPaymentForm]       = useState({ amount: '', paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'TRANSFER', reference: '', notes: '' });
   const [paymentError,      setPaymentError]      = useState('');
   const [selectedLineId,    setSelectedLineId]    = useState<string | null>(null);
+  const [expandedHistory,   setExpandedHistory]   = useState<string | null>(null);
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -82,6 +83,12 @@ export default function SuppliersPage() {
     queryKey: ['supplier-credit-lines', editing?.id],
     queryFn:  () => suppliersApi.getCreditLines(editing!.id).then(r => r.data.data),
     enabled:  !!editing?.id && modal === 'edit',
+  });
+
+  const { data: creditPaymentHistory } = useQuery({
+    queryKey: ['credit-payment-history', editing?.id, expandedHistory],
+    queryFn:  () => suppliersApi.getCreditPayments(editing!.id, expandedHistory!).then(r => r.data.data),
+    enabled:  !!editing?.id && !!expandedHistory,
   });
 
   const createMutation = useMutation({
@@ -748,11 +755,60 @@ export default function SuppliersPage() {
                           </div>
                         </div>
                       )}
-                      {line.isActive && (line as any).balance && (line as any).balance.pending > 0 && (
-                        <button type="button" onClick={() => { setSelectedLineId(line.id); setShowPaymentForm(true); }}
-                          className="mt-2 text-xs font-bold uppercase tracking-wide px-3 py-1 bg-[#1C1C1C] text-white hover:bg-gray-800 transition-colors">
-                          Registrar pago
+                      <div className="mt-2 flex gap-2 flex-wrap">
+                        {line.isActive && (line as any).balance && (line as any).balance.pending > 0 && (
+                          <button type="button" onClick={() => { setSelectedLineId(line.id); setShowPaymentForm(true); }}
+                            className="text-xs font-bold uppercase tracking-wide px-3 py-1 bg-[#1C1C1C] text-white hover:bg-gray-800 transition-colors">
+                            Registrar pago
+                          </button>
+                        )}
+                        <button type="button"
+                          onClick={() => setExpandedHistory(expandedHistory === line.id ? null : line.id)}
+                          className="text-xs font-bold uppercase tracking-wide px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors">
+                          {expandedHistory === line.id ? 'Ocultar historial' : 'Ver historial'}
                         </button>
+                      </div>
+                      {expandedHistory === line.id && (
+                        <div className="mt-3 border-t border-gray-100 pt-3">
+                          <p className="text-[10px] font-['Barlow_Condensed'] uppercase tracking-[0.15em] text-gray-400 mb-2">Historial de pagos</p>
+                          {!creditPaymentHistory || creditPaymentHistory.length === 0 ? (
+                            <p className="text-xs text-gray-400 italic">Sin pagos registrados.</p>
+                          ) : (
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="bg-[#1C1C1C]">
+                                  <th className="text-left px-2 py-1.5 text-[10px] font-['Barlow_Condensed'] uppercase tracking-wider text-gray-400">Fecha</th>
+                                  <th className="text-right px-2 py-1.5 text-[10px] font-['Barlow_Condensed'] uppercase tracking-wider text-gray-400">Monto</th>
+                                  <th className="text-left px-2 py-1.5 text-[10px] font-['Barlow_Condensed'] uppercase tracking-wider text-gray-400 hidden sm:table-cell">Método</th>
+                                  <th className="text-left px-2 py-1.5 text-[10px] font-['Barlow_Condensed'] uppercase tracking-wider text-gray-400 hidden sm:table-cell">Referencia</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(creditPaymentHistory as any[]).map((p: any) => (
+                                  <tr key={p.id} className="border-t border-gray-100">
+                                    <td className="px-2 py-1.5 font-['Space_Mono'] text-gray-600">
+                                      {new Date(p.paymentDate).toLocaleDateString('es-DO')}
+                                    </td>
+                                    <td className="px-2 py-1.5 font-['Space_Mono'] font-bold text-green-700 text-right">
+                                      RD$ {Number(p.amount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td className="px-2 py-1.5 text-gray-500 hidden sm:table-cell">{p.paymentMethod}</td>
+                                    <td className="px-2 py-1.5 text-gray-400 hidden sm:table-cell truncate max-w-[100px]">{p.reference ?? '—'}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                              <tfoot>
+                                <tr className="border-t-2 border-gray-200">
+                                  <td className="px-2 py-1.5 text-[10px] font-['Barlow_Condensed'] uppercase tracking-wider text-gray-500">Total pagado</td>
+                                  <td className="px-2 py-1.5 font-['Space_Mono'] font-bold text-green-700 text-right">
+                                    RD$ {(creditPaymentHistory as any[]).reduce((s: number, p: any) => s + Number(p.amount), 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                                  </td>
+                                  <td colSpan={2} />
+                                </tr>
+                              </tfoot>
+                            </table>
+                          )}
+                        </div>
                       )}
                     </div>
                   ))}

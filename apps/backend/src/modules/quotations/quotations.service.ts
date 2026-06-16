@@ -290,7 +290,7 @@ export async function deleteQuotation(id: string) {
     );
   }
 
-  await prisma.quotation.delete({ where: { id } });
+  await prisma.quotation.update({ where: { id }, data: { deletedAt: new Date() } });
   return { id: q.id, supplierName: q.supplierName };
 }
 

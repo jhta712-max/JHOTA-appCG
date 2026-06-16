@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import prisma from '../../config/database';
 import { AppError } from '../../middlewares/errorHandler';
 import * as csv from 'csv-parse/sync';
-
-const prisma = new PrismaClient();
 
 interface CsvRow {
   batch_code?: string;

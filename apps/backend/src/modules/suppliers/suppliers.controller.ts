@@ -110,3 +110,15 @@ export async function getCreditReportHandler(req: Request, res: Response, next: 
     await generateCreditReportXlsx(res, includeInactive);
   } catch (err) { next(err); }
 }
+
+export async function listDeletedHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try { res.json({ success: true, data: await service.listDeletedSuppliers() }); } catch (err) { next(err); }
+}
+
+export async function restoreHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try { res.json({ success: true, data: await service.restoreSupplier(req.params.id) }); } catch (err) { next(err); }
+}
+
+export async function permanentDeleteHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try { await service.permanentDeleteSupplier(req.params.id); res.json({ success: true }); } catch (err) { next(err); }
+}

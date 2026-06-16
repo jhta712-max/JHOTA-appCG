@@ -123,7 +123,7 @@ export async function deleteContrato(id: string) {
   if (existing.pagos.length > 0 || existing.expenses.length > 0) {
     throw new AppError(400, 'No se puede eliminar un contrato con pagos o gastos vinculados. Use estados.', 'HAS_PAYMENTS');
   }
-  await prisma.contratoAjustado.delete({ where: { id } });
+  await prisma.contratoAjustado.update({ where: { id }, data: { deletedAt: new Date() } });
 }
 
 export async function linkExpense(contratoId: string, expenseId: string, userId: string) {

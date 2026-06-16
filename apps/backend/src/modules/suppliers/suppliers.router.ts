@@ -36,4 +36,9 @@ router.get('/:id/credit-lines/:lineId/balance',   creditCtrl.getBalance);
 router.get('/:id/credit-lines/:lineId/payments',  creditCtrl.listPayments);
 router.post('/:id/credit-lines/:lineId/payments', authorize('admin', 'supervisor'), validate(addPaymentSchema), creditCtrl.addPayment);
 
+// ── Admin: soft-delete management ────────────────────────────
+router.get('/deleted',              authorize('admin'), ctrl.listDeletedHandler);
+router.post('/:id/restore',         authorize('admin'), ctrl.restoreHandler);
+router.delete('/:id/permanent',     authorize('admin'), ctrl.permanentDeleteHandler);
+
 export default router;

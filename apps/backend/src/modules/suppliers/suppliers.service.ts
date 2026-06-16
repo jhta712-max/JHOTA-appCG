@@ -201,3 +201,24 @@ export async function toggleSupplierActive(id: string) {
     data:  { isActive: !supplier.isActive },
   });
 }
+
+// ── Soft-delete admin management ──────────────────────────────
+export async function listDeletedSuppliers() {
+  return prisma.supplier.findMany({
+    where:   { deletedAt: { not: null } },
+    orderBy: { deletedAt: 'desc' },
+    select:  { id: true, name: true, rnc: true, deletedAt: true },
+  });
+}
+
+export async function restoreSupplier(id: string) {
+  const s = await prisma.supplier.findFirst({ where: { id, deletedAt: { not: null } } });
+  if (!s) throw new AppError(404, 'Suplidor eliminado no encontrado', 'NOT_FOUND');
+  return prisma.supplier.update({ where: { id }, data: { deletedAt: null } });
+}
+
+export async function permanentDeleteSupplier(id: string) {
+  const s = await prisma.supplier.findFirst({ where: { id, deletedAt: { not: null } } });
+  if (!s) throw new AppError(404, 'Suplidor eliminado no encontrado — solo se puede eliminar permanentemente registros ya soft-deleted', 'NOT_FOUND');
+  await prisma.$executeRaw`DELETE FROM suppliers WHERE id = ${id}::uuid`;
+}

@@ -540,7 +540,7 @@ export async function deletePayroll(id: string) {
   if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
   if (payroll.status !== 'DRAFT') throw new AppError(400, 'Solo se eliminan nóminas en borrador', 'INVALID_STATUS');
 
-  await prisma.payroll.delete({ where: { id } });
+  await prisma.payroll.update({ where: { id }, data: { deletedAt: new Date() } });
 }
 
 // ═══════════════════════════════════════════════════════════════

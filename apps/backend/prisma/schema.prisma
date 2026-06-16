@@ -83,6 +83,7 @@ model User {
   creditLinesCreated    SupplierCreditLine[]    @relation("CreditLineCreatedBy")
   creditPaymentsCreated SupplierCreditPayment[] @relation("CreditPaymentCreatedBy")
 
+  deletedAt  DateTime? @map("deleted_at")
   @@index([email])
   @@index([roleId])
   @@map("users")
@@ -120,6 +121,7 @@ model Project {
   contratosAjustados ContratoAjustado[]  @relation("ProjectContratosAjustados")
   batchesEnabled     Boolean             @default(false) @map("batches_enabled")
 
+  deletedAt  DateTime? @map("deleted_at")
   @@index([code])
   @@index([status])
   @@map("projects")
@@ -335,6 +337,7 @@ model Expense {
   creditLineId   String?             @map("credit_line_id") @db.Uuid
   creditLine     SupplierCreditLine? @relation("ExpenseCreditLine", fields: [creditLineId], references: [id], onDelete: SetNull)
 
+  deletedAt  DateTime? @map("deleted_at")
   @@index([projectId])
   @@index([expenseDate])
   @@index([categoryId])
@@ -507,6 +510,7 @@ model Payroll {
   lines                 PayrollLine[]
   contratoAjustadoPagos ContratoAjustadoPago[] @relation("ContratoAjustadoPagoNomina")
 
+  deletedAt  DateTime? @map("deleted_at")
   @@unique([projectId, number])
   @@index([projectId])
   @@index([status])
@@ -695,6 +699,7 @@ model Quotation {
   attachments   QuotationAttachment[]
   paymentOrders PaymentOrder[]         @relation("PaymentOrderQuotation")
 
+  deletedAt  DateTime? @map("deleted_at")
   @@unique([projectId, number])
   @@index([projectId])
   @@index([supplierId])
@@ -776,6 +781,7 @@ model Supplier {
   quotations         Quotation[]            @relation("QuotationSupplier")
   creditLines        SupplierCreditLine[]
 
+  deletedAt  DateTime? @map("deleted_at")
   @@index([name])
   @@index([rnc])
   @@index([isActive])
@@ -816,6 +822,7 @@ model SupplierCreditLine {
   payments      SupplierCreditPayment[]
   paymentOrders PaymentOrder[]         @relation("PaymentOrderCreditLine")
 
+  deletedAt  DateTime? @map("deleted_at")
   @@index([supplierId])
   @@map("supplier_credit_lines")
 }
@@ -888,6 +895,7 @@ model PaymentOrder {
   creditLine                SupplierCreditLine?    @relation("PaymentOrderCreditLine", fields: [creditLineId], references: [id], onDelete: SetNull)
   contratoAjustadoPagos     ContratoAjustadoPago[] @relation("ContratoAjustadoPagoOrdenPago")
 
+  deletedAt  DateTime? @map("deleted_at")
   @@index([status])
   @@index([projectId])
   @@index([supplierId])
@@ -925,6 +933,7 @@ model OfficeExpense {
   createdBy   User         @relation("OfficeExpenseCreatedBy", fields: [createdById], references: [id])
   companyCard CompanyCard? @relation(fields: [companyCardId], references: [id])
 
+  deletedAt  DateTime? @map("deleted_at")
   @@index([category])
   @@index([expenseDate])
   @@index([createdAt])
@@ -985,6 +994,7 @@ model Batch {
   project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   items   BatchItem[]
 
+  deletedAt  DateTime? @map("deleted_at")
   @@unique([projectId, code])
   @@index([projectId])
   @@map("batches")
@@ -1082,6 +1092,7 @@ model ContratoAjustado {
   payrollLines  PayrollLine[]          @relation("PayrollLineContratoAjustado")
   paymentOrders PaymentOrder[]         @relation("PaymentOrderContratoAjustado")
 
+  deletedAt  DateTime? @map("deleted_at")
   @@index([projectId])
   @@index([supplierId])
   @@index([estado])

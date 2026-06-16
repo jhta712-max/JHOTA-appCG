@@ -760,7 +760,7 @@ export async function voidPaymentOrder(id: string) {
 export async function hardDeletePaymentOrder(id: string) {
   const po = await prisma.paymentOrder.findUnique({ where: { id } });
   if (!po) throw new AppError(404, 'Orden no encontrada', 'NOT_FOUND');
-  await prisma.paymentOrder.delete({ where: { id } });
+  await prisma.paymentOrder.update({ where: { id }, data: { deletedAt: new Date() } });
 }
 
 // ── Sugerir concepto con IA ───────────────────────────────────
