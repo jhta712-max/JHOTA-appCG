@@ -18,40 +18,73 @@ async function generateBackup() {
 
   const [
     roles, users, projects, projectAssignments, projectAddendums, projectCubicaciones,
-    expenseCategories, expenses, fiscalVouchers, attachments, companyCards, auditLogs,
-    invitations, payrolls, payrollLines, paymentOrders, suppliers,
+    projectAnticipos, projectItems, projectCategoryBudgets,
+    expenseCategories, expenses, fiscalVouchers, attachments, companyCards,
+    auditLogs, invitations,
+    payrolls, payrollLines, paymentOrders,
+    batches, batchItems,
+    suppliers, supplierBankAccounts, supplierCreditLines, supplierCreditPayments,
     quotations, quotationPayments, quotationExpenseLinks, quotationAttachments,
     officeExpenses,
+    serviceSubscriptions,
+    contratosAjustados, contratosAjustadosAdendas, contratosAjustadosPagos,
+    notifications, notificationContacts,
+    whatsappConversations, whatsappMessages,
   ] = await Promise.all([
     safe(() => prisma.role.findMany()),
-    safe(() => prisma.user.findMany({ select: { id:true, name:true, email:true, roleId:true, isActive:true, createdAt:true } })),
+    safe(() => prisma.user.findMany({ select: { id:true, name:true, email:true, roleId:true, isActive:true, phone:true, whatsappOptIn:true, notifTypes:true, createdAt:true } })),
     safe(() => prisma.project.findMany()),
     safe(() => prisma.projectAssignment.findMany()),
     safe(() => prisma.projectAddendum.findMany()),
     safe(() => prisma.projectCubicacion.findMany()),
+    safe(() => prisma.projectAnticipo.findMany()),
+    safe(() => prisma.projectItem.findMany()),
+    safe(() => prisma.projectCategoryBudget.findMany()),
     safe(() => prisma.expenseCategory.findMany()),
     safe(() => prisma.expense.findMany()),
     safe(() => prisma.fiscalVoucher.findMany()),
     safe(() => prisma.attachment.findMany()),
     safe(() => prisma.companyCard.findMany()),
-    safe(() => prisma.auditLog.findMany({ take: 500, orderBy: { createdAt: 'desc' } })),
+    safe(() => prisma.auditLog.findMany({ take: 1000, orderBy: { createdAt: 'desc' } })),
     safe(() => prisma.invitation.findMany()),
     safe(() => prisma.payroll.findMany()),
     safe(() => prisma.payrollLine.findMany()),
     safe(() => prisma.paymentOrder.findMany()),
+    safe(() => prisma.batch.findMany()),
+    safe(() => prisma.batchItem.findMany()),
     safe(() => prisma.supplier.findMany()),
+    safe(() => prisma.supplierBankAccount.findMany()),
+    safe(() => prisma.supplierCreditLine.findMany()),
+    safe(() => prisma.supplierCreditPayment.findMany()),
     safe(() => prisma.quotation.findMany()),
     safe(() => prisma.quotationPayment.findMany()),
     safe(() => prisma.quotationExpenseLink.findMany()),
     safe(() => prisma.quotationAttachment.findMany()),
     safe(() => prisma.officeExpense.findMany()),
+    safe(() => prisma.serviceSubscription.findMany()),
+    safe(() => prisma.contratoAjustado.findMany()),
+    safe(() => prisma.contratoAjustadoAdenda.findMany()),
+    safe(() => prisma.contratoAjustadoPago.findMany()),
+    safe(() => prisma.notification.findMany({ take: 500, orderBy: { createdAt: 'desc' } })),
+    safe(() => prisma.notificationContact.findMany()),
+    safe(() => prisma.whatsAppConversation.findMany()),
+    safe(() => prisma.whatsAppMessage.findMany({ take: 1000, orderBy: { createdAt: 'desc' } })),
   ]);
 
   const tables = {
     roles, users, projects, projectAssignments, projectAddendums, projectCubicaciones,
-    expenseCategories, expenses, fiscalVouchers, attachments, companyCards, auditLogs,
-    invitations, payrolls, payrollLines, paymentOrders, suppliers,
-    quotations, quotationPayments, quotationExpenseLinks, quotationAttachments, officeExpenses,
+    projectAnticipos, projectItems, projectCategoryBudgets,
+    expenseCategories, expenses, fiscalVouchers, attachments, companyCards,
+    auditLogs, invitations,
+    payrolls, payrollLines, paymentOrders,
+    batches, batchItems,
+    suppliers, supplierBankAccounts, supplierCreditLines, supplierCreditPayments,
+    quotations, quotationPayments, quotationExpenseLinks, quotationAttachments,
+    officeExpenses,
+    serviceSubscriptions,
+    contratosAjustados, contratosAjustadosAdendas, contratosAjustadosPagos,
+    notifications, notificationContacts,
+    whatsappConversations, whatsappMessages,
   };
 
   const counts: Record<string, number> = {};
@@ -67,7 +100,7 @@ router.get('/export', authenticate, authorize('admin'), async (req: Request, res
     const filename = 'backup_servingmi_' + new Date().toISOString().slice(0, 10) + '.json';
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', 'attachment; filename="' + filename + '"');
-    res.send(JSON.stringify({ exportedAt: new Date().toISOString(), version: '2.0', database: 'servingmi', counts, tables }, bigIntReplacer));
+    res.send(JSON.stringify({ exportedAt: new Date().toISOString(), version: '3.0', database: 'servingmi', counts, tables }, bigIntReplacer));
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -87,7 +120,7 @@ router.post('/auto', async (req: Request, res: Response) => {
   }
   try {
     const { tables, counts } = await generateBackup();
-    const backup   = JSON.stringify({ exportedAt: new Date().toISOString(), version: '2.0', counts, tables }, bigIntReplacer);
+    const backup   = JSON.stringify({ exportedAt: new Date().toISOString(), version: '3.0', counts, tables }, bigIntReplacer);
     const filename = 'backup_servingmi_' + new Date().toISOString().slice(0, 10) + '.json';
     const dest     = env.BACKUP_EMAIL ?? env.GMAIL_USER;
 
