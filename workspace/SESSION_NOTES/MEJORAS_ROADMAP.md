@@ -33,10 +33,11 @@ Backend (`POST /expenses/bulk-import`) y modal de vista previa ya existían.
 Añadido botón "Plantilla" que descarga `plantilla-importacion-gastos.csv` con columnas y fila de ejemplo.
 Archivos: `ExpensesPage.tsx`
 
-### 6. 🔲 Presupuesto por categoría dentro del proyecto
-Sub-presupuestos por categoría con alertas cuando se acerca al límite.
-- Modelo `ProjectCategoryBudget` (projectId, categoryId, budget)
-- Widget en detalle de proyecto
+### 6. ✅ Presupuesto por categoría dentro del proyecto — COMPLETADO (2026-06-16)
+Modelo `ProjectCategoryBudget` (projectId + categoryId → budget). Barra de progreso verde/amarilla/roja
+según % consumido. Badge "SOBREGIRO" cuando el gasto supera el límite. Ícono de alerta a ≥85%.
+Admin/supervisor pueden asignar y eliminar límites inline desde `ProjectDetailPage.tsx`.
+Backend: `GET/PUT/DELETE /projects/:id/category-budgets`. Migration: `20260616000002_add_project_category_budgets`.
 
 ### 7. ✅ Duplicar orden de pago — COMPLETADO (2026-06-16)
 Botón "Clonar" en el panel de detalle de la orden. Pre-rellena el formulario de creación con todos los
