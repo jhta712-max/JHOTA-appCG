@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import QuickCreateSupplierModal from '../../components/suppliers/QuickCreateSupplierModal';
 import {
   FileText, Plus, CheckCircle, AlertCircle, Loader2,
-  Pencil, ClipboardCopy, X,
+  Pencil, ClipboardCopy, Copy, X,
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
   MessageCircle, Sparkles, Camera, ArrowRight, RotateCcw,
 } from 'lucide-react';
@@ -467,6 +467,31 @@ export default function PaymentOrdersPage() {
 
   const copyText = (text: string) => { navigator.clipboard.writeText(text).then(() => flash('📋 Texto copiado')); };
 
+  const cloneOrder = (o: PaymentOrder) => {
+    const payroll = (o as any)?.payroll;
+    setEditingOrder(null);
+    setOrderForm({
+      orderType:          normalizeOrderType(o.orderType),
+      payingCompany:      o.payingCompany,
+      supplierId:         o.supplierId,
+      projectId:          o.projectId,
+      amount:             String(o.amount),
+      currency:           o.currency,
+      concept:            o.concept,
+      notes:              o.notes ?? '',
+      payrollId:          '',
+      bankAccountId:      '',
+      contratoAjustadoId: (o as any).contratoAjustadoId ?? '',
+      quotationId:        (o as any).quotationId ?? '',
+      payrollPeriodStart: '',
+      payrollPeriodEnd:   '',
+      payrollType:        payroll?.type ?? 'LABOR',
+      batchItemId:        '',
+      creditLineId:       null,
+    });
+    setModalView('form'); setSessionOrders([]); setLastCreatedOrder(null); setFormErr(''); setOrderModal(true);
+  };
+
   return (
     <div className="font-['DM_Sans'] space-y-0">
 
@@ -731,6 +756,14 @@ export default function PaymentOrdersPage() {
                     className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 uppercase tracking-wide">
                     <Pencil className="w-3.5 h-3.5" />
                     {isAdmin && viewingOrder.status === 'PAID' ? 'Editar (Admin)' : 'Editar'}
+                  </button>
+                )}
+                {!isAuxiliar && (
+                  <button onClick={() => cloneOrder(viewingOrder)}
+                    title="Crear copia de esta orden con la misma información"
+                    className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 uppercase tracking-wide">
+                    <Copy className="w-3.5 h-3.5" />
+                    Clonar
                   </button>
                 )}
                 {viewingOrder.status === 'PENDING' && (

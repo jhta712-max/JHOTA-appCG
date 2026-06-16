@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Receipt, Plus, Search, Upload, X, CheckCircle, AlertCircle, ArrowUpDown, Filter, Layers, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Receipt, Plus, Search, Upload, Download, X, CheckCircle, AlertCircle, ArrowUpDown, Filter, Layers, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi } from '../../api';
 import { PAYMENT_METHOD_LABELS } from '../../types';
 import { ExpenseListSkeleton } from '../../components/ui/ExpenseListSkeleton';
@@ -13,6 +13,16 @@ import { BatchItemSelect } from '../../components/shared/BatchItemSelect';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
+}
+
+function downloadCsvTemplate() {
+  const header = 'fecha,descripcion,proveedor,categoria,monto,metodo_pago,proyecto,notas';
+  const example = '2026-06-16,Compra de materiales,Ferretería XYZ,Materiales,15000,TRANSFER,PROJ-001,Factura #123';
+  const blob = new Blob([header + '\n' + example], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'plantilla-importacion-gastos.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
 
 function parseCSV(text: string) {
@@ -192,6 +202,16 @@ export default function ExpensesPage() {
         {canCreateExpense && (
           <div className="flex gap-2 items-center">
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleFileChange} />
+            <button
+              onClick={downloadCsvTemplate}
+              title="Descargar plantilla CSV de ejemplo"
+              className="flex items-center gap-2 px-3 py-2 border transition-colors"
+              style={{ fontFamily: 'DM Sans, sans-serif', borderColor: '#4b5563', color: '#d1d5db', fontSize: '0.875rem' }}
+              onMouseEnter={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#F5C218'; (ev.currentTarget as HTMLButtonElement).style.color = '#F5C218'; }}
+              onMouseLeave={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#4b5563'; (ev.currentTarget as HTMLButtonElement).style.color = '#d1d5db'; }}
+            >
+              <Download className="w-4 h-4" /> Plantilla
+            </button>
             <button
               onClick={() => fileRef.current?.click()}
               className="flex items-center gap-2 px-3 py-2 border transition-colors"
