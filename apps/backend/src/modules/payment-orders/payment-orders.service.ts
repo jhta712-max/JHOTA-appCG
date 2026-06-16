@@ -96,27 +96,26 @@ export async function getPaymentOrders(
     ];
   }
 
+  // Parse status: supports single value or comma-separated list (e.g. "PENDING,IN_PROCESS")
+  function applyStatus(statusParam?: string, defaultFilter?: any) {
+    if (statusParam) {
+      const parts = statusParam.split(',').map((s) => s.trim()).filter(Boolean);
+      where.status = parts.length === 1 ? parts[0] : { in: parts };
+    } else if (defaultFilter !== undefined) {
+      where.status = defaultFilter;
+    }
+  }
+
   if (role === 'financiero') {
-    // Financiero: all orders, respects status filter
-    if (query.status) where.status = query.status;
+    applyStatus(query.status);
   } else if (role === 'admin') {
-    // Admin: all orders — filter by status if provided, default to active (non-VOIDED)
-    if (query.status) {
-      where.status = query.status;
-    } else {
-      where.status = { not: 'VOIDED' };
-    }
+    applyStatus(query.status, { not: 'VOIDED' });
   } else if (role === 'auxiliar') {
-    // Auxiliar: all orders, respects status filter
-    if (query.status) where.status = query.status;
+    applyStatus(query.status);
   } else {
-    // Supervisor / operator: own orders in any active status
+    // Supervisor / operator: own orders
     where.createdById = userId;
-    if (query.status) {
-      where.status = query.status;
-    } else {
-      where.status = { not: 'VOIDED' };
-    }
+    applyStatus(query.status, { not: 'VOIDED' });
   }
 
   const [data, total] = await Promise.all([

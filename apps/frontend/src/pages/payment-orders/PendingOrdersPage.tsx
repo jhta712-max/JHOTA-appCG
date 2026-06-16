@@ -48,11 +48,12 @@ export default function PendingOrdersPage() {
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3500); };
 
   const { data: orders = [], isLoading } = useQuery({
-    queryKey: ['payment-orders', 'PENDING', filterProject, filterType],
+    queryKey: ['payment-orders', 'unpaid', filterProject, filterType],
     queryFn:  () => paymentOrdersApi.list({
-      status: 'PENDING',
+      status: 'PENDING,IN_PROCESS,REJECTED_BANK',
       ...(filterProject ? { projectId: filterProject } : {}),
       ...(filterType    ? { orderType: filterType }    : {}),
+      limit: 200,
     }),
     select: (r) => (r.data as any).data as PaymentOrder[],
   });
@@ -104,7 +105,7 @@ export default function PendingOrdersPage() {
             Bandeja de Pagos Pendientes
           </h1>
           <p className="font-['DM_Sans'] text-sm text-gray-400 mt-1">
-            Órdenes de pago pendientes de procesar en todos los proyectos
+            Órdenes pendientes, en proceso y rechazadas en todos los proyectos
           </p>
         </div>
         <button
@@ -125,7 +126,7 @@ export default function PendingOrdersPage() {
           <div className="bg-white p-5 flex items-center gap-3">
             <div className="w-1 h-10 shrink-0" style={{ background: '#F5C218' }} />
             <div>
-              <p className="font-['Barlow_Condensed'] uppercase tracking-wide text-xs text-gray-500 mb-1">Órdenes pendientes</p>
+              <p className="font-['Barlow_Condensed'] uppercase tracking-wide text-xs text-gray-500 mb-1">Órdenes sin pagar</p>
               <p className="font-['Space_Mono'] text-3xl font-bold text-gray-900">{orders.length}</p>
             </div>
           </div>
@@ -173,8 +174,8 @@ export default function PendingOrdersPage() {
         ) : orders.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <BadgeCheck className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p className="font-['Barlow_Condensed'] uppercase tracking-wide text-sm">No hay órdenes pendientes</p>
-            <p className="font-['DM_Sans'] text-xs mt-1">Todas las órdenes han sido procesadas.</p>
+            <p className="font-['Barlow_Condensed'] uppercase tracking-wide text-sm">No hay órdenes sin pagar</p>
+            <p className="font-['DM_Sans'] text-xs mt-1">Todas las órdenes han sido pagadas.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -187,6 +188,7 @@ export default function PendingOrdersPage() {
                   <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Beneficiario</th>
                   <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Concepto</th>
                   <th className="px-4 py-3 text-right font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Monto</th>
+                  <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Estado</th>
                   <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Fecha</th>
                   <th className="px-4 py-3 text-center font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Acción</th>
                 </tr>
@@ -219,6 +221,17 @@ export default function PendingOrdersPage() {
                       </td>
                       <td className="px-4 py-3 text-right font-['Space_Mono'] font-bold text-gray-900 whitespace-nowrap">
                         {fmtMonto(o.amount, o.currency)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {o.status === 'PENDING' && (
+                          <span className="inline-flex px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase bg-amber-100 text-amber-700">Pendiente</span>
+                        )}
+                        {o.status === 'IN_PROCESS' && (
+                          <span className="inline-flex px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase bg-blue-100 text-blue-700">En proceso</span>
+                        )}
+                        {o.status === 'REJECTED_BANK' && (
+                          <span className="inline-flex px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase bg-red-100 text-red-700">Rechazada</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 font-['Space_Mono'] text-xs text-gray-500 whitespace-nowrap">
                         {fmtDate(o.createdAt)}
