@@ -549,6 +549,23 @@ export default function NewExpensePage() {
                   className={inputCls(!!errors.expenseDate, aiFields.has('expenseDate'))}
                   {...register('expenseDate', { required: 'La fecha es requerida' })}
                 />
+                {(() => {
+                  const val = watch('expenseDate');
+                  if (!val) return null;
+                  const days = Math.floor((Date.now() - new Date(val + 'T12:00:00').getTime()) / 86400000);
+                  if (days < 7) return null;
+                  const isOld = days >= 30;
+                  return (
+                    <div className={`mt-1 px-2 py-1.5 border-l-2 ${isOld ? 'border-red-500 bg-red-50' : 'border-[#F5C218] bg-[#F5C218]/10'}`}>
+                      <p className={`font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-wide ${isOld ? 'text-red-700' : 'text-[#1C1C1C]'}`}>
+                        {isOld ? '⚠ Fecha muy antigua' : '⚠ Fecha inusual'}
+                      </p>
+                      <p className="font-['DM_Sans'] text-xs text-gray-600 mt-0.5">
+                        Esta fecha es de hace <span className="font-semibold">{days} días</span>. ¿Es correcta?
+                      </p>
+                    </div>
+                  );
+                })()}
               </AiField>
               <AiField label="Monto (RD$) *" aiActive={aiFields.has('amount')} onClear={() => clearAiField('amount')}>
                 <input
