@@ -193,3 +193,10 @@ export async function listBatchItems(req: Request, res: Response, next: NextFunc
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }
+
+export async function getPortfolio(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.getPortfolioSummary();
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}

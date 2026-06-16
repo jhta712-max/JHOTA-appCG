@@ -16,6 +16,9 @@ const router = Router();
 // Todos los endpoints requieren estar autenticado
 router.use(authenticate);
 
+// GET  /api/v1/projects/portfolio  — must be before /:id
+router.get('/portfolio', authorize('admin', 'supervisor'), ctrl.getPortfolio);
+
 // GET  /api/v1/projects
 router.get('/',    validate(projectQuerySchema, 'query'), ctrl.list);
 

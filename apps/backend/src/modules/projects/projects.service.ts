@@ -660,3 +660,47 @@ export async function getBatchItemsForProject(projectId: string) {
     orderBy: { code: 'asc' },
   });
 }
+// ── Portfolio summary — all active projects with budget execution ──────────────
+export async function getPortfolioSummary() {
+  const projects = await prisma.project.findMany({
+    where:   { status: { not: 'CANCELLED' } },
+    include: { addendums: { select: { amount: true } } },
+    orderBy: { code: 'asc' },
+  });
+
+  const [spentByProject, committedByProject] = await Promise.all([
+    prisma.expense.groupBy({
+      by:    ['projectId'],
+      where: { status: 'ACTIVE' },
+      _sum:  { amount: true },
+    }),
+    prisma.paymentOrder.groupBy({
+      by:    ['projectId'],
+      where: { status: { in: ['PENDING', 'IN_PROCESS'] } },
+      _sum:  { amount: true },
+    }),
+  ]);
+
+  const spentMap     = new Map(spentByProject.map((r) => [r.projectId, Number(r._sum.amount ?? 0)]));
+  const committedMap = new Map(committedByProject.map((r) => [r.projectId, Number(r._sum.amount ?? 0)]));
+
+  return projects.map((p) => {
+    const addendumTotal = p.addendums.reduce((s, a) => s + Number(a.amount), 0);
+    const totalBudget   = Number(p.estimatedBudget) + addendumTotal;
+    const spent         = spentMap.get(p.id) ?? 0;
+    const committed     = committedMap.get(p.id) ?? 0;
+    const pctUsed       = totalBudget > 0 ? (spent + committed) / totalBudget : 0;
+    return {
+      id:           p.id,
+      code:         p.code,
+      name:         p.name,
+      status:       p.status,
+      client:       p.client,
+      totalBudget,
+      spent,
+      committed,
+      available:    totalBudget - spent - committed,
+      pctUsed,
+    };
+  });
+}

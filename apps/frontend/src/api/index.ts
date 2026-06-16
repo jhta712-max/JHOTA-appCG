@@ -16,6 +16,8 @@ export const projectsApi = {
     api.get<{ success: boolean; data: Project }>(`/projects/${id}`),
   summary: (id: string) =>
     api.get<{ success: boolean; data: ProjectSummary }>(`/projects/${id}/summary`),
+  portfolio: () =>
+    api.get<{ success: boolean; data: PortfolioProject[] }>('/projects/portfolio'),
   create:  (data: unknown) =>
     api.post<{ success: boolean; data: Project }>('/projects', data),
   update:  (id: string, data: unknown) =>
@@ -701,6 +703,19 @@ export const contratosAjustadosApi = {
 
 // ── Suscripciones de Servicios ────────────────────────────────
 // ── Dashboard Alerts ──────────────────────────────────────────
+export interface PortfolioProject {
+  id:          string;
+  code:        string;
+  name:        string;
+  status:      string;
+  client:      string | null;
+  totalBudget: number;
+  spent:       number;
+  committed:   number;
+  available:   number;
+  pctUsed:     number;
+}
+
 export interface DashboardAlerts {
   pendingOrders: Array<{ id: string; description: string; amount: number; supplierName: string | null; projectCode: string | null; projectName: string | null }>;
   budgetAlerts: Array<{ id: string; code: string; name: string; budget: number; spent: number; pct: number }>;

@@ -100,6 +100,14 @@ export default function DashboardPage() {
     staleTime: 60_000,
   });
 
+  const { data: portfolio = [] } = useQuery({
+    queryKey: ['projects', 'portfolio'],
+    queryFn:  () => projectsApi.portfolio(),
+    select:   (r) => r.data.data,
+    enabled:  isAdmin || isSupervisor,
+    staleTime: 60_000,
+  });
+
   const projects         = projectsData?.data ?? [];
   const expenses         = expensesData?.data ?? [];
   const allQuotations    = quotationsData?.data ?? [];
@@ -625,6 +633,88 @@ export default function DashboardPage() {
           style={{ background: '#F5C218', color: '#1C1C1C' }}>
           <Plus className="w-5 h-5" /> Registrar nuevo gasto
         </Link>
+      )}
+
+      {/* Dashboard ejecutivo multi-proyecto — admin/supervisor only */}
+      {(isAdmin || isSupervisor) && portfolio.length > 0 && (
+        <div className="px-6 py-5 space-y-3">
+          <SectionHeader
+            icon={TrendingUp}
+            title="Portafolio de Proyectos"
+            action={
+              <Link to="/reports" className="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-[#1C1C1C] flex items-center gap-1 transition-colors font-['Barlow_Condensed']">
+                Reporte varianza <ArrowRight className="w-3 h-3" />
+              </Link>
+            }
+          />
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-[#1C1C1C]">
+                  {['Código', 'Proyecto', 'Estado', 'Presupuesto', 'Ejecutado', 'Comprometido', 'Disponible', '%'].map((h) => (
+                    <th key={h} className="text-left px-3 py-2 font-['Barlow_Condensed'] text-gray-400 uppercase tracking-[0.1em] text-xs whitespace-nowrap">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {portfolio.map((p, idx) => {
+                  const pct      = p.pctUsed;
+                  const semaforo = pct >= 1 ? 'bg-red-500' : pct >= 0.9 ? 'bg-orange-400' : pct >= 0.7 ? 'bg-yellow-400' : 'bg-green-500';
+                  const rowCls   = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                  const fmt      = (n: number) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
+                  const STATUS_LABEL: Record<string, string> = {
+                    ACTIVE: 'Activo', COMPLETED: 'Completado', ON_HOLD: 'En pausa', CANCELLED: 'Cancelado',
+                  };
+                  return (
+                    <tr key={p.id} className={`${rowCls} hover:bg-[#F5C218]/5 transition-colors`}>
+                      <td className="px-3 py-2 font-['Space_Mono'] text-gray-500 whitespace-nowrap">{p.code}</td>
+                      <td className="px-3 py-2 font-['DM_Sans'] text-gray-800 max-w-[200px] truncate">
+                        <Link to={`/projects/${p.id}`} className="hover:text-[#1C1C1C] hover:underline">
+                          {p.name}
+                        </Link>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase font-['Barlow_Condensed'] bg-gray-100 text-gray-600">
+                          {STATUS_LABEL[p.status] ?? p.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap">{fmt(p.totalBudget)}</td>
+                      <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap">{fmt(p.spent)}</td>
+                      <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap text-blue-600">{fmt(p.committed)}</td>
+                      <td className={`px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap font-bold ${p.available < 0 ? 'text-red-600' : 'text-gray-700'}`}>
+                        {fmt(p.available)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <div className={`w-2 h-2 shrink-0 ${semaforo}`} />
+                          <span className={`font-['Space_Mono'] font-bold text-[11px] ${pct >= 1 ? 'text-red-600' : pct >= 0.9 ? 'text-orange-500' : pct >= 0.7 ? 'text-yellow-600' : 'text-green-600'}`}>
+                            {(pct * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {/* Legend */}
+          <div className="flex items-center gap-4 pt-1">
+            {[
+              { color: 'bg-green-500', label: '< 70%' },
+              { color: 'bg-yellow-400', label: '70–90%' },
+              { color: 'bg-orange-400', label: '90–100%' },
+              { color: 'bg-red-500',   label: '> 100%' },
+            ].map(({ color, label }) => (
+              <div key={label} className="flex items-center gap-1">
+                <div className={`w-2 h-2 ${color}`} />
+                <span className="text-[10px] text-gray-400 font-['DM_Sans']">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Aviso DGII */}
