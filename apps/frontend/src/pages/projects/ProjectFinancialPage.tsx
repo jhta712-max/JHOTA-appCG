@@ -6,12 +6,13 @@ import { useRole } from '../../hooks/useRole';
 import {
   ArrowLeft, Plus, Trash2, Pencil, Check, X,
   TrendingUp, TrendingDown, DollarSign, BarChart2,
-  AlertCircle, Activity,
+  AlertCircle, Activity, Zap,
 } from 'lucide-react';
 import { projectsApi } from '../../api';
 import { DetailPageSkeleton } from '../../components/ui/DetailPageSkeleton';
 import { PAGE_META }           from '../../utils/routeMeta';
-import type { Cubicacion, Anticipo } from '../../types';
+import FormModal               from '../../components/ui/FormModal';
+import type { Cubicacion, Anticipo, ExtraordinaryExpense } from '../../types';
 
 // ── Utilidades ────────────────────────────────────────────────
 const fmt = (n: number) =>
@@ -284,6 +285,94 @@ export default function ProjectFinancialPage() {
     setShowAnticipoForm(true);
   };
 
+  // ── Gastos Extraordinarios ────────────────────────────────────
+  const CATEGORY_LABELS: Record<string, string> = {
+    COMISION: 'Comisión',
+    PRESTAMO: 'Préstamo',
+    IMPUESTO: 'Impuesto',
+    MULTA:    'Multa',
+    OTRO:     'Otro',
+  };
+
+  const CATEGORY_COLORS: Record<string, string> = {
+    COMISION: 'bg-blue-100 text-blue-700',
+    PRESTAMO: 'bg-orange-100 text-orange-700',
+    IMPUESTO: 'bg-red-100 text-red-700',
+    MULTA:    'bg-yellow-100 text-yellow-800',
+    OTRO:     'bg-gray-100 text-gray-600',
+  };
+
+  const [extraModal, setExtraModal] = useState<{
+    open: boolean;
+    editing: ExtraordinaryExpense | null;
+  }>({ open: false, editing: null });
+
+  const [extraForm, setExtraForm] = useState({
+    description: '',
+    amount: '',
+    date: new Date().toISOString().slice(0, 10),
+    category: 'COMISION' as string,
+    notes: '',
+  });
+
+  const createExtraMut = useMutation({
+    mutationFn: (data: unknown) =>
+      projectsApi.createExtraordinaryExpense(id!, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['financial', id] });
+      setExtraModal({ open: false, editing: null });
+    },
+  });
+
+  const updateExtraMut = useMutation({
+    mutationFn: ({ expId, data }: { expId: string; data: unknown }) =>
+      projectsApi.updateExtraordinaryExpense(id!, expId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['financial', id] });
+      setExtraModal({ open: false, editing: null });
+    },
+  });
+
+  const deleteExtraMut = useMutation({
+    mutationFn: (expId: string) =>
+      projectsApi.deleteExtraordinaryExpense(id!, expId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['financial', id] });
+    },
+  });
+
+  function openExtraModal(editing: ExtraordinaryExpense | null) {
+    setExtraForm(editing ? {
+      description: editing.description,
+      amount:      String(editing.amount),
+      date:        editing.date.slice(0, 10),
+      category:    editing.category,
+      notes:       editing.notes ?? '',
+    } : {
+      description: '',
+      amount:      '',
+      date:        new Date().toISOString().slice(0, 10),
+      category:    'COMISION',
+      notes:       '',
+    });
+    setExtraModal({ open: true, editing });
+  }
+
+  function submitExtraForm() {
+    const payload = {
+      description: extraForm.description,
+      amount:      parseFloat(extraForm.amount),
+      date:        extraForm.date,
+      category:    extraForm.category,
+      notes:       extraForm.notes || undefined,
+    };
+    if (extraModal.editing) {
+      updateExtraMut.mutate({ expId: extraModal.editing.id, data: payload });
+    } else {
+      createExtraMut.mutate(payload);
+    }
+  }
+
   if (isLoading) {
     const meta = PAGE_META['/projects'];
     return (
@@ -309,7 +398,7 @@ export default function ProjectFinancialPage() {
   );
 
   const { project, financials, cubicaciones } = financial;
-  const { totalCubicado, totalGastado, margen, margenPct, lastProgressPct } = financials;
+  const { totalCubicado, totalGastado, margen, margenPct, lastProgressPct, totalExtraordinario, margenNeto, margenNetoPct } = financials;
 
   // Porcentaje de cobertura: cubicado vs presupuesto total
   const coveragePct = project.totalBudget > 0
@@ -479,6 +568,36 @@ export default function ProjectFinancialPage() {
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
               Ant. {fmt(financials.totalAnticipos ?? 0)} + Cub. {fmt(totalCubicado)}
+            </p>
+          </div>
+
+          {/* Gastos Extraordinarios */}
+          <div className="bg-white border border-gray-200 p-4">
+            <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-wider mb-1">
+              Gastos Extrd.
+            </p>
+            <p className="font-['Space_Mono'] text-xl font-bold text-red-600">
+              -{(totalExtraordinario ?? 0).toLocaleString('es-DO', {
+                style: 'currency', currency: 'DOP', maximumFractionDigits: 0,
+              })}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              {(financial.extraordinaryExpenses ?? []).length} registro{(financial.extraordinaryExpenses ?? []).length !== 1 ? 's' : ''}
+            </p>
+          </div>
+
+          {/* Margen Neto */}
+          <div className={`border p-4 ${(margenNeto ?? 0) >= 0 ? 'bg-white border-gray-200' : 'bg-red-50 border-red-200'}`}>
+            <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-wider mb-1">
+              Margen Neto
+            </p>
+            <p className={`font-['Space_Mono'] text-xl font-bold ${(margenNeto ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {(margenNeto ?? 0).toLocaleString('es-DO', {
+                style: 'currency', currency: 'DOP', maximumFractionDigits: 0,
+              })}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              {(margenNetoPct ?? 0).toFixed(1)}% sobre cubicado
             </p>
           </div>
 
@@ -876,6 +995,80 @@ export default function ProjectFinancialPage() {
           )}
         </div>
 
+        {/* ── Gastos Extraordinarios ─────────────────────────────── */}
+        <div>
+          <div className="bg-[#1C1C1C] px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap size={14} className="text-[#F5C218]" />
+              <span className="font-['Barlow_Condensed'] text-sm text-white uppercase tracking-widest">
+                Gastos Extraordinarios
+              </span>
+            </div>
+            {canEdit && (
+              <button
+                onClick={() => openExtraModal(null)}
+                className="flex items-center gap-1 bg-[#F5C218] text-[#1C1C1C] px-3 py-1 text-xs font-bold font-['Barlow_Condensed'] uppercase hover:bg-yellow-400 transition-colors"
+              >
+                + Agregar
+              </button>
+            )}
+          </div>
+
+          {(!financial.extraordinaryExpenses || financial.extraordinaryExpenses.length === 0) ? (
+            <div className="border border-t-0 border-gray-200 p-6 text-center text-sm text-gray-400">
+              No hay gastos extraordinarios registrados
+            </div>
+          ) : (
+            <table className="w-full text-sm border border-t-0 border-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  {['Descripción', 'Categoría', 'Fecha', 'Monto', 'Notas', ''].map(h => (
+                    <th key={h} className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-wider px-4 py-2 text-left">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {financial.extraordinaryExpenses.map(e => (
+                  <tr key={e.id} className="border-t border-gray-100 hover:bg-gray-50">
+                    <td className="px-4 py-2 font-['DM_Sans']">{e.description}</td>
+                    <td className="px-4 py-2">
+                      <span className={`text-xs px-2 py-0.5 font-['Barlow_Condensed'] uppercase font-bold ${CATEGORY_COLORS[e.category]}`}>
+                        {CATEGORY_LABELS[e.category]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 font-['Space_Mono'] text-xs text-gray-500">
+                      {new Date(e.date).toLocaleDateString('es-DO')}
+                    </td>
+                    <td className="px-4 py-2 font-['Space_Mono'] text-red-600 font-bold">
+                      -{Number(e.amount).toLocaleString('es-DO', { style: 'currency', currency: 'DOP', maximumFractionDigits: 0 })}
+                    </td>
+                    <td className="px-4 py-2 text-gray-500 text-xs max-w-[180px] truncate">
+                      {e.notes ?? '—'}
+                    </td>
+                    <td className="px-4 py-2">
+                      {canEdit && (
+                        <div className="flex gap-2">
+                          <button onClick={() => openExtraModal(e)} className="text-gray-400 hover:text-[#F5C218]">
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => { if (confirm('¿Eliminar este gasto extraordinario?')) deleteExtraMut.mutate(e.id); }}
+                            className="text-gray-400 hover:text-red-500"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
         {/* Formulario nueva cubicación */}
         {showForm && (
           <div className="bg-white border border-[#F5C218] p-5 space-y-4">
@@ -1257,6 +1450,90 @@ export default function ProjectFinancialPage() {
         )}
 
       </div>
+
+      {/* Modal Gasto Extraordinario */}
+      <FormModal
+        isOpen={extraModal.open}
+        onClose={() => setExtraModal({ open: false, editing: null })}
+        title={extraModal.editing ? 'EDITAR GASTO EXTRAORDINARIO' : 'NUEVO GASTO EXTRAORDINARIO'}
+        onSubmit={submitExtraForm}
+        isSubmitting={createExtraMut.isPending || updateExtraMut.isPending}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wider text-gray-600 mb-1">
+              Descripción *
+            </label>
+            <input
+              type="text"
+              value={extraForm.description}
+              onChange={e => setExtraForm(f => ({ ...f, description: e.target.value }))}
+              className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+              placeholder="Ej: Comisión bancaria enero"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wider text-gray-600 mb-1">
+                Categoría *
+              </label>
+              <select
+                value={extraForm.category}
+                onChange={e => setExtraForm(f => ({ ...f, category: e.target.value }))}
+                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+              >
+                {Object.entries(CATEGORY_LABELS).map(([val, label]) => (
+                  <option key={val} value={val}>{label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wider text-gray-600 mb-1">
+                Fecha *
+              </label>
+              <input
+                type="date"
+                value={extraForm.date}
+                onChange={e => setExtraForm(f => ({ ...f, date: e.target.value }))}
+                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wider text-gray-600 mb-1">
+              Monto (DOP) *
+            </label>
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={extraForm.amount}
+              onChange={e => setExtraForm(f => ({ ...f, amount: e.target.value }))}
+              className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+              placeholder="0.00"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wider text-gray-600 mb-1">
+              Notas <span className="text-gray-400 normal-case">(opcional)</span>
+            </label>
+            <textarea
+              value={extraForm.notes}
+              onChange={e => setExtraForm(f => ({ ...f, notes: e.target.value }))}
+              rows={2}
+              className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] resize-none"
+              placeholder="Detalles adicionales..."
+            />
+          </div>
+        </div>
+      </FormModal>
     </div>
   );
 }
