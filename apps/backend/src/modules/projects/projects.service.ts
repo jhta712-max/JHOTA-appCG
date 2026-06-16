@@ -11,6 +11,7 @@ import type {
   CreateCubicacionInput, UpdateCubicacionInput,
   CreateAnticipoInput, UpdateAnticipoInput,
   CreateProjectItemInput, UpdateProjectItemInput,
+  CreateExtraordinaryExpenseInput, UpdateExtraordinaryExpenseInput,
 } from './projects.schema';
 
 export async function getProjects(query: ProjectQuery, requestingUser: { userId: string; role: string }) {
@@ -456,9 +457,10 @@ export async function getFinancialAnalysis(projectId: string) {
   const project = await prisma.project.findUnique({
     where:   { id: projectId },
     include: {
-      addendums:    { select: { amount: true } },
-      cubicaciones: { orderBy: { number: 'asc' } },
-      anticipos:    { orderBy: { number: 'asc' } },
+      addendums:             { select: { amount: true } },
+      cubicaciones:          { orderBy: { number: 'asc' } },
+      anticipos:             { orderBy: { number: 'asc' } },
+      extraordinaryExpenses: { orderBy: { date: 'desc' } },
     },
   });
   if (!project) throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
@@ -472,12 +474,14 @@ export async function getFinancialAnalysis(projectId: string) {
     _count: { id: true },
   });
 
-  const totalGastado    = Number(expenseStats._sum.amount ?? 0);
-  const totalCubicado   = project.cubicaciones.reduce((s: number, c: any) => s + Number(c.amount), 0);
-  const totalAnticipos  = project.anticipos.reduce((s: number, a: any) => s + Number(a.amount), 0);
-  const totalCobrado    = totalAnticipos + totalCubicado;
-  const margen          = totalCubicado - totalGastado;
-  const lastProgress    = project.cubicaciones.length > 0
+  const totalGastado        = Number(expenseStats._sum.amount ?? 0);
+  const totalCubicado       = project.cubicaciones.reduce((s: number, c: any) => s + Number(c.amount), 0);
+  const totalAnticipos      = project.anticipos.reduce((s: number, a: any) => s + Number(a.amount), 0);
+  const totalCobrado        = totalAnticipos + totalCubicado;
+  const margen              = totalCubicado - totalGastado;
+  const totalExtraordinario = project.extraordinaryExpenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
+  const margenNeto          = margen - totalExtraordinario;
+  const lastProgress        = project.cubicaciones.length > 0
     ? Number(project.cubicaciones[project.cubicaciones.length - 1].progressPct)
     : 0;
 
@@ -496,9 +500,12 @@ export async function getFinancialAnalysis(projectId: string) {
       totalCobrado,
       totalGastado,
       margen,
-      margenPct:      totalCubicado > 0 ? Math.round((margen / totalCubicado) * 10000) / 100 : 0,
-      lastProgressPct: lastProgress,
-      expenseCount:   expenseStats._count.id,
+      margenPct:          totalCubicado > 0 ? Math.round((margen / totalCubicado) * 10000) / 100 : 0,
+      totalExtraordinario,
+      margenNeto,
+      margenNetoPct:      totalCubicado > 0 ? Math.round((margenNeto / totalCubicado) * 10000) / 100 : 0,
+      lastProgressPct:    lastProgress,
+      expenseCount:       expenseStats._count.id,
     },
     cubicaciones: project.cubicaciones.map((c: any) => ({
       id:          c.id,
@@ -518,6 +525,15 @@ export async function getFinancialAnalysis(projectId: string) {
       ncf:         a.ncf ?? null,
       description: a.description ?? null,
       createdAt:   a.createdAt,
+    })),
+    extraordinaryExpenses: project.extraordinaryExpenses.map((e: any) => ({
+      id:          e.id,
+      description: e.description,
+      amount:      Number(e.amount),
+      date:        e.date,
+      category:    e.category,
+      notes:       e.notes ?? null,
+      createdAt:   e.createdAt,
     })),
   };
 }
@@ -744,4 +760,74 @@ export async function deleteCategoryBudget(projectId: string, categoryId: number
   });
   if (!existing) throw new AppError(404, 'Sub-presupuesto no encontrado', 'NOT_FOUND');
   return prisma.projectCategoryBudget.delete({ where: { projectId_categoryId: { projectId, categoryId } } });
+}
+
+// ── Gastos Extraordinarios ───────────────────────────────────
+export async function listExtraordinaryExpenses(projectId: string) {
+  const rows = await prisma.projectExtraordinaryExpense.findMany({
+    where:   { projectId },
+    orderBy: { date: 'desc' },
+  });
+  return rows.map(e => ({
+    id:          e.id,
+    description: e.description,
+    amount:      Number(e.amount),
+    date:        e.date,
+    category:    e.category,
+    notes:       e.notes ?? null,
+    createdAt:   e.createdAt,
+  }));
+}
+
+export async function createExtraordinaryExpense(
+  projectId: string,
+  data: CreateExtraordinaryExpenseInput,
+  userId: string,
+) {
+  const project = await prisma.project.findUnique({ where: { id: projectId } });
+  if (!project) throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
+
+  const row = await prisma.projectExtraordinaryExpense.create({
+    data: {
+      projectId,
+      description: data.description,
+      amount:      data.amount,
+      date:        new Date(data.date),
+      category:    data.category,
+      notes:       data.notes ?? null,
+      createdBy:   userId,
+    },
+  });
+  return { ...row, amount: Number(row.amount) };
+}
+
+export async function updateExtraordinaryExpense(
+  projectId: string,
+  expId: string,
+  data: UpdateExtraordinaryExpenseInput,
+) {
+  const existing = await prisma.projectExtraordinaryExpense.findFirst({
+    where: { id: expId, projectId },
+  });
+  if (!existing) throw new AppError(404, 'Gasto extraordinario no encontrado', 'NOT_FOUND');
+
+  const row = await prisma.projectExtraordinaryExpense.update({
+    where: { id: expId },
+    data: {
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.amount      !== undefined && { amount:      data.amount }),
+      ...(data.date        !== undefined && { date:        new Date(data.date) }),
+      ...(data.category    !== undefined && { category:    data.category }),
+      ...(data.notes       !== undefined && { notes:       data.notes }),
+    },
+  });
+  return { ...row, amount: Number(row.amount) };
+}
+
+export async function deleteExtraordinaryExpense(projectId: string, expId: string) {
+  const existing = await prisma.projectExtraordinaryExpense.findFirst({
+    where: { id: expId, projectId },
+  });
+  if (!existing) throw new AppError(404, 'Gasto extraordinario no encontrado', 'NOT_FOUND');
+  await prisma.projectExtraordinaryExpense.delete({ where: { id: expId } });
 }

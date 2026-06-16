@@ -8,6 +8,7 @@ import {
   createCubicacionSchema, updateCubicacionSchema,
   createAnticipoSchema, updateAnticipoSchema,
   createProjectItemSchema, updateProjectItemSchema,
+  createExtraordinaryExpenseSchema, updateExtraordinaryExpenseSchema,
 } from './projects.schema';
 import * as ctrl from './projects.controller';
 
@@ -164,5 +165,22 @@ router.patch('/:id/items/:itemId',
 router.get('/:id/category-budgets',   ctrl.getCategoryBudgets);
 router.put('/:id/category-budgets',   authorize('admin', 'supervisor'), ctrl.upsertCategoryBudget);
 router.delete('/:id/category-budgets/:categoryId', authorize('admin', 'supervisor'), ctrl.deleteCategoryBudget);
+
+// ── Gastos Extraordinarios ───────────────────────────────────
+router.get('/:id/extraordinary-expenses', ctrl.listExtraordinaryExpenses);
+router.post('/:id/extraordinary-expenses',
+  authorize('admin'),
+  validate(createExtraordinaryExpenseSchema),
+  ctrl.createExtraordinaryExpense,
+);
+router.put('/:id/extraordinary-expenses/:expId',
+  authorize('admin'),
+  validate(updateExtraordinaryExpenseSchema),
+  ctrl.updateExtraordinaryExpense,
+);
+router.delete('/:id/extraordinary-expenses/:expId',
+  authorize('admin'),
+  ctrl.deleteExtraordinaryExpense,
+);
 
 export default router;

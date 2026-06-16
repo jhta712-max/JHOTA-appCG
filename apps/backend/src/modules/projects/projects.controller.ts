@@ -226,3 +226,32 @@ export async function deleteCategoryBudget(req: Request, res: Response, next: Ne
     res.json({ success: true });
   } catch (err) { next(err); }
 }
+
+// ── Gastos Extraordinarios ───────────────────────────────────
+export async function listExtraordinaryExpenses(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.listExtraordinaryExpenses(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function createExtraordinaryExpense(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.createExtraordinaryExpense(req.params.id, req.body, req.user!.userId);
+    res.status(201).json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function updateExtraordinaryExpense(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.updateExtraordinaryExpense(req.params.id, req.params.expId, req.body);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function deleteExtraordinaryExpense(req: Request, res: Response, next: NextFunction) {
+  try {
+    await service.deleteExtraordinaryExpense(req.params.id, req.params.expId);
+    res.json({ success: true, message: 'Gasto extraordinario eliminado' });
+  } catch (err) { next(err); }
+}
