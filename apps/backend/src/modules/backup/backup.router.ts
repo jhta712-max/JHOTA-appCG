@@ -30,6 +30,7 @@ async function generateBackup() {
     contratosAjustados, contratosAjustadosAdendas, contratosAjustadosPagos,
     notifications, notificationContacts,
     whatsappConversations, whatsappMessages,
+    extraordinaryExpenses,
   ] = await Promise.all([
     safe(() => prisma.role.findMany()),
     safe(() => prisma.user.findMany({ select: { id:true, name:true, email:true, roleId:true, isActive:true, phone:true, whatsappOptIn:true, notifTypes:true, createdAt:true } })),
@@ -69,6 +70,7 @@ async function generateBackup() {
     safe(() => prisma.notificationContact.findMany()),
     safe(() => prisma.whatsAppConversation.findMany()),
     safe(() => prisma.whatsAppMessage.findMany({ take: 1000, orderBy: { createdAt: 'desc' } })),
+    safe(() => prisma.projectExtraordinaryExpense.findMany()),
   ]);
 
   const tables = {
@@ -85,6 +87,7 @@ async function generateBackup() {
     contratosAjustados, contratosAjustadosAdendas, contratosAjustadosPagos,
     notifications, notificationContacts,
     whatsappConversations, whatsappMessages,
+    extraordinaryExpenses,
   };
 
   const counts: Record<string, number> = {};
