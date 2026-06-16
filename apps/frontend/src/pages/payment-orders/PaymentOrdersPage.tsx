@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { SavedFiltersBar } from '../../components/ui/SavedFiltersBar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import QuickCreateSupplierModal from '../../components/suppliers/QuickCreateSupplierModal';
 import {
@@ -582,6 +583,17 @@ export default function PaymentOrdersPage() {
             </>
           )}
         </div>
+
+        {/* Vistas guardadas */}
+        <SavedFiltersBar
+          namespace="payment-orders"
+          currentFilters={{ filterStatus, filterType, filterCreatedBy }}
+          onApply={(f: any) => {
+            if (f.filterStatus    !== undefined) setFilterStatus(f.filterStatus);
+            if (f.filterType      !== undefined) setFilterType(f.filterType);
+            if (f.filterCreatedBy !== undefined) setFilterCreatedBy(f.filterCreatedBy);
+          }}
+        />
 
         {/* Detalle expandido */}
         {viewingOrder && (

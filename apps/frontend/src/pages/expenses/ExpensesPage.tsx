@@ -6,6 +6,7 @@ import { expensesApi, projectsApi, categoriesApi } from '../../api';
 import { PAYMENT_METHOD_LABELS } from '../../types';
 import { ExpenseListSkeleton } from '../../components/ui/ExpenseListSkeleton';
 import { SkeletonBlock }       from '../../components/ui/Skeleton';
+import { SavedFiltersBar }     from '../../components/ui/SavedFiltersBar';
 import { fmtDate } from '../../utils/date';
 import api from '../../api/client';
 import { useRole } from '../../hooks/useRole';
@@ -470,6 +471,26 @@ export default function ExpensesPage() {
             </div>
           </div>
         )}
+
+        {/* Vistas guardadas */}
+        <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
+          <SavedFiltersBar
+            namespace="expenses"
+            currentFilters={{ selectedProjectId, search, status, categoryId, hasFiscalDoc, dateFrom, dateTo, orderBy, order }}
+            onApply={(f: any) => {
+              if (f.selectedProjectId !== undefined) setSelectedProjectId(f.selectedProjectId);
+              if (f.search      !== undefined) setSearch(f.search);
+              if (f.status      !== undefined) setStatus(f.status);
+              if (f.categoryId  !== undefined) setCategoryId(f.categoryId);
+              if (f.hasFiscalDoc !== undefined) setHasFiscalDoc(f.hasFiscalDoc);
+              if (f.dateFrom    !== undefined) setDateFrom(f.dateFrom);
+              if (f.dateTo      !== undefined) setDateTo(f.dateTo);
+              if (f.orderBy     !== undefined) setOrderBy(f.orderBy);
+              if (f.order       !== undefined) setOrder(f.order);
+              setPage(1);
+            }}
+          />
+        </div>
 
         {/* Lista */}
         {isLoading ? (
