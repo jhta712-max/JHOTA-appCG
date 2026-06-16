@@ -84,9 +84,10 @@ export async function getPaymentOrders(
   const { role, userId } = userCtx;
 
   const where: any = {};
-  if (query.projectId)  where.projectId  = query.projectId;
-  if (query.supplierId) where.supplierId = query.supplierId;
-  if (query.orderType)  where.orderType  = query.orderType;
+  if (query.projectId)   where.projectId   = query.projectId;
+  if (query.supplierId)  where.supplierId  = query.supplierId;
+  if (query.orderType)   where.orderType   = query.orderType;
+  if (query.createdById && role === 'admin') where.createdById = query.createdById;
   if (query.search) {
     where.OR = [
       { concept:       { contains: query.search, mode: 'insensitive' } },

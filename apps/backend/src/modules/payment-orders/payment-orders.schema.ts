@@ -31,9 +31,10 @@ export const querySchema = z.object({
   limit:      z.coerce.number().min(1).max(100).default(20),
   status:     z.enum(['PENDING', 'PAID']).optional(),
   orderType:  z.enum(['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH']).optional(),
-  projectId:  z.string().uuid().optional(),
-  supplierId: z.string().uuid().optional(),
-  search:     z.string().optional(),
+  projectId:    z.string().uuid().optional(),
+  supplierId:   z.string().uuid().optional(),
+  createdById:  z.string().uuid().optional(),
+  search:       z.string().optional(),
   orderBy:    z.enum(['createdAt', 'amount', 'number']).default('createdAt'),
   order:      z.enum(['asc', 'desc']).default('desc'),
 });

@@ -7,7 +7,7 @@ import {
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
   MessageCircle, Sparkles, Camera,
 } from 'lucide-react';
-import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi } from '../../api';
+import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi, usersApi } from '../../api';
 import { useOcrPolling } from '../../hooks/useOcrPolling';
 import { useAuthStore } from '../../stores/authStore';
 import type { PaymentOrder, Supplier, SupplierBankAccount } from '../../types';
@@ -168,8 +168,9 @@ export default function PaymentOrdersPage() {
   const canFilterStatus = isAdmin || isFinanciero || isAuxiliar;
   const [viewingOrder, setViewingOrder] = useState<PaymentOrder | null>(null);
   const [toast,        setToast]        = useState('');
-  const [filterStatus, setFilterStatus] = useState('PENDING');
-  const [filterType,   setFilterType]   = useState('');
+  const [filterStatus,    setFilterStatus]    = useState('PENDING');
+  const [filterType,      setFilterType]      = useState('');
+  const [filterCreatedBy, setFilterCreatedBy] = useState('');
 
   const [orderModal,       setOrderModal]       = useState(false);
   const [linkModal,        setLinkModal]         = useState(false);
@@ -239,12 +240,20 @@ export default function PaymentOrdersPage() {
   };
 
   const { data: orders = [], isLoading: loadingOrders } = useQuery({
-    queryKey: ['payment-orders', filterStatus, filterType],
+    queryKey: ['payment-orders', filterStatus, filterType, filterCreatedBy],
     queryFn:  () => paymentOrdersApi.list({
-      ...(filterStatus ? { status: filterStatus } : {}),
-      ...(filterType   ? { orderType: filterType } : {}),
+      ...(filterStatus    ? { status:      filterStatus    } : {}),
+      ...(filterType      ? { orderType:   filterType      } : {}),
+      ...(filterCreatedBy ? { createdById: filterCreatedBy } : {}),
     }),
     select: (r) => (r.data as any).data as PaymentOrder[],
+  });
+
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['users-list'],
+    queryFn:  () => usersApi.list(),
+    select:   (r) => r.data.data as { id: string; name: string; role?: { name: string } }[],
+    enabled:  isAdmin,
   });
 
   const { data: projects = [] } = useQuery({
@@ -505,6 +514,25 @@ export default function PaymentOrdersPage() {
               {t === '' ? 'Todos tipos' : ORDER_TYPE_CFG[t as OrderType].label}
             </button>
           ))}
+          {isAdmin && allUsers.length > 0 && (
+            <>
+              <div className="w-px bg-gray-200 mx-1 self-stretch" />
+              <select
+                value={filterCreatedBy}
+                onChange={(e) => setFilterCreatedBy(e.target.value)}
+                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide border transition-all font-['Barlow_Condensed'] focus:outline-none focus:border-[#1C1C1C] ${
+                  filterCreatedBy
+                    ? 'bg-[#1C1C1C] text-[#F5C218] border-[#1C1C1C]'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+                }`}
+              >
+                <option value="">Todos los usuarios</option>
+                {allUsers.map((u) => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </select>
+            </>
+          )}
           {orders.filter((o) => o.generatedText).length > 1 && (
             <>
               <div className="w-px bg-gray-200 mx-1 self-stretch" />
