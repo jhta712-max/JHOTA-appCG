@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Receipt, Plus, Search, Upload, X, CheckCircle, AlertCircle, ArrowUpDown, Filter, Layers, Check } from 'lucide-react';
+import { Receipt, Plus, Search, Upload, X, CheckCircle, AlertCircle, ArrowUpDown, Filter, Layers, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi } from '../../api';
 import { PAYMENT_METHOD_LABELS } from '../../types';
 import { ExpenseListSkeleton } from '../../components/ui/ExpenseListSkeleton';
@@ -28,7 +28,10 @@ function parseCSV(text: string) {
 
 export default function ExpensesPage() {
   const qc = useQueryClient();
-  const { canCreateExpense } = useRole();
+  const { canCreateExpense, isAdmin, isSupervisor } = useRole();
+  const canApprove = isAdmin || isSupervisor;
+  const [rejectTarget, setRejectTarget] = useState<string | null>(null);
+  const [rejectReason,  setRejectReason]  = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [search,      setSearch]      = useState('');
   const [status,      setStatus]      = useState('ACTIVE');
@@ -56,6 +59,16 @@ export default function ExpensesPage() {
   const importMut = useMutation({
     mutationFn: (rows: any[]) => api.post('/expenses/bulk-import', { rows }).then((r) => r.data.data),
     onSuccess: (data) => { setImportResult(data); qc.invalidateQueries({ queryKey: ['expenses'] }); },
+  });
+
+  const approveMut = useMutation({
+    mutationFn: (id: string) => expensesApi.approve(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['expenses'] }),
+  });
+
+  const rejectMut = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => expensesApi.reject(id, reason),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['expenses'] }); setRejectTarget(null); setRejectReason(''); },
   });
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -145,6 +158,7 @@ export default function ExpensesPage() {
   const tabTotal = expenses.reduce((s, e) => s + Number(e.amount), 0);
 
   return (
+    <>
     <div className="space-y-0">
 
       {/* Hero header band */}
@@ -580,6 +594,44 @@ export default function ExpensesPage() {
                       Anulado
                     </span>
                   )}
+                  {e.status === 'PENDING_APPROVAL' && (
+                    <div className="shrink-0 flex items-center gap-1" onClick={ev => ev.preventDefault()}>
+                      <span
+                        className="px-2 py-0.5 text-xs font-bold uppercase tracking-wide"
+                        style={{ background: '#fef9c3', color: '#854d0e', fontFamily: 'Barlow Condensed, sans-serif' }}
+                      >
+                        Pendiente
+                      </span>
+                      {canApprove && !bulkMode && (
+                        <>
+                          <button
+                            title="Aprobar"
+                            disabled={approveMut.isPending}
+                            onClick={() => approveMut.mutate(e.id)}
+                            className="p-1.5 hover:bg-green-50 text-green-600 disabled:opacity-40"
+                          >
+                            <ThumbsUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            title="Rechazar"
+                            disabled={rejectMut.isPending}
+                            onClick={() => { setRejectTarget(e.id); setRejectReason(''); }}
+                            className="p-1.5 hover:bg-red-50 text-red-500 disabled:opacity-40"
+                          >
+                            <ThumbsDown className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  {e.status === 'REJECTED' && (
+                    <span
+                      className="shrink-0 px-2 py-0.5 text-xs font-bold uppercase tracking-wide"
+                      style={{ background: '#fee2e2', color: '#dc2626', fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      Rechazado
+                    </span>
+                  )}
                 </CardEl>
                 );
               })}
@@ -825,5 +877,41 @@ export default function ExpensesPage() {
       )}
 
     </div>
+
+    {/* Reject reason modal */}
+      {rejectTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white w-full max-w-md shadow-2xl">
+            <div className="bg-[#1C1C1C] px-5 py-4 flex items-center justify-between">
+              <h2 className="font-['Barlow_Condensed'] text-lg font-bold uppercase tracking-wide text-white">Motivo de rechazo</h2>
+              <button onClick={() => setRejectTarget(null)} className="text-gray-400 hover:text-[#F5C218] text-xl leading-none">✕</button>
+            </div>
+            <div className="p-5">
+              <textarea
+                autoFocus
+                rows={3}
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                placeholder="Describe el motivo del rechazo..."
+                className="w-full border border-gray-200 px-3 py-2 font-['DM_Sans'] text-sm focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none resize-none"
+              />
+              <div className="flex gap-3 mt-4">
+                <button onClick={() => setRejectTarget(null)}
+                  className="flex-1 border border-gray-200 text-gray-600 py-2 font-['DM_Sans'] text-sm hover:bg-gray-50">
+                  Cancelar
+                </button>
+                <button
+                  disabled={!rejectReason.trim() || rejectMut.isPending}
+                  onClick={() => rejectMut.mutate({ id: rejectTarget, reason: rejectReason.trim() })}
+                  className="flex-1 bg-red-600 text-white py-2 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide hover:bg-red-700 disabled:opacity-40"
+                >
+                  {rejectMut.isPending ? 'Rechazando...' : 'Rechazar gasto'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
