@@ -146,3 +146,15 @@ export async function suggestConcept(req: Request, res: Response, next: NextFunc
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }
+
+export async function updateStatusHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { status } = req.body;
+    if (!status) {
+      res.status(400).json({ success: false, error: 'status es requerido' });
+      return;
+    }
+    const data = await svc.updatePaymentOrderStatus(req.params.id, status, req.user!.role);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}

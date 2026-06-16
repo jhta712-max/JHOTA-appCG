@@ -830,3 +830,23 @@ function buildOrderText(p: {
     `📅 Fecha: ${fecha.charAt(0).toUpperCase() + fecha.slice(1)}`,
   ].join('\n');
 }
+
+// ── Actualizar estado intermedio ─────────────────────────────
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  PENDING:    ['IN_PROCESS', 'VOIDED'],
+  IN_PROCESS: ['PENDING', 'PAID', 'REJECTED_BANK'],
+  REJECTED_BANK: ['PENDING'],
+};
+
+export async function updatePaymentOrderStatus(id: string, newStatus: string, userRole: string) {
+  const po = await getPaymentOrderById(id);
+  if (po.status === 'VOIDED') throw new AppError(400, 'La orden está anulada', 'ORDER_VOIDED');
+  if (po.status === 'PAID')   throw new AppError(400, 'La orden ya está pagada. Use revertir si es necesario.', 'ALREADY_PAID');
+
+  const allowed = VALID_TRANSITIONS[po.status] ?? [];
+  if (!allowed.includes(newStatus)) {
+    throw new AppError(400, `No se puede pasar de ${po.status} a ${newStatus}`, 'INVALID_TRANSITION');
+  }
+
+  return prisma.paymentOrder.update({ where: { id }, data: { status: newStatus }, include: INCLUDE });
+}

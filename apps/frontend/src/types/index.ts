@@ -216,7 +216,7 @@ export interface PaymentOrder {
   amount:        number;
   currency:      string;
   concept:       string;
-  status:        'PENDING' | 'PAID' | 'VOIDED';
+  status:        'PENDING' | 'IN_PROCESS' | 'REJECTED_BANK' | 'PAID' | 'VOIDED';
   generatedText: string | null;
   notes?:        string | null;
   paidAt?:            string | null;

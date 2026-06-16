@@ -9,7 +9,7 @@ import {
   linkPayroll, unlinkPayroll,
   markAsPaid, revertToPending, voidPaymentOrder,
   generateExpense, hardDeletePaymentOrder, suggestConcept,
-  getBcrdRateHandler,
+  getBcrdRateHandler, updateStatusHandler,
 } from './payment-orders.controller';
 
 const router = Router();
@@ -34,6 +34,7 @@ router.delete('/:id/link-payroll',    authorize('admin', 'supervisor'), unlinkPa
 router.post('/:id/pay',               markAsPaid);
 router.post('/:id/generate-expense',  authorize('admin', 'supervisor'), generateExpense);
 router.post('/:id/revert-to-pending', authorize('admin'), revertToPending);
+router.patch('/:id/status',           authorize('admin', 'supervisor', 'financiero'), updateStatusHandler);
 router.post('/:id/void',              authorize('admin', 'supervisor'), voidPaymentOrder);
 router.delete('/:id',                 authorize('admin'), hardDeletePaymentOrder);
 

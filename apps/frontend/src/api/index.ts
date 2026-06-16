@@ -508,6 +508,8 @@ export const paymentOrdersApi = {
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/generate-expense`),
   revertToPending: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/revert-to-pending`),
+  updateStatus: (id: string, status: string) =>
+    api.patch<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/status`, { status }),
   void: (id: string) =>
     api.post<{ success: boolean; data: PaymentOrder }>(`/payment-orders/${id}/void`),
   hardDelete: (id: string) =>

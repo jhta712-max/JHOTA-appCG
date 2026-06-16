@@ -1,11 +1,11 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import QuickCreateSupplierModal from '../../components/suppliers/QuickCreateSupplierModal';
 import {
   FileText, Plus, CheckCircle, AlertCircle, Loader2,
   Pencil, ClipboardCopy, X,
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
-  MessageCircle, Sparkles, Camera,
+  MessageCircle, Sparkles, Camera, ArrowRight, RotateCcw,
 } from 'lucide-react';
 import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi, usersApi } from '../../api';
 import { useOcrPolling } from '../../hooks/useOcrPolling';
@@ -46,11 +46,13 @@ const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; 
   PETTY_CASH: { label: 'Caja chica',  icon: <Sparkles className="w-4 h-4" />,     desc: 'Pagos menores en efectivo',          dark: 'border-green-500'  },
 };
 
-const STATUS_CFG = {
-  PENDING: { label: 'Pendiente', cls: 'bg-amber-100 text-amber-700',  icon: <Clock className="w-3 h-3" /> },
-  PAID:    { label: 'Pagada',    cls: 'bg-green-100 text-green-700',  icon: <BadgeCheck className="w-3 h-3" /> },
-  VOIDED:  { label: 'Anulada',   cls: 'bg-gray-100 text-gray-500',   icon: <X className="w-3 h-3" /> },
-} as const;
+const STATUS_CFG: Record<string, { label: string; cls: string; icon: React.ReactNode }> = {
+  PENDING:       { label: 'Pendiente',    cls: 'bg-amber-100 text-amber-700',   icon: <Clock className="w-3 h-3" /> },
+  IN_PROCESS:    { label: 'En proceso',   cls: 'bg-blue-100 text-blue-700',     icon: <ArrowRight className="w-3 h-3" /> },
+  REJECTED_BANK: { label: 'Rechazada banco', cls: 'bg-orange-100 text-orange-700', icon: <RotateCcw className="w-3 h-3" /> },
+  PAID:          { label: 'Pagada',       cls: 'bg-green-100 text-green-700',   icon: <BadgeCheck className="w-3 h-3" /> },
+  VOIDED:        { label: 'Anulada',      cls: 'bg-gray-100 text-gray-500',     icon: <X className="w-3 h-3" /> },
+};
 
 const PAYROLL_TYPE_LABEL: Record<string, string> = { LABOR: 'Mano de obra', SERVICE: 'Servicios' };
 
@@ -374,6 +376,12 @@ export default function PaymentOrdersPage() {
     mutationFn: (id: string) => paymentOrdersApi.revertToPending(id),
     onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('↩️ Orden revertida a Pendiente'); },
     onError:   (e: any) => flash(e.response?.data?.error || 'Error al revertir'),
+  });
+
+  const updateStatusMut = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => paymentOrdersApi.updateStatus(id, status),
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['payment-orders'] }); setViewingOrder(res.data.data); flash('Estado actualizado'); },
+    onError:   (e: any) => flash(e.response?.data?.error || 'Error al actualizar estado'),
   });
 
   const normalizeOrderType = (type: any): OrderType => {
@@ -727,6 +735,13 @@ export default function PaymentOrdersPage() {
                 )}
                 {viewingOrder.status === 'PENDING' && (
                   <>
+                    <button
+                      onClick={() => updateStatusMut.mutate({ id: viewingOrder.id, status: 'IN_PROCESS' })}
+                      disabled={updateStatusMut.isPending}
+                      className="flex items-center gap-1.5 px-3 py-2 border border-blue-300 text-blue-700 bg-blue-50 text-sm font-bold uppercase tracking-wide hover:bg-blue-100 transition-colors">
+                      <ArrowRight className="w-3.5 h-3.5" />
+                      En proceso
+                    </button>
                     <button onClick={() => openPayModal(viewingOrder)}
                       className="flex items-center gap-1.5 bg-[#F5C218] text-[#1C1C1C] px-3 py-2 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
                       disabled={markPaidMut.isPending}>
@@ -738,6 +753,32 @@ export default function PaymentOrdersPage() {
                       Anular
                     </button>
                   </>
+                )}
+                {viewingOrder.status === 'IN_PROCESS' && (
+                  <>
+                    <button
+                      onClick={() => updateStatusMut.mutate({ id: viewingOrder.id, status: 'REJECTED_BANK' })}
+                      disabled={updateStatusMut.isPending}
+                      className="flex items-center gap-1.5 px-3 py-2 border border-orange-300 text-orange-700 bg-orange-50 text-sm font-bold uppercase tracking-wide hover:bg-orange-100 transition-colors">
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Rechazada banco
+                    </button>
+                    <button onClick={() => openPayModal(viewingOrder)}
+                      className="flex items-center gap-1.5 bg-[#F5C218] text-[#1C1C1C] px-3 py-2 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
+                      disabled={markPaidMut.isPending}>
+                      {markPaidMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
+                      Marcar como pagada
+                    </button>
+                  </>
+                )}
+                {viewingOrder.status === 'REJECTED_BANK' && (
+                  <button
+                    onClick={() => updateStatusMut.mutate({ id: viewingOrder.id, status: 'PENDING' })}
+                    disabled={updateStatusMut.isPending}
+                    className="flex items-center gap-1.5 px-3 py-2 border border-amber-300 text-amber-700 bg-amber-50 text-sm font-bold uppercase tracking-wide hover:bg-amber-100 transition-colors">
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Volver a pendiente
+                  </button>
                 )}
               </div>
             )}
