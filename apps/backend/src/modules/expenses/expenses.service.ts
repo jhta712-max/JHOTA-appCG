@@ -501,6 +501,7 @@ export async function bulkImportExpenses(rows: BulkExpenseRow[], userId: string)
           description:   desc.slice(0, 500),
           paymentMethod: method,
           hasFiscalDoc:  false,
+          status:        'ACTIVE',  // bulk import = already validated by admin in preview modal
           notes:         row.notas?.slice(0, 1000) ?? null,
         },
       });
