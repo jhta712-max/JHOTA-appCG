@@ -100,15 +100,23 @@ export async function getPaymentOrders(
     // Financiero: all orders, respects status filter
     if (query.status) where.status = query.status;
   } else if (role === 'admin') {
-    // Admin: all orders from any creator, defaults to PENDING
-    where.status = query.status || 'PENDING';
+    // Admin: all orders — filter by status if provided, default to active (non-VOIDED)
+    if (query.status) {
+      where.status = query.status;
+    } else {
+      where.status = { not: 'VOIDED' };
+    }
   } else if (role === 'auxiliar') {
-    // Auxiliar: sees all orders (same as financiero)
+    // Auxiliar: all orders, respects status filter
     if (query.status) where.status = query.status;
   } else {
-    // Supervisor / operator / others: only their own PENDING
+    // Supervisor / operator: own orders in any active status
     where.createdById = userId;
-    where.status      = 'PENDING';
+    if (query.status) {
+      where.status = query.status;
+    } else {
+      where.status = { not: 'VOIDED' };
+    }
   }
 
   const [data, total] = await Promise.all([

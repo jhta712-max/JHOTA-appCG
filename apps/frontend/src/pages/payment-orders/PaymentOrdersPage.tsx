@@ -171,7 +171,7 @@ export default function PaymentOrdersPage() {
   const canFilterStatus = isAdmin || isFinanciero || isAuxiliar;
   const [viewingOrder, setViewingOrder] = useState<PaymentOrder | null>(null);
   const [toast,        setToast]        = useState('');
-  const [filterStatus,    setFilterStatus]    = useState('PENDING');
+  const [filterStatus,    setFilterStatus]    = useState('');
   const [filterType,      setFilterType]      = useState('');
   const [filterCreatedBy, setFilterCreatedBy] = useState('');
 
@@ -527,14 +527,14 @@ export default function PaymentOrdersPage() {
 
         {/* Filtros */}
         <div className="flex flex-wrap items-center gap-2">
-          {canFilterStatus && (['', 'PENDING', 'PAID'] as const).map((s) => (
+          {canFilterStatus && (['', 'PENDING', 'IN_PROCESS', 'REJECTED_BANK', 'PAID'] as const).map((s) => (
             <button key={s} onClick={() => setFilterStatus(s)}
               className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide border transition-all ${
                 filterStatus === s
                   ? 'bg-[#1C1C1C] text-[#F5C218] border-[#1C1C1C]'
                   : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
               }`}>
-              {s === '' ? 'Todas' : s === 'PENDING' ? 'Pendientes' : 'Pagadas'}
+              {s === '' ? 'Todas' : s === 'PENDING' ? 'Pendientes' : s === 'IN_PROCESS' ? 'En proceso' : s === 'REJECTED_BANK' ? 'Rechazadas' : 'Pagadas'}
             </button>
           ))}
           <div className="w-px bg-gray-200 mx-1 self-stretch" />
