@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Receipt, Plus, Search, Upload, Download, X, CheckCircle, AlertCircle, ArrowUpDown, Filter, Layers, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Receipt, Plus, Search, Upload, Download, X, CheckCircle, AlertCircle, ArrowUpDown, Filter, Layers, Check, ThumbsUp, ThumbsDown, Trash2 } from 'lucide-react';
 import { expensesApi, projectsApi, categoriesApi } from '../../api';
 import { PAYMENT_METHOD_LABELS } from '../../types';
 import { ExpenseListSkeleton } from '../../components/ui/ExpenseListSkeleton';
@@ -77,9 +77,32 @@ export default function ExpensesPage() {
   const [bulkApplying, setBulkApplying] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
-  const [importRows,   setImportRows]   = useState<any[]>([]);
+
+  interface EditRow {
+    _id:         string;
+    fecha:       string;
+    descripcion: string;
+    proveedor:   string;
+    categoria:   string;
+    monto:       string; // keep as string while editing
+    metodo_pago: string;
+    proyecto:    string;
+    notas:       string;
+  }
+
+  const [editRows,     setEditRows]     = useState<EditRow[]>([]);
   const [importModal,  setImportModal]  = useState(false);
   const [importResult, setImportResult] = useState<{ ok: number; err: number; results: any[] } | null>(null);
+
+  function updateEditRow(id: string, field: keyof EditRow, value: string) {
+    setEditRows((rows) => rows.map((r) => r._id === id ? { ...r, [field]: value } : r));
+  }
+  function deleteEditRow(id: string) {
+    setEditRows((rows) => rows.filter((r) => r._id !== id));
+  }
+  function isRowValid(r: EditRow) {
+    return r.fecha.trim() && r.proyecto.trim() && parseFloat(r.monto) > 0;
+  }
 
   const importMut = useMutation({
     mutationFn: (rows: any[]) => api.post('/expenses/bulk-import', { rows }).then((r) => r.data.data),
@@ -102,14 +125,19 @@ export default function ExpensesPage() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const text = ev.target?.result as string;
-      const rows = parseCSV(text).map((r) => ({
-        fecha: r.fecha, descripcion: r.descripcion, proveedor: r.proveedor || undefined,
-        categoria: r.categoria, monto: parseFloat(r.monto), metodo_pago: r.metodo_pago || 'CASH',
-        proyecto: r.proyecto, notas: r.notas || undefined,
+      const rows = parseCSV(text).map((r, i): EditRow => ({
+        _id:         String(i),
+        fecha:       r.fecha        || '',
+        descripcion: r.descripcion  || '',
+        proveedor:   r.proveedor    || '',
+        categoria:   r.categoria    || '',
+        monto:       r.monto        || '',
+        metodo_pago: r.metodo_pago  || 'TRANSFER',
+        proyecto:    r.proyecto     || '',
+        notas:       r.notas        || '',
       }));
-      setImportRows(rows); setImportResult(null); setImportModal(true);
+      setEditRows(rows); setImportResult(null); setImportModal(true);
     };
-    // Try UTF-8; Excel often saves as windows-1252 for Spanish chars (handled via NFC on backend)
     reader.readAsText(file, 'windows-1252');
     e.target.value = '';
   }
@@ -769,178 +797,220 @@ export default function ExpensesPage() {
       )}
 
 
-      {/* MODAL IMPORTACIÓN CSV */}
-      {importModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-            {/* Modal header */}
-            <div
-              className="flex items-center justify-between px-5 py-4"
-              style={{ background: '#1C1C1C' }}
-            >
-              <div>
-                <h2
-                  className="text-lg uppercase tracking-widest text-white"
-                  style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
-                >
-                  Importar gastos desde CSV
-                </h2>
-                <p
-                  className="text-xs mt-0.5"
-                  style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
-                >
-                  {importRows.length} registros detectados
-                </p>
-              </div>
-              <button
-                onClick={() => { setImportModal(false); setImportResult(null); }}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* MODAL PRE-IMPORTACIÓN EDITABLE */}
+      {importModal && (() => {
+        const invalidCount = editRows.filter((r) => !isRowValid(r)).length;
+        const canConfirm   = editRows.length > 0 && invalidCount === 0;
+        const iCls = 'w-full border border-gray-200 px-1.5 py-1 text-xs focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]';
+        return (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-2">
+            <div className="bg-white shadow-2xl w-full max-w-[96vw] max-h-[96vh] flex flex-col">
 
-            {importResult && (
-              <div
-                className={`mx-5 mt-4 p-3 text-sm flex items-center gap-2 ${
-                  importResult.err === 0 ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-                }`}
-                style={{ fontFamily: 'DM Sans, sans-serif' }}
-              >
-                {importResult.err === 0
-                  ? <><CheckCircle className="w-4 h-4 shrink-0" /> {importResult.ok} gastos importados correctamente.</>
-                  : <><AlertCircle className="w-4 h-4 shrink-0" /> {importResult.ok} importados, {importResult.err} con error.</>
-                }
-              </div>
-            )}
-
-            {importResult && importResult.err > 0 && (
-              <div className="mx-5 mt-2 max-h-40 overflow-y-auto border border-red-200 bg-red-50 text-xs p-2" style={{ fontFamily: 'Space Mono, monospace' }}>
-                {importResult.results.filter((r: any) => r.status === 'error').slice(0, 20).map((r: any) => (
-                  <div key={r.index} className="text-red-700 py-0.5">Fila {r.index + 2}: {r.error}</div>
-                ))}
-                {importResult.results.filter((r: any) => r.status === 'error').length > 20 && (
-                  <div className="text-red-400 pt-1">...y {importResult.results.filter((r: any) => r.status === 'error').length - 20} más</div>
-                )}
-              </div>
-
-            {!importResult && (
-              <div className="overflow-auto flex-1 px-5 py-4">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr style={{ background: '#1C1C1C' }}>
-                      <th
-                        className="text-left px-3 py-2 font-semibold"
-                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
-                      >
-                        FECHA
-                      </th>
-                      <th
-                        className="text-left px-3 py-2 font-semibold"
-                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
-                      >
-                        PROVEEDOR
-                      </th>
-                      <th
-                        className="text-left px-3 py-2 font-semibold"
-                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
-                      >
-                        DESCRIPCIÓN
-                      </th>
-                      <th
-                        className="text-left px-3 py-2 font-semibold"
-                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
-                      >
-                        CATEGORÍA
-                      </th>
-                      <th
-                        className="text-right px-3 py-2 font-semibold"
-                        style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d1d5db', letterSpacing: '0.05em' }}
-                      >
-                        MONTO
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {importRows.slice(0, 20).map((r, i) => (
-                      <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
-                        <td
-                          className="px-3 py-1.5 text-gray-700"
-                          style={{ fontFamily: 'Space Mono, monospace' }}
-                        >
-                          {r.fecha}
-                        </td>
-                        <td
-                          className="px-3 py-1.5 text-gray-700 max-w-[120px] truncate"
-                          style={{ fontFamily: 'DM Sans, sans-serif' }}
-                        >
-                          {r.proveedor}
-                        </td>
-                        <td
-                          className="px-3 py-1.5 text-gray-700 max-w-[160px] truncate"
-                          style={{ fontFamily: 'DM Sans, sans-serif' }}
-                        >
-                          {r.descripcion}
-                        </td>
-                        <td className="px-3 py-1.5">
-                          <span
-                            className="px-1.5 py-0.5 text-xs font-medium"
-                            style={{ background: '#eff6ff', color: '#1d4ed8', fontFamily: 'DM Sans, sans-serif' }}
-                          >
-                            {r.categoria}
-                          </span>
-                        </td>
-                        <td
-                          className="px-3 py-1.5 text-right font-bold"
-                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
-                        >
-                          {new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(r.monto)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {importRows.length > 20 && (
-                  <p
-                    className="text-xs text-gray-400 text-center mt-3"
-                    style={{ fontFamily: 'DM Sans, sans-serif' }}
-                  >
-                    Mostrando 20 de {importRows.length} — todos serán importados
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ background: '#1C1C1C' }}>
+                <div>
+                  <h2 className="text-lg uppercase tracking-widest text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    Validar gastos antes de importar
+                  </h2>
+                  <p className="text-xs mt-0.5" style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}>
+                    {editRows.length} filas · edita o elimina antes de confirmar
+                    {invalidCount > 0 && <span className="text-red-400 ml-2">— {invalidCount} con errores</span>}
                   </p>
-                )}
-              </div>
-            )}
-
-            <div className="p-5 border-t border-gray-100 flex justify-between items-center">
-              <p
-                className="text-xs text-gray-400"
-                style={{ fontFamily: 'DM Sans, sans-serif' }}
-              >
-                Las categorías nuevas se crean automáticamente
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => { setImportModal(false); setImportResult(null); }}
-                  className="border border-gray-300 px-4 py-2 text-sm transition-colors hover:border-gray-400"
-                  style={{ fontFamily: 'DM Sans, sans-serif', color: '#374151' }}
-                >
-                  {importResult ? 'Cerrar' : 'Cancelar'}
+                </div>
+                <button onClick={() => { setImportModal(false); setImportResult(null); }} className="text-gray-400 hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
                 </button>
-                {!importResult && (
+              </div>
+
+              {/* Result after import */}
+              {importResult && (
+                <div className="shrink-0">
+                  <div className={`mx-5 mt-4 p-3 text-sm flex items-start gap-2 ${importResult.err === 0 ? 'bg-[#1C1C1C] border border-[#F5C218]/40 text-[#F5C218]' : 'bg-amber-50 text-amber-700'}`} style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                    {importResult.err === 0
+                      ? <><CheckCircle className="w-4 h-4 shrink-0 mt-0.5" /> {importResult.ok} gastos importados correctamente.</>
+                      : <><AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> {importResult.ok} importados, {importResult.err} con error.</>
+                    }
+                  </div>
+                  {importResult.err > 0 && (
+                    <div className="mx-5 mt-2 max-h-32 overflow-y-auto border border-red-200 bg-red-50 text-xs p-2" style={{ fontFamily: 'Space Mono, monospace' }}>
+                      {importResult.results.filter((r: any) => r.status === 'error').slice(0, 15).map((r: any) => (
+                        <div key={r.index} className="text-red-700 py-0.5">Fila {r.index + 2}: {r.error}</div>
+                      ))}
+                      {importResult.results.filter((r: any) => r.status === 'error').length > 15 && (
+                        <div className="text-red-400 pt-1">...y {importResult.results.filter((r: any) => r.status === 'error').length - 15} más</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Validation legend */}
+              {!importResult && invalidCount > 0 && (
+                <div className="shrink-0 mx-5 mt-3 flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-200 px-3 py-2" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  Las filas en rojo tienen fecha, proyecto o monto inválido. Corrígelas o elimínalas para poder importar.
+                </div>
+              )}
+
+              {/* Editable table */}
+              {!importResult && (
+                <div className="overflow-auto flex-1 mt-3 px-5">
+                  <table className="w-full text-xs border-collapse" style={{ minWidth: '900px' }}>
+                    <thead className="sticky top-0 z-10">
+                      <tr style={{ background: '#1C1C1C' }}>
+                        {['FECHA', 'DESCRIPCIÓN', 'PROVEEDOR', 'CATEGORÍA', 'MONTO (RD$)', 'MÉTODO', 'PROYECTO', 'NOTAS', ''].map((h) => (
+                          <th key={h} className="text-left px-2 py-2 font-semibold whitespace-nowrap" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#9ca3af', letterSpacing: '0.08em', fontSize: '10px' }}>
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {editRows.map((r) => {
+                        const valid = isRowValid(r);
+                        return (
+                          <tr key={r._id} className={`border-b border-gray-100 ${valid ? 'bg-white hover:bg-gray-50' : 'bg-red-50'}`}>
+                            <td className="px-1 py-1 w-28">
+                              <input
+                                type="date"
+                                value={r.fecha}
+                                onChange={(e) => updateEditRow(r._id, 'fecha', e.target.value)}
+                                className={iCls + (r.fecha ? '' : ' border-red-400')}
+                                style={{ fontFamily: 'Space Mono, monospace', fontSize: '11px' }}
+                              />
+                            </td>
+                            <td className="px-1 py-1 min-w-[160px]">
+                              <input
+                                type="text"
+                                value={r.descripcion}
+                                onChange={(e) => updateEditRow(r._id, 'descripcion', e.target.value)}
+                                className={iCls}
+                                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                              />
+                            </td>
+                            <td className="px-1 py-1 min-w-[110px]">
+                              <input
+                                type="text"
+                                value={r.proveedor}
+                                onChange={(e) => updateEditRow(r._id, 'proveedor', e.target.value)}
+                                className={iCls}
+                                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                              />
+                            </td>
+                            <td className="px-1 py-1 min-w-[110px]">
+                              <input
+                                type="text"
+                                value={r.categoria}
+                                onChange={(e) => updateEditRow(r._id, 'categoria', e.target.value)}
+                                className={iCls}
+                                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                              />
+                            </td>
+                            <td className="px-1 py-1 w-28">
+                              <input
+                                type="number"
+                                value={r.monto}
+                                onChange={(e) => updateEditRow(r._id, 'monto', e.target.value)}
+                                className={iCls + (parseFloat(r.monto) > 0 ? '' : ' border-red-400')}
+                                style={{ fontFamily: 'Space Mono, monospace', textAlign: 'right' }}
+                                min="0"
+                                step="0.01"
+                              />
+                            </td>
+                            <td className="px-1 py-1 w-24">
+                              <select
+                                value={r.metodo_pago}
+                                onChange={(e) => updateEditRow(r._id, 'metodo_pago', e.target.value)}
+                                className={iCls}
+                                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                              >
+                                <option value="TRANSFER">Transfer.</option>
+                                <option value="CASH">Efectivo</option>
+                                <option value="CARD">Tarjeta</option>
+                                <option value="CHECK">Cheque</option>
+                                <option value="OTHER">Otro</option>
+                              </select>
+                            </td>
+                            <td className="px-1 py-1 min-w-[130px]">
+                              <input
+                                type="text"
+                                value={r.proyecto}
+                                onChange={(e) => updateEditRow(r._id, 'proyecto', e.target.value)}
+                                className={iCls + (r.proyecto.trim() ? '' : ' border-red-400')}
+                                style={{ fontFamily: 'Space Mono, monospace', fontSize: '10px' }}
+                              />
+                            </td>
+                            <td className="px-1 py-1 min-w-[100px]">
+                              <input
+                                type="text"
+                                value={r.notas}
+                                onChange={(e) => updateEditRow(r._id, 'notas', e.target.value)}
+                                className={iCls}
+                                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                                placeholder="opcional"
+                              />
+                            </td>
+                            <td className="px-1 py-1 w-8 text-center">
+                              <button
+                                onClick={() => deleteEditRow(r._id)}
+                                className="text-gray-300 hover:text-red-500 transition-colors"
+                                title="Eliminar fila"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {editRows.length === 0 && (
+                    <div className="text-center py-8 text-gray-400 text-sm" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      No quedan filas. Cancela e importa un CSV con datos.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="p-4 border-t border-gray-100 flex justify-between items-center shrink-0">
+                <p className="text-xs text-gray-400" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  {!importResult && `${editRows.length} fila${editRows.length !== 1 ? 's' : ''} · Las categorías nuevas se crean automáticamente`}
+                </p>
+                <div className="flex gap-3">
                   <button
-                    onClick={() => importMut.mutate(importRows)}
-                    disabled={importMut.isPending}
-                    className="px-4 py-2 text-sm font-bold uppercase tracking-wide disabled:opacity-60 transition-opacity hover:opacity-90"
-                    style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif' }}
+                    onClick={() => { setImportModal(false); setImportResult(null); setEditRows([]); }}
+                    className="border border-gray-200 px-4 py-2 text-sm hover:border-gray-400 transition-colors"
+                    style={{ fontFamily: 'DM Sans, sans-serif', color: '#374151' }}
                   >
-                    {importMut.isPending ? 'Importando...' : `Importar ${importRows.length} gastos`}
+                    {importResult ? 'Cerrar' : 'Cancelar'}
                   </button>
-                )}
+                  {!importResult && (
+                    <button
+                      onClick={() => importMut.mutate(editRows.map((r) => ({
+                        fecha:       r.fecha,
+                        descripcion: r.descripcion,
+                        proveedor:   r.proveedor   || undefined,
+                        categoria:   r.categoria,
+                        monto:       parseFloat(r.monto),
+                        metodo_pago: r.metodo_pago,
+                        proyecto:    r.proyecto,
+                        notas:       r.notas       || undefined,
+                      })))}
+                      disabled={importMut.isPending || !canConfirm}
+                      title={!canConfirm ? 'Corrige o elimina las filas con errores primero' : ''}
+                      className="px-4 py-2 text-sm font-bold uppercase tracking-wide disabled:opacity-40 transition-opacity hover:opacity-90"
+                      style={{ background: canConfirm ? '#F5C218' : '#d1d5db', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif', cursor: canConfirm ? 'pointer' : 'not-allowed' }}
+                    >
+                      {importMut.isPending ? 'Importando...' : `Confirmar e importar ${editRows.length} gastos`}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
     </div>
 
