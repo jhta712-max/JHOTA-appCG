@@ -46,6 +46,11 @@ const SuppliersPage        = lazy(() => import('./pages/suppliers/SuppliersPage'
 const SupplierDetailPage   = lazy(() => import('./pages/suppliers/SupplierDetailPage'));
 const NotificationContactsPage = lazy(() => import('./pages/admin/NotificationContactsPage'));
 const ContratosAjustadosPage   = lazy(() => import('./pages/contratos-ajustados/ContratosAjustadosPage'));
+const AdminPayrollsPage        = lazy(() => import('./pages/admin-payroll/AdminPayrollsPage'));
+const AdminPayrollFormPage     = lazy(() => import('./pages/admin-payroll/AdminPayrollFormPage'));
+const AdminPayrollDetailPage   = lazy(() => import('./pages/admin-payroll/AdminPayrollDetailPage'));
+const AdminEmployeesPage       = lazy(() => import('./pages/admin-payroll/AdminEmployeesPage'));
+const AdminEmployeeDetailPage  = lazy(() => import('./pages/admin-payroll/AdminEmployeeDetailPage'));
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import DataDeletionPage  from './pages/DataDeletionPage';
 
@@ -147,6 +152,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
                 {/* Contratos Ajustados */}
                 <Route path="contratos-ajustados"  element={<ContratosAjustadosPage />} />
+
+                {/* Nómina Administrativa */}
+                <Route path="admin-payroll"                    element={<AdminPayrollsPage />} />
+                <Route path="admin-payroll/new"                element={<AdminPayrollFormPage />} />
+                <Route path="admin-payroll/employees"          element={<AdminEmployeesPage />} />
+                <Route path="admin-payroll/employees/:id"      element={<AdminEmployeeDetailPage />} />
+                <Route path="admin-payroll/:id"                element={<AdminPayrollDetailPage />} />
 
                 {/* Administración */}
                 <Route path="users"                       element={<UsersPage />} />

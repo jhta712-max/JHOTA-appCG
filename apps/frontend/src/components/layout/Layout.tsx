@@ -31,6 +31,8 @@ const navItems: NavItem[] = [
   { to: '/suppliers',           icon: Building2,       label: 'Suplidores',       group: 'operaciones', roles: ['admin', 'supervisor', 'operator', 'financiero', 'auxiliar'] },
   { to: '/quotations',          icon: FileText,        label: 'Cotizaciones',     group: 'operaciones', roles: ['admin', 'supervisor', 'operator', 'financiero', 'auxiliar'] },
   { to: '/contratos-ajustados', icon: FileCheck,       label: 'Contratos Ajust.', group: 'operaciones', roles: ['admin', 'supervisor', 'operator', 'auxiliar', 'financiero'] },
+  { to: '/admin-payroll/employees', icon: Users,    label: 'Empleados Adm.',  group: 'nomina-admin', roles: ['admin', 'supervisor', 'financiero'] },
+  { to: '/admin-payroll',           icon: FileText,  label: 'Nómina Admin.',   group: 'nomina-admin', roles: ['admin', 'supervisor', 'financiero'] },
   { to: '/reports',             icon: BarChart3,       label: 'Reportes',         group: 'reportes',    roles: ['admin', 'supervisor', 'financiero', 'auxiliar'] },
   { to: '/export',              icon: Download,        label: 'Exportar Excel',   group: 'reportes',    roles: ['admin', 'supervisor', 'financiero', 'auxiliar'] },
   { to: '/users',               icon: Users,           label: 'Usuarios',         group: 'admin',       roles: ['admin'] },
@@ -41,10 +43,11 @@ const navItems: NavItem[] = [
 ];
 
 const GROUP_LABELS: Record<string, string> = {
-  principal:   '',
-  operaciones: 'Operaciones',
-  reportes:    'Reportes',
-  admin:       'Administración',
+  principal:    '',
+  operaciones:  'Operaciones',
+  'nomina-admin': 'Nómina Administrativa',
+  reportes:     'Reportes',
+  admin:        'Administración',
 };
 
 const ROLE_OPTIONS = [
