@@ -46,6 +46,7 @@ const SuppliersPage        = lazy(() => import('./pages/suppliers/SuppliersPage'
 const SupplierDetailPage   = lazy(() => import('./pages/suppliers/SupplierDetailPage'));
 const NotificationContactsPage = lazy(() => import('./pages/admin/NotificationContactsPage'));
 const ContratosAjustadosPage   = lazy(() => import('./pages/contratos-ajustados/ContratosAjustadosPage'));
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 
 function PageLoader() {
   return (
@@ -96,6 +97,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <AuthHydrator>
             <Suspense fallback={<PageLoader />}>
             <Routes>
+              <Route path="/politica-privacidad"  element={<PrivacyPolicyPage />} />
               <Route path="/login"                element={<LoginPage />} />
               <Route path="/setup"                element={<SetupPage />} />
               <Route path="/forgot-password"      element={<ForgotPasswordPage />} />
