@@ -47,6 +47,7 @@ const SupplierDetailPage   = lazy(() => import('./pages/suppliers/SupplierDetail
 const NotificationContactsPage = lazy(() => import('./pages/admin/NotificationContactsPage'));
 const ContratosAjustadosPage   = lazy(() => import('./pages/contratos-ajustados/ContratosAjustadosPage'));
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import DataDeletionPage  from './pages/DataDeletionPage';
 
 function PageLoader() {
   return (
@@ -98,6 +99,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/politica-privacidad"  element={<PrivacyPolicyPage />} />
+              <Route path="/eliminacion-datos"    element={<DataDeletionPage />} />
               <Route path="/login"                element={<LoginPage />} />
               <Route path="/setup"                element={<SetupPage />} />
               <Route path="/forgot-password"      element={<ForgotPasswordPage />} />
