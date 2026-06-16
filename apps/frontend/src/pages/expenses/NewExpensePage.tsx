@@ -105,6 +105,14 @@ export default function NewExpensePage() {
   });
   const selectedProjectBatchesEnabled = projects?.find((p) => p.id === watchedProjectId)?.batchesEnabled ?? false;
 
+  // Budget info for admin only — fetch on project selection
+  const { data: projectBudget } = useQuery({
+    queryKey: ['project-budget', watchedProjectId],
+    queryFn:  () => projectsApi.summary(watchedProjectId).then(r => r.data.data),
+    enabled:  isAdmin && !!watchedProjectId,
+    staleTime: 30_000,
+  });
+
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn:  () => categoriesApi.list(),
@@ -650,6 +658,33 @@ export default function NewExpensePage() {
                 {errors.amount && (
                   <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.amount.message}</p>
                 )}
+                {isAdmin && projectBudget && (() => {
+                  const enteredAmt = parseFloat(String(watch('amount'))) || 0;
+                  const remaining  = projectBudget.summary.budgetRemaining;
+                  const afterThis  = remaining - enteredAmt;
+                  const totalBudget = projectBudget.project.totalBudget;
+                  if (totalBudget <= 0) return null;
+                  const overBudget = afterThis < 0;
+                  return (
+                    <div className={`mt-1 px-2 py-1.5 border-l-2 ${overBudget ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'}`}>
+                      <div className="flex justify-between items-center">
+                        <span className="font-['DM_Sans'] text-xs text-gray-500">Disponible en proyecto</span>
+                        <span className={`font-['Space_Mono'] text-xs font-bold ${overBudget ? 'text-red-600' : 'text-gray-700'}`}>
+                          RD$ {remaining.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      {enteredAmt > 0 && (
+                        <div className="flex justify-between items-center mt-0.5">
+                          <span className="font-['DM_Sans'] text-xs text-gray-500">Después de este gasto</span>
+                          <span className={`font-['Space_Mono'] text-xs font-bold ${overBudget ? 'text-red-600' : 'text-green-700'}`}>
+                            {overBudget ? '−' : ''}RD$ {Math.abs(afterThis).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                            {overBudget && <span className="font-['DM_Sans'] font-normal ml-1">(sobregiro)</span>}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </AiField>
             </div>
 
