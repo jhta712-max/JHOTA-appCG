@@ -197,8 +197,8 @@ export default function NewExpensePage() {
     if (data.batchItemId) payload.batchItemId = data.batchItemId;
     if (useCreditLine && creditLineId) payload.creditLineId = creditLineId;
 
-    // Check for potential duplicates before submitting (admin only)
-    if (isAdmin) try {
+    // Check for potential duplicates before submitting
+    try {
       const res = await expensesApi.checkDuplicate({
         projectId: data.projectId,
         amount: payload.amount,

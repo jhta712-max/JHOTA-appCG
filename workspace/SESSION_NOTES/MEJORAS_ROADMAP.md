@@ -1,5 +1,5 @@
 # ServingMI — Roadmap de Mejoras
-_Creado: 2026-06-16_
+_Creado: 2026-06-16 / Última actualización: 2026-06-16_
 
 ---
 
@@ -9,13 +9,10 @@ _Creado: 2026-06-16_
 Warning inline cuando la fecha del gasto tiene ≥7 días (amarillo) o ≥30 días (rojo).
 Archivos: `NewExpensePage.tsx`, `EditExpensePage.tsx`
 
-### 2. 🔲 Dashboard de alertas accionables
-Panel "cosas que necesitan atención hoy" en el dashboard principal:
-- Órdenes de pago pendientes de aprobación
-- Proyectos con presupuesto al límite (>85% ejecutado)
-- Cotizaciones próximas a vencer (≤7 días)
-- Líneas de crédito casi agotadas (>80% consumido)
-- Implementación: widget en `DashboardPage.tsx` + endpoint `GET /api/v1/dashboard/alerts`
+### 2. ✅ Dashboard de alertas accionables — COMPLETADO (2026-06-16)
+Panel "ATENCIÓN REQUERIDA" en dashboard con: órdenes pendientes, proyectos >85% presupuesto,
+cotizaciones venciendo en ≤7 días, líneas de crédito >80%, suscripciones ≤30 días.
+Archivos: `modules/dashboard/dashboard.service.ts`, `modules/dashboard/dashboard.router.ts`, `DashboardPage.tsx`
 
 ### 3. 🔲 Aprobación de gastos en dos pasos
 Flujo opcional por proyecto: `PENDING → APPROVED` que supervisor/admin debe activar.
@@ -55,15 +52,15 @@ Aplica a: `ExpensesPage`, `PaymentOrdersPage`.
 
 ## 🟢 CALIDAD DE DATOS
 
-### 9. 🔲 Detección de gastos duplicados
-Al guardar gasto: verificar mismo proveedor + monto + fecha ±3 días → warning (no bloquea).
-Backend: `GET /expenses/check-duplicate?supplierId=&amount=&date=`
-Frontend: llamar en `onSubmit` antes de confirmar.
+### 9. ✅ Detección de gastos duplicados — COMPLETADO (2026-06-16)
+Todos los roles: al guardar, verifica monto ±0.1% y fecha ±3 días en el mismo proyecto.
+Modal de confirmación lista duplicados con descripción, monto, fecha, categoría y autor.
+Backend: `GET /expenses/check-duplicate`, Frontend: `NewExpensePage.tsx`
 
-### 10. 🔲 Validación de presupuesto en tiempo real
-Al ingresar monto en formulario de gasto, mostrar inline:
-"Presupuesto disponible: RD$ X — quedaría RD$ Y después de este gasto."
-Frontend only: usar query `projectBalance` que ya existe.
+### 10. ✅ Validación de presupuesto en tiempo real — COMPLETADO (2026-06-16)
+Solo admin: al seleccionar proyecto y escribir monto, muestra inline "disponible" y "después
+de este gasto" (verde normal / rojo sobregiro). Usa `GET /projects/:id/summary`.
+Archivos: `NewExpensePage.tsx`
 
 ### 11. 🔲 Estado de órdenes de pago más granular
 Agregar estados: `EN_PROCESO` (transferencia iniciada), `RECHAZADA` (banco rechazó).
@@ -86,9 +83,9 @@ Semáforo: verde <70%, amarillo 70-90%, rojo >90%.
 
 ## Orden de ejecución sugerido
 1. ~~Fix fechas~~ ✅
-2. Dashboard de alertas accionables (#2)
-3. Detección duplicados (#9) — complementa fix de fechas
-4. Validación presupuesto en tiempo real (#10)
+2. ~~Dashboard de alertas accionables~~ ✅
+3. ~~Detección duplicados~~ ✅
+4. ~~Validación presupuesto en tiempo real~~ ✅
 5. Aprobación de gastos en dos pasos (#3)
 6. Historial de cambios (#4)
 7. Estado órdenes más granular (#11)
