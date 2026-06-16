@@ -28,8 +28,8 @@ export const updatePaymentOrderSchema = createPaymentOrderSchema.partial();
 
 export const querySchema = z.object({
   page:       z.coerce.number().min(1).default(1),
-  limit:      z.coerce.number().min(1).max(100).default(20),
-  status:     z.enum(['PENDING', 'PAID']).optional(),
+  limit:      z.coerce.number().min(1).max(500).default(20),
+  status:     z.string().optional(), // single or comma-separated: PENDING,IN_PROCESS,REJECTED_BANK,PAID,VOIDED
   orderType:  z.enum(['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH']).optional(),
   projectId:    z.string().uuid().optional(),
   supplierId:   z.string().uuid().optional(),

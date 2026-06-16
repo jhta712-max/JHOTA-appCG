@@ -421,21 +421,33 @@ export async function bulkImportExpenses(rows: BulkExpenseRow[], userId: string)
       // Proyecto
       let projectId = projectCache.get(row.proyecto);
       if (!projectId) {
-        const proj = await prisma.project.findFirst({ where: { code: { equals: row.proyecto, mode: 'insensitive' } } });
+        // Try exact match first, then prefix match (e.g. "PROJ-2025-0009" → "PROJ-2025")
+        let proj = await prisma.project.findFirst({ where: { code: { equals: row.proyecto, mode: 'insensitive' } } });
+        if (!proj) {
+          proj = await prisma.project.findFirst({ where: { code: { startsWith: row.proyecto, mode: 'insensitive' } } });
+        }
+        if (!proj) {
+          // CSV may have extra trailing segment (e.g. "PROJ-2025-0009" when project is "PROJ-2025")
+          const withoutSuffix = row.proyecto.split('-').slice(0, -1).join('-');
+          if (withoutSuffix) {
+            proj = await prisma.project.findFirst({ where: { code: { equals: withoutSuffix, mode: 'insensitive' } } });
+          }
+        }
         if (!proj) throw new Error(`Proyecto '${row.proyecto}' no encontrado`);
         projectCache.set(row.proyecto, proj.id);
         projectId = proj.id;
       }
 
-      // Categoría (crea si no existe)
-      let categoryId = categoryCache.get(row.categoria);
+      // Categoría (normaliza encoding, crea si no existe)
+      const catName = (row.categoria ?? '').normalize('NFC').trim() || 'General';
+      let categoryId = categoryCache.get(catName);
       if (!categoryId) {
         const cat = await prisma.expenseCategory.upsert({
-          where:  { name: row.categoria },
+          where:  { name: catName },
           update: { isActive: true },
-          create: { name: row.categoria, isActive: true },
+          create: { name: catName, isActive: true },
         });
-        categoryCache.set(row.categoria, cat.id);
+        categoryCache.set(catName, cat.id);
         categoryId = cat.id;
       }
 
