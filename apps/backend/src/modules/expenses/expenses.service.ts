@@ -409,9 +409,39 @@ export interface BulkExpenseRow {
 export async function bulkImportExpenses(rows: BulkExpenseRow[], userId: string) {
   const results: { index: number; status: 'ok' | 'error'; error?: string }[] = [];
 
-  // Cache de proyectos y categorías para no hacer N queries
-  const projectCache  = new Map<string, string>();   // code → id
-  const categoryCache = new Map<string, number>();   // name → id
+  // Pre-load all projects for flexible matching (exact → CSV-starts-with-project-code → remove-suffix)
+  const allProjects = await prisma.project.findMany({ select: { id: true, code: true } });
+  const projectByCode = new Map(allProjects.map((p) => [p.code.toLowerCase(), p.id]));
+  const resolvedProjectCache = new Map<string, string>(); // raw CSV value → projectId
+  const categoryCache = new Map<string, number>(); // lowercase name → id
+
+  function resolveProject(csvCode: string): string {
+    const cached = resolvedProjectCache.get(csvCode);
+    if (cached) return cached;
+    const lower = csvCode.toLowerCase();
+    // 1. Exact match
+    if (projectByCode.has(lower)) {
+      resolvedProjectCache.set(csvCode, projectByCode.get(lower)!);
+      return projectByCode.get(lower)!;
+    }
+    // 2. CSV code starts with a known project code (project code is prefix of CSV value)
+    for (const [code, id] of projectByCode.entries()) {
+      if (lower.startsWith(code + '-') || lower === code) {
+        resolvedProjectCache.set(csvCode, id);
+        return id;
+      }
+    }
+    // 3. Remove trailing segment(s) and try again
+    const parts = csvCode.split('-');
+    for (let trim = 1; trim < parts.length; trim++) {
+      const candidate = parts.slice(0, -trim).join('-').toLowerCase();
+      if (projectByCode.has(candidate)) {
+        resolvedProjectCache.set(csvCode, projectByCode.get(candidate)!);
+        return projectByCode.get(candidate)!;
+      }
+    }
+    throw new Error(`Proyecto '${csvCode}' no encontrado. Proyectos disponibles: ${allProjects.map((p) => p.code).join(', ')}`);
+  }
 
   const VALID_METHODS = new Set(['CASH', 'TRANSFER', 'CARD', 'CHECK', 'OTHER']);
 
@@ -419,36 +449,24 @@ export async function bulkImportExpenses(rows: BulkExpenseRow[], userId: string)
     const row = rows[i];
     try {
       // Proyecto
-      let projectId = projectCache.get(row.proyecto);
-      if (!projectId) {
-        // Try exact match first, then prefix match (e.g. "PROJ-2025-0009" → "PROJ-2025")
-        let proj = await prisma.project.findFirst({ where: { code: { equals: row.proyecto, mode: 'insensitive' } } });
-        if (!proj) {
-          proj = await prisma.project.findFirst({ where: { code: { startsWith: row.proyecto, mode: 'insensitive' } } });
-        }
-        if (!proj) {
-          // CSV may have extra trailing segment (e.g. "PROJ-2025-0009" when project is "PROJ-2025")
-          const withoutSuffix = row.proyecto.split('-').slice(0, -1).join('-');
-          if (withoutSuffix) {
-            proj = await prisma.project.findFirst({ where: { code: { equals: withoutSuffix, mode: 'insensitive' } } });
-          }
-        }
-        if (!proj) throw new Error(`Proyecto '${row.proyecto}' no encontrado`);
-        projectCache.set(row.proyecto, proj.id);
-        projectId = proj.id;
-      }
+      const projectId = resolveProject(row.proyecto);
 
-      // Categoría (normaliza encoding, crea si no existe)
+      // Categoría: busca por nombre case-insensitive para evitar duplicados
       const catName = (row.categoria ?? '').normalize('NFC').trim() || 'General';
-      let categoryId = categoryCache.get(catName);
+      let categoryId = categoryCache.get(catName.toLowerCase());
       if (!categoryId) {
-        const cat = await prisma.expenseCategory.upsert({
-          where:  { name: catName },
-          update: { isActive: true },
-          create: { name: catName, isActive: true },
+        // Try case-insensitive match against existing categories
+        const existing = await prisma.expenseCategory.findFirst({
+          where: { name: { equals: catName, mode: 'insensitive' } },
         });
-        categoryCache.set(catName, cat.id);
-        categoryId = cat.id;
+        if (existing) {
+          categoryCache.set(catName.toLowerCase(), existing.id);
+          categoryId = existing.id;
+        } else {
+          const cat = await prisma.expenseCategory.create({ data: { name: catName, isActive: true } });
+          categoryCache.set(catName.toLowerCase(), cat.id);
+          categoryId = cat.id;
+        }
       }
 
       // Método de pago

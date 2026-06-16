@@ -109,7 +109,8 @@ export default function ExpensesPage() {
       }));
       setImportRows(rows); setImportResult(null); setImportModal(true);
     };
-    reader.readAsText(file, 'utf-8');
+    // Try UTF-8; Excel often saves as windows-1252 for Spanish chars (handled via NFC on backend)
+    reader.readAsText(file, 'windows-1252');
     e.target.value = '';
   }
 
@@ -812,6 +813,16 @@ export default function ExpensesPage() {
                 }
               </div>
             )}
+
+            {importResult && importResult.err > 0 && (
+              <div className="mx-5 mt-2 max-h-40 overflow-y-auto border border-red-200 bg-red-50 text-xs p-2" style={{ fontFamily: 'Space Mono, monospace' }}>
+                {importResult.results.filter((r: any) => r.status === 'error').slice(0, 20).map((r: any) => (
+                  <div key={r.index} className="text-red-700 py-0.5">Fila {r.index + 2}: {r.error}</div>
+                ))}
+                {importResult.results.filter((r: any) => r.status === 'error').length > 20 && (
+                  <div className="text-red-400 pt-1">...y {importResult.results.filter((r: any) => r.status === 'error').length - 20} más</div>
+                )}
+              </div>
 
             {!importResult && (
               <div className="overflow-auto flex-1 px-5 py-4">
