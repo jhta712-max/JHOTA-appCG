@@ -26,6 +26,19 @@ function downloadCsvTemplate() {
   URL.revokeObjectURL(url);
 }
 
+function normalizeFecha(raw: string): string {
+  const s = raw.trim();
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // M/D/YYYY or MM/DD/YYYY
+  const mdy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mdy) {
+    const [, m, d, y] = mdy;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  return s;
+}
+
 function parseCSV(text: string) {
   const lines = text.trim().split('\n');
   const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
@@ -33,6 +46,7 @@ function parseCSV(text: string) {
     const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) ?? line.split(',');
     const obj: Record<string, string> = {};
     headers.forEach((h, i) => { obj[h] = (vals[i] ?? '').trim().replace(/^"|"$/g, ''); });
+    if (obj.fecha) obj.fecha = normalizeFecha(obj.fecha);
     return obj;
   }).filter((r) => r.fecha && r.monto);
 }
