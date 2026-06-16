@@ -766,3 +766,130 @@ export const serviceSubscriptionsApi = {
   exportCsv: () =>
     api.get('/service-subscriptions/export/csv', { responseType: 'blob' }),
 };
+
+// ─── Nómina Administrativa ────────────────────────────────────
+
+export interface AdminEmployeeBenefit {
+  id:         string;
+  employeeId: string;
+  name:       string;
+  amount:     number;
+  affectsISR: boolean;
+  isActive:   boolean;
+  createdAt:  string;
+  updatedAt:  string;
+}
+
+export interface AdminEmployeeSalaryHistory {
+  id:           string;
+  employeeId:   string;
+  baseSalary:   number;
+  effectiveFrom: string;
+  createdAt:    string;
+}
+
+export interface AdminEmployee {
+  id:               string;
+  name:             string;
+  position:         string;
+  hireDate:         string;
+  paymentFrequency: 'MONTHLY' | 'BIWEEKLY';
+  baseSalary:       number;
+  status:           'ACTIVE' | 'SUSPENDED' | 'RETIRED';
+  bankName:         string | null;
+  bankAccount:      string | null;
+  notes:            string | null;
+  createdAt:        string;
+  updatedAt:        string;
+  createdBy?:       { id: string; name: string };
+  benefits?:        AdminEmployeeBenefit[];
+  salaryHistory?:   AdminEmployeeSalaryHistory[];
+}
+
+export interface AdminPayrollLine {
+  id:                  string;
+  payrollId:           string;
+  employeeId:          string;
+  lineNumber:          number;
+  baseSalary:          number;
+  benefitsTotal:       number;
+  benefitsSnapshot:    { name: string; amount: number; affectsISR: boolean }[];
+  taxableBase:         number;
+  afpEmployee:         number;
+  tssEmployee:         number;
+  isr:                 number;
+  otherDeductions:     number;
+  otherDeductionsNote: string | null;
+  grossAmount:         number;
+  netAmount:           number;
+  createdAt:           string;
+  updatedAt:           string;
+  employee?: { id: string; name: string; position: string; bankName: string | null; bankAccount: string | null };
+}
+
+export interface AdminPayroll {
+  id:              string;
+  number:          number;
+  periodType:      'MONTHLY' | 'BIWEEKLY_1' | 'BIWEEKLY_2';
+  periodStart:     string;
+  periodEnd:       string;
+  status:          'DRAFT' | 'APPROVED' | 'PAID' | 'VOIDED';
+  totalGross:      number;
+  totalDeductions: number;
+  totalNet:        number;
+  notes:           string | null;
+  paymentMethod:   string | null;
+  paymentDate:     string | null;
+  paymentBank:     string | null;
+  paymentReference: string | null;
+  paidAt:          string | null;
+  approvedAt:      string | null;
+  voidedAt:        string | null;
+  voidReason:      string | null;
+  createdAt:       string;
+  updatedAt:       string;
+  createdBy?:      { id: string; name: string };
+  approvedBy?:     { id: string; name: string } | null;
+  voidedBy?:       { id: string; name: string } | null;
+  lines?:          AdminPayrollLine[];
+  _count?:         { lines: number };
+}
+
+type AdminPaginated<T> = { success: boolean; data: T[]; pagination: { total: number; page: number; limit: number; totalPages: number; hasNextPage: boolean; hasPrevPage: boolean } };
+
+export const adminEmployeesApi = {
+  list:   (params?: Record<string, unknown>) =>
+    api.get<AdminPaginated<AdminEmployee>>('/admin-employees', { params }),
+  getById: (id: string) =>
+    api.get<{ success: boolean; data: AdminEmployee }>(`/admin-employees/${id}`),
+  create:  (data: unknown) =>
+    api.post<{ success: boolean; data: AdminEmployee }>('/admin-employees', data),
+  update:  (id: string, data: unknown) =>
+    api.put<{ success: boolean; data: AdminEmployee }>(`/admin-employees/${id}`, data),
+  delete:  (id: string) =>
+    api.delete(`/admin-employees/${id}`),
+  addBenefit:    (id: string, data: unknown) =>
+    api.post<{ success: boolean; data: AdminEmployeeBenefit }>(`/admin-employees/${id}/benefits`, data),
+  updateBenefit: (id: string, bId: string, data: unknown) =>
+    api.put<{ success: boolean; data: AdminEmployeeBenefit }>(`/admin-employees/${id}/benefits/${bId}`, data),
+  deleteBenefit: (id: string, bId: string) =>
+    api.delete(`/admin-employees/${id}/benefits/${bId}`),
+};
+
+export const adminPayrollsApi = {
+  list:   (params?: Record<string, unknown>) =>
+    api.get<AdminPaginated<AdminPayroll>>('/admin-payrolls', { params }),
+  getById: (id: string) =>
+    api.get<{ success: boolean; data: AdminPayroll }>(`/admin-payrolls/${id}`),
+  create:  (data: unknown) =>
+    api.post<{ success: boolean; data: AdminPayroll }>('/admin-payrolls', data),
+  updateLine: (id: string, lineId: string, data: unknown) =>
+    api.patch<{ success: boolean; data: AdminPayroll }>(`/admin-payrolls/${id}/lines/${lineId}`, data),
+  approve: (id: string) =>
+    api.post<{ success: boolean; data: AdminPayroll }>(`/admin-payrolls/${id}/approve`),
+  pay:     (id: string, data: unknown) =>
+    api.post<{ success: boolean; data: AdminPayroll }>(`/admin-payrolls/${id}/pay`, data),
+  void:    (id: string, voidReason: string) =>
+    api.post<{ success: boolean; data: AdminPayroll }>(`/admin-payrolls/${id}/void`, { voidReason }),
+  exportUrl: (id: string) => `/api/v1/admin-payrolls/${id}/export.xlsx`,
+};
