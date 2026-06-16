@@ -77,9 +77,11 @@ Archivos: `payment-orders.service.ts`, `payment-orders.router.ts`, `PaymentOrder
 Por proyecto: presupuesto estimado vs. gastado vs. comprometido (órdenes pendientes).
 Exportable a Excel. Endpoint: `GET /reports/variance?projectId=`
 
-### 13. 🔲 Dashboard ejecutivo multi-proyecto
-Vista portafolio para admin: tabla de todos los proyectos con semáforo presupuestal.
-Semáforo: verde <70%, amarillo 70-90%, rojo >90%.
+### 13. ✅ Dashboard ejecutivo multi-proyecto — COMPLETADO (2026-06-16)
+Tabla de portafolio en el dashboard (solo admin/supervisor). Backend: `GET /projects/portfolio`
+devuelve todos los proyectos no cancelados con ejecutado, comprometido, disponible y % en una sola query.
+Semáforo: verde <70%, amarillo 70–90%, naranja 90–100%, rojo >100%. Link a reporte de varianza.
+Archivos: `projects.service.ts`, `projects.router.ts`, `projects.controller.ts`, `DashboardPage.tsx`
 
 ---
 
