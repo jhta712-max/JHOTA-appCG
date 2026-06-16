@@ -45,7 +45,7 @@ const CATEGORY_NAME_MAP: Record<string, string> = {
 export default function NewExpensePage() {
   const navigate  = useNavigate();
   const location  = useLocation();
-  const { canCreateExpense } = useRole();
+  const { canCreateExpense, isAdmin } = useRole();
 
   useEffect(() => {
     if (!canCreateExpense) navigate('/dashboard', { replace: true });
@@ -189,8 +189,8 @@ export default function NewExpensePage() {
     if (data.batchItemId) payload.batchItemId = data.batchItemId;
     if (useCreditLine && creditLineId) payload.creditLineId = creditLineId;
 
-    // Check for potential duplicates before submitting
-    try {
+    // Check for potential duplicates before submitting (admin only)
+    if (isAdmin) try {
       const res = await expensesApi.checkDuplicate({
         projectId: data.projectId,
         amount: payload.amount,
@@ -205,7 +205,7 @@ export default function NewExpensePage() {
     } catch {
       // If check fails, proceed anyway
     }
-    mutation.mutate(payload);
+    mutation.mutate(payload);  // falls through if not admin or no duplicates
   };
 
   // ── Seleccionar foto ───────────────────────────────────────
