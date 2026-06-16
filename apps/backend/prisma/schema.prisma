@@ -83,6 +83,12 @@ model User {
   creditLinesCreated    SupplierCreditLine[]    @relation("CreditLineCreatedBy")
   creditPaymentsCreated SupplierCreditPayment[] @relation("CreditPaymentCreatedBy")
 
+  adminEmployeesCreated     AdministrativeEmployee[]              @relation("AdminEmployeeCreatedBy")
+  adminSalaryHistoryCreated AdministrativeEmployeeSalaryHistory[] @relation("AdminSalaryHistoryCreatedBy")
+  adminPayrollsCreated      AdministrativePayroll[]               @relation("AdminPayrollCreatedBy")
+  adminPayrollsApproved     AdministrativePayroll[]               @relation("AdminPayrollApprovedBy")
+  adminPayrollsVoided       AdministrativePayroll[]               @relation("AdminPayrollVoidedBy")
+
   deletedAt  DateTime? @map("deleted_at")
   @@index([email])
   @@index([roleId])
@@ -1280,4 +1286,159 @@ model ProjectExtraordinaryExpense {
 
   @@index([projectId])
   @@map("project_extraordinary_expenses")
+}
+
+// ─── Nómina Administrativa ────────────────────────────────────
+
+enum AdminPayrollStatus {
+  DRAFT
+  APPROVED
+  PAID
+  VOIDED
+  @@map("admin_payroll_status")
+}
+
+enum AdminPaymentFrequency {
+  MONTHLY
+  BIWEEKLY
+  @@map("admin_payment_frequency")
+}
+
+enum AdminPeriodType {
+  MONTHLY
+  BIWEEKLY_1
+  BIWEEKLY_2
+  @@map("admin_period_type")
+}
+
+enum AdminEmployeeStatus {
+  ACTIVE
+  SUSPENDED
+  RETIRED
+  @@map("admin_employee_status")
+}
+
+model AdministrativeEmployee {
+  id               String                @id @default(uuid()) @db.Uuid
+  name             String                @db.VarChar(200)
+  position         String                @db.VarChar(100)
+  hireDate         DateTime              @map("hire_date") @db.Date
+  paymentFrequency AdminPaymentFrequency @map("payment_frequency")
+  baseSalary       Decimal               @map("base_salary") @db.Decimal(15, 2)
+  status           AdminEmployeeStatus   @default(ACTIVE)
+  bankName         String?               @map("bank_name") @db.VarChar(100)
+  bankAccount      String?               @map("bank_account") @db.VarChar(50)
+  notes            String?               @db.Text
+  createdById      String                @map("created_by") @db.Uuid
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+  deletedAt        DateTime?             @map("deleted_at")
+
+  createdBy     User                                  @relation("AdminEmployeeCreatedBy", fields: [createdById], references: [id])
+  salaryHistory AdministrativeEmployeeSalaryHistory[]
+  benefits      AdministrativeEmployeeBenefit[]
+  payrollLines  AdministrativePayrollLine[]
+
+  @@index([status])
+  @@index([paymentFrequency])
+  @@map("administrative_employees")
+}
+
+model AdministrativeEmployeeSalaryHistory {
+  id            String   @id @default(uuid()) @db.Uuid
+  employeeId    String   @map("employee_id") @db.Uuid
+  baseSalary    Decimal  @map("base_salary") @db.Decimal(15, 2)
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  createdById   String   @map("created_by") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  employee  AdministrativeEmployee @relation(fields: [employeeId], references: [id])
+  createdBy User                   @relation("AdminSalaryHistoryCreatedBy", fields: [createdById], references: [id])
+
+  @@index([employeeId])
+  @@index([effectiveFrom])
+  @@map("administrative_employee_salary_history")
+}
+
+model AdministrativeEmployeeBenefit {
+  id         String   @id @default(uuid()) @db.Uuid
+  employeeId String   @map("employee_id") @db.Uuid
+  name       String   @db.VarChar(100)
+  amount     Decimal  @db.Decimal(15, 2)
+  affectsISR Boolean  @default(true) @map("affects_isr")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  employee AdministrativeEmployee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([isActive])
+  @@map("administrative_employee_benefits")
+}
+
+model AdministrativePayroll {
+  id               String             @id @default(uuid()) @db.Uuid
+  number           Int
+  periodType       AdminPeriodType    @map("period_type")
+  periodStart      DateTime           @map("period_start") @db.Date
+  periodEnd        DateTime           @map("period_end") @db.Date
+  status           AdminPayrollStatus @default(DRAFT)
+  totalGross       Decimal            @default(0) @map("total_gross") @db.Decimal(15, 2)
+  totalDeductions  Decimal            @default(0) @map("total_deductions") @db.Decimal(15, 2)
+  totalNet         Decimal            @default(0) @map("total_net") @db.Decimal(15, 2)
+  notes            String?            @db.Text
+  paymentMethod    String?            @map("payment_method") @db.VarChar(20)
+  paymentDate      DateTime?          @map("payment_date") @db.Date
+  paymentBank      String?            @map("payment_bank") @db.VarChar(100)
+  paymentReference String?            @map("payment_reference") @db.VarChar(100)
+  createdById      String             @map("created_by") @db.Uuid
+  approvedById     String?            @map("approved_by") @db.Uuid
+  approvedAt       DateTime?          @map("approved_at")
+  paidAt           DateTime?          @map("paid_at")
+  voidedById       String?            @map("voided_by") @db.Uuid
+  voidedAt         DateTime?          @map("voided_at")
+  voidReason       String?            @map("void_reason") @db.Text
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  createdBy  User                        @relation("AdminPayrollCreatedBy", fields: [createdById], references: [id])
+  approvedBy User?                       @relation("AdminPayrollApprovedBy", fields: [approvedById], references: [id])
+  voidedBy   User?                       @relation("AdminPayrollVoidedBy", fields: [voidedById], references: [id])
+  lines      AdministrativePayrollLine[]
+
+  @@unique([number])
+  @@index([status])
+  @@index([periodType])
+  @@index([periodStart])
+  @@map("administrative_payrolls")
+}
+
+model AdministrativePayrollLine {
+  id                  String   @id @default(uuid()) @db.Uuid
+  payrollId           String   @map("payroll_id") @db.Uuid
+  employeeId          String   @map("employee_id") @db.Uuid
+  lineNumber          Int      @map("line_number")
+  baseSalary          Decimal  @map("base_salary") @db.Decimal(15, 2)
+  benefitsTotal       Decimal  @default(0) @map("benefits_total") @db.Decimal(15, 2)
+  benefitsSnapshot    Json     @default("[]") @map("benefits_snapshot")
+  taxableBase         Decimal  @map("taxable_base") @db.Decimal(15, 2)
+  afpEmployee         Decimal  @map("afp_employee") @db.Decimal(15, 2)
+  tssEmployee         Decimal  @map("tss_employee") @db.Decimal(15, 2)
+  isr                 Decimal  @default(0) @db.Decimal(15, 2)
+  otherDeductions     Decimal  @default(0) @map("other_deductions") @db.Decimal(15, 2)
+  otherDeductionsNote String?  @map("other_deductions_note") @db.VarChar(300)
+  grossAmount         Decimal  @map("gross_amount") @db.Decimal(15, 2)
+  netAmount           Decimal  @map("net_amount") @db.Decimal(15, 2)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  payroll  AdministrativePayroll  @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+  employee AdministrativeEmployee @relation(fields: [employeeId], references: [id])
+
+  @@unique([payrollId, employeeId])
+  @@unique([payrollId, lineNumber])
+  @@index([payrollId])
+  @@index([employeeId])
+  @@map("administrative_payroll_lines")
 }
