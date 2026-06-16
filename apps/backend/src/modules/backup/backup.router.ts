@@ -31,6 +31,8 @@ async function generateBackup() {
     notifications, notificationContacts,
     whatsappConversations, whatsappMessages,
     extraordinaryExpenses,
+    adminEmployees, adminEmployeeSalaryHistory, adminEmployeeBenefits,
+    adminPayrolls, adminPayrollLines,
   ] = await Promise.all([
     safe(() => prisma.role.findMany()),
     safe(() => prisma.user.findMany({ select: { id:true, name:true, email:true, roleId:true, isActive:true, phone:true, whatsappOptIn:true, notifTypes:true, createdAt:true } })),
@@ -71,6 +73,11 @@ async function generateBackup() {
     safe(() => prisma.whatsAppConversation.findMany()),
     safe(() => prisma.whatsAppMessage.findMany({ take: 1000, orderBy: { createdAt: 'desc' } })),
     safe(() => prisma.projectExtraordinaryExpense.findMany()),
+    safe(() => prisma.administrativeEmployee.findMany()),
+    safe(() => prisma.administrativeEmployeeSalaryHistory.findMany()),
+    safe(() => prisma.administrativeEmployeeBenefit.findMany()),
+    safe(() => prisma.administrativePayroll.findMany()),
+    safe(() => prisma.administrativePayrollLine.findMany()),
   ]);
 
   const tables = {
@@ -88,6 +95,8 @@ async function generateBackup() {
     notifications, notificationContacts,
     whatsappConversations, whatsappMessages,
     extraordinaryExpenses,
+    adminEmployees, adminEmployeeSalaryHistory, adminEmployeeBenefits,
+    adminPayrolls, adminPayrollLines,
   };
 
   const counts: Record<string, number> = {};
