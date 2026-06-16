@@ -44,9 +44,11 @@ campos (orderType, empresa, suplidor, proyecto, monto, moneda, concepto, notas).
 batchItemId y creditLineId para que el usuario parta limpio.
 Archivos: `PaymentOrdersPage.tsx`
 
-### 8. 🔲 Filtros guardados / vistas personalizadas
-Guardar combinación de filtros con nombre. Persistir en `localStorage` o en BD.
-Aplica a: `ExpensesPage`, `PaymentOrdersPage`.
+### 8. ✅ Filtros guardados / vistas personalizadas — COMPLETADO (2026-06-16)
+Hook `useSavedFilters(namespace)` + componente `SavedFiltersBar`. Persiste en `localStorage`.
+Chips amarillos para aplicar vista guardada, ✕ para eliminar, "Guardar vista" para crear nueva.
+Integrado en `ExpensesPage` (todos los filtros) y `PaymentOrdersPage` (status, tipo, creado por).
+Archivos: `hooks/useSavedFilters.ts`, `components/ui/SavedFiltersBar.tsx`
 
 ---
 
