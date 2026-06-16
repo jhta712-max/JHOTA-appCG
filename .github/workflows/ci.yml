@@ -27,6 +27,9 @@ jobs:
         run: pnpm --filter backend db:generate
 
       - name: Tests backend
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci_db
+          JWT_SECRET: ci-secret-key-for-testing-purposes-only-32chars
         run: pnpm --filter backend test
 
       - name: Build backend (typecheck)
