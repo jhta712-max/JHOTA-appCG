@@ -4,6 +4,7 @@ import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
 import { createNotification } from '../notifications/notifications.service';
+import { logAudit } from '../../services/audit.service';
 import { env } from '../../config/env';
 import { resolveBatchItemId, BATCH_ITEM_SELECT } from '../../utils/batchItems';
 import type { CreateExpenseInput, UpdateExpenseInput, VoidExpenseInput, ExpenseQuery } from './expenses.schema';
@@ -182,6 +183,9 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
     }
   }
 
+  logAudit({ tableName: 'expenses', recordId: expense.id, action: 'INSERT', userId,
+    newData: { amount: expense.amount, description: expense.description, expenseDate: expense.expenseDate, status: expense.status } });
+
   return expense;
 }
 
@@ -263,7 +267,7 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
     ? { status: 'PENDING_APPROVAL' as const, rejectionReason: null, rejectedById: null, rejectedAt: null }
     : {};
 
-  return prisma.expense.update({
+  const updated = await prisma.expense.update({
     where: { id },
     data: {
       ...expenseData,
@@ -274,6 +278,10 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
     },
     include: EXPENSE_INCLUDE,
   });
+  logAudit({ tableName: 'expenses', recordId: id, action: 'UPDATE', userId,
+    oldData: { amount: expense.amount, description: expense.description, expenseDate: expense.expenseDate, status: expense.status },
+    newData: { amount: updated.amount, description: updated.description, expenseDate: updated.expenseDate, status: updated.status } });
+  return updated;
 }
 
 // ---------------------------------------------------------------
@@ -298,6 +306,8 @@ export async function approveExpense(id: string, approverId: string) {
     link:     `/expenses/${id}`,
     entityId: id,
   });
+  logAudit({ tableName: 'expenses', recordId: id, action: 'UPDATE', userId: approverId,
+    oldData: { status: 'PENDING_APPROVAL' }, newData: { status: 'ACTIVE', approvedById: approverId } });
   return updated;
 }
 
@@ -344,6 +354,8 @@ export async function rejectExpense(id: string, rejectorId: string, reason: stri
     link:     `/expenses/${id}`,
     entityId: id,
   });
+  logAudit({ tableName: 'expenses', recordId: id, action: 'UPDATE', userId: rejectorId,
+    oldData: { status: 'PENDING_APPROVAL' }, newData: { status: 'REJECTED', rejectionReason: reason } });
   return updated;
 }
 
@@ -355,7 +367,7 @@ export async function voidExpense(id: string, data: VoidExpenseInput, userId: st
   if (expense.status === 'VOIDED') {
     throw new AppError(400, 'El gasto ya está anulado', 'ALREADY_VOIDED');
   }
-  return prisma.expense.update({
+  const voided = await prisma.expense.update({
     where: { id },
     data: {
       status:     'VOIDED',
@@ -365,6 +377,9 @@ export async function voidExpense(id: string, data: VoidExpenseInput, userId: st
     },
     include: EXPENSE_INCLUDE,
   });
+  logAudit({ tableName: 'expenses', recordId: id, action: 'UPDATE', userId,
+    oldData: { status: expense.status }, newData: { status: 'VOIDED', voidReason: data.reason } });
+  return voided;
 }
 
 // ── Borrado permanente (solo admin) ───────────────────────────

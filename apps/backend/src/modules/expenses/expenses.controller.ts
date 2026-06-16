@@ -130,3 +130,15 @@ export async function suggestCategory(req: Request, res: Response, next: NextFun
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }
+
+export async function getHistory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const logs = await prisma.auditLog.findMany({
+      where: { tableName: 'expenses', recordId: req.params.id },
+      include: { user: { select: { id: true, name: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    res.json({ success: true, data: logs });
+  } catch (err) { next(err); }
+}

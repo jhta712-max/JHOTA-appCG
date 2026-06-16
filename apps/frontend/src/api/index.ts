@@ -100,6 +100,8 @@ export const expensesApi = {
     api.post<{ success: boolean; data: { categoryName: string | null; confidence: 'high' | 'medium' | 'low' } }>('/expenses/suggest-category', { description }),
   checkDuplicate: (params: { projectId: string; amount: number; expenseDate: string }) =>
     api.get<{ success: boolean; data: { duplicates: { id: string; description: string; amount: string; expenseDate: string; registeredBy: { name: string }; category: { name: string } }[] } }>('/expenses/check-duplicate', { params }),
+  getHistory: (id: string) =>
+    api.get<{ success: boolean; data: Array<{ id: number; action: string; oldData: any; newData: any; createdAt: string; user: { id: string; name: string } | null }> }>(`/expenses/${id}/history`),
 };
 
 // ── Categorías ────────────────────────────────────────────────

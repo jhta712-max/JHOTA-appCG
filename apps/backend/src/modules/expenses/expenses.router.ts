@@ -17,6 +17,7 @@ router.get('/check-duplicate',   ctrl.checkDuplicate);
 router.post('/suggest-category', ctrl.suggestCategory);
 router.get('/',              validate(expenseQuerySchema, 'query'), ctrl.list);
 router.post('/bulk-import',  authorize('admin'), ctrl.bulkImport);
+router.get('/:id/history',   ctrl.getHistory);
 router.get('/:id',           ctrl.getOne);
 router.post('/',             validate(createExpenseSchema), ctrl.create);
 router.put('/:id',           validate(updateExpenseSchema), ctrl.update);

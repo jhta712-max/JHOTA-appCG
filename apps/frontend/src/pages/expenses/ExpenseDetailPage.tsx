@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -28,6 +28,7 @@ export default function ExpenseDetailPage() {
   const [showVoid,       setShowVoid]       = useState(false);
   const [voidReason,     setVoidReason]     = useState('');
   const [voidError,      setVoidError]      = useState('');
+  const [showHistory,    setShowHistory]    = useState(false);
   const [showReject,     setShowReject]     = useState(false);
   const [rejectReason,   setRejectReason]   = useState('');
   const [rejectError,    setRejectError]    = useState('');
@@ -39,6 +40,13 @@ export default function ExpenseDetailPage() {
     queryFn:  () => expensesApi.getById(id!),
     select:   (r) => r.data.data,
     enabled:  !!id,
+  });
+
+  const { data: auditHistory } = useQuery({
+    queryKey: ['expense-history', id],
+    queryFn:  () => expensesApi.getHistory(id!),
+    select:   (r) => r.data.data,
+    enabled:  !!id && showHistory,
   });
 
   const { data: linkedQuotations } = useQuery({
@@ -533,6 +541,62 @@ export default function ExpenseDetailPage() {
             <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
             <span className="font-['DM_Sans']">Solo administradores y supervisores pueden anular gastos.</span>
           </div>
+        </div>
+      )}
+
+      {/* Historial de cambios — admin/supervisor only */}
+      {(isAdmin || isSupervisor) && (
+        <div className="pb-6">
+          <button
+            onClick={() => setShowHistory(v => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 hover:border-[#F5C218] transition-colors"
+          >
+            <span className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide text-gray-700 flex items-center gap-2">
+              <Clock className="w-4 h-4" /> Historial de cambios
+            </span>
+            <span className="font-['DM_Sans'] text-xs text-gray-400">{showHistory ? 'Ocultar' : 'Ver historial'}</span>
+          </button>
+          {showHistory && (
+            <div className="border border-t-0 border-gray-200 bg-white">
+              {!auditHistory || auditHistory.length === 0 ? (
+                <p className="font-['DM_Sans'] text-sm text-gray-400 px-4 py-3">Sin registros de cambios todavía.</p>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {auditHistory.map((log: any) => {
+                    const action = log.action === 'INSERT' ? 'Creado' : 'Modificado';
+                    const nd = log.newData ?? {};
+                    const statusMap: Record<string, string> = {
+                      PENDING_APPROVAL: 'Pendiente', ACTIVE: 'Aprobado', REJECTED: 'Rechazado', VOIDED: 'Anulado',
+                    };
+                    const changes: string[] = [];
+                    if (nd.status) changes.push(`Estado → ${statusMap[nd.status] ?? nd.status}`);
+                    if (nd.amount) changes.push(`Monto → RD$ ${parseFloat(nd.amount).toLocaleString('es-DO')}`);
+                    if (nd.description) changes.push(`Descripción actualizada`);
+                    if (nd.voidReason) changes.push(`Motivo anulación: ${nd.voidReason}`);
+                    if (nd.rejectionReason) changes.push(`Motivo rechazo: ${nd.rejectionReason}`);
+                    return (
+                      <div key={log.id} className="px-4 py-3 flex items-start gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#F5C218] mt-2 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide text-gray-700">
+                              {action} · {log.user?.name ?? 'Sistema'}
+                            </span>
+                            <span className="font-['Space_Mono'] text-xs text-gray-400 shrink-0">
+                              {new Date(log.createdAt).toLocaleString('es-DO', { dateStyle: 'short', timeStyle: 'short' })}
+                            </span>
+                          </div>
+                          {changes.length > 0 && (
+                            <p className="font-['DM_Sans'] text-xs text-gray-600 mt-0.5">{changes.join(' · ')}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
