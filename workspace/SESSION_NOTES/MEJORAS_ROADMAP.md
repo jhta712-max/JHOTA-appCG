@@ -14,18 +14,15 @@ Panel "ATENCIÓN REQUERIDA" en dashboard con: órdenes pendientes, proyectos >85
 cotizaciones venciendo en ≤7 días, líneas de crédito >80%, suscripciones ≤30 días.
 Archivos: `modules/dashboard/dashboard.service.ts`, `modules/dashboard/dashboard.router.ts`, `DashboardPage.tsx`
 
-### 3. 🔲 Aprobación de gastos en dos pasos
-Flujo opcional por proyecto: `PENDING → APPROVED` que supervisor/admin debe activar.
-- Campo `requiresApproval: Boolean` en `Project`
-- Estado `PENDING` en `Expense` (ya existe el enum, verificar)
-- Vista "Gastos pendientes de aprobación" para supervisores
-- Operadores ven sus gastos en estado pendiente hasta aprobación
+### 3. ✅ Aprobación de gastos en dos pasos — COMPLETADO (2026-06-16)
+Badges PENDING_APPROVAL / APPROVED / REJECTED con botones aprobar/rechazar para admin y supervisor.
+Modal de rechazo con motivo. `ExpensesPage.tsx` con mutations `approve` y `reject`.
+Backend: `POST /expenses/:id/approve`, `POST /expenses/:id/reject`.
 
-### 4. 🔲 Historial de cambios visible (audit trail)
-Tab "Historial" en detalle de proyecto y gasto mostrando: quién, qué cambió, cuándo.
-- Tabla `AuditLog` (modelo, modelId, userId, action, changes JSON, createdAt)
-- Middleware Prisma que registra updates/deletes automáticamente
-- UI: tab en `ProjectDetailPage.tsx` y `NewExpensePage.tsx`
+### 4. ✅ Historial de cambios visible (audit trail) — COMPLETADO (2026-06-16)
+Servicio `audit.service.ts` con `logAudit()` fire-and-forget.
+Registra create/update/approve/reject/void en gastos. Sección collapsible en `ExpenseDetailPage.tsx`.
+Backend: `GET /expenses/:id/history` (admin y supervisor only).
 
 ---
 
@@ -62,10 +59,10 @@ Solo admin: al seleccionar proyecto y escribir monto, muestra inline "disponible
 de este gasto" (verde normal / rojo sobregiro). Usa `GET /projects/:id/summary`.
 Archivos: `NewExpensePage.tsx`
 
-### 11. 🔲 Estado de órdenes de pago más granular
-Agregar estados: `EN_PROCESO` (transferencia iniciada), `RECHAZADA` (banco rechazó).
-- Migration: ampliar enum `PaymentOrderStatus`
-- UI: badge nuevo color (azul para EN_PROCESO, naranja para RECHAZADA)
+### 11. ✅ Estado de órdenes de pago más granular — COMPLETADO (2026-06-16)
+Estados: `IN_PROCESS` (azul), `REJECTED_BANK` (naranja). Flujo: PENDING → IN_PROCESS → PAID | REJECTED_BANK → PENDING.
+Backend valida transiciones en `updatePaymentOrderStatus()`. Frontend con botones contextuales por estado.
+Archivos: `payment-orders.service.ts`, `payment-orders.router.ts`, `PaymentOrdersPage.tsx`, `types/index.ts`
 
 ---
 

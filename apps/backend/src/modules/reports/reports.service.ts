@@ -1066,3 +1066,129 @@ export async function generate606Excel(year: number, month: number, res: Respons
   await wb.xlsx.write(res);
   res.end();
 }
+
+// ── Reporte de varianza presupuesto vs. ejecución ─────────────────────────────
+
+export async function generateVarianceExcel(res: Response, projectId?: string) {
+  const projectWhere = projectId ? { id: projectId } : { status: { not: 'CANCELLED' as const } };
+
+  const projects = await prisma.project.findMany({
+    where: projectWhere,
+    orderBy: { code: 'asc' },
+  });
+
+  const rows = await Promise.all(projects.map(async (p) => {
+    const [spentAgg, committedAgg] = await Promise.all([
+      prisma.expense.aggregate({
+        where: { projectId: p.id, status: 'ACTIVE' },
+        _sum: { amount: true },
+      }),
+      prisma.paymentOrder.aggregate({
+        where: { projectId: p.id, status: { in: ['PENDING', 'IN_PROCESS'] } },
+        _sum: { amount: true },
+      }),
+    ]);
+    const budget    = Number(p.estimatedBudget);
+    const spent     = Number(spentAgg._sum.amount ?? 0);
+    const committed = Number(committedAgg._sum.amount ?? 0);
+    const variance  = budget - spent - committed;
+    const pctUsed   = budget > 0 ? (spent + committed) / budget : 0;
+    return { p, budget, spent, committed, variance, pctUsed };
+  }));
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Varianza Presupuestal');
+
+  addLogoRow(ws,
+    'Varianza Presupuesto vs. Ejecución',
+    `Generado: ${fmtDate(new Date().toISOString())}`,
+  );
+
+  const headers = [
+    { header: 'Código',           key: 'code',      width: 16 },
+    { header: 'Proyecto',         key: 'name',      width: 38 },
+    { header: 'Estado',           key: 'status',    width: 14 },
+    { header: 'Presupuesto',      key: 'budget',    width: 18 },
+    { header: 'Ejecutado',        key: 'spent',     width: 18 },
+    { header: 'Comprometido',     key: 'committed', width: 18 },
+    { header: 'Varianza',         key: 'variance',  width: 18 },
+    { header: '% Ejecución',      key: 'pct',       width: 14 },
+  ];
+
+  ws.columns = headers.map(h => ({ key: h.key, width: h.width }));
+  const hRow = ws.getRow(6);
+  headers.forEach((h, i) => {
+    const cell = hRow.getCell(i + 1);
+    cell.value = h.header;
+    Object.assign(cell, headerStyle(wb));
+  });
+  hRow.height = 22;
+
+  rows.forEach(({ p, budget, spent, committed, variance, pctUsed }, idx) => {
+    const row = ws.addRow({
+      code:      p.code,
+      name:      p.name,
+      status:    p.status,
+      budget,
+      spent,
+      committed,
+      variance,
+      pct:       pctUsed,
+    });
+
+    const fill = idx % 2 === 0
+      ? { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF9FAFB' } }
+      : { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFFFFF' } };
+    row.eachCell(cell => { cell.fill = fill; cell.alignment = { vertical: 'middle' }; });
+
+    for (const key of ['budget', 'spent', 'committed', 'variance']) {
+      row.getCell(key).numFmt = '#,##0.00';
+      row.getCell(key).alignment = { horizontal: 'right' };
+    }
+    row.getCell('pct').numFmt = '0.00%';
+    row.getCell('pct').alignment = { horizontal: 'right' };
+
+    // Red varianza negativa
+    if (variance < 0) {
+      row.getCell('variance').font = { color: { argb: 'FFDC2626' }, bold: true };
+    }
+    // Semáforo pct
+    const pctCell = row.getCell('pct');
+    if (pctUsed >= 1) {
+      pctCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+      pctCell.font = { color: { argb: 'FFDC2626' }, bold: true };
+    } else if (pctUsed >= 0.85) {
+      pctCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+      pctCell.font = { color: { argb: 'FFD97706' }, bold: true };
+    }
+  });
+
+  // Totals row
+  const totBudget    = rows.reduce((a, r) => a + r.budget, 0);
+  const totSpent     = rows.reduce((a, r) => a + r.spent, 0);
+  const totCommitted = rows.reduce((a, r) => a + r.committed, 0);
+  const totVariance  = totBudget - totSpent - totCommitted;
+  const totPct       = totBudget > 0 ? (totSpent + totCommitted) / totBudget : 0;
+
+  const totalRow = ws.addRow({
+    code:      `TOTAL (${rows.length})`,
+    budget:    totBudget,
+    spent:     totSpent,
+    committed: totCommitted,
+    variance:  totVariance,
+    pct:       totPct,
+  });
+  totalRow.eachCell(cell => { cell.font = { bold: true }; });
+  for (const key of ['budget', 'spent', 'committed', 'variance']) {
+    totalRow.getCell(key).numFmt = '#,##0.00';
+    totalRow.getCell(key).alignment = { horizontal: 'right' };
+  }
+  totalRow.getCell('pct').numFmt = '0.00%';
+  totalRow.getCell('pct').alignment = { horizontal: 'right' };
+  totalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="varianza-presupuestal.xlsx"');
+  await wb.xlsx.write(res);
+  res.end();
+}

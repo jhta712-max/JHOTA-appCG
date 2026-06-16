@@ -309,6 +309,25 @@ export default function ReportsPage() {
                 ]}
               />
             )}
+
+            {/* Varianza presupuesto vs. ejecución */}
+            <ReportCard
+              index={5}
+              icon={<BarChart3 className="w-5 h-5" />}
+              title="Varianza Presupuesto vs. Ejecución"
+              description="Por proyecto: presupuesto estimado vs. ejecutado (gastos activos) vs. comprometido (órdenes pendientes/en proceso). Semáforo de alerta en >85% y >100%. Exportable por proyecto o para todos."
+              actions={[
+                {
+                  label: projectId ? 'Proyecto seleccionado' : 'Todos los proyectos',
+                  isPrimary: true,
+                  icon: <FileSpreadsheet className="w-3.5 h-3.5" />,
+                  onClick: () => {
+                    const params = projectId ? `?projectId=${projectId}` : '';
+                    return downloadReport(`/variance.xlsx${params}`, `varianza-presupuestal-${today}.xlsx`);
+                  },
+                },
+              ]}
+            />
           </div>
         </div>
 

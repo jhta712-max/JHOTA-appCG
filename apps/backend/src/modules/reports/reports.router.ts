@@ -8,6 +8,7 @@ import {
   generateProjectPDF,
   generateFullExpensesExcel,
   generate606Excel,
+  generateVarianceExcel,
 } from './reports.service';
 
 const router = Router();
@@ -90,6 +91,14 @@ router.get('/606.xlsx', async (req: Request, res: Response, next: NextFunction) 
       return;
     }
     await generate606Excel(year, month, res);
+  } catch (err) { next(err); }
+});
+
+// ── GET /reports/variance.xlsx?projectId=
+// Varianza presupuesto vs. ejecución — todos los proyectos o uno específico
+router.get('/variance.xlsx', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await generateVarianceExcel(res, req.query.projectId as string | undefined);
   } catch (err) { next(err); }
 });
 
