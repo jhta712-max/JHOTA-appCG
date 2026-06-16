@@ -8,7 +8,8 @@ import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
 } from 'recharts';
-import { projectsApi, expensesApi, quotationsApi, paymentOrdersApi, suppliersApi } from '../../api';
+import { projectsApi, expensesApi, quotationsApi, paymentOrdersApi, suppliersApi, dashboardApi } from '../../api';
+import { AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useRole } from '../../hooks/useRole';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
@@ -93,6 +94,12 @@ export default function DashboardPage() {
     select:   (r) => (r.data as any).data,
   });
 
+  const { data: dashboardAlerts } = useQuery({
+    queryKey: ['dashboard', 'alerts'],
+    queryFn:  dashboardApi.getAlerts,
+    staleTime: 60_000,
+  });
+
   const projects         = projectsData?.data ?? [];
   const expenses         = expensesData?.data ?? [];
   const allQuotations    = quotationsData?.data ?? [];
@@ -147,6 +154,93 @@ export default function DashboardPage() {
           </Link>
         )}
       </div>
+
+      {/* ── Alertas del dashboard ───────────────────────────── */}
+      {dashboardAlerts && (
+        dashboardAlerts.pendingOrders.length > 0 ||
+        dashboardAlerts.budgetAlerts.length > 0 ||
+        dashboardAlerts.expiringQuotations.length > 0 ||
+        dashboardAlerts.creditAlerts.length > 0 ||
+        dashboardAlerts.expiringSubscriptions.length > 0
+      ) && (
+        <div className="border border-[#F5C218]/40 bg-[#1C1C1C]/[0.02] p-4 space-y-2">
+          <h2 className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-[0.15em] text-[#1C1C1C] mb-3 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-[#F5C218]" />
+            ATENCIÓN REQUERIDA
+          </h2>
+
+          {/* Budget alerts */}
+          {dashboardAlerts!.budgetAlerts.map((p) => (
+            <Link key={p.id} to={`/projects/${p.id}`}
+              className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2 hover:bg-[#F5C218]/10 transition-colors block">
+              <AlertTriangle className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="font-['DM_Sans'] text-sm text-gray-800">
+                  Proyecto <strong>{p.code}</strong> — presupuesto al{' '}
+                  <span className="font-['Space_Mono'] font-bold" style={{ color: p.pct >= 95 ? '#ef4444' : '#f59e0b' }}>{p.pct}%</span>
+                </span>
+                <div className="mt-1 h-1.5 bg-gray-200 overflow-hidden w-full max-w-[200px]">
+                  <div className="h-full" style={{ width: `${Math.min(p.pct, 100)}%`, background: p.pct >= 95 ? '#ef4444' : '#f59e0b' }} />
+                </div>
+              </div>
+              <span className="font-['Space_Mono'] text-xs text-gray-500 shrink-0">{new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(p.spent)} / {new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(p.budget)}</span>
+            </Link>
+          ))}
+
+          {/* Credit alerts */}
+          {dashboardAlerts!.creditAlerts.map((cl) => (
+            <Link key={cl.id} to={`/suppliers/${cl.supplierId}`}
+              className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2 hover:bg-[#F5C218]/10 transition-colors block">
+              <AlertTriangle className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="font-['DM_Sans'] text-sm text-gray-800">
+                  Crédito <strong>{cl.supplierName}</strong> — {cl.pct}% consumido
+                </span>
+                <p className="font-['Space_Mono'] text-xs text-gray-500">Disponible: RD$ {cl.available.toLocaleString()} de RD$ {cl.limit.toLocaleString()}</p>
+              </div>
+              <span className="font-['Barlow_Condensed'] text-xs font-bold px-1.5 py-0.5 shrink-0" style={{ background: cl.pct >= 95 ? '#ef4444' : '#F5C218', color: cl.pct >= 95 ? '#fff' : '#1C1C1C' }}>{cl.pct}%</span>
+            </Link>
+          ))}
+
+          {/* Expiring quotations */}
+          {dashboardAlerts!.expiringQuotations.map((q) => (
+            <Link key={q.id} to={`/quotations/${q.id}`}
+              className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2 hover:bg-[#F5C218]/10 transition-colors block">
+              <Clock className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="font-['DM_Sans'] text-sm text-gray-800">
+                  Cotización <strong>{q.supplierName}</strong>{q.projectCode ? ` — ${q.projectCode}` : ''} vence en <strong>{q.daysLeft}d</strong>
+                </span>
+              </div>
+            </Link>
+          ))}
+
+          {/* Expiring subscriptions */}
+          {dashboardAlerts!.expiringSubscriptions.map((s) => (
+            <div key={s.id} className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2">
+              <Clock className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="font-['DM_Sans'] text-sm text-gray-800">
+                  Suscripción <strong>{s.serviceName}</strong> — pago en <strong>{s.daysLeft}d</strong>
+                </span>
+                <p className="font-['Space_Mono'] text-xs text-gray-500">{s.currency} {s.amount.toLocaleString()}/mes</p>
+              </div>
+            </div>
+          ))}
+
+          {/* Pending orders summary (only if there are many) */}
+          {dashboardAlerts!.pendingOrders.length > 0 && (
+            <Link to="/pending-orders"
+              className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2 hover:bg-[#F5C218]/10 transition-colors block">
+              <FileText className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+              <span className="font-['DM_Sans'] text-sm text-gray-800 flex-1">
+                <span className="font-['Barlow_Condensed'] text-xs font-bold bg-[#F5C218] text-[#1C1C1C] px-1.5 py-0.5 mr-2">{dashboardAlerts!.pendingOrders.length}</span>
+                órdenes de pago pendientes de autorización
+              </span>
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* ── Stats KPI cards ─────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">

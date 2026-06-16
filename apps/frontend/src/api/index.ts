@@ -694,6 +694,20 @@ export const contratosAjustadosApi = {
 };
 
 // ── Suscripciones de Servicios ────────────────────────────────
+// ── Dashboard Alerts ──────────────────────────────────────────
+export interface DashboardAlerts {
+  pendingOrders: Array<{ id: string; description: string; amount: number; supplierName: string | null; projectCode: string | null; projectName: string | null }>;
+  budgetAlerts: Array<{ id: string; code: string; name: string; budget: number; spent: number; pct: number }>;
+  expiringQuotations: Array<{ id: string; title: string; validUntil: string | null; projectCode: string | null; supplierName: string; daysLeft: number }>;
+  creditAlerts: Array<{ id: string; supplierId: string; supplierName: string; limit: number; pending: number; available: number; pct: number }>;
+  expiringSubscriptions: Array<{ id: string; serviceName: string; amount: number; currency: string; nextPaymentDate: string; daysLeft: number }>;
+}
+
+export const dashboardApi = {
+  getAlerts: () =>
+    api.get<{ success: boolean; data: DashboardAlerts }>('/dashboard/alerts').then((r) => r.data.data),
+};
+
 export const serviceSubscriptionsApi = {
   overview:  () =>
     api.get<{ success: boolean; data: import('../types').SubscriptionsOverview }>('/monitoring/subscriptions'),
