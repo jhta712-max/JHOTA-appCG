@@ -16,3 +16,4 @@ coverage/
 mempalace.yaml
 entities.json
 .claude/worktrees/
+.env.render
