@@ -91,3 +91,17 @@ export const updateProjectItemSchema = z.object({
 
 export type CreateProjectItemInput = z.infer<typeof createProjectItemSchema>;
 export type UpdateProjectItemInput = z.infer<typeof updateProjectItemSchema>;
+
+// ── Gastos Extraordinarios ───────────────────────────────────
+export const createExtraordinaryExpenseSchema = z.object({
+  description: z.string().min(1, 'La descripción es requerida').max(200),
+  amount:      z.coerce.number().positive('El monto debe ser mayor a 0'),
+  date:        z.string().date('Formato inválido, use YYYY-MM-DD'),
+  category:    z.enum(['COMISION', 'PRESTAMO', 'IMPUESTO', 'MULTA', 'OTRO']),
+  notes:       z.string().max(500).optional(),
+});
+
+export const updateExtraordinaryExpenseSchema = createExtraordinaryExpenseSchema.partial();
+
+export type CreateExtraordinaryExpenseInput = z.infer<typeof createExtraordinaryExpenseSchema>;
+export type UpdateExtraordinaryExpenseInput = z.infer<typeof updateExtraordinaryExpenseSchema>;
