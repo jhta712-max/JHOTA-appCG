@@ -74,9 +74,11 @@ Archivos: `payment-orders.service.ts`, `payment-orders.router.ts`, `PaymentOrder
 
 ## 📊 REPORTES
 
-### 12. 🔲 Reporte de varianza presupuesto vs. ejecución
-Por proyecto: presupuesto estimado vs. gastado vs. comprometido (órdenes pendientes).
-Exportable a Excel. Endpoint: `GET /reports/variance?projectId=`
+### 12. ✅ Reporte de varianza presupuesto vs. ejecución — COMPLETADO (2026-06-16)
+`GET /reports/variance.xlsx?projectId=` — todos los proyectos o uno específico.
+Columnas: presupuesto, ejecutado (gastos activos), comprometido (órdenes pendientes/en proceso), varianza, %.
+Semáforo en Excel: ámbar >85%, rojo ≥100%. Card en `ReportsPage.tsx` con opción filtrada por proyecto.
+Archivos: `reports.service.ts`, `reports.router.ts`, `ReportsPage.tsx`
 
 ### 13. ✅ Dashboard ejecutivo multi-proyecto — COMPLETADO (2026-06-16)
 Tabla de portafolio en el dashboard (solo admin/supervisor). Backend: `GET /projects/portfolio`
