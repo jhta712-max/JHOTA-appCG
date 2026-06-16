@@ -1,11 +1,11 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProjectItems, useCreateProjectItem, useUpdateProjectItem } from '../../hooks/useProjectItems';
 import {
   ArrowLeft, Plus, FolderOpen, MapPin, User,
   Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight, Upload,
-  Sparkles, Loader2, RefreshCw, ChevronDown, ChevronUp,
+  Sparkles, Loader2, RefreshCw, ChevronDown, ChevronUp, Trash2,
 } from 'lucide-react';
 import { projectsApi, expensesApi, quotationsApi } from '../../api';
 import { useRole } from '../../hooks/useRole';
@@ -35,7 +35,35 @@ const STATUS_INDUSTRIAL: Record<string, { bg: string; text: string; label: strin
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isSupervisor: canEdit } = useRole();
+  const { isSupervisor: canEdit, isAdmin } = useRole();
+  const qc = useQueryClient();
+  const canManageBudgets = canEdit || isAdmin;
+
+  // ── Sub-presupuestos por categoría ───────────────────────
+  const { data: categoryBudgets = [] } = useQuery({
+    queryKey: ['category-budgets', id],
+    queryFn:  () => projectsApi.getCategoryBudgets(id!),
+    select:   (r) => r.data.data,
+    enabled:  !!id,
+  });
+
+  const [cbEditing, setCbEditing] = useState<{ categoryId: number; budget: string } | null>(null);
+  const [cbNewCatId, setCbNewCatId] = useState('');
+  const [cbNewBudget, setCbNewBudget] = useState('');
+
+  const upsertCbMut = useMutation({
+    mutationFn: ({ categoryId, budget }: { categoryId: number; budget: number }) =>
+      projectsApi.upsertCategoryBudget(id!, categoryId, budget),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['category-budgets', id] });
+      setCbEditing(null); setCbNewCatId(''); setCbNewBudget('');
+    },
+  });
+
+  const deleteCbMut = useMutation({
+    mutationFn: (categoryId: number) => projectsApi.deleteCategoryBudget(id!, categoryId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['category-budgets', id] }),
+  });
 
   // ── Items de proyecto ─────────────────────────────────────
   const { data: items = [] }     = useProjectItems(id);
@@ -570,41 +598,157 @@ export default function ProjectDetailPage() {
             )}
           </div>
 
-          {/* By category */}
+          {/* By category — with optional sub-budgets */}
           {byCategory.length > 0 && (
             <div>
-              <p
-                className="text-xs uppercase tracking-widest text-gray-500 mb-3"
-                style={{ fontFamily: "'Barlow_Condensed', sans-serif" }}
-              >
-                Gastos por categoría
-              </p>
-              <div className="space-y-2">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs uppercase tracking-widest text-gray-500 font-['Barlow_Condensed']">
+                  Gastos por categoría
+                </p>
+                {canManageBudgets && (
+                  <span className="text-[10px] text-gray-400 font-['DM_Sans']">click para asignar presupuesto</span>
+                )}
+              </div>
+              <div className="space-y-3">
                 {byCategory.sort((a, b) => b.totalAmount - a.totalAmount).map((bc) => {
-                  const pct = summary.totalSpent > 0 ? (bc.totalAmount / summary.totalSpent) * 100 : 0;
+                  const catBudget = categoryBudgets.find((cb) => cb.categoryId === bc.category?.id);
+                  const hasBudget = !!catBudget;
+                  const spent     = bc.totalAmount;
+                  const budget    = catBudget?.budget ?? 0;
+                  const pctOfTotal = summary.totalSpent > 0 ? (spent / summary.totalSpent) * 100 : 0;
+                  const pctOfBudget = hasBudget && budget > 0 ? Math.min((spent / budget) * 100, 100) : pctOfTotal;
+                  const barColor   = hasBudget
+                    ? (spent / budget >= 1 ? '#ef4444' : spent / budget >= 0.85 ? '#f59e0b' : '#22c55e')
+                    : '#F5C218';
+                  const isEditingThis = cbEditing?.categoryId === bc.category?.id;
+
                   return (
                     <div key={bc.category?.id}>
-                      <div className="flex justify-between text-xs text-gray-600 mb-1">
-                        <span
-                          className="font-medium"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
+                      <div className="flex justify-between text-xs text-gray-600 mb-1 items-center gap-2">
+                        <span className="font-medium font-['DM_Sans'] flex items-center gap-1.5">
                           {bc.category?.name}
+                          {hasBudget && spent / budget >= 0.85 && (
+                            <AlertCircle className="w-3 h-3 text-amber-500 shrink-0" />
+                          )}
+                          {hasBudget && spent > budget && (
+                            <span className="text-[10px] text-red-500 font-bold font-['Barlow_Condensed'] uppercase">SOBREGIRO</span>
+                          )}
                         </span>
-                        <span style={{ fontFamily: "'Space Mono', monospace" }}>
-                          {fmt(bc.totalAmount)} · {pct.toFixed(0)}%
+                        <span className="font-['Space_Mono'] shrink-0 flex items-center gap-2">
+                          {hasBudget
+                            ? <>{fmt(spent)} / <span className="text-gray-400">{fmt(budget)}</span></>
+                            : <>{fmt(spent)} · {pctOfTotal.toFixed(0)}%</>
+                          }
+                          {canManageBudgets && !isEditingThis && (
+                            <button
+                              onClick={() => setCbEditing({ categoryId: bc.category!.id, budget: hasBudget ? String(budget) : '' })}
+                              className="text-gray-300 hover:text-[#F5C218] transition-colors ml-1">
+                              <Edit className="w-3 h-3" />
+                            </button>
+                          )}
+                          {canManageBudgets && hasBudget && !isEditingThis && (
+                            <button
+                              onClick={() => deleteCbMut.mutate(bc.category!.id)}
+                              className="text-gray-300 hover:text-red-400 transition-colors">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
                         </span>
                       </div>
+                      {isEditingThis && (
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <input
+                            autoFocus
+                            type="number"
+                            min="0"
+                            value={cbEditing.budget}
+                            onChange={(e) => setCbEditing({ ...cbEditing, budget: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') upsertCbMut.mutate({ categoryId: cbEditing.categoryId, budget: Number(cbEditing.budget) });
+                              if (e.key === 'Escape') setCbEditing(null);
+                            }}
+                            placeholder="Presupuesto DOP"
+                            className="text-xs border border-[#F5C218] px-2 py-1 w-36 focus:outline-none font-['Space_Mono']"
+                          />
+                          <button onClick={() => upsertCbMut.mutate({ categoryId: cbEditing.categoryId, budget: Number(cbEditing.budget) })}
+                            className="px-2 py-1 bg-[#F5C218] text-[#1C1C1C] text-xs font-bold uppercase hover:bg-yellow-300 transition-colors">
+                            OK
+                          </button>
+                          <button onClick={() => setCbEditing(null)}
+                            className="px-2 py-1 border border-gray-200 text-gray-500 text-xs hover:bg-gray-50 transition-colors">
+                            ✕
+                          </button>
+                        </div>
+                      )}
                       <div className="h-2 bg-gray-100 overflow-hidden">
-                        <div
-                          className="h-full"
-                          style={{ width: `${pct}%`, background: '#F5C218' }}
-                        />
+                        <div className="h-full transition-all" style={{ width: `${pctOfBudget}%`, background: barColor }} />
                       </div>
                     </div>
                   );
                 })}
               </div>
+
+              {/* Categories with budget but no expenses yet */}
+              {categoryBudgets.filter((cb) => !byCategory.find((bc) => bc.category?.id === cb.categoryId)).map((cb) => (
+                <div key={cb.id} className="mt-2">
+                  <div className="flex justify-between text-xs text-gray-500 mb-1 items-center gap-2">
+                    <span className="font-['DM_Sans']">{cb.category.name}</span>
+                    <span className="font-['Space_Mono'] flex items-center gap-2">
+                      {fmt(0)} / <span className="text-gray-400">{fmt(cb.budget)}</span>
+                      {canManageBudgets && (
+                        <button onClick={() => deleteCbMut.mutate(cb.categoryId)}
+                          className="text-gray-300 hover:text-red-400 transition-colors">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-100" />
+                </div>
+              ))}
+
+              {/* Add new category budget */}
+              {canManageBudgets && (
+                <div className="mt-3">
+                  {cbNewCatId ? (
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        autoFocus
+                        type="number"
+                        min="0"
+                        value={cbNewBudget}
+                        onChange={(e) => setCbNewBudget(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && cbNewBudget) upsertCbMut.mutate({ categoryId: Number(cbNewCatId), budget: Number(cbNewBudget) });
+                          if (e.key === 'Escape') { setCbNewCatId(''); setCbNewBudget(''); }
+                        }}
+                        placeholder="Presupuesto DOP"
+                        className="text-xs border border-[#F5C218] px-2 py-1 w-32 focus:outline-none font-['Space_Mono']"
+                      />
+                      <button onClick={() => cbNewBudget && upsertCbMut.mutate({ categoryId: Number(cbNewCatId), budget: Number(cbNewBudget) })}
+                        className="px-2 py-1 bg-[#F5C218] text-[#1C1C1C] text-xs font-bold uppercase hover:bg-yellow-300 transition-colors">
+                        OK
+                      </button>
+                      <button onClick={() => { setCbNewCatId(''); setCbNewBudget(''); }}
+                        className="px-2 py-1 border border-gray-200 text-gray-500 text-xs hover:bg-gray-50 transition-colors">✕</button>
+                    </div>
+                  ) : (
+                    <select
+                      value=""
+                      onChange={(e) => setCbNewCatId(e.target.value)}
+                      className="text-xs border border-dashed border-gray-300 px-2 py-1 text-gray-400 focus:outline-none focus:border-[#F5C218] font-['DM_Sans'] cursor-pointer"
+                    >
+                      <option value="">+ Asignar presupuesto a categoría…</option>
+                      {byCategory
+                        .filter((bc) => bc.category && !categoryBudgets.find((cb) => cb.categoryId === bc.category!.id))
+                        .map((bc) => (
+                          <option key={bc.category!.id} value={bc.category!.id}>{bc.category!.name}</option>
+                        ))
+                      }
+                    </select>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

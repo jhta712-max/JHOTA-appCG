@@ -200,3 +200,29 @@ export async function getPortfolio(req: Request, res: Response, next: NextFuncti
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }
+
+export async function getCategoryBudgets(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await service.getCategoryBudgets(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function upsertCategoryBudget(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { categoryId, budget } = req.body;
+    if (!categoryId || budget === undefined) {
+      res.status(400).json({ success: false, error: 'categoryId y budget son requeridos', code: 'MISSING_FIELDS' });
+      return;
+    }
+    const data = await service.upsertCategoryBudget(req.params.id, Number(categoryId), Number(budget));
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function deleteCategoryBudget(req: Request, res: Response, next: NextFunction) {
+  try {
+    await service.deleteCategoryBudget(req.params.id, Number(req.params.categoryId));
+    res.json({ success: true });
+  } catch (err) { next(err); }
+}

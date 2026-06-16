@@ -69,6 +69,12 @@ export const projectsApi = {
     api.patch<{ success: boolean; data: ProjectItem }>(`/projects/${projectId}/items/${itemId}`, data),
   getBatchItems: (projectId: string) =>
     api.get<{ success: boolean; data: any[] }>(`/projects/${projectId}/batch-items`),
+  getCategoryBudgets: (projectId: string) =>
+    api.get<{ success: boolean; data: CategoryBudgetRow[] }>(`/projects/${projectId}/category-budgets`),
+  upsertCategoryBudget: (projectId: string, categoryId: number, budget: number) =>
+    api.put<{ success: boolean; data: CategoryBudgetRow }>(`/projects/${projectId}/category-budgets`, { categoryId, budget }),
+  deleteCategoryBudget: (projectId: string, categoryId: number) =>
+    api.delete(`/projects/${projectId}/category-budgets/${categoryId}`),
 };
 
 // ── Gastos ────────────────────────────────────────────────────
@@ -703,6 +709,14 @@ export const contratosAjustadosApi = {
 
 // ── Suscripciones de Servicios ────────────────────────────────
 // ── Dashboard Alerts ──────────────────────────────────────────
+export interface CategoryBudgetRow {
+  id:         string;
+  categoryId: number;
+  category:   { id: number; name: string; icon: string | null };
+  budget:     number;
+  spent:      number;
+}
+
 export interface PortfolioProject {
   id:          string;
   code:        string;

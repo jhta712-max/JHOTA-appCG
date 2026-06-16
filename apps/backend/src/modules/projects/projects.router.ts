@@ -160,4 +160,9 @@ router.patch('/:id/items/:itemId',
   ctrl.updateItem,
 );
 
+// ── Sub-presupuestos por categoría ───────────────────────────────────────────
+router.get('/:id/category-budgets',   ctrl.getCategoryBudgets);
+router.put('/:id/category-budgets',   authorize('admin', 'supervisor'), ctrl.upsertCategoryBudget);
+router.delete('/:id/category-budgets/:categoryId', authorize('admin', 'supervisor'), ctrl.deleteCategoryBudget);
+
 export default router;

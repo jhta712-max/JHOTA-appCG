@@ -704,3 +704,44 @@ export async function getPortfolioSummary() {
     };
   });
 }
+
+// ── Sub-presupuestos por categoría ────────────────────────────────────────────
+export async function getCategoryBudgets(projectId: string) {
+  const rows = await prisma.projectCategoryBudget.findMany({
+    where: { projectId },
+    include: { category: { select: { id: true, name: true, icon: true } } },
+    orderBy: { category: { name: 'asc' } },
+  });
+  // Enrich with actual spent per category
+  const spent = await prisma.expense.groupBy({
+    by:    ['categoryId'],
+    where: { projectId, status: 'ACTIVE' },
+    _sum:  { amount: true },
+  });
+  const spentMap = new Map(spent.map((s) => [s.categoryId, Number(s._sum.amount ?? 0)]));
+  return rows.map((r) => ({
+    id:         r.id,
+    categoryId: r.categoryId,
+    category:   r.category,
+    budget:     Number(r.budget),
+    spent:      spentMap.get(r.categoryId) ?? 0,
+  }));
+}
+
+export async function upsertCategoryBudget(projectId: string, categoryId: number, budget: number) {
+  if (budget < 0) throw new AppError(400, 'El presupuesto debe ser mayor o igual a 0', 'INVALID_BUDGET');
+  return prisma.projectCategoryBudget.upsert({
+    where:  { projectId_categoryId: { projectId, categoryId } },
+    create: { projectId, categoryId, budget },
+    update: { budget },
+    include: { category: { select: { id: true, name: true, icon: true } } },
+  });
+}
+
+export async function deleteCategoryBudget(projectId: string, categoryId: number) {
+  const existing = await prisma.projectCategoryBudget.findUnique({
+    where: { projectId_categoryId: { projectId, categoryId } },
+  });
+  if (!existing) throw new AppError(404, 'Sub-presupuesto no encontrado', 'NOT_FOUND');
+  return prisma.projectCategoryBudget.delete({ where: { projectId_categoryId: { projectId, categoryId } } });
+}
