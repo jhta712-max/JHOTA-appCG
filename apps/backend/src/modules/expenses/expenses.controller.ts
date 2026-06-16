@@ -1,5 +1,38 @@
 import { Request, Response, NextFunction } from 'express';
 import * as service from './expenses.service';
+import prisma from '../../config/database';
+
+export async function checkDuplicate(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { projectId, amount, expenseDate } = req.query as { projectId?: string; amount?: string; expenseDate?: string };
+    if (!projectId || !amount || !expenseDate) {
+      return res.json({ success: true, data: { duplicates: [] } });
+    }
+    const date = new Date(expenseDate + 'T12:00:00');
+    const minus3 = new Date(date.getTime() - 3 * 86400000);
+    const plus3  = new Date(date.getTime() + 3 * 86400000);
+    const amt    = parseFloat(amount);
+    const margin = amt * 0.001; // 0.1% tolerance
+
+    const duplicates = await prisma.expense.findMany({
+      where: {
+        projectId,
+        status: { not: 'VOIDED' },
+        amount: { gte: amt - margin, lte: amt + margin },
+        expenseDate: { gte: minus3, lte: plus3 },
+      },
+      select: {
+        id: true, description: true, amount: true, expenseDate: true,
+        registeredBy: { select: { name: true } },
+        category: { select: { name: true } },
+      },
+      take: 5,
+      orderBy: { expenseDate: 'desc' },
+    });
+
+    res.json({ success: true, data: { duplicates } });
+  } catch (err) { next(err); }
+}
 
 export async function list(req: Request, res: Response, next: NextFunction) {
   try {

@@ -12,7 +12,8 @@ import * as ctrl from './expenses.controller';
 
 const router = Router();
 router.use(authenticate);
-router.get('/stats',         ctrl.getStats);
+router.get('/stats',             ctrl.getStats);
+router.get('/check-duplicate',   ctrl.checkDuplicate);
 router.post('/suggest-category', ctrl.suggestCategory);
 router.get('/',              validate(expenseQuerySchema, 'query'), ctrl.list);
 router.post('/bulk-import',  authorize('admin'), ctrl.bulkImport);

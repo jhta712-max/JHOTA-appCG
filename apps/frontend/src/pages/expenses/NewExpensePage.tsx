@@ -67,6 +67,8 @@ export default function NewExpensePage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [success,     setSuccess]     = useState('');
   const [apiError,    setApiError]    = useState('');
+  const [pendingPayload, setPendingPayload] = useState<any>(null);
+  const [duplicates,  setDuplicates]  = useState<any[]>([]);
 
   const [useCreditLine,    setUseCreditLine]    = useState(false);
   const [creditSupplierId, setCreditSupplierId] = useState('');
@@ -151,7 +153,7 @@ export default function NewExpensePage() {
     },
   });
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     setApiError('');
     const payload: any = {
       projectId:     data.projectId,
@@ -186,6 +188,23 @@ export default function NewExpensePage() {
     }
     if (data.batchItemId) payload.batchItemId = data.batchItemId;
     if (useCreditLine && creditLineId) payload.creditLineId = creditLineId;
+
+    // Check for potential duplicates before submitting
+    try {
+      const res = await expensesApi.checkDuplicate({
+        projectId: data.projectId,
+        amount: payload.amount,
+        expenseDate: data.expenseDate,
+      });
+      const found = res.data.data.duplicates;
+      if (found.length > 0) {
+        setPendingPayload(payload);
+        setDuplicates(found);
+        return;
+      }
+    } catch {
+      // If check fails, proceed anyway
+    }
     mutation.mutate(payload);
   };
 
@@ -288,7 +307,59 @@ export default function NewExpensePage() {
       isAi     ? 'ring-2 ring-violet-400' : '',
     ].filter(Boolean).join(' ');
 
+  const fmtAmt = (n: number | string) =>
+    'RD$ ' + parseFloat(String(n)).toLocaleString('es-DO', { minimumFractionDigits: 2 });
+
   return (
+    <>
+    {/* Duplicate confirmation modal */}
+    {duplicates.length > 0 && pendingPayload && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="bg-white w-full max-w-lg shadow-2xl">
+          <div className="bg-[#1C1C1C] px-5 py-4 flex items-center justify-between">
+            <h2 className="font-['Barlow_Condensed'] text-lg font-bold uppercase tracking-wide text-white">
+              ⚠ Posible Gasto Duplicado
+            </h2>
+            <button onClick={() => { setDuplicates([]); setPendingPayload(null); }}
+              className="text-gray-400 hover:text-[#F5C218] text-xl leading-none">✕</button>
+          </div>
+          <div className="p-5">
+            <p className="font-['DM_Sans'] text-sm text-gray-700 mb-4">
+              Se encontraron <strong>{duplicates.length}</strong> gasto(s) con monto similar registrado(s) dentro de los últimos 3 días en este proyecto:
+            </p>
+            <div className="space-y-2 mb-5">
+              {duplicates.map((d: any) => (
+                <div key={d.id} className="border border-gray-200 px-3 py-2.5 bg-gray-50">
+                  <div className="flex justify-between items-start">
+                    <span className="font-['DM_Sans'] text-sm text-gray-800 flex-1 pr-2">{d.description}</span>
+                    <span className="font-['Space_Mono'] text-sm font-bold text-[#1C1C1C] shrink-0">{fmtAmt(d.amount)}</span>
+                  </div>
+                  <div className="flex gap-3 mt-1">
+                    <span className="font-['DM_Sans'] text-xs text-gray-500">{new Date(d.expenseDate).toLocaleDateString('es-DO')}</span>
+                    <span className="font-['DM_Sans'] text-xs text-gray-500">{d.category?.name}</span>
+                    <span className="font-['DM_Sans'] text-xs text-gray-500">Por: {d.registeredBy?.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setDuplicates([]); setPendingPayload(null); }}
+                className="flex-1 border border-gray-200 text-gray-600 py-2 font-['DM_Sans'] text-sm hover:bg-gray-50"
+              >
+                Cancelar — revisar
+              </button>
+              <button
+                onClick={() => { const p = pendingPayload; setDuplicates([]); setPendingPayload(null); mutation.mutate(p); }}
+                className="flex-1 bg-[#F5C218] text-[#1C1C1C] py-2 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide hover:bg-[#e6b400]"
+              >
+                Registrar de todas formas
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
     <div className="min-h-screen bg-gray-50">
 
       {/* ── Top header band ── */}
@@ -855,6 +926,7 @@ export default function NewExpensePage() {
         </form>
       </div>
     </div>
+    </>
   );
 }
 
