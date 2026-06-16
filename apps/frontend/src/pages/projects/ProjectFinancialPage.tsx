@@ -1452,8 +1452,7 @@ export default function ProjectFinancialPage() {
       </div>
 
       {/* Modal Gasto Extraordinario */}
-      <FormModal
-        isOpen={extraModal.open}
+      {extraModal.open && <FormModal
         onClose={() => setExtraModal({ open: false, editing: null })}
         title={extraModal.editing ? 'EDITAR GASTO EXTRAORDINARIO' : 'NUEVO GASTO EXTRAORDINARIO'}
         onSubmit={submitExtraForm}
@@ -1533,7 +1532,7 @@ export default function ProjectFinancialPage() {
             />
           </div>
         </div>
-      </FormModal>
+      </FormModal>}
     </div>
   );
 }
