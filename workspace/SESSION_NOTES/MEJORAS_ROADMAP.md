@@ -28,18 +28,21 @@ Backend: `GET /expenses/:id/history` (admin y supervisor only).
 
 ## 🟡 IMPACTO MEDIO — Siguiente sprint
 
-### 5. 🔲 Importación masiva de gastos (Excel/CSV)
-Extender lógica de `batches.import.ts` para gastos normales sin lote.
-Plantilla Excel descargable + endpoint `POST /expenses/import`.
+### 5. ✅ Importación masiva de gastos (CSV) — COMPLETADO (2026-06-16)
+Backend (`POST /expenses/bulk-import`) y modal de vista previa ya existían.
+Añadido botón "Plantilla" que descarga `plantilla-importacion-gastos.csv` con columnas y fila de ejemplo.
+Archivos: `ExpensesPage.tsx`
 
 ### 6. 🔲 Presupuesto por categoría dentro del proyecto
 Sub-presupuestos por categoría con alertas cuando se acerca al límite.
 - Modelo `ProjectCategoryBudget` (projectId, categoryId, budget)
 - Widget en detalle de proyecto
 
-### 7. 🔲 Duplicar orden de pago / gasto recurrente
-Botón "Clonar" en órdenes de pago — copia todos los campos, cambia fecha a hoy.
-Frontend only (+ llamada POST con los datos pre-llenados).
+### 7. ✅ Duplicar orden de pago — COMPLETADO (2026-06-16)
+Botón "Clonar" en el panel de detalle de la orden. Pre-rellena el formulario de creación con todos los
+campos (orderType, empresa, suplidor, proyecto, monto, moneda, concepto, notas). Limpia payrollId,
+batchItemId y creditLineId para que el usuario parta limpio.
+Archivos: `PaymentOrdersPage.tsx`
 
 ### 8. 🔲 Filtros guardados / vistas personalizadas
 Guardar combinación de filtros con nombre. Persistir en `localStorage` o en BD.
