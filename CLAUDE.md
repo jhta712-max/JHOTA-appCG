@@ -53,6 +53,8 @@ modules/
   suppliers/      # Proveedores (incluye beneficiarios); endpoint validate-rnc/:rnc → DGII; crédito: GET /credit-summary + /credit-report
   quotations/     # Cotizaciones con OCR
   office-expenses/# Gastos de oficina; usa texto libre supplierName (no FK a suppliers)
+  admin-employees/# Empleados administrativos con historial salarial y beneficios fijos
+  admin-payrolls/ # Nóminas administrativas independientes de proyectos; cálculos AFP/TSS/ISR automáticos
   ocr/            # OCR síncrono: POST devuelve resultado inline (ver nota OCR)
   monitoring/     # Health check + análisis IA (Claude API)
   notifications/  # In-app + WhatsApp (UltraMsg) + Email (Gmail SMTP)
@@ -116,6 +118,8 @@ utils/
 
 **Gastos de oficina vs Módulo de suplidores:** Los suplidores del módulo `/suppliers` son entidades continuas (servicios, materiales, mano de obra). Los gastos de oficina (`/office-expenses`) usan texto libre `supplierName` — no FK a la tabla `suppliers` — porque sus proveedores son ocasionales y no continuos.
 
+**Nómina Administrativa vs Nóminas de Proyecto:** `modules/payroll/` maneja nóminas vinculadas a proyectos. `modules/admin-payrolls/` es completamente independiente — empleados de oficina sin FK a proyectos. Cálculos en `admin-payroll.calculations.ts`: AFP 2.87% + TSS 3.04% sobre salario base solamente; ISR RD 2024 progresivo sobre `taxableBase` (salario + beneficios con `affectsISR=true`); `grossAmount` = salario + todos los beneficios. Flujo: DRAFT → APPROVED → PAID → VOIDED. Crear nómina auto-genera líneas para todos los empleados ACTIVE con la frecuencia del período (MONTHLY o BIWEEKLY).
+
 ## Reglas concretas
 
 1. **Docker:** Siempre `COPY apps ./apps` (TODO el workspace). Nunca `COPY apps/backend ./apps/backend`. Si cambia Dockerfile → test local: `docker build -f Dockerfile.backend .`
@@ -148,6 +152,8 @@ utils/
 **Fallback numérico en nullish coalescing:** `String(valor ?? '0')` — si `valor` es `null`, resulta en `"null"`. El fallback debe ser numérico: `String(valor ?? 0)`.
 
 **Prisma client desactualizado:** Si `pnpm build:backend` muestra `does not exist in type 'SomeModelCreateInput'` para un campo que sí existe en `schema.prisma`, el cliente generado no está sincronizado — ejecuta `pnpm --filter backend db:generate`. Ocurre cuando el schema cambia pero el client no se regeneró (ej. después de un `git pull`).
+
+**`buildPaginatedResponse` requiere objeto PaginationParams:** La función en `apps/backend/src/utils/pagination.ts` acepta `(data, total, { page, limit, skip })` como tercer argumento — no `page` y `limit` separados. Construir el objeto inline: `buildPaginatedResponse(data, total, { page: query.page, limit: query.limit, skip: (query.page - 1) * query.limit })`.
 
 **Migración baseline en desarrollo local:** El repo tiene una migración `20260531000000_init_baseline` que es un snapshot completo del schema. `prisma migrate deploy` desde una BD vacía falla con `type "project_status" already exists` porque las migraciones `20260518*` también están presentes. Solución documentada en `.claude/skills/run-servingmi/SKILL.md` → Setup §4.
 
