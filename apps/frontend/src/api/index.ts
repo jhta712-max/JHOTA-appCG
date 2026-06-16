@@ -1,5 +1,5 @@
 import api from './client';
-import type { Project, Expense, Category, ProjectSummary, PaginatedResponse, User, Addendum, Cubicacion, Anticipo, FinancialAnalysis, Assignment, ProjectItem } from '../types';
+import type { Project, Expense, Category, ProjectSummary, PaginatedResponse, User, Addendum, Cubicacion, Anticipo, FinancialAnalysis, Assignment, ProjectItem, ExtraordinaryExpense } from '../types';
 
 // ── Auth ──────────────────────────────────────────────────────
 export const authApi = {
@@ -75,6 +75,15 @@ export const projectsApi = {
     api.put<{ success: boolean; data: CategoryBudgetRow }>(`/projects/${projectId}/category-budgets`, { categoryId, budget }),
   deleteCategoryBudget: (projectId: string, categoryId: number) =>
     api.delete(`/projects/${projectId}/category-budgets/${categoryId}`),
+  // Gastos Extraordinarios
+  listExtraordinaryExpenses: (projectId: string) =>
+    api.get<{ success: boolean; data: ExtraordinaryExpense[] }>(`/projects/${projectId}/extraordinary-expenses`),
+  createExtraordinaryExpense: (projectId: string, data: unknown) =>
+    api.post<{ success: boolean; data: ExtraordinaryExpense }>(`/projects/${projectId}/extraordinary-expenses`, data),
+  updateExtraordinaryExpense: (projectId: string, expId: string, data: unknown) =>
+    api.put<{ success: boolean; data: ExtraordinaryExpense }>(`/projects/${projectId}/extraordinary-expenses/${expId}`, data),
+  deleteExtraordinaryExpense: (projectId: string, expId: string) =>
+    api.delete(`/projects/${projectId}/extraordinary-expenses/${expId}`),
 };
 
 // ── Gastos ────────────────────────────────────────────────────

@@ -174,6 +174,18 @@ export interface Anticipo {
   createdAt?: string;
 }
 
+export type ExtraordinaryExpenseCategory = 'COMISION' | 'PRESTAMO' | 'IMPUESTO' | 'MULTA' | 'OTRO';
+
+export interface ExtraordinaryExpense {
+  id:          string;
+  description: string;
+  amount:      number;
+  date:        string;
+  category:    ExtraordinaryExpenseCategory;
+  notes:       string | null;
+  createdAt:   string;
+}
+
 export interface FinancialAnalysis {
   project: {
     id: string; code: string; name: string;
@@ -188,9 +200,13 @@ export interface FinancialAnalysis {
     expenseCount: number;
     totalAnticipos: number;
     totalCobrado: number;
+    totalExtraordinario: number;
+    margenNeto: number;
+    margenNetoPct: number;
   };
   cubicaciones: Cubicacion[];
   anticipos: Anticipo[];
+  extraordinaryExpenses: ExtraordinaryExpense[];
 }
 
 export type PaymentMethod = 'CASH' | 'TRANSFER' | 'CARD' | 'CHECK' | 'OTHER';
