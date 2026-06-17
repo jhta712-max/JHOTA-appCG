@@ -358,7 +358,8 @@ export default function ProjectFinancialPage() {
     setExtraModal({ open: true, editing });
   }
 
-  function submitExtraForm() {
+  function submitExtraForm(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     const payload = {
       description: extraForm.description,
       amount:      parseFloat(extraForm.amount),
