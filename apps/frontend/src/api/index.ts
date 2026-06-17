@@ -592,8 +592,24 @@ export const officeExpensesApi = {
 // ── Suplidores ────────────────────────────────────────────────
 import type { Supplier, SupplierHistory, SupplierBankAccount, SupplierCreditLine, SupplierCreditPayment, CreditSummary } from '../types';
 
+export type ProjectSupplierEntry = {
+  id: string;
+  supplierId: string;
+  projectId: string;
+  supplier: {
+    id: string;
+    name: string;
+    rnc: string | null;
+    isActive: boolean;
+    bank: string | null;
+    accountNumber: string | null;
+    accountType: string | null;
+    bankAccounts: SupplierBankAccount[];
+  };
+};
+
 export const suppliersApi = {
-  list:         (params?: { search?: string; onlyActive?: boolean }) =>
+  list:         (params?: { search?: string; onlyActive?: boolean; projectId?: string }) =>
     api.get<{ success: boolean; data: Supplier[] }>('/suppliers', { params }),
   getById:      (id: string) =>
     api.get<{ success: boolean; data: Supplier }>(`/suppliers/${id}`),
@@ -642,6 +658,16 @@ export const suppliersApi = {
       responseType: 'blob',
       params: status ? { status } : undefined,
     }),
+};
+
+// ── Suplidores de Proyecto ────────────────────────────────────
+export const projectSuppliersApi = {
+  list: (projectId: string) =>
+    api.get<{ success: boolean; data: ProjectSupplierEntry[] }>(`/projects/${projectId}/suppliers`),
+  assign: (projectId: string, supplierId: string) =>
+    api.post<{ success: boolean; data: ProjectSupplierEntry }>(`/projects/${projectId}/suppliers`, { supplierId }),
+  remove: (projectId: string, supplierId: string) =>
+    api.delete<{ success: boolean }>(`/projects/${projectId}/suppliers/${supplierId}`),
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────
