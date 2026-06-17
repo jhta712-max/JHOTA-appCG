@@ -18,6 +18,7 @@ type NavItem = {
   label: string;
   roles?: string[];
   group?: string;
+  end?: boolean;
 };
 
 const navItems: NavItem[] = [
@@ -31,8 +32,8 @@ const navItems: NavItem[] = [
   { to: '/suppliers',           icon: Building2,       label: 'Suplidores',       group: 'operaciones', roles: ['admin', 'supervisor', 'operator', 'financiero', 'auxiliar'] },
   { to: '/quotations',          icon: FileText,        label: 'Cotizaciones',     group: 'operaciones', roles: ['admin', 'supervisor', 'operator', 'financiero', 'auxiliar'] },
   { to: '/contratos-ajustados', icon: FileCheck,       label: 'Contratos Ajust.', group: 'operaciones', roles: ['admin', 'supervisor', 'operator', 'auxiliar', 'financiero'] },
-  { to: '/admin-payroll/employees', icon: Users,    label: 'Empleados Adm.',  group: 'gastos-admin', roles: ['admin', 'supervisor', 'financiero'] },
-  { to: '/admin-payroll',           icon: FileText,  label: 'Nómina Admin.',   group: 'gastos-admin', roles: ['admin', 'supervisor', 'financiero'] },
+  { to: '/admin-payroll/employees', icon: Users,    label: 'Empleados Adm.',  group: 'gastos-admin', roles: ['admin', 'supervisor', 'financiero'], end: true },
+  { to: '/admin-payroll',           icon: FileText,  label: 'Nómina Admin.',   group: 'gastos-admin', roles: ['admin', 'supervisor', 'financiero'], end: true },
   { to: '/reports',             icon: BarChart3,       label: 'Reportes',         group: 'reportes',    roles: ['admin', 'supervisor', 'financiero', 'auxiliar'] },
   { to: '/export',              icon: Download,        label: 'Exportar Excel',   group: 'reportes',    roles: ['admin', 'supervisor', 'financiero', 'auxiliar'] },
   { to: '/users',               icon: Users,           label: 'Usuarios',         group: 'admin',       roles: ['admin'] },
@@ -183,18 +184,19 @@ function NavGroup({ label, children }: { label: string; children: React.ReactNod
 }
 
 function NavItemLink({
-  to, icon: Icon, label, onClick, onUnpin,
+  to, icon: Icon, label, onClick, onUnpin, end,
 }: {
   to: string;
   icon: React.ElementType;
   label: string;
   onClick?: () => void;
   onUnpin?: () => void;
+  end?: boolean;
 }) {
   return (
     <NavLink
       to={to}
-      end={to === '/'}
+      end={end ?? to === '/'}
       onClick={onClick}
       className={({ isActive }) => clsx(
         "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors relative group font-['DM_Sans']",
@@ -277,11 +279,11 @@ function NavPopover({
               {g.label}
             </p>
           )}
-          {g.items.map(({ to, icon: Icon, label }) => (
+          {g.items.map(({ to, icon: Icon, label, end }) => (
             <div key={to} className="flex items-center group/row">
               <NavLink
                 to={to}
-                end={to === '/'}
+                end={end ?? to === '/'}
                 onClick={onClose}
                 className={({ isActive }) => clsx(
                   "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors flex-1 font-['DM_Sans']",
@@ -387,12 +389,13 @@ export default function Layout() {
           <nav className="flex-1 px-2 pb-4 overflow-y-auto">
             {pinnedGroups.map(({ key, label, items }) => (
               <NavGroup key={key} label={label}>
-                {items.map(({ to, icon, label: itemLabel }) => (
+                {items.map(({ to, icon, label: itemLabel, end }) => (
                   <NavItemLink
                     key={to}
                     to={to}
                     icon={icon}
                     label={itemLabel}
+                    end={end}
                     onUnpin={() => unpin(to)}
                   />
                 ))}

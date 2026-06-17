@@ -141,47 +141,56 @@ export default function AdminEmployeesPage() {
         <FormModal
           title={modal.data?.id ? 'Editar Empleado' : 'Nuevo Empleado'}
           onClose={() => setModal({ open: false, data: null })}
-          onSubmit={onSubmit}
-          isSubmitting={createMut.isPending || updateMut.isPending}
         >
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { name: 'name',     label: 'Nombre completo', defaultValue: modal.data?.name,     col: 2 },
-              { name: 'position', label: 'Cargo',           defaultValue: modal.data?.position, col: 2 },
-            ].map((f) => (
-              <div key={f.name} className="col-span-2">
-                <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">{f.label}</label>
-                <input name={f.name} defaultValue={f.defaultValue ?? ''} required className={inputCls} />
+          <form onSubmit={onSubmit} className="p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Nombre completo</label>
+                <input name="name" defaultValue={modal.data?.name ?? ''} required className={inputCls} />
               </div>
-            ))}
-            <div>
-              <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Fecha de ingreso</label>
-              <input name="hireDate" type="date" defaultValue={modal.data?.hireDate?.slice(0,10) ?? ''} required className={inputCls} />
+              <div className="col-span-2">
+                <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Cargo</label>
+                <input name="position" defaultValue={modal.data?.position ?? ''} required className={inputCls} />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Fecha de ingreso</label>
+                <input name="hireDate" type="date" defaultValue={modal.data?.hireDate?.slice(0,10) ?? ''} required className={inputCls} />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Frecuencia de pago</label>
+                <select name="paymentFrequency" defaultValue={modal.data?.paymentFrequency ?? 'MONTHLY'} className={inputCls}>
+                  <option value="MONTHLY">Mensual</option>
+                  <option value="BIWEEKLY">Quincenal</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Salario base (RD$)</label>
+                <input name="baseSalary" type="number" min="0" step="0.01" defaultValue={modal.data?.baseSalary ?? ''} required className={inputCls} />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Banco</label>
+                <input name="bankName" defaultValue={modal.data?.bankName ?? ''} className={inputCls} />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Número de cuenta</label>
+                <input name="bankAccount" defaultValue={modal.data?.bankAccount ?? ''} className={inputCls} />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Notas</label>
+                <textarea name="notes" defaultValue={modal.data?.notes ?? ''} rows={2} className={inputCls} />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Frecuencia de pago</label>
-              <select name="paymentFrequency" defaultValue={modal.data?.paymentFrequency ?? 'MONTHLY'} className={inputCls}>
-                <option value="MONTHLY">Mensual</option>
-                <option value="BIWEEKLY">Quincenal</option>
-              </select>
+            <div className="flex justify-end gap-3 mt-6">
+              <button type="button" onClick={() => setModal({ open: false, data: null })}
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] border border-gray-200 text-gray-600 hover:border-gray-400">
+                Cancelar
+              </button>
+              <button type="submit" disabled={createMut.isPending || updateMut.isPending}
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50">
+                {createMut.isPending || updateMut.isPending ? 'Guardando…' : 'Guardar'}
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Salario base (RD$)</label>
-              <input name="baseSalary" type="number" min="0" step="0.01" defaultValue={modal.data?.baseSalary ?? ''} required className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Banco</label>
-              <input name="bankName" defaultValue={modal.data?.bankName ?? ''} className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Número de cuenta</label>
-              <input name="bankAccount" defaultValue={modal.data?.bankAccount ?? ''} className={inputCls} />
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Notas</label>
-              <textarea name="notes" defaultValue={modal.data?.notes ?? ''} rows={2} className={inputCls} />
-            </div>
-          </div>
+          </form>
         </FormModal>
       )}
     </div>
