@@ -30,10 +30,8 @@ export async function listProjectSuppliers(projectId: string) {
 }
 
 export async function assignSupplierToProject(projectId: string, supplierId: string) {
-  return prisma.projectSupplier.upsert({
-    where: { projectId_supplierId: { projectId, supplierId } },
-    create: { projectId, supplierId },
-    update: {},
+  return prisma.projectSupplier.create({
+    data: { projectId, supplierId },
     include: {
       supplier: {
         select: {

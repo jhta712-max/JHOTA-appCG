@@ -28,7 +28,8 @@ router.post('/', authorize('admin', 'supervisor'), async (req: Request, res: Res
     res.status(201).json({ success: true, data });
   } catch (e: any) {
     if (e.code === 'P2002') return res.status(409).json({ success: false, error: 'Suplidor ya asignado a este proyecto' });
-    next(e);
+    if (e.code === 'P2003') return res.status(404).json({ success: false, error: 'Suplidor o proyecto no encontrado' });
+    res.status(500).json({ success: false, error: 'Error asignando suplidor' });
   }
 });
 
