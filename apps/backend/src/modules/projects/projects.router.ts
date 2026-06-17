@@ -11,6 +11,7 @@ import {
   createExtraordinaryExpenseSchema, updateExtraordinaryExpenseSchema,
 } from './projects.schema';
 import * as ctrl from './projects.controller';
+import projectSuppliersRouter from '../suppliers/project-suppliers.router';
 
 const router = Router();
 
@@ -22,6 +23,10 @@ router.get('/portfolio', authorize('admin', 'supervisor'), ctrl.getPortfolio);
 
 // GET  /api/v1/projects
 router.get('/',    validate(projectQuerySchema, 'query'), ctrl.list);
+
+// ── Suplidores de proyecto ───────────────────────────────────────
+// Mount before /:id to avoid route conflicts
+router.use('/:projectId/suppliers', projectSuppliersRouter);
 
 // GET  /api/v1/projects/:id
 router.get('/:id', ctrl.getOne);
