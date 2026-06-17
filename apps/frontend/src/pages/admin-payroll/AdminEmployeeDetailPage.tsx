@@ -147,10 +147,8 @@ export default function AdminEmployeeDetailPage() {
         <FormModal
           title="Agregar Beneficio"
           onClose={() => setBenefitModal({ open: false, data: null })}
-          onSubmit={onBenefitSubmit}
-          isSubmitting={addBenefitMut.isPending}
         >
-          <div className="flex flex-col gap-4">
+          <form onSubmit={onBenefitSubmit} className="p-6 flex flex-col gap-4">
             <div>
               <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Concepto</label>
               <input name="name" required className={inputCls} placeholder="Ej: Vehículo, Viáticos, Comunicaciones" />
@@ -166,7 +164,17 @@ export default function AdminEmployeeDetailPage() {
                 <option value="false">No (exento de ISR)</option>
               </select>
             </div>
-          </div>
+            <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+              <button type="button" onClick={() => setBenefitModal({ open: false, data: null })}
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] border border-gray-200 text-gray-600 hover:border-gray-400">
+                Cancelar
+              </button>
+              <button type="submit" disabled={addBenefitMut.isPending}
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50">
+                {addBenefitMut.isPending ? 'Guardando…' : 'Agregar'}
+              </button>
+            </div>
+          </form>
         </FormModal>
       )}
     </div>

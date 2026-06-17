@@ -173,8 +173,8 @@ export default function AdminPayrollDetailPage() {
 
       {/* Modal pago */}
       {payModal && (
-        <FormModal title="Registrar Pago" onClose={() => setPayModal(false)} onSubmit={onPaySubmit} isSubmitting={payMut.isPending}>
-          <div className="flex flex-col gap-4">
+        <FormModal title="Registrar Pago" onClose={() => setPayModal(false)}>
+          <form onSubmit={onPaySubmit} className="p-6 flex flex-col gap-4">
             <div>
               <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Método de pago</label>
               <select name="paymentMethod" className={inputCls}>
@@ -195,17 +195,39 @@ export default function AdminPayrollDetailPage() {
               <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Referencia</label>
               <input name="paymentReference" className={inputCls} />
             </div>
-          </div>
+            <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+              <button type="button" onClick={() => setPayModal(false)}
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] border border-gray-200 text-gray-600 hover:border-gray-400">
+                Cancelar
+              </button>
+              <button type="submit" disabled={payMut.isPending}
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50">
+                {payMut.isPending ? 'Guardando…' : 'Registrar Pago'}
+              </button>
+            </div>
+          </form>
         </FormModal>
       )}
 
       {/* Modal anular */}
       {voidModal && (
-        <FormModal title="Anular Nómina" onClose={() => setVoidModal(false)} onSubmit={onVoidSubmit} isSubmitting={voidMut.isPending}>
-          <div>
-            <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Motivo de anulación</label>
-            <textarea name="voidReason" required rows={3} minLength={5} className={inputCls} />
-          </div>
+        <FormModal title="Anular Nómina" onClose={() => setVoidModal(false)}>
+          <form onSubmit={onVoidSubmit} className="p-6 flex flex-col gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Motivo de anulación</label>
+              <textarea name="voidReason" required rows={3} minLength={5} className={inputCls} />
+            </div>
+            <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+              <button type="button" onClick={() => setVoidModal(false)}
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] border border-gray-200 text-gray-600 hover:border-gray-400">
+                Cancelar
+              </button>
+              <button type="submit" disabled={voidMut.isPending}
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-red-600 text-white disabled:opacity-50">
+                {voidMut.isPending ? 'Anulando…' : 'Confirmar Anulación'}
+              </button>
+            </div>
+          </form>
         </FormModal>
       )}
     </div>

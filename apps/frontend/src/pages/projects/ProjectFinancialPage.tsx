@@ -1455,10 +1455,8 @@ export default function ProjectFinancialPage() {
       {extraModal.open && <FormModal
         onClose={() => setExtraModal({ open: false, editing: null })}
         title={extraModal.editing ? 'EDITAR GASTO EXTRAORDINARIO' : 'NUEVO GASTO EXTRAORDINARIO'}
-        onSubmit={submitExtraForm}
-        isSubmitting={createExtraMut.isPending || updateExtraMut.isPending}
       >
-        <div className="space-y-4">
+        <form onSubmit={submitExtraForm} className="p-5 space-y-4">
           <div>
             <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wider text-gray-600 mb-1">
               Descripción *
@@ -1531,7 +1529,24 @@ export default function ProjectFinancialPage() {
               placeholder="Detalles adicionales..."
             />
           </div>
-        </div>
+
+          <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => setExtraModal({ open: false, editing: null })}
+              className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] border border-gray-200 text-gray-600 hover:border-gray-400"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={createExtraMut.isPending || updateExtraMut.isPending}
+              className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50"
+            >
+              {createExtraMut.isPending || updateExtraMut.isPending ? 'Guardando…' : (extraModal.editing ? 'Guardar cambios' : 'Registrar')}
+            </button>
+          </div>
+        </form>
       </FormModal>}
     </div>
   );
