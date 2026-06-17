@@ -6,6 +6,7 @@ import {
   assignSupplierToProject,
   removeSupplierFromProject,
   importFromPayments,
+  getAiSuggestions,
 } from './project-suppliers.service';
 
 const router = Router({ mergeParams: true });
@@ -40,6 +41,16 @@ router.post('/import-from-payments', authorize('admin', 'supervisor'), async (re
     res.json({ success: true, data: result });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Error importando suplidores' });
+  }
+});
+
+// GET /projects/:projectId/suppliers/suggestions
+router.get('/suggestions', authorize('admin', 'supervisor'), async (req: Request, res: Response) => {
+  try {
+    const data = await getAiSuggestions(req.params.projectId);
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Error generando sugerencias' });
   }
 });
 
