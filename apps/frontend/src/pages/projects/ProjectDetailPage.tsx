@@ -5,9 +5,9 @@ import { useProjectItems, useCreateProjectItem, useUpdateProjectItem } from '../
 import {
   ArrowLeft, Plus, FolderOpen, MapPin, User,
   Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight, Upload,
-  Sparkles, Loader2, RefreshCw, ChevronDown, ChevronUp, Trash2,
+  Sparkles, Loader2, RefreshCw, ChevronDown, ChevronUp, Trash2, UserPlus,
 } from 'lucide-react';
-import { projectsApi, expensesApi, quotationsApi } from '../../api';
+import { projectsApi, expensesApi, quotationsApi, projectSuppliersApi, suppliersApi, type ProjectSupplierEntry } from '../../api';
 import { useRole } from '../../hooks/useRole';
 import { PAYMENT_METHOD_LABELS, PROJECT_STATUS_LABELS } from '../../types';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
@@ -38,6 +38,38 @@ export default function ProjectDetailPage() {
   const { isSupervisor: canEdit, isAdmin } = useRole();
   const qc = useQueryClient();
   const canManageBudgets = canEdit || isAdmin;
+  const canManageSuppliers = canEdit || isAdmin;
+
+  const [showAddSupplier, setShowAddSupplier] = useState(false);
+  const [addSupplierId, setAddSupplierId] = useState('');
+
+  const { data: projSuppliersRes } = useQuery({
+    queryKey: ['project-suppliers', id],
+    queryFn: () => projectSuppliersApi.list(id!),
+    enabled: !!id,
+  });
+  const assignedSuppliers: ProjectSupplierEntry[] = projSuppliersRes?.data.data ?? [];
+
+  const { data: allSuppliersRes } = useQuery({
+    queryKey: ['suppliers-all'],
+    queryFn: () => suppliersApi.list({ onlyActive: true }),
+    enabled: canManageSuppliers && showAddSupplier,
+  });
+  const allSuppliers = allSuppliersRes?.data.data ?? [];
+
+  const assignMut = useMutation({
+    mutationFn: (supplierId: string) => projectSuppliersApi.assign(id!, supplierId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['project-suppliers', id] });
+      setShowAddSupplier(false);
+      setAddSupplierId('');
+    },
+  });
+
+  const removeMut = useMutation({
+    mutationFn: (supplierId: string) => projectSuppliersApi.remove(id!, supplierId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['project-suppliers', id] }),
+  });
 
   // ── Sub-presupuestos por categoría ───────────────────────
   const { data: categoryBudgets = [] } = useQuery({
@@ -1067,6 +1099,86 @@ export default function ProjectDetailPage() {
                       </div>
                     </td>
                   )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Suplidores asignados */}
+      <div className="bg-white border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-['Barlow_Condensed'] text-sm font-bold uppercase text-gray-500 tracking-[0.1em]">
+            Suplidores Asignados
+          </h2>
+          {canManageSuppliers && (
+            <button
+              onClick={() => setShowAddSupplier(true)}
+              className="flex items-center gap-1 text-xs bg-[#F5C218] text-[#1C1C1C] px-3 py-1 font-bold uppercase font-['Barlow_Condensed']"
+            >
+              <UserPlus size={12} /> Agregar
+            </button>
+          )}
+        </div>
+
+        {showAddSupplier && (
+          <div className="flex gap-2 mb-4">
+            <select
+              value={addSupplierId}
+              onChange={(e) => setAddSupplierId(e.target.value)}
+              className="flex-1 border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218]"
+            >
+              <option value="">— Seleccionar suplidor —</option>
+              {allSuppliers
+                .filter((s) => !assignedSuppliers.some((a) => a.supplierId === s.id))
+                .map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}{s.rnc ? ` (${s.rnc})` : ''}</option>
+                ))}
+            </select>
+            <button
+              onClick={() => addSupplierId && assignMut.mutate(addSupplierId)}
+              disabled={!addSupplierId || assignMut.isPending}
+              className="px-4 py-2 text-xs font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50"
+            >
+              Asignar
+            </button>
+            <button
+              onClick={() => { setShowAddSupplier(false); setAddSupplierId(''); }}
+              className="px-3 py-2 text-xs border border-gray-200 text-gray-600 font-['Barlow_Condensed'] uppercase"
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
+
+        {assignedSuppliers.length === 0 ? (
+          <p className="text-sm text-gray-400 font-['DM_Sans']">Sin suplidores asignados</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-[#1C1C1C]">
+                {['Nombre', 'RNC', ''].map((h) => (
+                  <th key={h} className="text-left px-3 py-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.1em]">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {assignedSuppliers.map((a) => (
+                <tr key={a.id} className="border-t border-gray-100">
+                  <td className="px-3 py-2 font-['DM_Sans']">{a.supplier.name}</td>
+                  <td className="px-3 py-2 font-['Space_Mono'] text-xs text-gray-500">{a.supplier.rnc ?? '—'}</td>
+                  <td className="px-3 py-2">
+                    {canManageSuppliers && (
+                      <button
+                        onClick={() => removeMut.mutate(a.supplierId)}
+                        disabled={removeMut.isPending}
+                        className="text-red-400 hover:text-red-600"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
