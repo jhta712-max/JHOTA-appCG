@@ -1123,11 +1123,11 @@ export default function ProjectDetailPage() {
         </div>
 
         {showAddSupplier && (
-          <div className="flex gap-2 mb-4">
+          <div className="flex flex-col gap-2 mb-4">
             <select
               value={addSupplierId}
               onChange={(e) => setAddSupplierId(e.target.value)}
-              className="flex-1 border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218]"
+              className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218]"
             >
               <option value="">— Seleccionar suplidor —</option>
               {allSuppliers
@@ -1136,19 +1136,21 @@ export default function ProjectDetailPage() {
                   <option key={s.id} value={s.id}>{s.name}{s.rnc ? ` (${s.rnc})` : ''}</option>
                 ))}
             </select>
-            <button
-              onClick={() => addSupplierId && assignMut.mutate(addSupplierId)}
-              disabled={!addSupplierId || assignMut.isPending}
-              className="px-4 py-2 text-xs font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50"
-            >
-              Asignar
-            </button>
-            <button
-              onClick={() => { setShowAddSupplier(false); setAddSupplierId(''); }}
-              className="px-3 py-2 text-xs border border-gray-200 text-gray-600 font-['Barlow_Condensed'] uppercase"
-            >
-              Cancelar
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => addSupplierId && assignMut.mutate(addSupplierId)}
+                disabled={!addSupplierId || assignMut.isPending}
+                className="flex-1 py-2 text-xs font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50"
+              >
+                {assignMut.isPending ? 'Asignando…' : 'Asignar'}
+              </button>
+              <button
+                onClick={() => { setShowAddSupplier(false); setAddSupplierId(''); }}
+                className="px-4 py-2 text-xs border border-gray-200 text-gray-600 font-['Barlow_Condensed'] uppercase"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         )}
 
