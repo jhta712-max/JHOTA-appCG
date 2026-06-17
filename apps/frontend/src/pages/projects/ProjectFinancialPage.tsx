@@ -598,7 +598,7 @@ export default function ProjectFinancialPage() {
               })}
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              {(margenNetoPct ?? 0).toFixed(1)}% sobre cubicado
+              {(margenNetoPct ?? 0).toFixed(1)}% sobre cobrado
             </p>
           </div>
 
@@ -640,7 +640,7 @@ export default function ProjectFinancialPage() {
                   className={`text-xs mt-0.5 ${margenColor}`}
                   style={{ fontFamily: "'Space Mono', monospace" }}
                 >
-                  {margenPct >= 0 ? '+' : ''}{margenPct.toFixed(1)}% sobre cubicado
+                  {margenPct >= 0 ? '+' : ''}{margenPct.toFixed(1)}% sobre cobrado
                 </p>
               </>
             )}

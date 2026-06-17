@@ -478,7 +478,7 @@ export async function getFinancialAnalysis(projectId: string) {
   const totalCubicado       = project.cubicaciones.reduce((s: number, c: any) => s + Number(c.amount), 0);
   const totalAnticipos      = project.anticipos.reduce((s: number, a: any) => s + Number(a.amount), 0);
   const totalCobrado        = totalAnticipos + totalCubicado;
-  const margen              = totalCubicado - totalGastado;
+  const margen              = totalCobrado - totalGastado;
   const totalExtraordinario = project.extraordinaryExpenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
   const margenNeto          = margen - totalExtraordinario;
   const lastProgress        = project.cubicaciones.length > 0
@@ -500,10 +500,10 @@ export async function getFinancialAnalysis(projectId: string) {
       totalCobrado,
       totalGastado,
       margen,
-      margenPct:          totalCubicado > 0 ? Math.round((margen / totalCubicado) * 10000) / 100 : 0,
+      margenPct:          totalCobrado > 0 ? Math.round((margen / totalCobrado) * 10000) / 100 : 0,
       totalExtraordinario,
       margenNeto,
-      margenNetoPct:      totalCubicado > 0 ? Math.round((margenNeto / totalCubicado) * 10000) / 100 : 0,
+      margenNetoPct:      totalCobrado > 0 ? Math.round((margenNeto / totalCobrado) * 10000) / 100 : 0,
       lastProgressPct:    lastProgress,
       expenseCount:       expenseStats._count.id,
     },
