@@ -1228,7 +1228,7 @@ export async function generateAllProjectsExpensesExcel(
       fiscalVoucher: true,
       registeredBy: { select: { name: true } },
     },
-    orderBy: [{ projectId: 'asc' }, { expenseDate: 'asc' }],
+    orderBy: [{ expenseDate: 'asc' }],
   });
 
   // Pagos de líneas de crédito de proyectos
