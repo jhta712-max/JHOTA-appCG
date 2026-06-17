@@ -8,7 +8,8 @@ import { getCreditSummary, generateCreditReportXlsx } from './credit-summary.ser
 
 export async function list(req: Request, res: Response, next: NextFunction) {
   try {
-    const data = await service.listSuppliers(req.query.search as string, req.query.onlyActive === 'true');
+    const projectId = req.query.projectId as string | undefined;
+    const data = await service.listSuppliers(req.query.search as string, req.query.onlyActive === 'true', projectId);
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }
