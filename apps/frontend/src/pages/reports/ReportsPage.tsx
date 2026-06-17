@@ -264,9 +264,31 @@ export default function ReportsPage() {
               ]}
             />
 
-            {/* Reporte fiscal NCF */}
+            {/* Gastos todos los proyectos — directos + pagos de línea de crédito */}
             <ReportCard
               index={3}
+              icon={<FolderOpen className="w-5 h-5" />}
+              title="Gastos por todos los proyectos"
+              description="Gastos directos + pagos de líneas de crédito consolidados. Los gastos vinculados a crédito de suplidor no salen como gasto directo — aparecen como pago de línea. 3 hojas: Gastos directos, Pagos de crédito, Resumen por proyecto."
+              actions={[
+                {
+                  label: 'Descargar Excel',
+                  isPrimary: true,
+                  icon: <FileSpreadsheet className="w-3.5 h-3.5" />,
+                  onClick: () => {
+                    const q = qs();
+                    return downloadReport(
+                      `/all-projects-expenses.xlsx${q ? '?' + q : ''}`,
+                      `gastos-todos-proyectos-${today}.xlsx`,
+                    );
+                  },
+                },
+              ]}
+            />
+
+            {/* Reporte fiscal NCF */}
+            <ReportCard
+              index={4}
               icon={<Receipt className="w-5 h-5" />}
               title="Comprobantes fiscales (NCF)"
               description="Listado de todos los gastos con NCF: número de comprobante, RNC del suplidor, nombre, ITBIS y monto. Formato listo para revisión DGII."
@@ -289,7 +311,7 @@ export default function ReportsPage() {
             {/* Estado de crédito por suplidor */}
             {(isAdmin || isSupervisor) && (
               <ReportCard
-                index={4}
+                index={5}
                 icon={<Zap className="w-5 h-5" />}
                 title="Estado de Crédito por Suplidor"
                 description="Snapshot actual de todas las líneas de crédito con suplidores — límite, consumido, pendiente y disponible."
@@ -312,7 +334,7 @@ export default function ReportsPage() {
 
             {/* Varianza presupuesto vs. ejecución */}
             <ReportCard
-              index={5}
+              index={6}
               icon={<BarChart3 className="w-5 h-5" />}
               title="Varianza Presupuesto vs. Ejecución"
               description="Por proyecto: presupuesto estimado vs. ejecutado (gastos activos) vs. comprometido (órdenes pendientes/en proceso). Semáforo de alerta en >85% y >100%. Exportable por proyecto o para todos."
