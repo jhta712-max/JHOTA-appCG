@@ -266,8 +266,14 @@ export default function PaymentOrdersPage() {
   });
 
   const { data: activeSuppliers = [] } = useQuery({
-    queryKey: ['suppliers', 'active-with-bank'],
-    queryFn:  () => suppliersApi.list({ onlyActive: true }),
+    queryKey: ['suppliers', 'active-with-bank', isAdmin ? 'all' : (orderForm.projectId || 'none')],
+    queryFn:  () => {
+      const projectId = orderForm.projectId || undefined;
+      if (!isAdmin && projectId) {
+        return suppliersApi.list({ onlyActive: true, projectId });
+      }
+      return suppliersApi.list({ onlyActive: true });
+    },
     select:   (r) => r.data.data as Supplier[],
     enabled:  orderModal,
   });
