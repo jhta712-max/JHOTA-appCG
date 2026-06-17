@@ -478,9 +478,9 @@ export async function getFinancialAnalysis(projectId: string) {
   const totalCubicado       = project.cubicaciones.reduce((s: number, c: any) => s + Number(c.amount), 0);
   const totalAnticipos      = project.anticipos.reduce((s: number, a: any) => s + Number(a.amount), 0);
   const totalCobrado        = totalAnticipos + totalCubicado;
-  const margen              = totalCobrado - totalGastado;
   const totalExtraordinario = project.extraordinaryExpenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
-  const margenNeto          = margen - totalExtraordinario;
+  const margen              = totalCobrado - totalGastado - totalExtraordinario;
+  const margenNeto          = margen;
   const lastProgress        = project.cubicaciones.length > 0
     ? Number(project.cubicaciones[project.cubicaciones.length - 1].progressPct)
     : 0;
