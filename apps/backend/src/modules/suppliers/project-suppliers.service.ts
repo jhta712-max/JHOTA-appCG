@@ -50,3 +50,31 @@ export async function removeSupplierFromProject(projectId: string, supplierId: s
     where: { projectId_supplierId: { projectId, supplierId } },
   });
 }
+
+export async function importFromPayments(projectId: string): Promise<{ imported: number; skipped: number }> {
+  const orders = await prisma.paymentOrder.findMany({
+    where: {
+      projectId,
+      status: { not: 'VOIDED' },
+    },
+    select: { supplierId: true },
+    distinct: ['supplierId'],
+  });
+
+  let imported = 0;
+  let skipped = 0;
+
+  for (const order of orders) {
+    try {
+      await prisma.projectSupplier.create({
+        data: { projectId, supplierId: order.supplierId },
+      });
+      imported++;
+    } catch (e: any) {
+      if (e.code === 'P2002') skipped++;
+      else throw e;
+    }
+  }
+
+  return { imported, skipped };
+}
