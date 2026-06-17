@@ -339,6 +339,31 @@ export default function ExportPage() {
               />
             </div>
 
+            {/* Gastos todos los proyectos (directos + pagos de crédito) */}
+            <div className="bg-white border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
+                  <FolderOpen className="w-4 h-4 text-[#F5C218]" />
+                </div>
+                <div>
+                  <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
+                    Gastos por Todos los Proyectos
+                  </h3>
+                  <p className="font-['DM_Sans'] text-xs text-gray-500">
+                    Gastos directos + pagos de línea de crédito. Los ítems vinculados a crédito salen como pago de línea, no como gasto directo.
+                  </p>
+                </div>
+              </div>
+              <DownloadButton
+                label="Descargar Excel"
+                icon={<FileSpreadsheet className="w-3.5 h-3.5" />}
+                onClick={() => {
+                  const q = qs();
+                  return downloadFile(`/all-projects-expenses.xlsx${q ? '?' + q : ''}`, `gastos-todos-proyectos-${today}.xlsx`);
+                }}
+              />
+            </div>
+
             {/* Gastos de proyecto específico */}
             <div className="bg-white border border-gray-200 p-4 space-y-3">
               <div className="flex items-center gap-3">

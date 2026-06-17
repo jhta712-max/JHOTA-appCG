@@ -9,6 +9,7 @@ import {
   generateFullExpensesExcel,
   generate606Excel,
   generateVarianceExcel,
+  generateAllProjectsExpensesExcel,
 } from './reports.service';
 
 const router = Router();
@@ -99,6 +100,19 @@ router.get('/606.xlsx', async (req: Request, res: Response, next: NextFunction) 
 router.get('/variance.xlsx', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await generateVarianceExcel(res, req.query.projectId as string | undefined);
+  } catch (err) { next(err); }
+});
+
+// ── GET /reports/all-projects-expenses.xlsx
+// Gastos directos + pagos de líneas de crédito, consolidado por proyecto
+// Los gastos vinculados a línea de crédito NO aparecen — solo sus pagos
+router.get('/all-projects-expenses.xlsx', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await generateAllProjectsExpensesExcel({
+      startDate: req.query.startDate as string | undefined,
+      endDate:   req.query.endDate   as string | undefined,
+      projectId: req.query.projectId as string | undefined,
+    }, res);
   } catch (err) { next(err); }
 });
 

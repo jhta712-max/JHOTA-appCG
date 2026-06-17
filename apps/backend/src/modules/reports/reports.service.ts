@@ -1192,3 +1192,293 @@ export async function generateVarianceExcel(res: Response, projectId?: string) {
   await wb.xlsx.write(res);
   res.end();
 }
+
+// ─── REPORTE: Gastos por todos los proyectos (con líneas de crédito) ──────────
+//
+// Regla de negocio:
+//  • Gastos con creditLineId → NO se listan como gasto directo.
+//    En su lugar, los SupplierCreditPayment de esa línea aparecen como
+//    un pago de línea de crédito.
+//  • Gastos sin creditLineId → gasto directo normal.
+
+export async function generateAllProjectsExpensesExcel(
+  filters: { startDate?: string; endDate?: string; projectId?: string },
+  res: Response,
+) {
+  const dateWhere: any = {};
+  if (filters.startDate || filters.endDate) {
+    dateWhere.expenseDate = {};
+    if (filters.startDate) dateWhere.expenseDate.gte = new Date(filters.startDate);
+    if (filters.endDate)   dateWhere.expenseDate.lte = new Date(filters.endDate);
+  }
+
+  const projectWhere = filters.projectId ? { id: filters.projectId } : { status: { not: 'CANCELLED' as const } };
+
+  const projects = await prisma.project.findMany({
+    where: projectWhere,
+    orderBy: { code: 'asc' },
+  });
+
+  // Gastos directos (sin línea de crédito), ACTIVE solamente
+  const directExpenses = await prisma.expense.findMany({
+    where: { status: 'ACTIVE', creditLineId: null, ...dateWhere },
+    include: {
+      project:      true,
+      category:     true,
+      fiscalVoucher: true,
+      registeredBy: { select: { name: true } },
+    },
+    orderBy: [{ projectId: 'asc' }, { expenseDate: 'asc' }],
+  });
+
+  // Pagos de líneas de crédito de proyectos
+  const creditPayments = await prisma.supplierCreditPayment.findMany({
+    where: filters.startDate || filters.endDate ? {
+      paymentDate: {
+        ...(filters.startDate ? { gte: new Date(filters.startDate) } : {}),
+        ...(filters.endDate   ? { lte: new Date(filters.endDate)   } : {}),
+      },
+    } : {},
+    include: {
+      creditLine: {
+        include: { supplier: true, expenses: { where: { status: 'ACTIVE' }, select: { projectId: true } } },
+      },
+      createdBy: { select: { name: true } },
+    },
+    orderBy: { paymentDate: 'asc' },
+  });
+
+  // ── Workbook ────────────────────────────────────────────────────────────────
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Sistema Control de Gastos';
+
+  const generatedAt = fmtDate(new Date().toISOString());
+
+  // ── Hoja 1: Gastos directos por proyecto ────────────────────────────────────
+  const wsD = wb.addWorksheet('Gastos Directos', {
+    pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+  });
+
+  wsD.mergeCells('A1:I1');
+  wsD.getCell('A1').value = 'GASTOS DIRECTOS POR PROYECTO — TODOS LOS PROYECTOS';
+  wsD.getCell('A1').font  = { bold: true, size: 13, color: { argb: 'FF1E3A5F' } };
+  wsD.getCell('A1').fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+  wsD.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
+  wsD.getRow(1).height = 28;
+  wsD.mergeCells('A2:I2');
+  wsD.getCell('A2').value = `Generado: ${generatedAt}  |  Solo gastos sin línea de crédito`;
+  wsD.getCell('A2').font  = { size: 9, color: { argb: 'FF6B7280' } };
+  wsD.getCell('A2').alignment = { horizontal: 'center' };
+  wsD.getRow(3).height = 4;
+
+  const dHeaders = [
+    { header: 'Proyecto',       key: 'project',  width: 28 },
+    { header: 'Cód. Proyecto',  key: 'code',     width: 14 },
+    { header: 'Fecha',          key: 'date',     width: 13 },
+    { header: 'Descripción',    key: 'desc',     width: 35 },
+    { header: 'Categoría',      key: 'cat',      width: 20 },
+    { header: 'Método Pago',    key: 'method',   width: 15 },
+    { header: 'Monto (RD$)',    key: 'amount',   width: 16 },
+    { header: 'NCF',            key: 'ncf',      width: 16 },
+    { header: 'Registrado por', key: 'by',       width: 20 },
+  ];
+  wsD.columns = dHeaders.map(h => ({ key: h.key, width: h.width }));
+  const dHRow = wsD.getRow(4);
+  dHeaders.forEach((h, i) => {
+    const cell = dHRow.getCell(i + 1);
+    cell.value = h.header;
+    Object.assign(cell, headerStyle(wb));
+  });
+  dHRow.height = 22;
+
+  let dTotal = 0;
+  directExpenses.forEach((e, idx) => {
+    if (filters.projectId && e.projectId !== filters.projectId) return;
+    const row = wsD.addRow({
+      project: e.project.name,
+      code:    e.project.code,
+      date:    fmtDate(e.expenseDate),
+      desc:    e.description,
+      cat:     e.category.name,
+      method:  PAYMENT_LABELS[e.paymentMethod] ?? e.paymentMethod,
+      amount:  Number(e.amount),
+      ncf:     e.fiscalVoucher?.ncf ?? '',
+      by:      e.registeredBy.name,
+    });
+    dTotal += Number(e.amount);
+    const fill = idx % 2 === 0
+      ? { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF9FAFB' } }
+      : { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFFFFF' } };
+    row.eachCell(cell => { cell.fill = fill; cell.alignment = { vertical: 'middle' }; });
+    row.getCell('amount').numFmt = '"RD$"#,##0.00';
+    row.getCell('amount').alignment = { horizontal: 'right' };
+  });
+
+  const dTotalRow = wsD.addRow({ project: 'TOTAL GASTOS DIRECTOS', amount: dTotal });
+  dTotalRow.getCell('project').font = { bold: true };
+  dTotalRow.getCell('amount').numFmt = '"RD$"#,##0.00';
+  dTotalRow.getCell('amount').font = { bold: true };
+  dTotalRow.getCell('amount').alignment = { horizontal: 'right' };
+  dTotalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+
+  // ── Hoja 2: Pagos de líneas de crédito ─────────────────────────────────────
+  const wsC = wb.addWorksheet('Pagos Líneas de Crédito', {
+    pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+  });
+
+  wsC.mergeCells('A1:H1');
+  wsC.getCell('A1').value = 'PAGOS DE LÍNEAS DE CRÉDITO — TODOS LOS PROYECTOS';
+  wsC.getCell('A1').font  = { bold: true, size: 13, color: { argb: 'FF1E3A5F' } };
+  wsC.getCell('A1').fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+  wsC.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
+  wsC.getRow(1).height = 28;
+  wsC.mergeCells('A2:H2');
+  wsC.getCell('A2').value = `Generado: ${generatedAt}  |  Pagos efectuados a suplidores en línea de crédito`;
+  wsC.getCell('A2').font  = { size: 9, color: { argb: 'FF6B7280' } };
+  wsC.getCell('A2').alignment = { horizontal: 'center' };
+  wsC.getRow(3).height = 4;
+
+  const cHeaders = [
+    { header: 'Fecha Pago',      key: 'date',      width: 13 },
+    { header: 'Suplidor',        key: 'supplier',  width: 28 },
+    { header: 'Línea de Crédito', key: 'line',     width: 28 },
+    { header: 'Método Pago',     key: 'method',    width: 15 },
+    { header: 'Referencia',      key: 'ref',       width: 18 },
+    { header: 'Monto Pagado (RD$)', key: 'amount', width: 18 },
+    { header: 'Proyectos vinculados', key: 'projects', width: 32 },
+    { header: 'Registrado por',  key: 'by',        width: 20 },
+  ];
+  wsC.columns = cHeaders.map(h => ({ key: h.key, width: h.width }));
+  const cHRow = wsC.getRow(4);
+  cHeaders.forEach((h, i) => {
+    const cell = cHRow.getCell(i + 1);
+    cell.value = h.header;
+    Object.assign(cell, headerStyle(wb));
+  });
+  cHRow.height = 22;
+
+  // Obtener nombres de proyectos para los vinculos
+  const projectMap = new Map(projects.map(p => [p.id, `${p.code} — ${p.name}`]));
+
+  let cTotal = 0;
+  creditPayments.forEach((cp, idx) => {
+    // Proyectos vinculados a esta línea de crédito (deduplicados)
+    const linkedProjectIds = [...new Set(cp.creditLine.expenses.map(e => e.projectId).filter(Boolean))];
+    const linkedProjects = linkedProjectIds
+      .map(pid => pid ? (projectMap.get(pid) ?? pid) : '')
+      .filter(Boolean)
+      .join(' / ');
+
+    const row = wsC.addRow({
+      date:     fmtDate(cp.paymentDate),
+      supplier: cp.creditLine.supplier.name,
+      line:     cp.creditLine.notes ?? `Límite RD$${Number(cp.creditLine.creditLimit).toLocaleString("es-DO")}`,
+      method:   PAYMENT_LABELS[cp.paymentMethod] ?? cp.paymentMethod,
+      ref:      cp.reference ?? '',
+      amount:   Number(cp.amount),
+      projects: linkedProjects || 'N/A',
+      by:       cp.createdBy.name,
+    });
+    cTotal += Number(cp.amount);
+    const fill = idx % 2 === 0
+      ? { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF9FAFB' } }
+      : { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFFFFF' } };
+    row.eachCell(cell => { cell.fill = fill; cell.alignment = { vertical: 'middle' }; });
+    row.getCell('amount').numFmt = '"RD$"#,##0.00';
+    row.getCell('amount').alignment = { horizontal: 'right' };
+  });
+
+  const cTotalRow = wsC.addRow({ date: 'TOTAL PAGOS', amount: cTotal });
+  cTotalRow.getCell('date').font = { bold: true };
+  cTotalRow.getCell('amount').numFmt = '"RD$"#,##0.00';
+  cTotalRow.getCell('amount').font = { bold: true };
+  cTotalRow.getCell('amount').alignment = { horizontal: 'right' };
+  cTotalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+
+  // ── Hoja 3: Resumen por proyecto ────────────────────────────────────────────
+  const wsS = wb.addWorksheet('Resumen por Proyecto', {
+    pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true },
+  });
+
+  wsS.mergeCells('A1:F1');
+  wsS.getCell('A1').value = 'RESUMEN CONSOLIDADO POR PROYECTO';
+  wsS.getCell('A1').font  = { bold: true, size: 13, color: { argb: 'FF1E3A5F' } };
+  wsS.getCell('A1').fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+  wsS.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
+  wsS.getRow(1).height = 28;
+  wsS.mergeCells('A2:F2');
+  wsS.getCell('A2').value = `Generado: ${generatedAt}  |  Gasto directo + pagos de crédito por proyecto`;
+  wsS.getCell('A2').font  = { size: 9, color: { argb: 'FF6B7280' } };
+  wsS.getCell('A2').alignment = { horizontal: 'center' };
+  wsS.getRow(3).height = 4;
+
+  const sHeaders = [
+    { header: 'Proyecto',            key: 'project',   width: 30 },
+    { header: 'Cód.',                key: 'code',      width: 12 },
+    { header: 'Presupuesto Est.',    key: 'budget',    width: 18 },
+    { header: 'Gastos Directos',     key: 'direct',    width: 18 },
+    { header: 'Pagos Crédito',       key: 'credit',    width: 18 },
+    { header: 'Total Ejecutado',     key: 'total',     width: 18 },
+  ];
+  wsS.columns = sHeaders.map(h => ({ key: h.key, width: h.width }));
+  const sHRow = wsS.getRow(4);
+  sHeaders.forEach((h, i) => {
+    const cell = sHRow.getCell(i + 1);
+    cell.value = h.header;
+    Object.assign(cell, headerStyle(wb));
+  });
+  sHRow.height = 22;
+
+  // Agrupar gastos directos por proyecto
+  const directByProject = new Map<string, number>();
+  for (const e of directExpenses) {
+    directByProject.set(e.projectId, (directByProject.get(e.projectId) ?? 0) + Number(e.amount));
+  }
+
+  // Agrupar pagos de crédito por proyecto (prorrateado entre proyectos vinculados)
+  const creditByProject = new Map<string, number>();
+  for (const cp of creditPayments) {
+    const linkedPids = [...new Set(cp.creditLine.expenses.map(e => e.projectId).filter(Boolean) as string[])];
+    if (linkedPids.length === 0) continue;
+    const share = Number(cp.amount) / linkedPids.length;
+    for (const pid of linkedPids) {
+      creditByProject.set(pid, (creditByProject.get(pid) ?? 0) + share);
+    }
+  }
+
+  let sBudget = 0, sDirect = 0, sCredit = 0, sTotal = 0;
+
+  for (const p of projects) {
+    const direct = directByProject.get(p.id) ?? 0;
+    const credit = creditByProject.get(p.id) ?? 0;
+    const total  = direct + credit;
+    const budget = Number(p.estimatedBudget);
+    sBudget += budget; sDirect += direct; sCredit += credit; sTotal += total;
+
+    const row = wsS.addRow({ project: p.name, code: p.code, budget, direct, credit, total });
+    row.eachCell(cell => { cell.alignment = { vertical: 'middle' }; });
+    for (const key of ['budget', 'direct', 'credit', 'total']) {
+      row.getCell(key).numFmt = '"RD$"#,##0.00';
+      row.getCell(key).alignment = { horizontal: 'right' };
+    }
+    if (total > budget && budget > 0) {
+      row.getCell('total').font = { color: { argb: 'FFDC2626' }, bold: true };
+    }
+  }
+
+  const sTotalRow = wsS.addRow({ project: 'TOTALES', budget: sBudget, direct: sDirect, credit: sCredit, total: sTotal });
+  sTotalRow.getCell('project').font = { bold: true };
+  for (const key of ['budget', 'direct', 'credit', 'total']) {
+    sTotalRow.getCell(key).numFmt = '"RD$"#,##0.00';
+    sTotalRow.getCell(key).font = { bold: true };
+    sTotalRow.getCell(key).alignment = { horizontal: 'right' };
+  }
+  sTotalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+
+  // ── Enviar respuesta ────────────────────────────────────────────────────────
+  const filename = `gastos-todos-proyectos-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  await wb.xlsx.write(res);
+  res.end();
+}
