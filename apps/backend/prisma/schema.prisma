@@ -832,6 +832,8 @@ model ProjectSupplier {
   supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, supplierId])
+  @@index([projectId])
+  @@index([supplierId])
   @@map("project_suppliers")
 }
 
