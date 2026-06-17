@@ -661,6 +661,14 @@ export const suppliersApi = {
 };
 
 // ── Suplidores de Proyecto ────────────────────────────────────
+export type SupplierSuggestion = {
+  supplierId: string;
+  name: string;
+  rnc: string | null;
+  reason: string;
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+};
+
 export const projectSuppliersApi = {
   list: (projectId: string) =>
     api.get<{ success: boolean; data: ProjectSupplierEntry[] }>(`/projects/${projectId}/suppliers`),
@@ -668,6 +676,10 @@ export const projectSuppliersApi = {
     api.post<{ success: boolean; data: ProjectSupplierEntry }>(`/projects/${projectId}/suppliers`, { supplierId }),
   remove: (projectId: string, supplierId: string) =>
     api.delete<{ success: boolean }>(`/projects/${projectId}/suppliers/${supplierId}`),
+  importFromPayments: (projectId: string) =>
+    api.post<{ success: boolean; data: { imported: number; skipped: number } }>(`/projects/${projectId}/suppliers/import-from-payments`, {}),
+  getSuggestions: (projectId: string) =>
+    api.get<{ success: boolean; data: SupplierSuggestion[] }>(`/projects/${projectId}/suppliers/suggestions`),
 };
 
 // ── Notificaciones in-app ─────────────────────────────────────

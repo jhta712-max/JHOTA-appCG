@@ -5,9 +5,9 @@ import { useProjectItems, useCreateProjectItem, useUpdateProjectItem } from '../
 import {
   ArrowLeft, Plus, FolderOpen, MapPin, User,
   Calendar, TrendingUp, Receipt, Edit, AlertCircle, BarChart2, FileText, ChevronRight, Upload,
-  Sparkles, Loader2, RefreshCw, ChevronDown, ChevronUp, Trash2, UserPlus,
+  Sparkles, Loader2, RefreshCw, ChevronDown, ChevronUp, Trash2, UserPlus, Download,
 } from 'lucide-react';
-import { projectsApi, expensesApi, quotationsApi, projectSuppliersApi, suppliersApi, type ProjectSupplierEntry } from '../../api';
+import { projectsApi, expensesApi, quotationsApi, projectSuppliersApi, suppliersApi, type ProjectSupplierEntry, type SupplierSuggestion } from '../../api';
 import { useRole } from '../../hooks/useRole';
 import { PAYMENT_METHOD_LABELS, PROJECT_STATUS_LABELS } from '../../types';
 import { QUOTATION_STATUS_LABELS, QUOTATION_STATUS_COLORS, type QuotationStatus } from '../../types/quotation';
@@ -70,6 +70,24 @@ export default function ProjectDetailPage() {
     mutationFn: (supplierId: string) => projectSuppliersApi.remove(id!, supplierId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['project-suppliers', id] }),
   });
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const importMut = useMutation({
+    mutationFn: () => projectSuppliersApi.importFromPayments(id!),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['project-suppliers', id] });
+      const { imported, skipped } = res.data.data;
+      alert(`Importados: ${imported} suplidores nuevos. Ya asignados previamente: ${skipped}.`);
+    },
+  });
+
+  const { data: suggestionsRes, isLoading: suggestionsLoading, refetch: fetchSuggestions } = useQuery({
+    queryKey: ['supplier-suggestions', id],
+    queryFn: () => projectSuppliersApi.getSuggestions(id!),
+    enabled: false,
+  });
+  const suggestions: SupplierSuggestion[] = suggestionsRes?.data.data ?? [];
 
   // ── Sub-presupuestos por categoría ───────────────────────
   const { data: categoryBudgets = [] } = useQuery({
@@ -1113,12 +1131,27 @@ export default function ProjectDetailPage() {
             Suplidores Asignados
           </h2>
           {canManageSuppliers && (
-            <button
-              onClick={() => setShowAddSupplier(true)}
-              className="flex items-center gap-1 text-xs bg-[#F5C218] text-[#1C1C1C] px-3 py-1 font-bold uppercase font-['Barlow_Condensed']"
-            >
-              <UserPlus size={12} /> Agregar
-            </button>
+            <div className="flex gap-2 flex-wrap justify-end">
+              <button
+                onClick={() => { setShowSuggestions((v) => !v); if (!showSuggestions) fetchSuggestions(); }}
+                className="flex items-center gap-1 text-xs border border-[#F5C218] text-[#F5C218] px-3 py-1 font-bold uppercase font-['Barlow_Condensed'] hover:bg-[#F5C218] hover:text-[#1C1C1C] transition-colors"
+              >
+                <Sparkles size={12} /> IA
+              </button>
+              <button
+                onClick={() => importMut.mutate()}
+                disabled={importMut.isPending}
+                className="flex items-center gap-1 text-xs border border-gray-300 text-gray-600 px-3 py-1 font-bold uppercase font-['Barlow_Condensed'] hover:border-gray-500 disabled:opacity-50"
+              >
+                <Download size={12} /> {importMut.isPending ? 'Importando…' : 'Importar'}
+              </button>
+              <button
+                onClick={() => setShowAddSupplier(true)}
+                className="flex items-center gap-1 text-xs bg-[#F5C218] text-[#1C1C1C] px-3 py-1 font-bold uppercase font-['Barlow_Condensed']"
+              >
+                <UserPlus size={12} /> Agregar
+              </button>
+            </div>
           )}
         </div>
 
@@ -1151,6 +1184,50 @@ export default function ProjectDetailPage() {
                 Cancelar
               </button>
             </div>
+          </div>
+        )}
+
+        {/* AI Suggestions Panel */}
+        {showSuggestions && (
+          <div className="mb-4 border border-[#F5C218]/30 bg-[#F5C218]/5 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="font-['Barlow_Condensed'] text-xs font-bold uppercase text-gray-600 tracking-[0.1em] flex items-center gap-1">
+                <Sparkles size={11} /> Sugerencias IA
+              </p>
+              <button onClick={() => setShowSuggestions(false)} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+            </div>
+            {suggestionsLoading ? (
+              <p className="text-xs text-gray-400 font-['DM_Sans']">Analizando historial de pagos…</p>
+            ) : suggestions.length === 0 ? (
+              <p className="text-xs text-gray-400 font-['DM_Sans']">Sin sugerencias. Agrega más pagos al proyecto para mejorar las sugerencias.</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {suggestions.map((s) => (
+                  <div key={s.supplierId} className="flex items-start justify-between gap-3 bg-white border border-gray-100 px-3 py-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold font-['DM_Sans'] text-gray-900">{s.name}</p>
+                      <p className="text-xs text-gray-500 font-['DM_Sans'] mt-0.5">{s.reason}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-[10px] font-bold font-['Barlow_Condensed'] uppercase px-2 py-0.5 ${
+                        s.confidence === 'HIGH'   ? 'bg-green-100 text-green-700' :
+                        s.confidence === 'MEDIUM' ? 'bg-amber-100 text-amber-700' :
+                                                    'bg-gray-100 text-gray-500'
+                      }`}>
+                        {s.confidence === 'HIGH' ? 'Alta' : s.confidence === 'MEDIUM' ? 'Media' : 'Baja'}
+                      </span>
+                      <button
+                        onClick={() => assignMut.mutate(s.supplierId)}
+                        disabled={assignMut.isPending}
+                        className="text-xs bg-[#F5C218] text-[#1C1C1C] px-2 py-1 font-bold uppercase font-['Barlow_Condensed'] disabled:opacity-50"
+                      >
+                        Asignar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
