@@ -184,6 +184,7 @@ export default function PaymentOrdersPage() {
   const [sessionOrders,    setSessionOrders]    = useState<PaymentOrder[]>([]);
 
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [quickCreateMode, setQuickCreateMode] = useState<'registered' | 'express'>('registered');
   const [editingOrder, setEditingOrder] = useState<PaymentOrder | null>(null);
   const [orderForm,    setOrderForm]    = useState<OrderForm>(EMPTY_ORDER);
   const [formErr,      setFormErr]      = useState('');
@@ -1095,14 +1096,21 @@ export default function PaymentOrdersPage() {
                     <option value="">— Selecciona suplidor —</option>
                     {activeSuppliers
                       .filter((s) => (s.bankAccounts && s.bankAccounts.length > 0) || (s.bank && s.accountNumber))
-                      .map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      .map((s) => <option key={s.id} value={s.id}>{s.isExpress ? `⚡ ${s.name}` : s.name}</option>)}
                   </select>
                   <button
                     type="button"
-                    onClick={() => setQuickCreateOpen(true)}
-                    className="shrink-0 px-3 py-2 bg-[#F5C218] text-[#1C1C1C] font-['Barlow_Condensed'] font-bold text-sm uppercase tracking-wide hover:bg-yellow-400 transition-colors"
+                    onClick={() => { setQuickCreateMode('registered'); setQuickCreateOpen(true); }}
+                    className="text-xs border border-gray-300 text-gray-600 px-3 py-1.5 font-bold uppercase font-['Barlow_Condensed'] hover:border-gray-500"
                   >
-                    + Nuevo
+                    + Registrado
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setQuickCreateMode('express'); setQuickCreateOpen(true); }}
+                    className="text-xs border border-[#F5C218] text-[#F5C218] px-3 py-1.5 font-bold uppercase font-['Barlow_Condensed'] hover:bg-[#F5C218] hover:text-[#1C1C1C] transition-colors"
+                  >
+                    ⚡ Express
                   </button>
                 </div>
                 {activeSuppliers.filter((s) => (!s.bankAccounts || s.bankAccounts.length === 0) && (!s.bank || !s.accountNumber)).length > 0 && (
@@ -1413,6 +1421,7 @@ export default function PaymentOrdersPage() {
       {/* ── Modal: Crear suplidor rápido ─────────────── */}
       <QuickCreateSupplierModal
         open={quickCreateOpen}
+        mode={quickCreateMode}
         onClose={() => setQuickCreateOpen(false)}
         onCreated={(supplier) => {
           qc.invalidateQueries({ queryKey: ['suppliers', 'active-with-bank'] });
