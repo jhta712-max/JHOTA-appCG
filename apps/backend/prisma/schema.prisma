@@ -803,6 +803,7 @@ model Supplier {
   accountType   String?  @map("account_type") @db.VarChar(30) // Cuenta de Ahorros | Cuenta Corriente | Cuenta Nómina
   accountNumber String?  @map("account_number") @db.VarChar(50)
   isActive      Boolean  @default(true) @map("is_active")
+  isExpress     Boolean  @default(false) @map("is_express")
   createdById   String   @map("created_by") @db.Uuid
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
