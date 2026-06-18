@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import FormModal from '../ui/FormModal';
 import { useRncValidation } from '../../hooks/useRncValidation';
 import { suppliersApi } from '../../api';
@@ -8,12 +8,15 @@ interface QuickCreateSupplierModalProps {
   open: boolean;
   onClose: () => void;
   onCreated: (supplier: { id: string; name: string }) => void;
+  mode?: 'registered' | 'express';
 }
 
 const ACCOUNT_TYPES = ['Cuenta de Ahorros', 'Cuenta Corriente', 'Cuenta Nómina'] as const;
 const CURRENCIES = ['RD$', 'US$', '€'] as const;
 
-export default function QuickCreateSupplierModal({ open, onClose, onCreated }: QuickCreateSupplierModalProps) {
+export default function QuickCreateSupplierModal({ open, onClose, onCreated, mode }: QuickCreateSupplierModalProps) {
+  const isExpress = (mode ?? 'registered') === 'express';
+
   const [name, setName]                   = useState('');
   const [rnc, setRnc]                     = useState('');
   const [phone, setPhone]                 = useState('');
@@ -24,9 +27,10 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated }: Q
   const [currency, setCurrency]           = useState<typeof CURRENCIES[number]>('RD$');
   const [error, setError]                 = useState('');
   const [saving, setSaving]               = useState(false);
+  const [showExtra, setShowExtra]         = useState(false);
 
   // Only validate RNC when modal is open — avoids DGII calls when closed
-  const rncValidation = useRncValidation(open ? rnc : '');
+  const rncValidation = useRncValidation(open && !isExpress ? rnc : '');
 
   // Auto-fill name from DGII when RNC is valid
   useEffect(() => {
@@ -39,7 +43,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated }: Q
     setName(''); setRnc(''); setPhone(''); setEmail('');
     setBankName(''); setAccountType('Cuenta de Ahorros');
     setAccountNumber(''); setCurrency('RD$');
-    setError('');
+    setError(''); setShowExtra(false);
   };
 
   const handleClose = () => {
@@ -69,6 +73,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated }: Q
         rnc:   rnc.trim()   || undefined,
         phone: phone.trim() || undefined,
         email: email.trim() || undefined,
+        isExpress,
       });
       supplierId   = res.data.data.id;
       supplierName = res.data.data.name;
@@ -102,7 +107,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated }: Q
   if (!open) return null;
 
   return (
-    <FormModal title="Nuevo Suplidor" onClose={handleClose} maxWidth="max-w-lg">
+    <FormModal title={isExpress ? 'NUEVO SUPLIDOR EXPRESS' : 'NUEVO SUPLIDOR'} onClose={handleClose} maxWidth="max-w-lg">
       <div className="p-6 space-y-5">
 
         {error && (
@@ -118,87 +123,170 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated }: Q
             Suplidor
           </p>
 
-          <div className="space-y-3">
-            {/* RNC */}
-            <div>
-              <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-                RNC <span className="font-normal normal-case text-gray-400">(opcional)</span>
-              </label>
-              <input
-                type="text"
-                value={rnc}
-                onChange={(e) => setRnc(e.target.value)}
-                placeholder="000000000"
-                maxLength={11}
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
-              />
-              {rncValidation.status === 'validating' && (
-                <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                  <Loader2 className="w-3 h-3 animate-spin" /> Verificando en DGII...
-                </p>
-              )}
-              {rncValidation.status === 'valid' && (
-                <p className="text-xs text-green-600 mt-1 font-bold">
-                  ✓ {rncValidation.name} — {rncValidation.dgiiStatus}
-                </p>
-              )}
-              {rncValidation.status === 'not_found' && (
-                <p className="text-xs text-amber-600 mt-1">⚠ RNC no encontrado en DGII</p>
-              )}
-              {rncValidation.status === 'invalid_format' && (
-                <p className="text-xs text-red-500 mt-1">Formato inválido (9 o 11 dígitos)</p>
-              )}
-              {rncValidation.status === 'unreachable' && (
-                <p className="text-xs text-gray-400 mt-1">DGII no disponible — se guardará sin validar</p>
-              )}
-            </div>
-
-            {/* Name */}
-            <div>
-              <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-                Nombre <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Nombre o razón social"
-                maxLength={200}
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              {/* Phone */}
+          {isExpress ? (
+            /* EXPRESS MODE: name first, then collapsible extras */
+            <div className="space-y-3">
+              {/* Name */}
               <div>
                 <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-                  Teléfono <span className="font-normal normal-case text-gray-400">(opc.)</span>
+                  Nombre <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="809-000-0000"
-                  maxLength={20}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nombre o razón social"
+                  maxLength={200}
                   className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
                 />
               </div>
 
-              {/* Email */}
+              {/* Collapsible extra fields */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowExtra((v) => !v)}
+                  className="flex items-center gap-1 text-xs text-gray-500 font-['DM_Sans'] hover:text-gray-700"
+                >
+                  {showExtra ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                  Datos adicionales (opcional)
+                </button>
+
+                {showExtra && (
+                  <div className="mt-3 flex flex-col gap-3 border-t border-gray-100 pt-3">
+                    {/* RNC */}
+                    <div>
+                      <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                        RNC <span className="font-normal normal-case text-gray-400">(opcional)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={rnc}
+                        onChange={(e) => setRnc(e.target.value)}
+                        placeholder="000000000"
+                        maxLength={11}
+                        className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Phone */}
+                      <div>
+                        <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                          Teléfono <span className="font-normal normal-case text-gray-400">(opc.)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="809-000-0000"
+                          maxLength={20}
+                          className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div>
+                        <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                          Email <span className="font-normal normal-case text-gray-400">(opc.)</span>
+                        </label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="correo@ejemplo.com"
+                          className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* REGISTERED MODE: original layout unchanged */
+            <div className="space-y-3">
+              {/* RNC */}
               <div>
                 <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-                  Email <span className="font-normal normal-case text-gray-400">(opc.)</span>
+                  RNC <span className="font-normal normal-case text-gray-400">(opcional)</span>
                 </label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="correo@ejemplo.com"
+                  type="text"
+                  value={rnc}
+                  onChange={(e) => setRnc(e.target.value)}
+                  placeholder="000000000"
+                  maxLength={11}
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                />
+                {rncValidation.status === 'validating' && (
+                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Verificando en DGII...
+                  </p>
+                )}
+                {rncValidation.status === 'valid' && (
+                  <p className="text-xs text-green-600 mt-1 font-bold">
+                    ✓ {rncValidation.name} — {rncValidation.dgiiStatus}
+                  </p>
+                )}
+                {rncValidation.status === 'not_found' && (
+                  <p className="text-xs text-amber-600 mt-1">⚠ RNC no encontrado en DGII</p>
+                )}
+                {rncValidation.status === 'invalid_format' && (
+                  <p className="text-xs text-red-500 mt-1">Formato inválido (9 o 11 dígitos)</p>
+                )}
+                {rncValidation.status === 'unreachable' && (
+                  <p className="text-xs text-gray-400 mt-1">DGII no disponible — se guardará sin validar</p>
+                )}
+              </div>
+
+              {/* Name */}
+              <div>
+                <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                  Nombre <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nombre o razón social"
+                  maxLength={200}
                   className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
                 />
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {/* Phone */}
+                <div>
+                  <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                    Teléfono <span className="font-normal normal-case text-gray-400">(opc.)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="809-000-0000"
+                    maxLength={20}
+                    className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block font-['Barlow_Condensed'] text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                    Email <span className="font-normal normal-case text-gray-400">(opc.)</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="correo@ejemplo.com"
+                    className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Section: Cuenta Bancaria */}
