@@ -8,9 +8,10 @@ const SUPPLIER_INCLUDE = {
   bankAccounts: { orderBy: { isDefault: 'desc' as const } },
 } as const;
 
-export async function listSuppliers(search?: string, onlyActive = false, projectId?: string) {
+export async function listSuppliers(search?: string, onlyActive = false, projectId?: string, isExpress?: boolean) {
   const where: any = {
     ...(projectId ? { projects: { some: { projectId } } } : {}),
+    ...(isExpress !== undefined ? { isExpress } : {}),
   };
   if (onlyActive) where.isActive = true;
   if (search) {

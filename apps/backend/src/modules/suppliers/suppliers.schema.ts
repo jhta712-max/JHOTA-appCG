@@ -15,6 +15,7 @@ export const createSupplierSchema = z.object({
   bank:          z.string().max(100).optional().nullable(),
   accountType:   z.enum(ACCOUNT_TYPES).optional().nullable(),
   accountNumber: z.string().max(50).optional().nullable(),
+  isExpress:     z.boolean().optional().default(false),
 });
 
 export const updateSupplierSchema = createSupplierSchema.partial();

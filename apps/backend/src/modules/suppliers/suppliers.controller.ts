@@ -9,7 +9,8 @@ import { getCreditSummary, generateCreditReportXlsx } from './credit-summary.ser
 export async function list(req: Request, res: Response, next: NextFunction) {
   try {
     const projectId = req.query.projectId as string | undefined;
-    const data = await service.listSuppliers(req.query.search as string, req.query.onlyActive === 'true', projectId);
+    const isExpress = req.query.isExpress === 'true' ? true : req.query.isExpress === 'false' ? false : undefined;
+    const data = await service.listSuppliers(req.query.search as string, req.query.onlyActive === 'true', projectId, isExpress);
     res.json({ success: true, data });
   } catch (err) { next(err); }
 }
