@@ -287,6 +287,7 @@ export interface Supplier {
   accountType?:   string | null;
   accountNumber?: string | null;
   isActive:       boolean;
+  isExpress:      boolean;
   createdBy:      { id: string; name: string };
   createdAt:      string;
   updatedAt:      string;

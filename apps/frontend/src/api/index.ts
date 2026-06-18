@@ -609,7 +609,7 @@ export type ProjectSupplierEntry = {
 };
 
 export const suppliersApi = {
-  list:         (params?: { search?: string; onlyActive?: boolean; projectId?: string }) =>
+  list:         (params?: { search?: string; onlyActive?: boolean; projectId?: string; isExpress?: boolean }) =>
     api.get<{ success: boolean; data: Supplier[] }>('/suppliers', { params }),
   getById:      (id: string) =>
     api.get<{ success: boolean; data: Supplier }>(`/suppliers/${id}`),
