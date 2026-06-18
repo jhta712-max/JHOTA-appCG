@@ -36,6 +36,7 @@ export default function SuppliersPage() {
   const qc   = useQueryClient();
   const role = useRole();
 
+  const [activeTab,       setActiveTab]       = useState<'registered' | 'express'>('registered');
   const [search,          setSearch]          = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [modal,           setModal]           = useState<'create' | 'edit' | null>(null);
@@ -67,8 +68,12 @@ export default function SuppliersPage() {
   }, [search]);
 
   const { data: suppliers, isLoading } = useQuery({
-    queryKey: ['suppliers', debouncedSearch],
-    queryFn:  () => suppliersApi.list({ search: debouncedSearch || undefined }),
+    queryKey: ['suppliers', debouncedSearch, activeTab],
+    queryFn:  () => suppliersApi.list(
+      activeTab === 'express'
+        ? { search: debouncedSearch || undefined, isExpress: true }
+        : { search: debouncedSearch || undefined, isExpress: false, onlyActive: true }
+    ),
     select:   (r) => r.data.data,
   });
 
@@ -297,6 +302,23 @@ export default function SuppliersPage() {
             <button onClick={() => setApiError('')}><X className="w-3.5 h-3.5" /></button>
           </div>
         )}
+
+        {/* Tab switcher */}
+        <div className="flex border-b border-gray-200">
+          {(['registered', 'express'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-xs font-bold uppercase font-['Barlow_Condensed'] tracking-[0.1em] border-b-2 transition-colors ${
+                activeTab === tab
+                  ? 'border-[#F5C218] text-[#1C1C1C]'
+                  : 'border-transparent text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              {tab === 'registered' ? 'Registrados' : '⚡ Express'}
+            </button>
+          ))}
+        </div>
 
         {/* Search */}
         <div className="relative max-w-sm">
