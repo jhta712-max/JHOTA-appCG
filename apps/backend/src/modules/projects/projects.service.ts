@@ -47,7 +47,19 @@ export async function getProjects(query: ProjectQuery, requestingUser: { userId:
     prisma.project.count({ where }),
   ]);
 
-  return buildPaginatedResponse(data, total, { page, limit, skip });
+  // Add totalExpenses (sum of non-voided expense amounts) per project
+  const projectIds = data.map((p) => p.id);
+  const expenseAggregates = projectIds.length > 0
+    ? await prisma.expense.groupBy({
+        by: ['projectId'],
+        where: { projectId: { in: projectIds }, status: { not: 'VOIDED' } },
+        _sum: { amount: true },
+      })
+    : [];
+  const expenseMap = new Map(expenseAggregates.map((e) => [e.projectId, Number(e._sum.amount ?? 0)]));
+  const enriched = data.map((p) => ({ ...p, totalExpenses: expenseMap.get(p.id) ?? 0 }));
+
+  return buildPaginatedResponse(enriched, total, { page, limit, skip });
 }
 
 export async function getProjectById(id: string, requestingUser?: { userId: string; role: string }) {

@@ -667,7 +667,7 @@ export default function ProjectDetailPage() {
                   const budget    = catBudget?.budget ?? 0;
                   const pctOfTotal = summary.totalSpent > 0 ? (spent / summary.totalSpent) * 100 : 0;
                   const pctOfBudget = hasBudget && budget > 0 ? Math.min((spent / budget) * 100, 100) : pctOfTotal;
-                  const barColor   = hasBudget
+                  const barColor   = hasBudget && budget > 0
                     ? (spent / budget >= 1 ? '#ef4444' : spent / budget >= 0.85 ? '#f59e0b' : '#22c55e')
                     : '#F5C218';
                   const isEditingThis = cbEditing?.categoryId === bc.category?.id;
@@ -677,7 +677,7 @@ export default function ProjectDetailPage() {
                       <div className="flex justify-between text-xs text-gray-600 mb-1 items-center gap-2">
                         <span className="font-medium font-['DM_Sans'] flex items-center gap-1.5">
                           {bc.category?.name}
-                          {hasBudget && spent / budget >= 0.85 && (
+                          {hasBudget && budget > 0 && spent / budget >= 0.85 && (
                             <AlertCircle className="w-3 h-3 text-amber-500 shrink-0" />
                           )}
                           {hasBudget && spent > budget && (

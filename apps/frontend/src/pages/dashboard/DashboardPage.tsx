@@ -60,7 +60,7 @@ export default function DashboardPage() {
     select: (res) => res.data.data,
   });
   const hasCriticalCreditLine = creditSummaryData?.lines?.some(
-    (l) => l.pending > 0 && l.available / l.creditLimit < 0.10
+    (l) => l.pending > 0 && l.creditLimit > 0 && l.available / l.creditLimit < 0.10
   ) ?? false;
 
   const { data: projectsData } = useQuery({
