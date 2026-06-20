@@ -163,13 +163,15 @@ export async function getAvailableQuotations(projectId: string, supplierId?: str
     select: {
       id: true, number: true, description: true, total: true, currency: true,
       status: true, quotationDate: true, supplierName: true, supplierId: true,
-      paymentOrders: { where: { status: 'PAID' }, select: { amount: true } },
+      payments: { select: { amount: true } },
     },
   });
   return quotations.map((q) => {
     const total       = parseFloat(q.total.toString());
-    const totalPagado = q.paymentOrders.reduce((s, po) => s + parseFloat(po.amount.toString()), 0);
-    return { id: q.id, number: q.number, description: q.description, total, currency: q.currency, status: q.status, quotationDate: q.quotationDate, supplierName: q.supplierName, supplierId: q.supplierId, totalPagado, pendiente: total - totalPagado };
+    // Use QuotationPayment as single source of truth — covers both direct payments
+    // and payments created when a PaymentOrder is marked as PAID.
+    const totalPagado = q.payments.reduce((s, p) => s + parseFloat(p.amount.toString()), 0);
+    return { id: q.id, number: q.number, description: q.description, total, currency: q.currency, status: q.status, quotationDate: q.quotationDate, supplierName: q.supplierName, supplierId: q.supplierId, totalPagado, pendiente: Math.max(total - totalPagado, 0) };
   });
 }
 
