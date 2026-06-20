@@ -767,10 +767,33 @@ export async function revertToPending(id: string) {
     }
   }
 
-  return prisma.paymentOrder.update({
-    where:   { id },
-    data:    { status: 'PENDING', paidAt: null, paidById: null, paymentBank: null, paymentReference: null },
-    include: INCLUDE,
+  const quotationId = (po as any).quotationId as string | undefined;
+
+  return prisma.$transaction(async (tx) => {
+    // Remove auto-created QuotationPayment and QuotationExpenseLink so that
+    // when the order is marked as PAID again they are re-created fresh.
+    if (quotationId && po.expenseId) {
+      await tx.quotationPayment.deleteMany({
+        where: { quotationId, expenseId: po.expenseId },
+      });
+      await tx.quotationExpenseLink.deleteMany({
+        where: { quotationId, expenseId: po.expenseId },
+      });
+    }
+
+    // Clear expenseId so markAsPaid will create a new expense on next payment.
+    return tx.paymentOrder.update({
+      where:   { id },
+      data:    {
+        status:           'PENDING',
+        paidAt:           null,
+        paidById:         null,
+        paymentBank:      null,
+        paymentReference: null,
+        expenseId:        null,
+      },
+      include: INCLUDE,
+    });
   });
 }
 
