@@ -577,6 +577,9 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
       // Resolve amount: if foreign currency, convert to DOP using exchangeRate
       const isForeign      = po.currency !== 'RD$';
       const exchangeRate   = paymentInfo?.exchangeRate ?? null;
+      if (isForeign && !exchangeRate) {
+        throw new AppError(400, `Debe ingresar la tasa de cambio (TC) para órdenes en ${po.currency}`, 'EXCHANGE_RATE_REQUIRED');
+      }
       const amountDOP      = isForeign && exchangeRate
         ? Number(po.amount) * exchangeRate
         : Number(po.amount);
@@ -722,17 +725,28 @@ export async function generateExpenseForOrder(id: string, userId: string) {
 
   return prisma.$transaction(async (tx) => {
     const opRef = `OP-${String(po.number).padStart(3, '0')}`;
+    const isForeign          = po.currency !== 'RD$';
+    const savedExchangeRate  = (po as any).exchangeRate ? Number((po as any).exchangeRate) : null;
+    const foreignCurrencyISO = po.currency === 'US$' ? 'USD' : po.currency === '€' ? 'EUR' : null;
+    const amountDOP          = isForeign && savedExchangeRate
+      ? Number(po.amount) * savedExchangeRate
+      : Number(po.amount);
     const expense = await tx.expense.create({
       data: buildExpenseData({
         projectId:          po.projectId,
         categoryId:         category.id,
         userId,
         expenseDate:        po.paidAt ?? new Date(),
-        amount:             po.amount,
+        amount:             amountDOP,
         description:        `[${opRef}] ${po.concept}`,
-        notes:              `Generado retroactivamente para ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}.`,
+        notes:              `Generado retroactivamente para ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}.${isForeign ? ` Divisa: ${po.currency} ${Number(po.amount).toFixed(2)}${savedExchangeRate ? ` (TC: ${savedExchangeRate})` : ' (sin TC registrada)'}` : ''}`,
         contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
         batchItemId:        (po as any).batchItemId ?? null,
+        ...(isForeign && foreignCurrencyISO ? {
+          foreignAmount:   po.amount,
+          foreignCurrency: foreignCurrencyISO,
+          exchangeRate:    savedExchangeRate ?? undefined,
+        } : {}),
       }),
     });
 
