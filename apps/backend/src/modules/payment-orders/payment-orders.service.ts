@@ -629,11 +629,28 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
           });
           const nextSeq = (lastPayment?.sequence ?? 0) + 1;
 
-          // Amount in quotation currency: use po.amount directly if currencies match,
-          // otherwise store the foreign amount (quotation curator resolves equivalence)
-          const quotationAmount = isForeign && exchangeRate
-            ? amountDOP  // store DOP equivalent so totals add up in quotation
-            : Number(po.amount);
+          // Amount stored must be in the quotation's currency so totals add up correctly.
+          // Cases:
+          //   same currency           → store as-is
+          //   po=USD/EUR, quot=RD$    → store amountDOP (po.amount * TC)
+          //   po=RD$,     quot=USD/€  → store po.amount / TC (RD$ ÷ exchange rate)
+          //   anything else w/o TC   → store as-is (best effort)
+          const poAmount      = Number(po.amount);
+          const quotCurrency  = quotation.currency;  // e.g. 'US$', 'RD$'
+          const poCurrency    = po.currency;
+
+          let quotationAmount: number;
+          if (poCurrency === quotCurrency) {
+            quotationAmount = poAmount;
+          } else if (isForeign && quotCurrency === 'RD$' && exchangeRate) {
+            // Payment in foreign currency, quotation in RD$ → convert to RD$
+            quotationAmount = amountDOP;
+          } else if (poCurrency === 'RD$' && quotCurrency !== 'RD$' && exchangeRate) {
+            // Payment in RD$, quotation in foreign currency → convert to foreign
+            quotationAmount = poAmount / exchangeRate;
+          } else {
+            quotationAmount = poAmount;
+          }
 
           await tx.quotationPayment.create({
             data: {
