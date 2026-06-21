@@ -52,7 +52,7 @@ export async function getProjects(query: ProjectQuery, requestingUser: { userId:
   const expenseAggregates = projectIds.length > 0
     ? await prisma.expense.groupBy({
         by: ['projectId'],
-        where: { projectId: { in: projectIds }, status: { not: 'VOIDED' } },
+        where: { projectId: { in: projectIds }, status: 'ACTIVE' },
         _sum: { amount: true },
       })
     : [];

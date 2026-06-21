@@ -209,7 +209,9 @@ export default function ExpensesPage() {
   const pagination = data?.pagination;
   const projects   = projectsData ?? [];
 
-  const tabTotal = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  const tabTotal = expenses
+    .filter((e) => e.status !== 'REJECTED' && e.status !== 'VOIDED')
+    .reduce((s, e) => s + Number(e.amount), 0);
 
   return (
     <>
