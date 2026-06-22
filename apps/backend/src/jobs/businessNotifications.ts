@@ -9,6 +9,7 @@ import {
   sendApprovedPayrollsEmail,
 } from '../utils/mailer';
 import { getUpcomingPayments } from '../modules/service-subscriptions/service-subscriptions.service';
+import { getMonthlySummary, getAlert } from '../modules/ai-usage/ai-usage.service';
 
 const APP_URL = process.env.FRONTEND_URL ?? 'https://gastos-proyectos.onrender.com';
 
@@ -376,6 +377,26 @@ async function checkServicePayments() {
   }
 }
 
+// ─── Check 5: Monthly AI cost alert ──────────────────────────────────────────
+
+async function checkAiCostAlert(): Promise<void> {
+  try {
+    const alertConfig = await getAlert();
+    if (!alertConfig || !alertConfig.enabled) return;
+
+    const month   = new Date().toISOString().slice(0, 7);
+    const summary = await getMonthlySummary(month);
+
+    if (summary.estimatedCostUsd >= alertConfig.monthlyLimitUsd) {
+      const pct     = ((summary.estimatedCostUsd / alertConfig.monthlyLimitUsd) * 100).toFixed(0);
+      const message = `⚠️ *ALERTA CONSUMO IA* — SERVINGMI\n\nEl costo estimado de Claude API en ${month} es *$${summary.estimatedCostUsd.toFixed(4)} USD* (${pct}% del límite de $${alertConfig.monthlyLimitUsd} USD).\n\nTokens de entrada: ${summary.totalInputTokens.toLocaleString()}\nTokens de salida: ${summary.totalOutputTokens.toLocaleString()}\nLlamadas totales: ${summary.totalCalls}`;
+      await sendWhatsApp(message, 'SYSTEM');
+    }
+  } catch (err) {
+    logger.error('[BusinessNotifications] Error checking AI cost alert:', err);
+  }
+}
+
 // ─── Main runner ──────────────────────────────────────────────────────────────
 
 export async function runBusinessNotifications() {
@@ -385,6 +406,7 @@ export async function runBusinessNotifications() {
     await checkPendingOrders();
     await checkApprovedPayrolls();
     await checkServicePayments();
+    await checkAiCostAlert();
     logger.info('[BusinessNotifications] Revisión completada.');
   } catch (err) {
     logger.error('[BusinessNotifications] Error general:', err);
