@@ -82,6 +82,7 @@ model User {
   whatsAppConversations          WhatsAppConversation[] @relation("WhatsAppConversationUser")
   creditLinesCreated    SupplierCreditLine[]    @relation("CreditLineCreatedBy")
   creditPaymentsCreated SupplierCreditPayment[] @relation("CreditPaymentCreatedBy")
+  aiUsageLogs           AiUsageLog[]
 
   adminEmployeesCreated     AdministrativeEmployee[]              @relation("AdminEmployeeCreatedBy")
   adminSalaryHistoryCreated AdministrativeEmployeeSalaryHistory[] @relation("AdminSalaryHistoryCreatedBy")
@@ -126,6 +127,7 @@ model Project {
   batches            Batch[]
   contratosAjustados    ContratoAjustado[]              @relation("ProjectContratosAjustados")
   categoryBudgets       ProjectCategoryBudget[]
+  aiUsageLogs           AiUsageLog[]
   batchesEnabled        Boolean                         @default(false) @map("batches_enabled")
   extraordinaryExpenses ProjectExtraordinaryExpense[]
   assignedSuppliers     ProjectSupplier[]
@@ -1459,4 +1461,31 @@ model AdministrativePayrollLine {
   @@index([payrollId])
   @@index([employeeId])
   @@map("administrative_payroll_lines")
+}
+
+model AiUsageLog {
+  id           String   @id @default(cuid())
+  feature      String
+  model        String
+  inputTokens  Int      @map("input_tokens")
+  outputTokens Int      @map("output_tokens")
+  userId       String?  @map("user_id")
+  projectId    String?  @map("project_id")
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([feature, createdAt])
+  @@index([userId, createdAt])
+  @@map("ai_usage_logs")
+}
+
+model AiUsageAlert {
+  id              String  @id @default(cuid())
+  monthlyLimitUsd Decimal @map("monthly_limit_usd") @db.Decimal(10, 2)
+  enabled         Boolean @default(true)
+
+  @@map("ai_usage_alerts")
 }
