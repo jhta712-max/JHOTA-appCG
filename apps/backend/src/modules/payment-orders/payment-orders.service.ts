@@ -422,9 +422,13 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
   const supplier = await prisma.supplier.findUnique({ where: { id: supplierId } });
   const project  = await prisma.project.findUnique({ where: { id: data.projectId ?? po.projectId } });
 
-  // Resolve bank account for regenerated text
+  // Resolve bank account for regenerated text — prefer selected bankAccountId, fall back to default
+  const selectedBankAccountId = (data as any).bankAccountId as string | undefined;
   const bankAccount =
-    await prisma.supplierBankAccount.findFirst({ where: { supplierId }, orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] })
+    (selectedBankAccountId
+      ? await prisma.supplierBankAccount.findFirst({ where: { id: selectedBankAccountId, supplierId } })
+      : null)
+    ?? await prisma.supplierBankAccount.findFirst({ where: { supplierId }, orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] })
     ?? (supplier?.bank ? { bank: supplier.bank, accountType: supplier.accountType, accountNumber: supplier.accountNumber! } : null)
     ?? { bank: (po.supplier as any).bank ?? '', accountType: (po.supplier as any).accountType ?? '', accountNumber: (po.supplier as any).accountNumber ?? '' };
 
