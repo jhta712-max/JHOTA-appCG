@@ -4,7 +4,7 @@ import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Receipt, Users,
   Tag, LogOut, Menu, X, BarChart3, Download, Wallet, Activity, FileText, CreditCard, Clock,
-  Eye, ChevronDown, Building2, Bell, FileCheck, MoreHorizontal, Pin,
+  Eye, ChevronDown, Building2, Bell, FileCheck, MoreHorizontal, Pin, Cpu,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../api';
@@ -41,6 +41,7 @@ const navItems: NavItem[] = [
   { to: '/categories',          icon: Tag,             label: 'Categorías',       group: 'admin',       roles: ['admin'] },
   { to: '/cards',               icon: CreditCard,      label: 'Tarjetas',         group: 'admin',       roles: ['admin'] },
   { to: '/monitoring',          icon: Activity,        label: 'Monitoreo',        group: 'admin',       roles: ['admin'] },
+  { to: '/ai-usage',            icon: Cpu,             label: 'Consumo IA',       group: 'admin',       roles: ['admin'] },
 ];
 
 const GROUP_LABELS: Record<string, string> = {

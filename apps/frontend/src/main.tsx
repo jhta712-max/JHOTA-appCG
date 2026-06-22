@@ -51,6 +51,7 @@ const AdminPayrollFormPage     = lazy(() => import('./pages/admin-payroll/AdminP
 const AdminPayrollDetailPage   = lazy(() => import('./pages/admin-payroll/AdminPayrollDetailPage'));
 const AdminEmployeesPage       = lazy(() => import('./pages/admin-payroll/AdminEmployeesPage'));
 const AdminEmployeeDetailPage  = lazy(() => import('./pages/admin-payroll/AdminEmployeeDetailPage'));
+const AiUsagePage              = lazy(() => import('./pages/ai-usage/AiUsagePage'));
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import DataDeletionPage  from './pages/DataDeletionPage';
 
@@ -169,6 +170,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Route path="pending-orders"      element={<PendingOrdersPage />} />
                 <Route path="office-expenses"     element={<OfficeExpensesPage />} />
                 <Route path="monitoring"           element={<MonitoringPage />} />
+                <Route path="ai-usage"             element={<AiUsagePage />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
