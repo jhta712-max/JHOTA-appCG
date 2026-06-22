@@ -1,6 +1,7 @@
 import prisma from '../../config/database';
 import Anthropic from '@anthropic-ai/sdk';
 import { resolveBatchItemId, BATCH_ITEM_SELECT } from '../../utils/batchItems';
+import { trackAiCall } from '../../services/ai-usage.service';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
@@ -841,19 +842,23 @@ export async function suggestConcept(input: {
   const typeLabel = input.orderType === 'SERVICIO' ? 'servicio' : input.orderType === 'MATERIALS' ? 'materiales/insumos' : input.orderType === 'PETTY_CASH' ? 'caja chica' : 'nómina';
 
   try {
-    const msg = await aiClient.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 80,
-      messages: [{
-        role: 'user',
-        content: `Genera un concepto conciso (máx 15 palabras) para una orden de pago de construcción en República Dominicana.
+    const msg = await trackAiCall({
+      feature: 'SUGGEST_CONCEPT',
+      client:  aiClient,
+      request: {
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 80,
+        messages: [{
+          role: 'user',
+          content: `Genera un concepto conciso (máx 15 palabras) para una orden de pago de construcción en República Dominicana.
 Tipo: ${typeLabel}
 Suplidor: ${input.supplierName ?? 'No especificado'}
 Proyecto: ${input.projectCode ? `${input.projectCode} – ${input.projectName ?? ''}` : 'No especificado'}
 Monto: ${input.currency ?? 'RD$'} ${input.amount?.toLocaleString('es-DO') ?? '0'}
 
 Solo el texto del concepto, sin comillas ni explicaciones. Ejemplo: "Pago por suministro de materiales pétreos para proyecto Santiago"`,
-      }],
+        }],
+      },
     });
     const text = ((msg.content[0] as any).text ?? '').trim().replace(/^["']|["']$/g, '');
     return { concept: text || fallback };

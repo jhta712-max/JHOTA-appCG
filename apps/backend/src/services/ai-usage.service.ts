@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { MessageCreateParamsNonStreaming } from '@anthropic-ai/sdk/resources/messages';
+import { Prisma } from '@prisma/client';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 
@@ -56,7 +57,7 @@ export async function trackAiCall(params: TrackAiCallParams): Promise<Anthropic.
           outputTokens: response.usage.output_tokens,
           userId:       userId  ?? null,
           projectId:    projectId ?? null,
-          metadata:     metadata ?? null,
+          metadata:     metadata !== undefined ? (metadata as unknown as Prisma.InputJsonValue) : undefined,
         },
       });
     } catch (err) {

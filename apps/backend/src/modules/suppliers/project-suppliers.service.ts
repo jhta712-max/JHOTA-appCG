@@ -1,5 +1,6 @@
 import prisma from '../../config/database';
 import Anthropic from '@anthropic-ai/sdk';
+import { trackAiCall } from '../../services/ai-usage.service';
 
 export async function listProjectSuppliers(projectId: string) {
   return prisma.projectSupplier.findMany({
@@ -136,13 +137,17 @@ export async function getAiSuggestions(projectId: string): Promise<SupplierSugge
 
   const client = new Anthropic({ apiKey });
 
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1024,
-    messages: [
-      {
-        role: 'user',
-        content: `Eres un asistente de una empresa constructora dominicana. Analiza los pagos del proyecto y sugiere cuáles suplidores candidatos deberían ser asignados.
+  const response = await trackAiCall({
+    feature:   'SUPPLIER_SUGGESTIONS',
+    client,
+    projectId,
+    request: {
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: `Eres un asistente de una empresa constructora dominicana. Analiza los pagos del proyecto y sugiere cuáles suplidores candidatos deberían ser asignados.
 
 PAGOS RECIENTES DEL PROYECTO:
 ${paymentSummary}
@@ -154,8 +159,9 @@ Devuelve SOLO un JSON válido, sin texto adicional:
 [{"supplierId":"uuid","reason":"razón breve en español","confidence":"HIGH|MEDIUM|LOW"}]
 
 Reglas: máximo 8 sugerencias, solo relevantes, [] si no hay contexto suficiente.`,
-      },
-    ],
+        },
+      ],
+    },
   });
 
   const text = response.content[0].type === 'text' ? response.content[0].text.trim() : '[]';

@@ -7,6 +7,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../../config/env';
+import { trackAiCall } from '../../services/ai-usage.service';
 import {
   runHealthCheck,
   getApiMetrics,
@@ -151,10 +152,14 @@ Reglas:
 - Si todo está bien, "status" = "healthy"`;
 
   // ── Llamar a Claude ───────────────────────────────────────────
-  const response = await client.messages.create({
-    model:      'claude-haiku-4-5',
-    max_tokens: 1500,
-    messages: [{ role: 'user', content: prompt }],
+  const response = await trackAiCall({
+    feature: 'MONITORING',
+    client,
+    request: {
+      model:      'claude-haiku-4-5',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }],
+    },
   });
 
   const rawText = (response.content[0] as any).text?.trim() ?? '';

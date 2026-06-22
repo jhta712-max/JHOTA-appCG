@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { env } from '../../config/env';
 import prisma from '../../config/database';
+import { trackAiCall } from '../../services/ai-usage.service';
 
 const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY ?? '' });
 
@@ -203,12 +204,16 @@ export async function runAgent(
   let loopMessages = [...messages];
 
   for (let i = 0; i < 5; i++) {
-    const response = await client.messages.create({
-      model:      'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system:     SYSTEM_PROMPT,
-      tools:      AGENT_TOOLS,
-      messages:   loopMessages,
+    const response = await trackAiCall({
+      feature: 'WHATSAPP',
+      client,
+      request: {
+        model:      'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system:     SYSTEM_PROMPT,
+        tools:      AGENT_TOOLS,
+        messages:   loopMessages,
+      },
     });
 
     // Check for request_confirmation (no tool result needed — we handle it)

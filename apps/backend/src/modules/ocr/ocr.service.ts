@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../../config/env';
 import { AppError } from '../../middlewares/errorHandler';
+import { trackAiCall } from '../../services/ai-usage.service';
 
 // ── Tipos de documento detectables ────────────────────────────
 
@@ -176,18 +177,22 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
     };
   }
 
-  const response = await client.messages.create({
-    model:      'claude-haiku-4-5',
-    max_tokens: 1024,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          fileContentBlock,
-          { type: 'text', text: EXTRACTION_PROMPT },
-        ],
-      },
-    ],
+  const response = await trackAiCall({
+    feature: 'OCR',
+    client,
+    request: {
+      model:      'claude-haiku-4-5',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            fileContentBlock,
+            { type: 'text', text: EXTRACTION_PROMPT },
+          ],
+        },
+      ],
+    },
   });
 
   const rawText = response.content[0].type === 'text' ? response.content[0].text : '';

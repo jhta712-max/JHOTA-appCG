@@ -1,6 +1,7 @@
 import prisma from '../../config/database';
 import Anthropic from '@anthropic-ai/sdk';
 import { AppError } from '../../middlewares/errorHandler';
+import { trackAiCall } from '../../services/ai-usage.service';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import { extractNCFType, isElectronicNCF } from '../../utils/fiscal.utils';
 import { createNotification } from '../notifications/notifications.service';
@@ -576,16 +577,20 @@ export async function suggestCategory(description: string): Promise<{ categoryNa
   if (!aiClient) return { categoryName: null, confidence: 'low' };
 
   try {
-    const msg = await aiClient.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 50,
-      messages: [{
-        role: 'user',
-        content: `Clasifica este gasto de construcción en una sola de estas categorías: ${CATEGORY_NAMES.join(', ')}.
+    const msg = await trackAiCall({
+      feature: 'SUGGEST_CATEGORY',
+      client:  aiClient,
+      request: {
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 50,
+        messages: [{
+          role: 'user',
+          content: `Clasifica este gasto de construcción en una sola de estas categorías: ${CATEGORY_NAMES.join(', ')}.
 Descripción: "${description}"
 Responde SOLO con el nombre exacto de la categoría y opcionalmente "alta", "media" o "baja" confianza, separados por |.
 Ejemplo: Materiales|alta`,
-      }],
+        }],
+      },
     });
 
     const text = (msg.content[0] as any).text?.trim() ?? '';

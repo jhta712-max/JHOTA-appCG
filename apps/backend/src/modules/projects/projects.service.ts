@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { AppError } from '../../middlewares/errorHandler';
 import { buildPaginatedResponse, parsePagination } from '../../utils/pagination';
 import { env } from '../../config/env';
+import { trackAiCall } from '../../services/ai-usage.service';
 
 const aiClient = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null;
 import type {
@@ -625,15 +626,20 @@ ${catLines || '  (sin gastos registrados)'}
     };
   }
 
-  const msg = await aiClient.messages.create({
-    model:      'claude-haiku-4-5-20251001',
-    max_tokens: 350,
-    messages:   [{
-      role:    'user',
-      content: `Eres el asistente financiero de una empresa constructora dominicana. Genera un resumen ejecutivo conciso (3-4 párrafos cortos) en español sobre el siguiente proyecto, orientado a la gerencia. Incluye: estado presupuestario, alertas si las hay, y una recomendación breve. Sé directo y claro.
+  const msg = await trackAiCall({
+    feature:   'AI_SUMMARY',
+    client:    aiClient,
+    projectId,
+    request: {
+      model:      'claude-haiku-4-5-20251001',
+      max_tokens: 350,
+      messages:   [{
+        role:    'user',
+        content: `Eres el asistente financiero de una empresa constructora dominicana. Genera un resumen ejecutivo conciso (3-4 párrafos cortos) en español sobre el siguiente proyecto, orientado a la gerencia. Incluye: estado presupuestario, alertas si las hay, y una recomendación breve. Sé directo y claro.
 
 ${context}`,
-    }],
+      }],
+    },
   });
 
   const summary = ((msg.content[0] as any).text ?? '').trim();
