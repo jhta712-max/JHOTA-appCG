@@ -32,6 +32,7 @@ import whatsappRouter from './modules/whatsapp/whatsapp.router';
 import dashboardRouter from './modules/dashboard/dashboard.router';
 import adminEmployeesRouter  from './modules/admin-employees/admin-employees.router';
 import adminPayrollsRouter   from './modules/admin-payrolls/admin-payrolls.router';
+import aiUsageRouter from './modules/ai-usage/ai-usage.router';
 
 const app = express();
 
@@ -132,6 +133,7 @@ app.use('/api/v1/monitoring', apiLimiter,  monitoringRouter);
 app.use('/api/v1/dashboard', apiLimiter, dashboardRouter);
 app.use('/api/v1/admin-employees', apiLimiter, adminEmployeesRouter);
 app.use('/api/v1/admin-payrolls',  apiLimiter, adminPayrollsRouter);
+app.use('/api/v1/ai-usage', apiLimiter, aiUsageRouter);
 // WhatsApp webhook — no apiLimiter (UltraMsg needs fast ACK, token-validated inside)
 app.use('/api/v1/whatsapp', whatsappRouter);
 
