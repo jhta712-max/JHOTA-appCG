@@ -5,8 +5,8 @@ CREATE TABLE "ai_usage_logs" (
     "model" TEXT NOT NULL,
     "input_tokens" INTEGER NOT NULL,
     "output_tokens" INTEGER NOT NULL,
-    "user_id" TEXT,
-    "project_id" TEXT,
+    "user_id" UUID,
+    "project_id" UUID,
     "metadata" JSONB,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

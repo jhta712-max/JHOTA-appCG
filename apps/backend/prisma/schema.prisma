@@ -1469,8 +1469,8 @@ model AiUsageLog {
   model        String
   inputTokens  Int      @map("input_tokens")
   outputTokens Int      @map("output_tokens")
-  userId       String?  @map("user_id")
-  projectId    String?  @map("project_id")
+  userId       String?  @map("user_id")    @db.Uuid
+  projectId    String?  @map("project_id") @db.Uuid
   metadata     Json?
   createdAt    DateTime @default(now()) @map("created_at")
 
