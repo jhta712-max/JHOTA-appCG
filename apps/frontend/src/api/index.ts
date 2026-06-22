@@ -931,3 +931,50 @@ export const adminPayrollsApi = {
     api.post<{ success: boolean; data: AdminPayroll }>(`/admin-payrolls/${id}/void`, { voidReason }),
   exportUrl: (id: string) => `/api/v1/admin-payrolls/${id}/export.xlsx`,
 };
+
+// ── AI Usage Dashboard ────────────────────────────────────────
+export interface AiUsageSummary {
+  month: string;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCostUsd: number;
+  totalCalls: number;
+}
+
+export interface AiFeatureBreakdown {
+  feature: string;
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  pct: number;
+}
+
+export interface AiUserBreakdown {
+  userId: string | null;
+  userName: string;
+  userRole: string | null;
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+}
+
+export interface AiUsageAlert {
+  id: string;
+  monthlyLimitUsd: number;
+  enabled: boolean;
+}
+
+export const aiUsageApi = {
+  getSummary: (month: string) =>
+    api.get<{ success: boolean; data: AiUsageSummary }>(`/ai-usage/summary?month=${month}`),
+  getByFeature: (month: string) =>
+    api.get<{ success: boolean; data: AiFeatureBreakdown[] }>(`/ai-usage/by-feature?month=${month}`),
+  getByUser: (month: string) =>
+    api.get<{ success: boolean; data: AiUserBreakdown[] }>(`/ai-usage/by-user?month=${month}`),
+  getAlert: () =>
+    api.get<{ success: boolean; data: AiUsageAlert | null }>('/ai-usage/alert'),
+  updateAlert: (monthlyLimitUsd: number, enabled: boolean) =>
+    api.put<{ success: boolean; data: AiUsageAlert }>('/ai-usage/alert', { monthlyLimitUsd, enabled }),
+};
