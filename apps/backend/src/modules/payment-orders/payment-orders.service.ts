@@ -442,7 +442,7 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
     rnc:           supplier!.rnc,
   };
 
-  const { payrollId, batchItemId: rawItemId, projectItemId: _legacyItemId, ...rest } = data as any;
+  const { payrollId, bankAccountId: _bankAccountId, batchItemId: rawItemId, projectItemId: _legacyItemId, ...rest } = data as any;
 
   const resolvedItemId = rawItemId !== undefined
     ? await resolveBatchItemId(po.projectId, rawItemId, { inherited: true })
