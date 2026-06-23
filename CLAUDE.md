@@ -46,10 +46,10 @@ Estructura por módulo: `router → controller → service`. El router registra 
 modules/
   auth/           # Login, refresh token, setup inicial
   users/          # Gestión de usuarios, invitaciones
-  projects/       # Proyectos con presupuesto estimado
-  expenses/       # Gastos de proyectos (con OCR de facturas)
+  projects/       # Proyectos con presupuesto estimado; campo batchesEnabled activa partidas/lotes
+  expenses/       # Gastos de proyectos (con OCR de facturas); campos paymentBank + paymentReference para trazabilidad bancaria
   payroll/        # Nóminas vinculadas a proyectos
-  payment-orders/ # Órdenes de pago (vinculadas a nóminas/gastos)
+  payment-orders/ # Órdenes de pago (vinculadas a nóminas/gastos); al marcar PAID propaga paymentBank+paymentReference al gasto auto-generado
   suppliers/      # Proveedores (incluye beneficiarios); endpoint validate-rnc/:rnc → DGII; crédito: GET /credit-summary + /credit-report
   quotations/     # Cotizaciones con OCR
   office-expenses/# Gastos de oficina; usa texto libre supplierName (no FK a suppliers)
@@ -61,15 +61,17 @@ modules/
   notification-contacts/ # Contactos externos para notificaciones
   reports/        # Exportación Excel/Word + DGII 606 (.xlsx)
   backup/         # Backup de BD (auth con timingSafeEqual)
-  batches/        # Lotes de pago
+  batches/        # Lotes de pago; POST /projects/:id/batches/enable|disable activa/desactiva partidas
   cards/          # Tarjetas de crédito empresariales
   service-subscriptions/ # Suscripciones de servicios con alertas de vencimiento
   contratos-ajustados/   # Contratos ajustados de proyectos
   whatsapp/       # Chatbot WhatsApp: webhook UltraMsg → agente IA (Claude Haiku tool_use) → ejecuta acciones
+  ai-usage/       # Dashboard de consumo de tokens Claude API; endpoints admin-only: /summary /by-feature /by-user /alert (GET+PUT)
 services/
   dgii.service.ts         # Lookup RNC → DGII API con cache in-memory 24h
+  ai-usage.service.ts     # Wrapper central trackAiCall() — envuelve client.messages.create(), persiste log en ai_usage_logs via setImmediate (nunca bloquea)
 jobs/
-  businessNotifications.ts  # Cron diario 8 AM: alertas presupuesto/nóminas/órdenes
+  businessNotifications.ts  # Cron diario 8 AM: alertas presupuesto/nóminas/órdenes + checkAiCostAlert() si costo mensual supera límite configurado
   healthMonitor.ts          # Monitor de salud del sistema (cada 5 min)
   quotationNotifications.ts # Alertas de cotizaciones próximas a vencer
 ```
@@ -116,6 +118,14 @@ utils/
 
 **Líneas de crédito de suplidores:** Modelos `SupplierCreditLine` y `SupplierCreditPayment`. Balance calculado en runtime: `consumed` = suma de `Expense` no-VOID con `creditLineId`; `paid` = suma de `SupplierCreditPayment.amount`; `pending = consumed - paid`; `available = creditLimit - pending`. La lógica de agregación global está en `modules/suppliers/credit-summary.service.ts`. Cuando una `PaymentOrder` con `creditLineId` se marca como pagada (`markAsPaid`), se auto-crea un `SupplierCreditPayment` dentro de la misma transacción. Rutas `/credit-summary` y `/credit-report` deben ir ANTES de `/:id` en el router o Express las captura como parámetro.
 
+**Trazabilidad bancaria de pagos (Orden de Pago → Gasto):** Cuando se marca una `PaymentOrder` como pagada, los campos `paymentBank` y `paymentReference` se propagan automáticamente al `Expense` auto-generado dentro de la misma transacción. Esto ocurre en `buildExpenseData()` en `payment-orders.service.ts` — la función acepta `paymentBank?` y `paymentReference?` en `ExpenseSourceData` y los incluye en el objeto Prisma. No modificar este flujo sin verificar que ambos campos se pasan desde `markAsPaid()` a `buildExpenseData()`.
+
+**Consumo de IA (ai_usage_logs):** Toda llamada a Claude API debe pasar por `trackAiCall()` en `services/ai-usage.service.ts` en lugar de llamar `client.messages.create()` directamente. El wrapper acepta `{ feature, client, request, userId?, projectId?, metadata? }` y persiste el log en background (nunca bloquea). Features válidas: `'OCR' | 'WHATSAPP' | 'AI_SUMMARY' | 'SUGGEST_CATEGORY' | 'SUGGEST_CONCEPT' | 'MONITORING' | 'SUPPLIER_SUGGESTIONS'`. Pricing hardcodeado para Haiku 4.5: $1.00/M input, $5.00/M output. Tabla `ai_usage_alerts` tiene una sola fila de configuración (límite mensual + enabled). El cron diario llama `checkAiCostAlert()` y envía WhatsApp si el costo supera el límite.
+
+**Toggle batchesEnabled en proyectos:** El campo `Project.batchesEnabled` (Boolean, default false) se activa/desactiva vía `POST /projects/:id/batches/enable` y `POST /projects/:id/batches/disable`. El formulario `ProjectFormPage.tsx` muestra el toggle en creación y edición. En creación: si el toggle está activo al guardar, llama a `enableBatches` después de crear. En edición: llama al endpoint inmediatamente al cambiar el toggle. El backend impide desactivar si ya existen partidas cargadas.
+
+**Campos de pago en formulario de Gastos:** `Expense` tiene `paymentBank` y `paymentReference` (ambos opcionales). El formulario los muestra condicionalmente: aparecen cuando `paymentMethod === 'TRANSFER'` o `'CHECK'`. El selector de tarjeta corporativa (`companyCardId`) aparece cuando `paymentMethod === 'CARD'`. Migración: `20260623000001_add_payment_bank_reference_to_expenses`.
+
 **Gastos de oficina vs Módulo de suplidores:** Los suplidores del módulo `/suppliers` son entidades continuas (servicios, materiales, mano de obra). Los gastos de oficina (`/office-expenses`) usan texto libre `supplierName` — no FK a la tabla `suppliers` — porque sus proveedores son ocasionales y no continuos.
 
 **Nómina Administrativa vs Nóminas de Proyecto:** `modules/payroll/` maneja nóminas vinculadas a proyectos. `modules/admin-payrolls/` es completamente independiente — empleados de oficina sin FK a proyectos. Cálculos en `admin-payroll.calculations.ts`: AFP 2.87% + TSS 3.04% sobre salario base solamente; ISR RD 2024 progresivo sobre `taxableBase` (salario + beneficios con `affectsISR=true`); `grossAmount` = salario + todos los beneficios. Flujo: DRAFT → APPROVED → PAID → VOIDED. Crear nómina auto-genera líneas para todos los empleados ACTIVE con la frecuencia del período (MONTHLY o BIWEEKLY).
@@ -147,6 +157,8 @@ utils/
 
 10. **Post-OCR Enrichment Agent** (`apps/backend/src/modules/ocr/ocr-enrichment.service.ts`): se llama después de OCR completo (no bloquea). Nivel 1 (alta confianza): match proveedor por RNC, duplicado NCF/eNCF, clasificación tipo comprobante (B01-B16 tradicional, E31-E45 eNCF electrónico), cruce con cotización abierta. Nivel 2 (solo warnings): validación ITBIS 10%-26%, tipos gubernamentales inusuales.
 
+**Decisión de diseño — duplicación en BD (auditado 2026-06-23):** Se analizó toda la BD y se decidió NO normalizar ninguna duplicación existente. Motivos: (1) `paymentBank`/`paymentReference` en `expenses`, `payrolls`, `payment_orders` son snapshots inmutables del momento del pago — correctos por diseño de auditoría. (2) `FiscalVoucher.supplierName`/`supplierRnc` capturan datos del comprobante fiscal tal como fue emitido — no deben sincronizarse con `Supplier`. (3) `Quotation.supplierName` es campo de búsqueda con índice propio, independiente del FK `supplierId` (que es opcional). (4) `Supplier.bank`/`accountNumber`/`accountType` son campos residuales usados como fallback cuando no existe `SupplierBankAccount` — necesarios para compatibilidad con registros anteriores. (5) `PaymentOrder.generatedText` es el mensaje WhatsApp formateado — campo de UX crítico leído en 10+ lugares del frontend.
+
 ## Trampas conocidas (bugs que ya ocurrieron)
 
 **Fallback numérico en nullish coalescing:** `String(valor ?? '0')` — si `valor` es `null`, resulta en `"null"`. El fallback debe ser numérico: `String(valor ?? 0)`.
@@ -156,6 +168,10 @@ utils/
 **`buildPaginatedResponse` requiere objeto PaginationParams:** La función en `apps/backend/src/utils/pagination.ts` acepta `(data, total, { page, limit, skip })` como tercer argumento — no `page` y `limit` separados. Construir el objeto inline: `buildPaginatedResponse(data, total, { page: query.page, limit: query.limit, skip: (query.page - 1) * query.limit })`.
 
 **Migración baseline en desarrollo local:** El repo tiene una migración `20260531000000_init_baseline` que es un snapshot completo del schema. `prisma migrate deploy` desde una BD vacía falla con `type "project_status" already exists` porque las migraciones `20260518*` también están presentes. Solución documentada en `.claude/skills/run-servingmi/SKILL.md` → Setup §4.
+
+**`bankAccountId` en update de PaymentOrder:** El frontend envía `bankAccountId` en el payload tanto para crear como para editar. En creación se usa para lookup de cuenta bancaria; en actualización debe excluirse del spread de Prisma (no existe como campo en el modelo `PaymentOrder`). Se desestructura y descarta en la línea: `const { payrollId, bankAccountId: _bankAccountId, ... } = data as any`. Además, `bankAccountId` se usa para regenerar `generatedText` en el update — si el usuario cambió la cuenta, el texto debe reflejar la nueva cuenta, no la default.
+
+**`buildExpenseData` y campos nuevos:** Al agregar un campo nuevo a `Expense`, hay 3 lugares que actualizar: (1) `ExpenseSourceData` interface en `payment-orders.service.ts`, (2) el return de `buildExpenseData()`, (3) la llamada a `buildExpenseData()` dentro de `markAsPaid()`. Omitir cualquiera de los tres causa que el campo no se propague al gasto auto-generado desde una orden de pago.
 
 ## Primeros pasos en una sesión
 
