@@ -158,7 +158,7 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
     throw new AppError(503, 'El servicio de OCR no está configurado. Agrega ANTHROPIC_API_KEY al archivo .env', 'OCR_NOT_CONFIGURED');
   }
 
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, timeout: 60_000 });
 
   let fileContentBlock: any;
 
@@ -208,10 +208,10 @@ async function preprocessImage(buffer: Buffer): Promise<Buffer> {
   const sharp = (await import('sharp')).default;
   return sharp(buffer)
     .rotate()
-    .resize({ width: 1600, withoutEnlargement: true })
+    .resize({ width: 1280, withoutEnlargement: true })
     .sharpen()
     .normalise()
-    .jpeg({ quality: 90 })
+    .jpeg({ quality: 72 })
     .toBuffer();
 }
 
