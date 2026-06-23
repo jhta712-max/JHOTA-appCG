@@ -2,22 +2,25 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle, AlertCircle, ArrowLeft, Receipt, Loader2 } from 'lucide-react';
-import { expensesApi, projectsApi, categoriesApi } from '../../api';
+import { CheckCircle, AlertCircle, ArrowLeft, Receipt, Loader2, CreditCard } from 'lucide-react';
+import { expensesApi, projectsApi, categoriesApi, cardsApi } from '../../api';
 import { BatchItemSelect } from '../../components/shared/BatchItemSelect';
 
 type FV = { ncf: string; supplierRnc: string; supplierName: string; itbisAmount: number };
 type FormData = {
-  projectId:     string;
-  categoryId:    number;
-  expenseDate:   string;
-  amount:        number;
-  description:   string;
-  paymentMethod: string;
-  hasFiscalDoc:  boolean;
-  notes:         string;
-  fiscalVoucher?: FV;
-  batchItemId?: string;
+  projectId:        string;
+  categoryId:       number;
+  expenseDate:      string;
+  amount:           number;
+  description:      string;
+  paymentMethod:    string;
+  companyCardId?:   number;
+  paymentBank?:     string;
+  paymentReference?: string;
+  hasFiscalDoc:     boolean;
+  notes:            string;
+  fiscalVoucher?:   FV;
+  batchItemId?:     string;
 };
 
 const NCF_REGEX   = /^[A-Z]\d{10}$/;
@@ -61,6 +64,12 @@ export default function EditExpensePage() {
     select:   (r) => r.data.data,
   });
 
+  const { data: cards } = useQuery({
+    queryKey: ['company-cards'],
+    queryFn:  () => cardsApi.list(true),
+    select:   (r) => r.data.data.filter((c: any) => c.isActive),
+  });
+
   useEffect(() => {
     if (!expense) return;
     const hasFV = !!expense.fiscalVoucher;
@@ -71,14 +80,17 @@ export default function EditExpensePage() {
     }
     setProjectItemId((expense as any).batchItemId ?? '');
     reset({
-      projectId:     expense.project?.id ?? expense.projectId,
-      categoryId:    expense.category.id,
-      expenseDate:   expense.expenseDate.split('T')[0],
-      amount:        expense.amount,
-      description:   expense.description,
-      paymentMethod: expense.paymentMethod,
-      notes:         expense.notes ?? '',
-      fiscalVoucher: hasFV ? {
+      projectId:        expense.project?.id ?? expense.projectId,
+      categoryId:       expense.category.id,
+      expenseDate:      expense.expenseDate.split('T')[0],
+      amount:           expense.amount,
+      description:      expense.description,
+      paymentMethod:    expense.paymentMethod,
+      companyCardId:    (expense as any).companyCardId ?? undefined,
+      paymentBank:      (expense as any).paymentBank ?? '',
+      paymentReference: (expense as any).paymentReference ?? '',
+      notes:            expense.notes ?? '',
+      fiscalVoucher:    hasFV ? {
         ncf:          expense.fiscalVoucher!.ncf,
         supplierRnc:  expense.fiscalVoucher!.supplierRnc,
         supplierName: expense.fiscalVoucher!.supplierName,
@@ -121,6 +133,15 @@ export default function EditExpensePage() {
         supplierName: data.fiscalVoucher?.supplierName,
         itbisAmount:  Number(data.fiscalVoucher?.itbisAmount ?? 0),
       };
+    }
+    if (data.paymentMethod === 'CARD' && data.companyCardId) {
+      payload.companyCardId = Number(data.companyCardId);
+    }
+    if ((data.paymentMethod === 'TRANSFER' || data.paymentMethod === 'CHECK') && data.paymentBank) {
+      payload.paymentBank = data.paymentBank;
+    }
+    if ((data.paymentMethod === 'TRANSFER' || data.paymentMethod === 'CHECK') && data.paymentReference) {
+      payload.paymentReference = data.paymentReference;
     }
     payload.batchItemId = batchItemId || null;
     mutation.mutate(payload);
@@ -338,6 +359,52 @@ export default function EditExpensePage() {
               </select>
             </div>
           </div>
+
+          {/* Card selector — only when paymentMethod = CARD */}
+          {watch('paymentMethod') === 'CARD' && (
+            <div>
+              <label className={labelCls + ' flex items-center gap-1.5'}>
+                <CreditCard className="w-4 h-4 text-gray-500" />
+                Tarjeta corporativa *
+              </label>
+              <select className={inputCls} {...register('companyCardId', {
+                required: watch('paymentMethod') === 'CARD' ? 'Selecciona la tarjeta utilizada' : false,
+                validate: (v) => watch('paymentMethod') !== 'CARD' || (!!v && Number(v) > 0) ? true : 'Selecciona la tarjeta utilizada',
+              })}>
+                <option value="">— Seleccionar tarjeta —</option>
+                {(cards ?? []).map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.holderName} — {c.cardType} *{c.lastFour} ({c.bank})
+                  </option>
+                ))}
+              </select>
+              {(errors as any).companyCardId && (
+                <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{(errors as any).companyCardId.message}</p>
+              )}
+            </div>
+          )}
+
+          {/* Bank / reference fields for TRANSFER or CHECK */}
+          {(watch('paymentMethod') === 'TRANSFER' || watch('paymentMethod') === 'CHECK') && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Banco emisor</label>
+                <input
+                  className={inputCls}
+                  placeholder="Ej. Banreservas, BPD, BHD..."
+                  {...register('paymentBank')}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>No. de transacción / referencia</label>
+                <input
+                  className={inputCls}
+                  placeholder="Ej. TRF-2026-00123"
+                  {...register('paymentReference')}
+                />
+              </div>
+            </div>
+          )}
 
           <div>
             <label className={labelCls}>Notas (opcional)</label>

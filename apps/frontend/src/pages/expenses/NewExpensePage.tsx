@@ -19,6 +19,8 @@ type FormData = {
   projectId: string; categoryId: number; expenseDate: string;
   amount: number; description: string; paymentMethod: string;
   companyCardId?: number;
+  paymentBank?: string;
+  paymentReference?: string;
   hasFiscalDoc: boolean; notes: string;
   fiscalVoucher?: FV;
   batchItemId?: string;
@@ -175,6 +177,12 @@ export default function NewExpensePage() {
     };
     if (data.paymentMethod === 'CARD' && data.companyCardId) {
       payload.companyCardId = Number(data.companyCardId);
+    }
+    if ((data.paymentMethod === 'TRANSFER' || data.paymentMethod === 'CHECK') && data.paymentBank) {
+      payload.paymentBank = data.paymentBank;
+    }
+    if ((data.paymentMethod === 'TRANSFER' || data.paymentMethod === 'CHECK') && data.paymentReference) {
+      payload.paymentReference = data.paymentReference;
     }
     if (foreignCurrency.enabled && foreignCurrency.foreignAmount && foreignCurrency.exchangeRate) {
       payload.foreignAmount   = Number(foreignCurrency.foreignAmount);
@@ -850,6 +858,28 @@ export default function NewExpensePage() {
                     No hay tarjetas registradas. Contacta al administrador.
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* Bank / reference fields for TRANSFER or CHECK */}
+            {(watch('paymentMethod') === 'TRANSFER' || watch('paymentMethod') === 'CHECK') && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Banco emisor</label>
+                  <input
+                    className={inputCls()}
+                    placeholder="Ej. Banreservas, BPD, BHD..."
+                    {...register('paymentBank')}
+                  />
+                </div>
+                <div>
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">No. de transacción / referencia</label>
+                  <input
+                    className={inputCls()}
+                    placeholder="Ej. TRF-2026-00123"
+                    {...register('paymentReference')}
+                  />
+                </div>
               </div>
             )}
 
