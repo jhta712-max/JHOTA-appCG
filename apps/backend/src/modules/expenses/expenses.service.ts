@@ -154,6 +154,8 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
       foreignCurrency: data.foreignCurrency ?? null,
       exchangeRate:    data.exchangeRate    ?? null,
       creditLineId:    data.creditLineId    ?? null,
+      paymentBank:     data.paymentBank     ?? null,
+      paymentReference: data.paymentReference ?? null,
       ...(data.hasFiscalDoc && data.fiscalVoucher && {
         fiscalVoucher: {
           create: {
@@ -274,6 +276,8 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
       ...expenseData,
       batchItemId: resolvedItemId,
       expenseDate: data.expenseDate ? new Date(data.expenseDate) : undefined,
+      paymentBank: data.paymentBank !== undefined ? data.paymentBank ?? null : undefined,
+      paymentReference: data.paymentReference !== undefined ? data.paymentReference ?? null : undefined,
       ...fiscalVoucherOp,
       ...statusReset,
     },
