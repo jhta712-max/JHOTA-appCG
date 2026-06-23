@@ -1,0 +1,2 @@
+ALTER TABLE "expenses" ADD COLUMN IF NOT EXISTS "payment_bank" VARCHAR(100);
+ALTER TABLE "expenses" ADD COLUMN IF NOT EXISTS "payment_reference" VARCHAR(100);
