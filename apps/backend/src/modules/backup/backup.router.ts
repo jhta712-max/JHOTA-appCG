@@ -166,13 +166,13 @@ router.post('/auto', async (req: Request, res: Response) => {
 });
 
 
-// GET /api/v1/backup/ping — test sin auth
-router.get('/ping', async (_req: Request, res: Response) => {
+// GET /api/v1/backup/ping — test de conectividad (admin-only)
+router.get('/ping', authenticate, authorize('admin'), async (_req: Request, res: Response) => {
   try {
-    const count = await prisma.expense.count();
-    res.json({ ok: true, expenses: count, time: new Date().toISOString() });
-  } catch (e: any) {
-    res.status(500).json({ ok: false, error: e.message });
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ ok: true, time: new Date().toISOString() });
+  } catch {
+    res.status(500).json({ ok: false });
   }
 });
 

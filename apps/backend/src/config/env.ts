@@ -27,7 +27,7 @@ const envSchema = z.object({
   // Anthropic (OCR con IA)
   ANTHROPIC_API_KEY:      z.string().optional(),
   // Backup automático
-  BACKUP_SECRET_KEY:      z.string().optional(),
+  BACKUP_SECRET_KEY:      z.string().min(16, 'BACKUP_SECRET_KEY debe tener al menos 16 caracteres').optional(),
   BACKUP_EMAIL:           z.string().email().optional(),
   // Notificaciones WhatsApp (UltraMsg)
   ULTRAMSG_INSTANCE_ID:        z.string().optional(),
