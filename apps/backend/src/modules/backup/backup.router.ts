@@ -33,6 +33,7 @@ async function generateBackup() {
     extraordinaryExpenses,
     adminEmployees, adminEmployeeSalaryHistory, adminEmployeeBenefits,
     adminPayrolls, adminPayrollLines,
+    aiUsageLogs, aiUsageAlerts,
   ] = await Promise.all([
     safe(() => prisma.role.findMany()),
     safe(() => prisma.user.findMany({ select: { id:true, name:true, email:true, roleId:true, isActive:true, phone:true, whatsappOptIn:true, notifTypes:true, createdAt:true } })),
@@ -78,6 +79,8 @@ async function generateBackup() {
     safe(() => prisma.administrativeEmployeeBenefit.findMany()),
     safe(() => prisma.administrativePayroll.findMany()),
     safe(() => prisma.administrativePayrollLine.findMany()),
+    safe(() => prisma.aiUsageLog.findMany({ orderBy: { createdAt: 'desc' } })),
+    safe(() => prisma.aiUsageAlert.findMany()),
   ]);
 
   const tables = {
@@ -97,6 +100,7 @@ async function generateBackup() {
     extraordinaryExpenses,
     adminEmployees, adminEmployeeSalaryHistory, adminEmployeeBenefits,
     adminPayrolls, adminPayrollLines,
+    aiUsageLogs, aiUsageAlerts,
   };
 
   const counts: Record<string, number> = {};
