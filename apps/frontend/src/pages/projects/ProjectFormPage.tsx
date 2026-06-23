@@ -4,7 +4,7 @@ import { fmtDate } from '../../utils/date';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, Save, AlertCircle, Plus, Trash2, Pencil, Check, X, FileText, Users, UserPlus,
+  ArrowLeft, Save, AlertCircle, Plus, Trash2, Pencil, Check, X, FileText, Users, UserPlus, Layers,
 } from 'lucide-react';
 import { projectsApi, usersApi } from '../../api';
 import { useRole } from '../../hooks/useRole';
@@ -124,6 +124,8 @@ export default function ProjectFormPage() {
   const navigate = useNavigate();
   const qc       = useQueryClient();
   const { isSupervisor: canEdit } = useRole();
+  const [batchesEnabled, setBatchesEnabled] = useState(false);
+  const [batchesLoading, setBatchesLoading] = useState(false);
 
   const { data: existing } = useQuery({
     queryKey: ['project', id],
@@ -137,6 +139,7 @@ export default function ProjectFormPage() {
 
   useEffect(() => {
     if (existing) {
+      setBatchesEnabled((existing as any).batchesEnabled ?? false);
       reset({
         code:            existing.code,
         name:            existing.name,
@@ -152,12 +155,38 @@ export default function ProjectFormPage() {
   }, [existing, reset]);
 
   const mutation = useMutation({
-    mutationFn: (data: any) => isEdit ? projectsApi.update(id!, data) : projectsApi.create(data),
+    mutationFn: async (data: any) => {
+      const res = isEdit ? await projectsApi.update(id!, data) : await projectsApi.create(data);
+      // En creación, habilitar batches si el toggle estaba activo
+      if (!isEdit && batchesEnabled) {
+        await projectsApi.enableBatches(res.data.data.id);
+      }
+      return res;
+    },
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['projects'] });
       navigate(`/projects/${res.data.data.id}`);
     },
   });
+
+  const handleToggleBatches = async () => {
+    if (!isEdit) { setBatchesEnabled((v) => !v); return; }
+    setBatchesLoading(true);
+    try {
+      if (batchesEnabled) {
+        await projectsApi.disableBatches(id!);
+        setBatchesEnabled(false);
+      } else {
+        await projectsApi.enableBatches(id!);
+        setBatchesEnabled(true);
+      }
+      qc.invalidateQueries({ queryKey: ['project', id] });
+    } catch (e: any) {
+      alert(e.response?.data?.error ?? 'Error al cambiar la configuración');
+    } finally {
+      setBatchesLoading(false);
+    }
+  };
 
   const onSubmit = (data: FormData) => {
     mutation.mutate({
@@ -372,6 +401,28 @@ export default function ProjectFormPage() {
               </select>
             </div>
           )}
+
+          {/* Toggle partidas / lotes */}
+          <div
+            className={`flex items-start gap-4 border p-4 cursor-pointer transition-colors ${batchesEnabled ? 'border-[#F5C218] bg-[#1C1C1C]' : 'border-gray-200 bg-gray-50'}`}
+            onClick={batchesLoading ? undefined : handleToggleBatches}
+          >
+            <div className={`mt-0.5 w-5 h-5 shrink-0 flex items-center justify-center border-2 transition-colors ${batchesEnabled ? 'border-[#F5C218] bg-[#F5C218]' : 'border-gray-400 bg-white'}`}>
+              {batchesEnabled && <Check className="w-3 h-3 text-[#1C1C1C]" strokeWidth={3} />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <Layers className={`w-4 h-4 shrink-0 ${batchesEnabled ? 'text-[#F5C218]' : 'text-gray-500'}`} />
+                <p className={`font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide ${batchesEnabled ? 'text-white' : 'text-gray-800'}`}>
+                  Proyecto con partidas / ítems
+                </p>
+                {batchesLoading && <span className="w-3.5 h-3.5 border-2 border-[#F5C218] border-t-transparent rounded-full animate-spin" />}
+              </div>
+              <p className={`font-['DM_Sans'] text-xs mt-1 ${batchesEnabled ? 'text-gray-400' : 'text-gray-500'}`}>
+                Activa esto si el proyecto maneja presupuesto dividido en partidas o lotes de trabajo. Permite vincular pagos a ítems específicos.
+              </p>
+            </div>
+          </div>
 
           <div>
             <label className={labelCls}>Notas u observaciones</label>

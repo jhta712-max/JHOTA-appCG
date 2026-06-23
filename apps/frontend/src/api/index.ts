@@ -51,6 +51,11 @@ export const projectsApi = {
     api.patch<{ success: boolean; data: Anticipo }>(`/projects/${projectId}/anticipos/${anticipoId}`, data),
   deleteAnticipo: (projectId: string, anticipoId: string) =>
     api.delete(`/projects/${projectId}/anticipos/${anticipoId}`),
+  // Partidas / lotes
+  enableBatches:  (projectId: string) =>
+    api.post<{ success: boolean; data: Project }>(`/projects/${projectId}/batches/enable`),
+  disableBatches: (projectId: string) =>
+    api.post<{ success: boolean; data: Project }>(`/projects/${projectId}/batches/disable`),
   // Asignaciones de operadores
   getAssignments:  (projectId: string) =>
     api.get<{ success: boolean; data: Assignment[] }>(`/projects/${projectId}/assignments`),
