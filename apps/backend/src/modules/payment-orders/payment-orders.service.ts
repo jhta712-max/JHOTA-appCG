@@ -21,6 +21,8 @@ interface ExpenseSourceData {
   paymentMethod?:     string;
   hasFiscalDoc?:      boolean;
   notes?:             string | null;
+  paymentBank?:       string | null;
+  paymentReference?:  string | null;
   contratoAjustadoId?: string | null;
   batchItemId?:       string | null;
   foreignAmount?:     number | { toString(): string } | null;
@@ -38,7 +40,9 @@ export function buildExpenseData(src: ExpenseSourceData): Prisma.ExpenseUnchecke
     description:        src.description,
     paymentMethod:      (src.paymentMethod ?? 'TRANSFER') as any,
     hasFiscalDoc:       src.hasFiscalDoc ?? false,
-    ...(src.notes              != null ? { notes:          src.notes }                           : {}),
+    ...(src.notes              != null ? { notes:            src.notes }                         : {}),
+    ...(src.paymentBank        != null ? { paymentBank:      src.paymentBank }                   : {}),
+    ...(src.paymentReference   != null ? { paymentReference: src.paymentReference }              : {}),
     ...(src.contratoAjustadoId != null ? { contratoAjustadoId: src.contratoAjustadoId }         : {}),
     ...(src.batchItemId        != null ? { batchItemId: src.batchItemId }                       : {}),
     ...(src.foreignAmount      != null ? { foreignAmount:  Number(src.foreignAmount) }           : {}),
@@ -601,6 +605,8 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
             amount:             amountDOP,
             description:        `[${opRef}] ${po.concept}`,
             paymentMethod:      paymentInfo?.paymentMethod ?? 'TRANSFER',
+            paymentBank:        paymentInfo?.paymentBank      ?? null,
+            paymentReference:   paymentInfo?.paymentReference ?? null,
             hasFiscalDoc:       hasFiscal,
             notes:              `Auto-generado al confirmar ${opRef}. Suplidor: ${(po as any).supplier?.name ?? po.supplierId}. Empresa: ${po.payingCompany}.${isForeign ? ` Divisa original: ${po.currency} ${Number(po.amount).toFixed(2)}${exchangeRate ? ` (TC: ${exchangeRate})` : ''}.` : ''}`,
             contratoAjustadoId: (po as any).contratoAjustadoId ?? null,
