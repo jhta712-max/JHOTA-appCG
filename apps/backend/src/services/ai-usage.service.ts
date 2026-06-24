@@ -67,3 +67,31 @@ export async function trackAiCall(params: TrackAiCallParams): Promise<Anthropic.
 
   return response;
 }
+
+/**
+ * Persist AI usage log for a pre-completed Message (e.g. from streaming).
+ * Same semantics as trackAiCall but the caller already has the final Message.
+ */
+export function persistAiUsage(
+  feature:   AiFeature,
+  message:   Anthropic.Message,
+  userId?:   string,
+  projectId?: string,
+): void {
+  setImmediate(async () => {
+    try {
+      await prisma.aiUsageLog.create({
+        data: {
+          feature,
+          model:        message.model,
+          inputTokens:  message.usage.input_tokens,
+          outputTokens: message.usage.output_tokens,
+          userId:       userId    ?? null,
+          projectId:    projectId ?? null,
+        },
+      });
+    } catch (err) {
+      logger.error('[AiUsage] Failed to persist usage log:', err);
+    }
+  });
+}

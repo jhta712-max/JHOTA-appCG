@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../../config/env';
 import { AppError } from '../../middlewares/errorHandler';
-import { trackAiCall } from '../../services/ai-usage.service';
+import { persistAiUsage } from '../../services/ai-usage.service';
 
 // ── Tipos de documento detectables ────────────────────────────
 
@@ -200,10 +200,11 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
     };
   }
 
-  const response = await withRetry(() => trackAiCall({
-    feature: 'OCR',
-    client,
-    request: {
+  // Use streaming so the connection stays alive with data from the first token.
+  // This avoids "Premature close" errors caused by proxy idle-timeouts while
+  // waiting for a large non-streaming response body.
+  const message = await withRetry(async () => {
+    const stream = client.messages.stream({
       model:      'claude-haiku-4-5',
       max_tokens: 1024,
       messages: [
@@ -215,10 +216,13 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
           ],
         },
       ],
-    },
-  }));
+    });
+    return await stream.finalMessage();
+  });
 
-  const rawText = response.content[0].type === 'text' ? response.content[0].text : '';
+  persistAiUsage('OCR', message);
+
+  const rawText = message.content[0].type === 'text' ? message.content[0].text : '';
   return parseDocumentResponse(rawText);
 }
 
