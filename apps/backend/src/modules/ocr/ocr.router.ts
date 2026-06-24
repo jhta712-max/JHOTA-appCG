@@ -50,6 +50,8 @@ router.post(
       const startMs = Date.now();
       console.log(`[OCR] job ${job.id} started — mimeType=${mimeType} size=${fileBuffer.length}`);
 
+      const NETWORK_ERROR_MARKERS = ['Premature close', 'Invalid response body', 'ECONNRESET', 'ETIMEDOUT', 'fetch failed', 'socket hang up'];
+
       let result: Awaited<ReturnType<typeof analyzeInvoice>>;
       try {
         result = await analyzeInvoice(fileBuffer, mimeType);
@@ -61,7 +63,12 @@ router.post(
           where: { id: job.id },
           data:  { status: 'failed', error: msg, completedAt: new Date() },
         }).catch(() => {});
-        throw new AppError(502, `Error al analizar la imagen: ${msg}`, 'OCR_AI_ERROR');
+
+        const isNetworkError = NETWORK_ERROR_MARKERS.some(m => msg.includes(m));
+        const userMsg = isNetworkError
+          ? 'La conexión con el servicio de IA se interrumpió. Por favor intenta de nuevo.'
+          : `Error al analizar la imagen: ${msg}`;
+        throw new AppError(502, userMsg, 'OCR_AI_ERROR');
       }
 
       await prisma.ocrJob.update({
