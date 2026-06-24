@@ -160,11 +160,16 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
     try {
       return await fn();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg   = err instanceof Error ? err.message : String(err);
+      const name  = err instanceof Error ? err.constructor.name : 'UnknownError';
+      const cause = (err as any)?.cause;
+      const status = (err as any)?.status;
+      console.error(`[OCR] Attempt ${attempt + 1}/${maxRetries + 1} failed — ${name}: ${msg}${status ? ` (HTTP ${status})` : ''}${cause ? ` cause: ${cause}` : ''}`);
+
       const isTransient = TRANSIENT_ERRORS.some(e => msg.includes(e));
       if (isTransient && attempt < maxRetries) {
         const delayMs = (attempt + 1) * 2000;
-        console.warn(`[OCR] Network error (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delayMs}ms: ${msg}`);
+        console.warn(`[OCR] Transient error — retrying in ${delayMs}ms`);
         await new Promise(r => setTimeout(r, delayMs));
         continue;
       }
@@ -187,6 +192,7 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
 
   if (mimeType === 'application/pdf') {
     const base64Pdf = fileBuffer.toString('base64');
+    console.log(`[OCR] PDF payload: ${Math.round(base64Pdf.length / 1024)} KB base64`);
     fileContentBlock = {
       type:   'document',
       source: { type: 'base64', media_type: 'application/pdf', data: base64Pdf },
@@ -194,6 +200,7 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
   } else {
     const processedBuffer = await preprocessImage(fileBuffer);
     const base64Image     = processedBuffer.toString('base64');
+    console.log(`[OCR] Image payload: original=${Math.round(fileBuffer.length / 1024)} KB → compressed=${Math.round(processedBuffer.length / 1024)} KB → base64=${Math.round(base64Image.length / 1024)} KB`);
     fileContentBlock = {
       type:   'image',
       source: { type: 'base64', media_type: 'image/jpeg', data: base64Image },
@@ -205,7 +212,7 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
   // waiting for a large non-streaming response body.
   const message = await withRetry(async () => {
     const stream = client.messages.stream({
-      model:      'claude-haiku-4-5',
+      model:      'claude-haiku-4-5-20251001',
       max_tokens: 1024,
       messages: [
         {
@@ -233,20 +240,23 @@ export const analyzeInvoice = analyzeDocument;
 
 async function preprocessImage(buffer: Buffer): Promise<Buffer> {
   const sharp = (await import('sharp')).default;
-  // Grayscale: OCR only needs luminance; halves the encoded size vs. color JPEG.
-  // 900px max width + quality 60 targets ~100-200 KB output for typical receipts.
-  const processed = await sharp(buffer)
+  // Grayscale: OCR only needs luminance. Target output: under 80 KB binary
+  // (= under 110 KB base64) to stay well within any intermediate proxy limits.
+  let processed = await sharp(buffer)
     .rotate()
     .grayscale()
-    .resize({ width: 900, withoutEnlargement: true })
+    .resize({ width: 768, withoutEnlargement: true })
     .sharpen()
     .normalise()
-    .jpeg({ quality: 60 })
+    .jpeg({ quality: 52 })
     .toBuffer();
 
-  // If the image is still large (e.g. very detailed document), compress further.
-  if (processed.length > 500 * 1024) {
-    return sharp(processed).jpeg({ quality: 42 }).toBuffer();
+  // If still large, keep compressing in steps until under 80 KB.
+  const TARGET_BYTES = 80 * 1024;
+  let quality = 40;
+  while (processed.length > TARGET_BYTES && quality >= 20) {
+    processed = await sharp(processed).jpeg({ quality }).toBuffer();
+    quality -= 10;
   }
 
   return processed;
