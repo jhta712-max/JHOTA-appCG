@@ -506,7 +506,7 @@ export default function QuotationDetailPage() {
                         </p>
                       </div>
                       <p className="font-['Space_Mono'] text-sm font-bold text-gray-900 shrink-0">
-                        {fmt(Number(p.amount), quotation.currency)}
+                        {fmt(Number(p.amount), (p as any).currency ?? quotation.currency)}
                       </p>
                       {isAdmin && (
                         <button onClick={() => deletePaymentMutation.mutate(p.id)}

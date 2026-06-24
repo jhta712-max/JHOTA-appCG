@@ -754,6 +754,7 @@ model QuotationPayment {
   expenseId     String?       @unique @map("expense_id") @db.Uuid
   sequence      Int
   amount        Decimal       @db.Decimal(15, 2)
+  currency      String        @default("RD$") @db.VarChar(10)
   paymentDate   DateTime      @map("payment_date") @db.Date
   paymentMethod PaymentMethod
   description   String        @db.VarChar(300)

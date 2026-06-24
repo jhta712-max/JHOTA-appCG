@@ -672,6 +672,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
               expenseId:     expense.id,
               sequence:      nextSeq,
               amount:        quotationAmount,
+              currency:      quotCurrency,
               paymentDate:   new Date(),
               paymentMethod: 'TRANSFER',
               description:   `Pago desde ${opRef}${isForeign ? ` (${po.currency} ${Number(po.amount).toFixed(2)}${exchangeRate ? ` × TC ${exchangeRate}` : ''})` : ''}`,
