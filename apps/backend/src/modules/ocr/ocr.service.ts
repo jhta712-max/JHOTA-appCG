@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../../config/env';
 import { AppError } from '../../middlewares/errorHandler';
-import { trackAiCall } from '../../services/ai-usage.service';
+import { persistAiUsage } from '../../services/ai-usage.service';
 
 // ── Tipos de documento detectables ────────────────────────────
 
@@ -151,6 +151,29 @@ Nivel de confianza:
 - "medium": imagen aceptable, algunos campos con dudas
 - "low": imagen borrosa/inclinada, datos poco fiables`;
 
+// ── Retry para errores de red transitorios ────────────────────
+
+const TRANSIENT_ERRORS = ['Premature close', 'Invalid response body', 'ECONNRESET', 'ETIMEDOUT', 'fetch failed', 'socket hang up', 'ENOTFOUND'];
+
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const isTransient = TRANSIENT_ERRORS.some(e => msg.includes(e));
+      if (isTransient && attempt < maxRetries) {
+        const delayMs = (attempt + 1) * 2000;
+        console.warn(`[OCR] Network error (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delayMs}ms: ${msg}`);
+        await new Promise(r => setTimeout(r, delayMs));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+
 // ── Función principal (nueva) ──────────────────────────────────
 
 export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Promise<DocumentAnalysisResult> {
@@ -177,10 +200,11 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
     };
   }
 
-  const response = await trackAiCall({
-    feature: 'OCR',
-    client,
-    request: {
+  // Use streaming so the connection stays alive with data from the first token.
+  // This avoids "Premature close" errors caused by proxy idle-timeouts while
+  // waiting for a large non-streaming response body.
+  const message = await withRetry(async () => {
+    const stream = client.messages.stream({
       model:      'claude-haiku-4-5',
       max_tokens: 1024,
       messages: [
@@ -192,10 +216,13 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
           ],
         },
       ],
-    },
+    });
+    return await stream.finalMessage();
   });
 
-  const rawText = response.content[0].type === 'text' ? response.content[0].text : '';
+  persistAiUsage('OCR', message);
+
+  const rawText = message.content[0].type === 'text' ? message.content[0].text : '';
   return parseDocumentResponse(rawText);
 }
 
@@ -206,13 +233,23 @@ export const analyzeInvoice = analyzeDocument;
 
 async function preprocessImage(buffer: Buffer): Promise<Buffer> {
   const sharp = (await import('sharp')).default;
-  return sharp(buffer)
+  // Grayscale: OCR only needs luminance; halves the encoded size vs. color JPEG.
+  // 900px max width + quality 60 targets ~100-200 KB output for typical receipts.
+  const processed = await sharp(buffer)
     .rotate()
-    .resize({ width: 1280, withoutEnlargement: true })
+    .grayscale()
+    .resize({ width: 900, withoutEnlargement: true })
     .sharpen()
     .normalise()
-    .jpeg({ quality: 72 })
+    .jpeg({ quality: 60 })
     .toBuffer();
+
+  // If the image is still large (e.g. very detailed document), compress further.
+  if (processed.length > 500 * 1024) {
+    return sharp(processed).jpeg({ quality: 42 }).toBuffer();
+  }
+
+  return processed;
 }
 
 // ── Parsear respuesta del modelo ───────────────────────────────
