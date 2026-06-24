@@ -7,7 +7,7 @@
 -- ========================================================
 INSERT INTO expense_categories (name, description, is_active, is_system, created_at)
 VALUES
-  ('ALIMENTACIÓN', 'Gastos de alimentación y viáticos', true, true, NOW()),
+  ('VIÁTICOS', 'Gastos de viáticos y alimentación', true, true, NOW()),
   ('CAJA CHICA', 'Caja chica para gastos menores', true, true, NOW()),
   ('HERRAMIENTAS', 'Herramientas de trabajo', true, true, NOW()),
   ('MANO DE OBRA', 'Mano de obra y servicios de personal', true, true, NOW()),
@@ -22,8 +22,8 @@ ON CONFLICT (name) DO NOTHING;
 -- First, reassign all expenses to standardized categories
 
 -- Viáticos → ALIMENTACIÓN
-UPDATE expenses SET category_id = (SELECT id FROM expense_categories WHERE name = 'ALIMENTACIÓN' LIMIT 1)
-WHERE category_id IN (SELECT id FROM expense_categories WHERE LOWER(name) IN ('viáticos', 'viaticos') AND name != 'ALIMENTACIÓN');
+UPDATE expenses SET category_id = (SELECT id FROM expense_categories WHERE name = 'VIÁTICOS' LIMIT 1)
+WHERE category_id IN (SELECT id FROM expense_categories WHERE LOWER(name) IN ('viáticos', 'viaticos') AND name != 'VIÁTICOS');
 
 -- Caja chica variants → CAJA CHICA
 UPDATE expenses SET category_id = (SELECT id FROM expense_categories WHERE name = 'CAJA CHICA' LIMIT 1)
@@ -86,7 +86,7 @@ WHERE category_id IN (
 -- ========================================================
 DELETE FROM expense_categories
 WHERE name NOT IN (
-  'ALIMENTACIÓN',
+  'VIÁTICOS',
   'CAJA CHICA',
   'HERRAMIENTAS',
   'MANO DE OBRA',

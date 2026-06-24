@@ -12,16 +12,16 @@ WHERE project_id = (SELECT id FROM projects WHERE code = 'MOPC-CCC-LPN-2021-0036
 -- ========================================================
 DELETE FROM expense_categories
 WHERE NOT EXISTS (SELECT 1 FROM expenses e WHERE e.category_id = expense_categories.id)
-  AND name NOT IN ('ALIMENTACIÓN', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA');
+  AND name NOT IN ('VIÁTICOS', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA');
 
 -- Step 3: Consolidar variantes restantes que hayan quedado
 -- ========================================================
 -- Consolidar Alimentación/alimentación → ALIMENTACIÓN
 UPDATE expenses e
-SET category_id = (SELECT id FROM expense_categories WHERE name = 'ALIMENTACIÓN' LIMIT 1)
+SET category_id = (SELECT id FROM expense_categories WHERE name = 'VIÁTICOS' LIMIT 1)
 WHERE e.category_id IN (
   SELECT id FROM expense_categories
-  WHERE LOWER(name) = 'alimentación' AND name != 'ALIMENTACIÓN'
+  WHERE LOWER(name) = 'alimentación' AND name != 'VIÁTICOS'
 );
 
 -- Consolidar Combustible → MATERIALES (si quedan)
@@ -36,7 +36,7 @@ WHERE e.category_id IN (
 -- ========================================================
 DELETE FROM expense_categories
 WHERE NOT EXISTS (SELECT 1 FROM expenses e WHERE e.category_id = expense_categories.id)
-  AND name NOT IN ('ALIMENTACIÓN', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA');
+  AND name NOT IN ('VIÁTICOS', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA');
 
 -- Step 5: Verificación final
 -- ========================================================

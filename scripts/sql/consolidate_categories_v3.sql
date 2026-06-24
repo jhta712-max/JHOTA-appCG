@@ -10,7 +10,7 @@
 -- ========================================================
 INSERT INTO expense_categories (name, description, is_active, is_system, created_at)
 VALUES
-  ('ALIMENTACIÓN', 'Gastos de alimentación y viáticos', true, true, NOW()),
+  ('VIÁTICOS', 'Gastos de viáticos y alimentación', true, true, NOW()),
   ('CAJA CHICA', 'Caja chica para gastos menores', true, true, NOW()),
   ('HERRAMIENTAS', 'Herramientas de trabajo', true, true, NOW()),
   ('MANO DE OBRA', 'Mano de obra y servicios de personal', true, true, NOW()),
@@ -27,7 +27,7 @@ SELECT
   ec.id as old_category_id,
   ec.name as old_name,
   CASE
-    WHEN ec.name = 'ALIMENTACIÓN' THEN (SELECT id FROM expense_categories WHERE name = 'ALIMENTACIÓN')
+    WHEN ec.name = 'VIÁTICOS' THEN (SELECT id FROM expense_categories WHERE name = 'VIÁTICOS')
     WHEN ec.name = 'CAJA CHICA' THEN (SELECT id FROM expense_categories WHERE name = 'CAJA CHICA')
     WHEN ec.name = 'HERRAMIENTAS' THEN (SELECT id FROM expense_categories WHERE name = 'HERRAMIENTAS')
     WHEN ec.name = 'MANO DE OBRA' THEN (SELECT id FROM expense_categories WHERE name = 'MANO DE OBRA')
@@ -36,7 +36,7 @@ SELECT
     WHEN ec.name = 'SERVICIO' THEN (SELECT id FROM expense_categories WHERE name = 'SERVICIO')
     WHEN ec.name = 'LOGISTICA' THEN (SELECT id FROM expense_categories WHERE name = 'LOGISTICA')
     -- Mapeos específicos para variantes
-    WHEN LOWER(ec.name) IN ('viáticos', 'viaticos') THEN (SELECT id FROM expense_categories WHERE name = 'ALIMENTACIÓN')
+    WHEN LOWER(ec.name) IN ('viáticos', 'viaticos') THEN (SELECT id FROM expense_categories WHERE name = 'VIÁTICOS')
     WHEN LOWER(TRIM(ec.name)) = 'caja chica' AND ec.name != 'CAJA CHICA' THEN (SELECT id FROM expense_categories WHERE name = 'CAJA CHICA')
     WHEN LOWER(TRIM(ec.name)) = 'herramientas' AND ec.name != 'HERRAMIENTAS' THEN (SELECT id FROM expense_categories WHERE name = 'HERRAMIENTAS')
     WHEN ec.name = 'MO' THEN (SELECT id FROM expense_categories WHERE name = 'MANO DE OBRA')
@@ -48,7 +48,7 @@ SELECT
     ELSE NULL
   END as new_category_id
 FROM expense_categories ec
-WHERE ec.name NOT IN ('ALIMENTACIÓN', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA');
+WHERE ec.name NOT IN ('VIÁTICOS', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA');
 
 -- Step 3: Aplicar el mapeo a los gastos
 -- ========================================================
@@ -64,14 +64,14 @@ WHERE e.category_id = cm.old_category_id
 SELECT ec.id, ec.name, COUNT(e.id) as expense_count
 FROM expense_categories ec
 LEFT JOIN expenses e ON e.category_id = ec.id
-WHERE ec.name NOT IN ('ALIMENTACIÓN', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA')
+WHERE ec.name NOT IN ('VIÁTICOS', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA')
 GROUP BY ec.id, ec.name
 HAVING COUNT(e.id) = 0;
 
 -- Step 5: Eliminar categorías antiguas/duplicadas que no tienen gastos
 -- ========================================================
 DELETE FROM expense_categories ec
-WHERE ec.name NOT IN ('ALIMENTACIÓN', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA')
+WHERE ec.name NOT IN ('VIÁTICOS', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA', 'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA')
   AND NOT EXISTS (SELECT 1 FROM expenses e WHERE e.category_id = ec.id);
 
 -- Step 6: Resultado final - Conteo de gastos por categoría

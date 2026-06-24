@@ -20,7 +20,7 @@ WHERE category_id IN (
 
 -- Step 3: Consolidar Alimentación (personalizada) → ALIMENTACIÓN (sistema)
 UPDATE expenses
-SET category_id = (SELECT id FROM expense_categories WHERE name = 'ALIMENTACIÓN' AND is_system = true)
+SET category_id = (SELECT id FROM expense_categories WHERE name = 'VIÁTICOS' AND is_system = true)
 WHERE category_id IN (
   SELECT id FROM expense_categories
   WHERE name = 'Alimentación' AND is_system = false

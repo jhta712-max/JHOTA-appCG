@@ -8,8 +8,8 @@
 -- ========================================================
 
 INSERT INTO expense_categories (name, description, is_active, is_system, created_at)
-SELECT 'ALIMENTACIÓN', 'Gastos de alimentación y viáticos', true, true, NOW()
-WHERE NOT EXISTS (SELECT 1 FROM expense_categories WHERE name = 'ALIMENTACIÓN');
+SELECT 'VIÁTICOS', 'Gastos de viáticos y alimentación', true, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM expense_categories WHERE name = 'VIÁTICOS');
 
 INSERT INTO expense_categories (name, description, is_active, is_system, created_at)
 SELECT 'CAJA CHICA', 'Caja chica para gastos menores', true, true, NOW()
@@ -42,7 +42,7 @@ WHERE NOT EXISTS (SELECT 1 FROM expense_categories WHERE name = 'LOGISTICA');
 -- Step 2: Consolidate Viáticos → ALIMENTACIÓN
 -- ========================================================
 UPDATE expenses
-SET category_id = (SELECT id FROM expense_categories WHERE name = 'ALIMENTACIÓN')
+SET category_id = (SELECT id FROM expense_categories WHERE name = 'VIÁTICOS')
 WHERE category_id IN (SELECT id FROM expense_categories WHERE name = 'Viáticos' OR name = 'Viaticos');
 
 -- Step 3: Consolidate Caja chica variants → CAJA CHICA
@@ -123,7 +123,7 @@ DELETE FROM expense_categories
 WHERE id NOT IN (
   SELECT id FROM expense_categories
   WHERE name IN (
-    'ALIMENTACIÓN', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA',
+    'VIÁTICOS', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA',
     'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA'
   )
 )
@@ -137,7 +137,7 @@ SELECT
 FROM expense_categories ec
 LEFT JOIN expenses e ON e.category_id = ec.id
 WHERE ec.id IN (SELECT id FROM expense_categories WHERE name IN (
-  'ALIMENTACIÓN', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA',
+  'VIÁTICOS', 'CAJA CHICA', 'HERRAMIENTAS', 'MANO DE OBRA',
   'MATERIALES', 'OTROS', 'SERVICIO', 'LOGISTICA'
 ))
 GROUP BY ec.id, ec.name
