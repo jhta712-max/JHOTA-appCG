@@ -1,10 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
+import Anthropic from '@anthropic-ai/sdk';
 import { authenticate } from '../../middlewares/authenticate';
 import { analyzeInvoice } from './ocr.service';
 import { AppError } from '../../middlewares/errorHandler';
 import prisma from '../../config/database';
 import { enrichOcrResult } from './ocr-enrichment.service';
+import { env } from '../../config/env';
 
 const router = Router();
 
@@ -21,6 +23,35 @@ const upload = multer({
     }
   },
 });
+
+// ── GET /api/v1/ocr/ping-ai ────────────────────────────────────
+// Diagnostic: text-only Claude call (no image) to test API connectivity.
+router.get(
+  '/ping-ai',
+  authenticate,
+  async (req: Request, res: Response) => {
+    if (!env.ANTHROPIC_API_KEY) {
+      res.json({ success: false, error: 'ANTHROPIC_API_KEY not configured' });
+      return;
+    }
+    const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, timeout: 20_000 });
+    const startMs = Date.now();
+    try {
+      const response = await client.messages.create({
+        model:      'claude-haiku-4-5-20251001',
+        max_tokens: 8,
+        messages:   [{ role: 'user', content: 'Reply with the word OK only.' }],
+      });
+      const text = response.content[0].type === 'text' ? response.content[0].text : '?';
+      res.json({ success: true, elapsed: Date.now() - startMs, response: text });
+    } catch (err) {
+      const msg    = err instanceof Error ? err.message : String(err);
+      const name   = err instanceof Error ? err.constructor.name : 'Unknown';
+      const status = (err as any)?.status;
+      res.json({ success: false, elapsed: Date.now() - startMs, errorClass: name, error: msg, status });
+    }
+  },
+);
 
 // ── POST /api/v1/ocr/analyze ───────────────────────────────────
 // Procesa la imagen sincrónicamente con IA y guarda el resultado en OcrJob.
