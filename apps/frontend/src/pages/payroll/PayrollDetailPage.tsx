@@ -188,7 +188,7 @@ export default function PayrollDetailPage() {
       </Link>
 
       {/* Header card */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+      <div className="overflow-hidden border border-gray-200 shadow-sm">
         {/* Dark hero band */}
         <div className="px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -464,7 +464,7 @@ export default function PayrollDetailPage() {
       )}
 
       {/* Lines table */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+      <div className="overflow-hidden border border-gray-200 shadow-sm">
         {/* Dark section header */}
         <div className="px-4 md:px-5 py-3 flex items-center justify-between" style={{ background: '#1C1C1C' }}>
           <h2 className="font-bold uppercase tracking-widest text-white flex items-center gap-2 text-sm" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -488,7 +488,7 @@ export default function PayrollDetailPage() {
               </button>
               <button
                 onClick={() => { setAddingLine(true); setActionError(''); }}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded font-bold uppercase tracking-wide transition-opacity hover:opacity-90"
+                className="hidden md:flex items-center gap-1.5 text-xs px-3 py-1.5 font-bold uppercase tracking-wide transition-opacity hover:opacity-90"
                 style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <Plus className="w-3.5 h-3.5" /> Agregar línea
               </button>
