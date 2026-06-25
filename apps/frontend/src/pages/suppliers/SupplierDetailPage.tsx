@@ -538,7 +538,7 @@ export default function SupplierDetailPage() {
                       <div>
                         <span className="font-['Space_Mono'] text-xs text-gray-500">OP-{String(po.number).padStart(4, '0')}</span>
                         <p className="font-['DM_Sans'] text-sm font-semibold text-gray-800 mt-0.5 line-clamp-2">{po.concept}</p>
-                        <p className="font-['Space_Mono'] text-xs text-gray-400">{po.project.code} · {po.paidAt ? fmtDate(po.paidAt) : '—'}</p>
+                        <p className="font-['Space_Mono'] text-xs text-gray-400">{po.project.code} {po.project.name} · {po.paidAt ? fmtDate(po.paidAt) : '—'}</p>
                       </div>
                       <span className={`font-['Barlow_Condensed'] uppercase text-xs px-2 py-0.5 shrink-0 ${status.cls}`}>{status.label}</span>
                     </div>
@@ -609,7 +609,7 @@ export default function SupplierDetailPage() {
                     <div>
                       <span className="font-['Space_Mono'] text-xs text-gray-700">{v.ncf}</span>
                       <p className="font-['DM_Sans'] text-sm text-gray-700 mt-0.5 line-clamp-2">{v.expense.description}</p>
-                      <p className="font-['Space_Mono'] text-xs text-gray-400">{v.expense.project.code} · {fmtDate(v.expense.expenseDate)}</p>
+                      <p className="font-['Space_Mono'] text-xs text-gray-400">{v.expense.project.code} {v.expense.project.name} · {fmtDate(v.expense.expenseDate)}</p>
                     </div>
                     <span className="font-['Space_Mono'] text-sm font-bold text-gray-900 shrink-0">{fmtDOP(Number(v.expense.amount))}</span>
                   </div>
