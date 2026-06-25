@@ -142,8 +142,7 @@ export default function DashboardPage() {
           <p className="text-xs uppercase tracking-widest text-gray-400 font-['Barlow_Condensed'] mb-1">
             {new Date().toLocaleDateString('es-DO', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
-          <h1 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] leading-none"
-              style={{ fontSize: '1.75rem' }}>
+          <h1 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] leading-none text-2xl md:text-[1.75rem]">
             {greeting()}, {user?.name?.split(' ')[0]}
           </h1>
           <p className="font-['DM_Sans'] text-gray-400 text-sm mt-1">Aquí está el resumen de hoy</p>
@@ -251,7 +250,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Stats KPI cards ─────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
 
         {/* Proyectos activos */}
         <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #1C1C1C' }}>
@@ -485,39 +484,79 @@ export default function DashboardPage() {
             CRÉDITO DE SUPLIDORES
           </h2>
           <div className="bg-white border border-gray-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-[#1C1C1C]">
-                  {['SUPLIDOR', 'LÍMITE', 'CONSUMIDO', 'PENDIENTE', 'DISPONIBLE', 'ESTADO'].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {creditSummaryData.lines.slice(0, 10).map((line) => {
-                  const ratio = line.creditLimit > 0 ? line.available / line.creditLimit : 1;
-                  const status =
-                    line.pending === 0 ? { label: 'SIN DEUDA', cls: 'bg-gray-100 text-gray-600' }
-                    : ratio >= 0.20 ? { label: 'EN ORDEN', cls: 'bg-green-100 text-green-700' }
-                    : ratio >= 0.10 ? { label: 'BAJO', cls: 'bg-yellow-100 text-yellow-700' }
-                    : { label: 'CRÍTICO', cls: 'bg-red-100 text-red-700' };
-                  return (
-                    <tr key={line.creditLineId} className="border-t border-gray-100 hover:bg-gray-50">
-                      <td className="px-4 py-3 font-['DM_Sans'] font-medium text-[#1C1C1C]">{line.supplierName}</td>
-                      <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.creditLimit.toLocaleString()}</td>
-                      <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.consumed.toLocaleString()}</td>
-                      <td className="px-4 py-3 font-['Space_Mono'] font-bold text-[#1C1C1C]">RD$ {line.pending.toLocaleString()}</td>
-                      <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.available.toLocaleString()}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 text-xs font-['Barlow_Condensed'] font-bold uppercase tracking-wide ${status.cls}`}>
-                          {status.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            {/* Tabla créditos — solo desktop */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[#1C1C1C]">
+                    {['SUPLIDOR', 'LÍMITE', 'CONSUMIDO', 'PENDIENTE', 'DISPONIBLE', 'ESTADO'].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {creditSummaryData.lines.slice(0, 10).map((line) => {
+                    const ratio = line.creditLimit > 0 ? line.available / line.creditLimit : 1;
+                    const status =
+                      line.pending === 0 ? { label: 'SIN DEUDA', cls: 'bg-gray-100 text-gray-600' }
+                      : ratio >= 0.20 ? { label: 'EN ORDEN', cls: 'bg-green-100 text-green-700' }
+                      : ratio >= 0.10 ? { label: 'BAJO', cls: 'bg-yellow-100 text-yellow-700' }
+                      : { label: 'CRÍTICO', cls: 'bg-red-100 text-red-700' };
+                    return (
+                      <tr key={line.creditLineId} className="border-t border-gray-100 hover:bg-gray-50">
+                        <td className="px-4 py-3 font-['DM_Sans'] font-medium text-[#1C1C1C]">{line.supplierName}</td>
+                        <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.creditLimit.toLocaleString()}</td>
+                        <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.consumed.toLocaleString()}</td>
+                        <td className="px-4 py-3 font-['Space_Mono'] font-bold text-[#1C1C1C]">RD$ {line.pending.toLocaleString()}</td>
+                        <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.available.toLocaleString()}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 text-xs font-['Barlow_Condensed'] font-bold uppercase tracking-wide ${status.cls}`}>
+                            {status.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {/* Tarjetas créditos — solo móvil */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {creditSummaryData.lines.slice(0, 10).map((line) => {
+                const ratio = line.creditLimit > 0 ? line.available / line.creditLimit : 1;
+                const status =
+                  line.pending === 0 ? { label: 'SIN DEUDA', cls: 'bg-gray-100 text-gray-600' }
+                  : ratio >= 0.20 ? { label: 'EN ORDEN', cls: 'bg-green-100 text-green-700' }
+                  : ratio >= 0.10 ? { label: 'BAJO', cls: 'bg-yellow-100 text-yellow-700' }
+                  : { label: 'CRÍTICO', cls: 'bg-red-100 text-red-700' };
+                return (
+                  <div key={line.creditLineId} className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="font-['Barlow_Condensed'] font-bold text-base uppercase text-[#1C1C1C]">{line.supplierName}</p>
+                      <span className={`text-xs px-2 py-0.5 font-['Barlow_Condensed'] font-bold uppercase ${status.cls}`}>{status.label}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <p className="text-gray-400 text-xs font-['Barlow_Condensed'] uppercase">Límite</p>
+                        <p className="font-['Space_Mono'] text-xs">RD$ {line.creditLimit.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs font-['Barlow_Condensed'] uppercase">Disponible</p>
+                        <p className="font-['Space_Mono'] text-xs text-green-600">RD$ {line.available.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs font-['Barlow_Condensed'] uppercase">Consumido</p>
+                        <p className="font-['Space_Mono'] text-xs">RD$ {line.consumed.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs font-['Barlow_Condensed'] uppercase">Pendiente</p>
+                        <p className="font-['Space_Mono'] text-xs text-red-600">RD$ {line.pending.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
             <div className="px-4 py-3 border-t border-gray-100 text-right">
               <a href="/suppliers" className="text-xs font-['DM_Sans'] text-[#1C1C1C] hover:text-[#F5C218] underline">
                 Ver todos en Suplidores →
@@ -637,7 +676,7 @@ export default function DashboardPage() {
 
       {/* Dashboard ejecutivo multi-proyecto — admin/supervisor only */}
       {(isAdmin || isSupervisor) && portfolio.length > 0 && (
-        <div className="px-6 py-5 space-y-3">
+        <div className="px-4 md:px-6 py-4 md:py-5 space-y-3">
           <SectionHeader
             icon={TrendingUp}
             title="Portafolio de Proyectos"
@@ -647,7 +686,8 @@ export default function DashboardPage() {
               </Link>
             }
           />
-          <div className="overflow-x-auto">
+          {/* Tabla portfolio — solo desktop */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-[#1C1C1C]">
@@ -663,7 +703,7 @@ export default function DashboardPage() {
                   const pct      = p.pctUsed;
                   const semaforo = pct >= 1 ? 'bg-red-500' : pct >= 0.9 ? 'bg-orange-400' : pct >= 0.7 ? 'bg-yellow-400' : 'bg-green-500';
                   const rowCls   = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
-                  const fmt      = (n: number) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
+                  const fmtP     = (n: number) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
                   const STATUS_LABEL: Record<string, string> = {
                     ACTIVE: 'Activo', COMPLETED: 'Completado', ON_HOLD: 'En pausa', CANCELLED: 'Cancelado',
                   };
@@ -680,11 +720,11 @@ export default function DashboardPage() {
                           {STATUS_LABEL[p.status] ?? p.status}
                         </span>
                       </td>
-                      <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap">{fmt(p.totalBudget)}</td>
-                      <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap">{fmt(p.spent)}</td>
-                      <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap text-blue-600">{fmt(p.committed)}</td>
+                      <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap">{fmtP(p.totalBudget)}</td>
+                      <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap">{fmtP(p.spent)}</td>
+                      <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap text-blue-600">{fmtP(p.committed)}</td>
                       <td className={`px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap font-bold ${p.available < 0 ? 'text-red-600' : 'text-gray-700'}`}>
-                        {fmt(p.available)}
+                        {fmtP(p.available)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
@@ -699,6 +739,58 @@ export default function DashboardPage() {
                 })}
               </tbody>
             </table>
+          </div>
+          {/* Tarjetas portfolio — solo móvil */}
+          <div className="md:hidden bg-white border border-gray-200 divide-y divide-gray-100">
+            {portfolio.map((p) => {
+              const pct      = p.pctUsed;
+              const fmtP     = (n: number) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(n);
+              const STATUS_LABEL: Record<string, string> = {
+                ACTIVE: 'Activo', COMPLETED: 'Completado', ON_HOLD: 'En pausa', CANCELLED: 'Cancelado',
+              };
+              const semaforo = pct >= 1 ? 'bg-red-500' : pct >= 0.9 ? 'bg-orange-400' : pct >= 0.7 ? 'bg-yellow-400' : 'bg-green-500';
+              return (
+                <div key={p.id} className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1 min-w-0 mr-2">
+                      <Link to={`/projects/${p.id}`} className="font-['Barlow_Condensed'] font-bold text-base uppercase text-[#1C1C1C] hover:underline block truncate">
+                        {p.name}
+                      </Link>
+                      <span className="font-['Space_Mono'] text-[10px] text-gray-400">{p.code}</span>
+                    </div>
+                    <span className="text-[10px] px-1.5 py-0.5 font-bold uppercase font-['Barlow_Condensed'] bg-gray-100 text-gray-600 shrink-0">
+                      {STATUS_LABEL[p.status] ?? p.status}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <p className="text-gray-400 text-xs uppercase font-['Barlow_Condensed']">Presupuesto</p>
+                      <p className="font-['Space_Mono'] text-xs">{fmtP(p.totalBudget)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-xs uppercase font-['Barlow_Condensed']">Ejecutado</p>
+                      <p className="font-['Space_Mono'] text-xs">{fmtP(p.spent)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-xs uppercase font-['Barlow_Condensed']">Comprometido</p>
+                      <p className="font-['Space_Mono'] text-xs text-blue-600">{fmtP(p.committed)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-xs uppercase font-['Barlow_Condensed']">Disponible</p>
+                      <p className={`font-['Space_Mono'] text-xs font-bold ${p.available < 0 ? 'text-red-600' : 'text-gray-700'}`}>{fmtP(p.available)}</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="flex-1 h-1.5 bg-gray-100">
+                      <div className={`h-1.5 ${semaforo}`} style={{ width: `${Math.min(pct * 100, 100)}%` }} />
+                    </div>
+                    <span className={`font-['Space_Mono'] font-bold text-[11px] ${pct >= 1 ? 'text-red-600' : pct >= 0.9 ? 'text-orange-500' : pct >= 0.7 ? 'text-yellow-600' : 'text-green-600'}`}>
+                      {(pct * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
           {/* Legend */}
           <div className="flex items-center gap-4 pt-1">
