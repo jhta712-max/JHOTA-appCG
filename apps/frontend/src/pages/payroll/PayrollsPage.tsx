@@ -74,7 +74,7 @@ export default function PayrollsPage() {
 
       {/* Hero Header */}
       <div
-        className="flex items-center justify-between px-6 py-5"
+        className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5"
         style={{ background: '#1C1C1C' }}
       >
         <div>
@@ -85,7 +85,7 @@ export default function PayrollsPage() {
             MÓDULO / NÓMINAS
           </p>
           <h1
-            className="text-3xl uppercase tracking-widest text-white leading-none"
+            className="text-3xl md:text-5xl uppercase tracking-widest text-white leading-none"
             style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             Nóminas
@@ -237,7 +237,53 @@ export default function PayrollsPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {filtered.map((p) => (
+                <div key={p.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div>
+                      <span className="font-bold text-sm" style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}>
+                        NOM-{String(p.number).padStart(3, '0')}
+                      </span>
+                      {p.status === 'APPROVED' && (
+                        <span className="ml-2 text-xs" style={{ color: '#F5C218', fontFamily: 'DM Sans, sans-serif' }}>
+                          → Crear orden de pago
+                        </span>
+                      )}
+                    </div>
+                    <StatusBadge status={p.status} />
+                  </div>
+                  <p className="font-medium text-gray-900 text-sm mb-0.5" style={{ fontFamily: 'DM Sans, sans-serif' }}>{p.project.name}</p>
+                  <p className="text-xs text-gray-400 mb-1" style={{ fontFamily: 'Space Mono, monospace' }}>{p.project.code}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <div>
+                      <span className="text-xs text-gray-500 mr-2" style={{ fontFamily: 'Space Mono, monospace' }}>
+                        {p.periodStart.slice(0, 10)} → {p.periodEnd.slice(0, 10)}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                        {TYPE_LABEL[p.type]}
+                      </span>
+                    </div>
+                    <span className="font-bold text-sm" style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}>
+                      RD$ {Number(p.totalAmount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <Link
+                      to={`/payrolls/${p.id}`}
+                      className="text-xs px-3 py-1.5 border border-gray-200 text-gray-700 transition-colors hover:border-yellow-400 hover:text-gray-900"
+                      style={{ fontFamily: 'DM Sans, sans-serif', borderRadius: 0 }}
+                    >
+                      Ver detalle
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead style={{ background: '#1C1C1C' }}>
                   <tr>

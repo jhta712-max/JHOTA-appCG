@@ -169,7 +169,7 @@ export default function PayrollFormPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero header */}
-      <div className="bg-[#1C1C1C] px-6 py-6">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-6">
         <Link
           to={isEdit ? `/payrolls/${id}` : '/payrolls'}
           className="flex items-center gap-1.5 text-[#F5C218] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
@@ -180,7 +180,7 @@ export default function PayrollFormPage() {
         <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-[#F5C218] uppercase mb-1">
           MÓDULO / NÓMINAS
         </p>
-        <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight">
+        <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">
           {isEdit ? 'Editar Nómina' : 'Nueva Nómina'}
         </h1>
         <p className="font-['DM_Sans'] text-sm text-gray-400 mt-1">
@@ -190,7 +190,7 @@ export default function PayrollFormPage() {
         </p>
       </div>
 
-      <div className="px-6 py-6 max-w-4xl space-y-5">
+      <div className="px-4 md:px-6 py-4 md:py-6 max-w-4xl space-y-5">
         {error && (
           <div className="bg-[#1C1C1C] border border-red-500/40 text-red-400 text-sm px-4 py-3 flex items-start gap-2 font-['DM_Sans']">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -204,7 +204,7 @@ export default function PayrollFormPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
 
           {/* ── Datos generales ──────────────────────────────── */}
-          <div className="bg-white border border-gray-200 p-5 space-y-4">
+          <div className="bg-white border border-gray-200 p-4 md:p-5 space-y-4">
             <h2 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase">
               Datos generales
             </h2>
@@ -264,7 +264,7 @@ export default function PayrollFormPage() {
             </div>
 
             {/* Período */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1">
                   Período inicio <span className="text-red-500">*</span>

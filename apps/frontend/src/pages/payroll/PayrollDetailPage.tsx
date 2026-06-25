@@ -102,7 +102,7 @@ export default function PayrollDetailPage() {
     const meta = PAGE_META['/payrolls'];
     return (
       <div>
-        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
           <div>
             <p
               className="text-xs uppercase tracking-widest mb-1"
@@ -111,7 +111,7 @@ export default function PayrollDetailPage() {
               {meta.module}
             </p>
             <h1
-              className="text-3xl uppercase tracking-widest text-white leading-none"
+              className="text-3xl md:text-5xl uppercase tracking-widest text-white leading-none"
               style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {meta.title}
@@ -190,7 +190,7 @@ export default function PayrollDetailPage() {
       {/* Header card */}
       <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
         {/* Dark hero band */}
-        <div className="px-6 py-5" style={{ background: '#1C1C1C' }}>
+        <div className="px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs tracking-widest uppercase mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
@@ -466,7 +466,7 @@ export default function PayrollDetailPage() {
       {/* Lines table */}
       <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
         {/* Dark section header */}
-        <div className="px-5 py-3 flex items-center justify-between" style={{ background: '#1C1C1C' }}>
+        <div className="px-4 md:px-5 py-3 flex items-center justify-between" style={{ background: '#1C1C1C' }}>
           <h2 className="font-bold uppercase tracking-widest text-white flex items-center gap-2 text-sm" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
             <Wallet className="w-4 h-4" style={{ color: '#F5C218' }} />
             Líneas de nómina
@@ -496,7 +496,63 @@ export default function PayrollDetailPage() {
           )}
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile cards for lines */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {(payroll.lines ?? []).map((line) => (
+            <div key={line.id} className="p-4">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="font-medium text-gray-800 text-sm" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  {line.supplierName || <span className="text-gray-400">Sin suplidor</span>}
+                </p>
+                <span className="text-xs text-gray-400 shrink-0" style={{ fontFamily: 'Space Mono, monospace' }}>
+                  #{line.lineNumber}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'DM Sans, sans-serif' }}>{line.description}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  {Number(line.quantity).toLocaleString('es-DO', { maximumFractionDigits: 3 })} {line.unit} × RD$ {Number(line.unitPrice).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                </span>
+                <span className="font-bold text-sm" style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}>
+                  RD$ {Number(line.subtotal).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              {(line.bankName || line.bankAccount) && (
+                <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  {line.bankName}{line.bankName && line.bankAccount ? ' · ' : ''}{line.bankAccount}
+                </p>
+              )}
+              {(isPaid || isApproved) && (
+                <div className="mt-2 flex items-center gap-2">
+                  {line.paymentBank
+                    ? <span className="text-xs text-green-700 font-medium" style={{ fontFamily: 'DM Sans, sans-serif' }}>{line.paymentBank}</span>
+                    : <span className="text-xs text-gray-300">comprobante pendiente</span>
+                  }
+                </div>
+              )}
+              {(isDraft || isApproved) && canCreatePayroll && (
+                <div className="flex gap-2 mt-2">
+                  {isDraft && (
+                    <button
+                      onClick={() => openEdit(line)}
+                      className="p-1.5 border border-gray-200 hover:bg-yellow-50 text-gray-500 hover:text-yellow-700"
+                    ><Pencil className="w-3.5 h-3.5" /></button>
+                  )}
+                  <button
+                    onClick={() => { if (window.confirm('¿Eliminar línea?')) deleteLineMut.mutate(line.id); }}
+                    className="p-1.5 border border-gray-200 hover:bg-red-50 text-gray-500 hover:text-red-600"
+                  ><Trash2 className="w-3.5 h-3.5" /></button>
+                </div>
+              )}
+            </div>
+          ))}
+          {(payroll.lines ?? []).length === 0 && (
+            <div className="p-6 text-center text-sm text-gray-400" style={{ fontFamily: 'DM Sans, sans-serif' }}>No hay líneas registradas.</div>
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm min-w-[900px]">
             <thead>
               <tr style={{ background: '#1C1C1C' }}>
