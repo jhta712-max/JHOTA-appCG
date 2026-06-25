@@ -137,12 +137,12 @@ export default function DashboardPage() {
     <div className="space-y-6">
 
       {/* ── Saludo ─────────────────────────────────────────── */}
-      <div className="flex items-end justify-between">
+      <div className="flex items-end justify-between px-4 md:px-6">
         <div>
           <p className="text-xs uppercase tracking-widest text-gray-400 font-['Barlow_Condensed'] mb-1">
             {new Date().toLocaleDateString('es-DO', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
-          <h1 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] leading-none text-2xl md:text-[1.75rem]">
+          <h1 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] leading-none text-3xl md:text-5xl">
             {greeting()}, {user?.name?.split(' ')[0]}
           </h1>
           <p className="font-['DM_Sans'] text-gray-400 text-sm mt-1">Aquí está el resumen de hoy</p>
