@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { Agent as HttpsAgent } from 'https';
 import { env } from '../../config/env';
 import { AppError } from '../../middlewares/errorHandler';
 import { persistAiUsage } from '../../services/ai-usage.service';
@@ -186,7 +187,14 @@ export async function analyzeDocument(fileBuffer: Buffer, mimeType: string): Pro
     throw new AppError(503, 'El servicio de OCR no está configurado. Agrega ANTHROPIC_API_KEY al archivo .env', 'OCR_NOT_CONFIGURED');
   }
 
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, timeout: 60_000 });
+  // keepAlive: false forces a fresh TCP connection per request, bypassing the
+  // https.globalAgent pool. Stale pooled connections to api.anthropic.com cause
+  // node-fetch to throw "Premature close" when Anthropic closes them from their side.
+  const client = new Anthropic({
+    apiKey:    env.ANTHROPIC_API_KEY,
+    timeout:   60_000,
+    httpAgent: new HttpsAgent({ keepAlive: false }),
+  });
 
   let fileContentBlock: any;
 
