@@ -418,7 +418,7 @@ export default function DashboardPage() {
 
       {/* ── Proyectos activos ────────────────────────────────── */}
       {!isAuxiliar && (
-        <div>
+        <div className="px-4 md:px-6">
           <SectionHeader icon={FolderOpen} title="Proyectos activos" action={<ViewAllLink to="/projects" />} />
           {projects.length === 0 ? (
             <div className="border border-gray-200 p-8 text-center font-['DM_Sans'] text-gray-400 text-sm">No hay proyectos activos</div>
