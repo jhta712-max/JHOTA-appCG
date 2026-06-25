@@ -38,7 +38,7 @@ export default function ProjectsPage() {
     <div>
       {/* Hero header band */}
       <div
-        className="px-6 py-5 flex items-center justify-between"
+        className="px-4 md:px-6 py-4 md:py-5 flex items-center justify-between"
         style={{ background: '#1C1C1C' }}
       >
         <div>
@@ -49,7 +49,7 @@ export default function ProjectsPage() {
             Módulo / Proyectos
           </p>
           <h1
-            className="text-3xl uppercase tracking-widest text-white"
+            className="text-3xl md:text-5xl uppercase tracking-widest text-white"
             style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
           >
             Proyectos
@@ -134,7 +134,7 @@ export default function ProjectsPage() {
             <Link
               key={p.id}
               to={`/projects/${p.id}`}
-              className="bg-white border border-gray-200 hover:border-[#F5C218] transition-colors p-4 flex items-center gap-4 group cursor-pointer"
+              className="bg-white border border-gray-200 hover:border-[#F5C218] transition-colors p-3 md:p-4 flex items-center gap-3 md:gap-4 group cursor-pointer"
             >
               <div
                 className="w-10 h-10 flex items-center justify-center shrink-0"

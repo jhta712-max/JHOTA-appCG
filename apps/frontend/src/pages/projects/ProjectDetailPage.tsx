@@ -197,7 +197,7 @@ export default function ProjectDetailPage() {
     const meta = PAGE_META['/projects'];
     return (
       <div>
-        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
           <div>
             <p
               className="text-xs uppercase tracking-widest mb-1"
@@ -206,7 +206,7 @@ export default function ProjectDetailPage() {
               {meta.module}
             </p>
             <h1
-              className="text-3xl uppercase tracking-widest text-white leading-none"
+              className="text-3xl md:text-5xl uppercase tracking-widest text-white leading-none"
               style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {meta.title}
@@ -237,7 +237,7 @@ export default function ProjectDetailPage() {
 
       {/* Hero header band */}
       <div className="bg-[#1C1C1C]">
-        <div className="max-w-4xl mx-auto px-5 pt-4 pb-5">
+        <div className="max-w-4xl mx-auto px-4 md:px-5 pt-4 pb-5">
 
           {/* Breadcrumb */}
           <button
@@ -253,7 +253,7 @@ export default function ProjectDetailPage() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-3 flex-wrap mb-1">
                 <h1
-                  className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight truncate"
+                  className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight truncate"
                 >
                   {project.name}
                 </h1>
@@ -317,7 +317,7 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Page content */}
-      <div className="max-w-4xl mx-auto px-5 py-5 space-y-5">
+      <div className="max-w-4xl mx-auto px-4 md:px-5 py-4 md:py-5 space-y-5">
 
         {/* Project info card */}
         {projectData && (
@@ -1066,61 +1066,105 @@ export default function ProjectDetailPage() {
             No hay items definidos. {canEdit ? 'Agrega el primero arriba.' : ''}
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="px-5 py-2 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.12em] w-12">#</th>
-                <th className="px-5 py-2 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.12em]">Nombre</th>
-                <th className="px-5 py-2 text-right font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.12em]">Registros</th>
-                {canEdit && <th className="px-5 py-2 w-24"></th>}
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="px-5 py-2 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.12em] w-12">#</th>
+                    <th className="px-5 py-2 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.12em]">Nombre</th>
+                    <th className="px-5 py-2 text-right font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.12em]">Registros</th>
+                    {canEdit && <th className="px-5 py-2 w-24"></th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <tr key={item.id} className={`border-b border-gray-50 ${!item.active ? 'opacity-50' : ''}`}>
+                      <td className="px-5 py-2 font-['Space_Mono'] text-xs text-gray-500">{item.number}</td>
+                      <td className="px-5 py-2 font-['DM_Sans']">
+                        {editingItem?.id === item.id ? (
+                          <form onSubmit={handleSaveEditItem} className="flex gap-2">
+                            <input
+                              value={editingItem.name}
+                              onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
+                              autoFocus
+                              className="flex-1 border border-[#F5C218] px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none"
+                            />
+                            <button type="submit" className="text-xs text-[#F5C218] font-bold px-2">Guardar</button>
+                            <button type="button" onClick={() => setEditingItem(null)} className="text-xs text-gray-400 px-1">✕</button>
+                          </form>
+                        ) : (
+                          <span className={!item.active ? 'line-through text-gray-400' : ''}>{item.name}</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-2 text-right font-['Space_Mono'] text-xs text-gray-500">
+                        {item._count ? (item._count.expenses + item._count.paymentOrders + item._count.payrolls + item._count.quotations) : '—'}
+                      </td>
+                      {canEdit && (
+                        <td className="px-5 py-2 text-right">
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              onClick={() => setEditingItem({ id: item.id, name: item.name })}
+                              className="text-xs text-gray-400 hover:text-[#F5C218] transition-colors"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => handleToggleActive(item)}
+                              disabled={updateItem.isPending}
+                              className={`text-xs transition-colors ${item.active ? 'text-gray-400 hover:text-red-500' : 'text-gray-400 hover:text-green-600'}`}
+                            >
+                              {item.active ? 'Desactivar' : 'Activar'}
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
               {items.map((item) => (
-                <tr key={item.id} className={`border-b border-gray-50 ${!item.active ? 'opacity-50' : ''}`}>
-                  <td className="px-5 py-2 font-['Space_Mono'] text-xs text-gray-500">{item.number}</td>
-                  <td className="px-5 py-2 font-['DM_Sans']">
-                    {editingItem?.id === item.id ? (
-                      <form onSubmit={handleSaveEditItem} className="flex gap-2">
-                        <input
-                          value={editingItem.name}
-                          onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
-                          autoFocus
-                          className="flex-1 border border-[#F5C218] px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none"
-                        />
-                        <button type="submit" className="text-xs text-[#F5C218] font-bold px-2">Guardar</button>
-                        <button type="button" onClick={() => setEditingItem(null)} className="text-xs text-gray-400 px-1">✕</button>
-                      </form>
-                    ) : (
-                      <span className={!item.active ? 'line-through text-gray-400' : ''}>{item.name}</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-2 text-right font-['Space_Mono'] text-xs text-gray-500">
-                    {item._count ? (item._count.expenses + item._count.paymentOrders + item._count.payrolls + item._count.quotations) : '—'}
-                  </td>
-                  {canEdit && (
-                    <td className="px-5 py-2 text-right">
-                      <div className="flex gap-2 justify-end">
-                        <button
-                          onClick={() => setEditingItem({ id: item.id, name: item.name })}
-                          className="text-xs text-gray-400 hover:text-[#F5C218] transition-colors"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleToggleActive(item)}
-                          disabled={updateItem.isPending}
-                          className={`text-xs transition-colors ${item.active ? 'text-gray-400 hover:text-red-500' : 'text-gray-400 hover:text-green-600'}`}
-                        >
-                          {item.active ? 'Desactivar' : 'Activar'}
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
+                <div key={item.id} className={`px-4 py-3 ${!item.active ? 'opacity-50' : ''}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-['Space_Mono'] text-xs text-gray-400 shrink-0">#{item.number}</span>
+                      {editingItem?.id === item.id ? (
+                        <form onSubmit={handleSaveEditItem} className="flex gap-2 flex-1">
+                          <input
+                            value={editingItem.name}
+                            onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
+                            autoFocus
+                            className="flex-1 border border-[#F5C218] px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none"
+                          />
+                          <button type="submit" className="text-xs text-[#F5C218] font-bold px-2">OK</button>
+                          <button type="button" onClick={() => setEditingItem(null)} className="text-xs text-gray-400 px-1">✕</button>
+                        </form>
+                      ) : (
+                        <span className={`font-['DM_Sans'] text-sm ${!item.active ? 'line-through text-gray-400' : 'text-gray-800'}`}>{item.name}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="font-['Space_Mono'] text-xs text-gray-400">
+                        {item._count ? (item._count.expenses + item._count.paymentOrders + item._count.payrolls + item._count.quotations) : '—'}
+                      </span>
+                      {canEdit && !editingItem && (
+                        <div className="flex gap-2">
+                          <button onClick={() => setEditingItem({ id: item.id, name: item.name })} className="text-xs text-gray-400 hover:text-[#F5C218]">Editar</button>
+                          <button onClick={() => handleToggleActive(item)} disabled={updateItem.isPending} className={`text-xs ${item.active ? 'text-gray-400 hover:text-red-500' : 'text-gray-400 hover:text-green-600'}`}>
+                            {item.active ? 'Desactivar' : 'Activar'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
 
@@ -1234,34 +1278,59 @@ export default function ProjectDetailPage() {
         {assignedSuppliers.length === 0 ? (
           <p className="text-sm text-gray-400 font-['DM_Sans']">Sin suplidores asignados</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-[#1C1C1C]">
-                {['Nombre', 'RNC', ''].map((h) => (
-                  <th key={h} className="text-left px-3 py-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.1em]">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[#1C1C1C]">
+                    {['Nombre', 'RNC', ''].map((h) => (
+                      <th key={h} className="text-left px-3 py-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.1em]">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {assignedSuppliers.map((a) => (
+                    <tr key={a.id} className="border-t border-gray-100">
+                      <td className="px-3 py-2 font-['DM_Sans']">{a.supplier.name}</td>
+                      <td className="px-3 py-2 font-['Space_Mono'] text-xs text-gray-500">{a.supplier.rnc ?? '—'}</td>
+                      <td className="px-3 py-2">
+                        {canManageSuppliers && (
+                          <button
+                            onClick={() => removeMut.mutate(a.supplierId)}
+                            disabled={removeMut.isPending}
+                            className="text-red-400 hover:text-red-600"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
               {assignedSuppliers.map((a) => (
-                <tr key={a.id} className="border-t border-gray-100">
-                  <td className="px-3 py-2 font-['DM_Sans']">{a.supplier.name}</td>
-                  <td className="px-3 py-2 font-['Space_Mono'] text-xs text-gray-500">{a.supplier.rnc ?? '—'}</td>
-                  <td className="px-3 py-2">
-                    {canManageSuppliers && (
-                      <button
-                        onClick={() => removeMut.mutate(a.supplierId)}
-                        disabled={removeMut.isPending}
-                        className="text-red-400 hover:text-red-600"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </td>
-                </tr>
+                <div key={a.id} className="flex items-center justify-between px-1 py-3 gap-3">
+                  <div className="min-w-0">
+                    <p className="font-['DM_Sans'] text-sm text-gray-800 truncate">{a.supplier.name}</p>
+                    <p className="font-['Space_Mono'] text-xs text-gray-400 mt-0.5">{a.supplier.rnc ?? '—'}</p>
+                  </div>
+                  {canManageSuppliers && (
+                    <button
+                      onClick={() => removeMut.mutate(a.supplierId)}
+                      disabled={removeMut.isPending}
+                      className="text-red-400 hover:text-red-600 shrink-0"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
 

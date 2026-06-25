@@ -306,7 +306,7 @@ export default function ProjectFormPage() {
     <div className="max-w-2xl mx-auto space-y-0 pb-10">
 
       {/* Hero header */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-6 mb-6" style={{ background: '#1C1C1C' }}>
         <div className="max-w-2xl flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 text-gray-400 hover:text-[#F5C218] transition-colors">
             <ArrowLeft className="w-5 h-5" />
@@ -315,7 +315,7 @@ export default function ProjectFormPage() {
             <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#F5C218' }}>
               MÓDULO / PROYECTOS
             </p>
-            <h1 className="font-['Barlow_Condensed'] text-3xl font-bold tracking-tight text-white uppercase">
+            <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold tracking-tight text-white uppercase">
               {isEdit ? 'Editar Proyecto' : 'Nuevo Proyecto'}
             </h1>
             <p className="font-['DM_Sans'] text-xs text-gray-400 mt-0.5">Completa la información del proyecto</p>
@@ -328,13 +328,13 @@ export default function ProjectFormPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
         {/* Información básica */}
-        <div className="bg-white border border-gray-100 p-5 space-y-4">
+        <div className="bg-white border border-gray-100 p-4 md:p-5 space-y-4">
           <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
             <span className="w-6 h-6 text-xs font-bold flex items-center justify-center" style={{ background: '#F5C218', color: '#1C1C1C' }}>1</span>
             <h2 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-800">Información básica</h2>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Código *</label>
               <input
@@ -366,7 +366,7 @@ export default function ProjectFormPage() {
             {errors.name && <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.name.message}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Cliente</label>
               <input className={inputCls} placeholder="Nombre del cliente" {...register('client')} />
@@ -377,7 +377,7 @@ export default function ProjectFormPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Fecha de inicio *</label>
               <input type="date"
@@ -434,7 +434,7 @@ export default function ProjectFormPage() {
 
         {/* Adendas de contrato (solo en modo edición) */}
         {isEdit && (
-          <div className="bg-white border border-gray-100 p-5 space-y-4">
+          <div className="bg-white border border-gray-100 p-4 md:p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-gray-500" />
@@ -524,7 +524,7 @@ export default function ProjectFormPage() {
                     <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {newError}
                   </div>
                 )}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className={labelCls}>Monto adicional (RD$) *</label>
                     <input
@@ -581,7 +581,7 @@ export default function ProjectFormPage() {
 
         {/* Equipo asignado (solo en modo edición) */}
         {isEdit && canEdit && (
-          <div className="bg-white border border-gray-100 p-5 space-y-4">
+          <div className="bg-white border border-gray-100 p-4 md:p-5 space-y-4">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
               <Users className="w-4 h-4 text-gray-500" />
               <h2 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-800">
