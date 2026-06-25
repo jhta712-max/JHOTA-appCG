@@ -237,7 +237,7 @@ export default function ProjectDetailPage() {
 
       {/* Hero header band */}
       <div className="bg-[#1C1C1C]">
-        <div className="max-w-4xl mx-auto px-4 md:px-5 pt-4 pb-5">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-5">
 
           {/* Breadcrumb */}
           <button

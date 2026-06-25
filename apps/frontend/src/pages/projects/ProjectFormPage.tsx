@@ -306,7 +306,7 @@ export default function ProjectFormPage() {
     <div className="max-w-2xl mx-auto space-y-0 pb-10">
 
       {/* Hero header */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-6 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#1C1C1C' }}>
         <div className="max-w-2xl flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 text-gray-400 hover:text-[#F5C218] transition-colors">
             <ArrowLeft className="w-5 h-5" />
