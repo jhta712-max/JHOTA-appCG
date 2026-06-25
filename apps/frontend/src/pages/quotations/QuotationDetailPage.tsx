@@ -135,7 +135,7 @@ export default function QuotationDetailPage() {
     const meta = PAGE_META['/quotations'];
     return (
       <div>
-        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
           <div>
             <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
               {meta.module}
