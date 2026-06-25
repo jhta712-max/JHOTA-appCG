@@ -432,14 +432,14 @@ export default function DashboardPage() {
 
                 return (
                   <Link key={p.id} to={`/projects/${p.id}`}
-                    className="border border-gray-200 bg-white p-5 hover:border-[#1C1C1C] transition-all group space-y-3 block"
+                    className="border border-gray-200 bg-white p-5 hover:border-[#1C1C1C] transition-all group space-y-3 block overflow-hidden"
                     style={{ borderTop: '3px solid #1C1C1C' }}>
                     <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 overflow-hidden">
                         <p className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] truncate text-sm leading-tight">
                           {p.name}
                         </p>
-                        <p className="font-['Space_Mono'] text-[10px] text-gray-400 mt-0.5">{p.code} · {p.client ?? 'Sin cliente'}</p>
+                        <p className="font-['Space_Mono'] text-[10px] text-gray-400 mt-0.5 truncate">{p.code} · {p.client ?? 'Sin cliente'}</p>
                       </div>
                       <span className="ml-2 shrink-0 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 font-['Barlow_Condensed']"
                             style={{ background: '#F5C218', color: '#1C1C1C' }}>
