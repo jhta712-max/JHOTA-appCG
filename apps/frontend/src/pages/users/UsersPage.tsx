@@ -195,13 +195,13 @@ export default function UsersPage() {
     <div className="space-y-5 max-w-3xl mx-auto pb-10">
 
       {/* Hero header */}
-      <div className="bg-[#1C1C1C] px-5 py-6">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-[#F5C218] mb-1">
               ADMINISTRACIÓN / USUARIOS
             </p>
-            <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight">
+            <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">
               Usuarios
             </h1>
             <p className="font-['DM_Sans'] text-sm text-gray-400 mt-1">

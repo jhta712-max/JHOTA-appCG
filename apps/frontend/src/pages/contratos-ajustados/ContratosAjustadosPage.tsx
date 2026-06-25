@@ -645,13 +645,13 @@ export default function ContratosAjustadosPage() {
     <div className="font-['DM_Sans'] space-y-0">
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-6 py-8 mb-6">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5 mb-6">
         <div className="flex items-end justify-between">
           <div>
             <p className="text-[#F5C218] text-xs font-bold tracking-[0.2em] uppercase font-['Space_Mono'] mb-2">
               MÓDULO / CONTRATOS
             </p>
-            <h1 className="text-4xl font-black text-white font-['Barlow_Condensed'] uppercase tracking-tight leading-none">
+            <h1 className="text-3xl md:text-5xl font-black text-white font-['Barlow_Condensed'] uppercase tracking-tight leading-none">
               CONTRATOS AJUSTADOS
             </h1>
             <p className="text-gray-400 text-sm mt-2">Seguimiento de contratos por suplidor y proyecto</p>
@@ -777,7 +777,69 @@ export default function ContratosAjustadosPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {contratos.map((c) => (
+                <div key={c.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-[#1C1C1C] font-['Space_Mono'] text-xs">{c.project?.code}</p>
+                      <p className="text-xs text-gray-500 truncate">{c.project?.name}</p>
+                    </div>
+                    <div className="flex flex-col gap-1 items-end shrink-0">
+                      <span className={clsx('text-xs px-2 py-0.5 font-bold uppercase tracking-wide', ESTADO_CFG[c.estado].cls)}>
+                        {ESTADO_CFG[c.estado].label}
+                      </span>
+                      {c.sobregirado && (
+                        <span className="flex items-center gap-1 text-xs text-red-600 font-bold">
+                          <AlertTriangle className="w-3 h-3" /> Sobregirado
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium text-gray-800">{c.supplier?.name}</p>
+                  <p className="text-xs text-gray-500 line-clamp-2">{c.descripcionTrabajo}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Contratado</p>
+                      <p className="font-black text-[#1C1C1C] font-['Space_Mono'] text-sm">{fmt(c.montoEfectivo ?? c.montoContratado)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Pagado</p>
+                      <p className="font-bold text-green-700 font-['Space_Mono'] text-sm">{fmt(c.pagadoAcumulado)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Balance</p>
+                      <p className={clsx('font-black font-[\'Space_Mono\'] text-sm', c.sobregirado ? 'text-red-600' : 'text-[#F5C218]')}>
+                        {fmt(c.balancePendiente)}
+                      </p>
+                    </div>
+                  </div>
+                  <ProgressBar pct={c.porcentajeEjecutado} sobregirado={c.sobregirado} />
+                  <div className="flex items-center gap-1 pt-1">
+                    <button onClick={() => setDetailContrato(c)}
+                      className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] transition-colors" title="Ver detalle">
+                      <FileCheck className="w-4 h-4" />
+                    </button>
+                    {canEdit && (
+                      <button onClick={() => handleEdit(c)}
+                        className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-gray-100 transition-colors" title="Editar">
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button onClick={() => { setDeleteId(c.id); setDeleteError(''); }}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Eliminar">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-[#1C1C1C]">
                   <tr>
@@ -860,6 +922,8 @@ export default function ContratosAjustadosPage() {
                 </tbody>
               </table>
             </div>
+            </div>
+            </>
           )}
         </div>
       </div>

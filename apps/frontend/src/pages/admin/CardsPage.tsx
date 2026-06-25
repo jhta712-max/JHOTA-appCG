@@ -113,14 +113,14 @@ export default function CardsPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C]">
-        <div className="max-w-4xl mx-auto px-6 py-10">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
+        <div className="max-w-4xl mx-auto">
           <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#F5C218] uppercase mb-2">
             ADMINISTRACIÓN / TARJETAS
           </p>
           <div className="flex items-end justify-between gap-4">
             <div>
-              <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight leading-none">
+              <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight leading-none">
                 TARJETAS CORPORATIVAS
               </h1>
               <p className="font-['DM_Sans'] text-sm text-gray-400 mt-3">
@@ -187,6 +187,55 @@ export default function CardsPage() {
               </button>
             </div>
           ) : (
+            <>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {cards.map((card) => (
+                <div key={card.id} className={`p-4 space-y-2 ${!card.isActive ? 'opacity-40' : ''}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-['DM_Sans'] font-medium text-gray-900 text-sm">{card.holderName}</p>
+                      <p className="font-['Space_Mono'] text-sm text-gray-700">**** {card.lastFour}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`font-['Space_Mono'] text-xs font-semibold ${TYPE_ACCENT[card.cardType] ?? TYPE_ACCENT.OTHER}`}>
+                        {card.cardType}
+                      </span>
+                      {card.isActive
+                        ? <span className="inline-flex items-center gap-1.5 font-['DM_Sans'] text-xs text-green-600">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Activa
+                          </span>
+                        : <span className="font-['DM_Sans'] text-xs text-gray-400">Inactiva</span>
+                      }
+                    </div>
+                  </div>
+                  <p className="font-['DM_Sans'] text-xs text-gray-500">{card.bank}</p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => openEdit(card)}
+                      className="p-1.5 text-gray-400 hover:text-[#F5C218] hover:bg-[#F5C218]/10 transition-colors"
+                      title="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    {card.isActive && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`¿Desactivar tarjeta **** ${card.lastFour} de ${card.holderName}?`))
+                            deactivateMut.mutate(card.id);
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        title="Desactivar"
+                      >
+                        <PowerOff className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-[#1C1C1C]">
                 <tr>
@@ -247,6 +296,9 @@ export default function CardsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
+            </>
+
           )}
         </div>
       </div>

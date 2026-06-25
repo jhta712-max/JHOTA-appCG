@@ -93,14 +93,14 @@ export default function CategoriesPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C]">
-        <div className="max-w-4xl mx-auto px-6 py-10">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
+        <div className="max-w-4xl mx-auto">
           <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#F5C218] uppercase mb-2">
             ADMINISTRACIÓN / CATEGORÍAS
           </p>
           <div className="flex items-end justify-between gap-4">
             <div>
-              <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight leading-none">
+              <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight leading-none">
                 CATEGORÍAS
               </h1>
               <p className="font-['DM_Sans'] text-sm text-gray-400 mt-3">

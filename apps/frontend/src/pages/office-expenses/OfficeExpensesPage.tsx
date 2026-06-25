@@ -201,13 +201,13 @@ export default function OfficeExpensesPage() {
       )}
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-6 py-8 mb-6">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5 mb-6">
         <div className="flex items-end justify-between">
           <div>
             <p className="text-[#F5C218] text-xs font-bold tracking-[0.2em] uppercase font-['Space_Mono'] mb-2">
               MÓDULO / GASTOS DE OFICINA
             </p>
-            <h1 className="text-4xl font-black text-white font-['Barlow_Condensed'] uppercase tracking-tight leading-none">
+            <h1 className="text-3xl md:text-5xl font-black text-white font-['Barlow_Condensed'] uppercase tracking-tight leading-none">
               GASTOS DE OFICINA
             </h1>
             <p className="text-gray-400 text-sm mt-2 font-['DM_Sans']">

@@ -113,12 +113,12 @@ export default function AiUsagePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* HERO */}
-      <div className="bg-[#1C1C1C] px-6 py-8">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
         <p className="text-[#F5C218] text-xs font-['Barlow_Condensed'] uppercase tracking-[0.2em] mb-2">
           Administración / IA
         </p>
         <div className="flex items-end justify-between">
-          <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight">
+          <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">
             CONSUMO DE IA
           </h1>
           {/* Month selector */}
@@ -283,7 +283,44 @@ export default function AiUsagePage() {
           </div>
           {loadingFeature ? (
             <p className="text-gray-400 font-['DM_Sans'] p-6">Cargando...</p>
+          ) : byFeature.length === 0 ? (
+            <p className="text-center text-gray-400 font-['DM_Sans'] text-sm p-6">Sin datos para este mes</p>
           ) : (
+            <>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {byFeature.map((row) => (
+                <div key={row.feature} className="p-4 space-y-1">
+                  <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C]">
+                    {FEATURE_LABELS[row.feature] ?? row.feature}
+                  </p>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    <div>
+                      <span className="text-gray-400 font-['DM_Sans']">Llamadas: </span>
+                      <span className="font-['Space_Mono'] text-gray-700">{row.calls}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-['DM_Sans']">% Total: </span>
+                      <span className="font-['Space_Mono'] text-gray-700">{row.pct.toFixed(1)}%</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-['DM_Sans']">Input: </span>
+                      <span className="font-['Space_Mono'] text-gray-700">{fmtTokens(row.inputTokens)}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-['DM_Sans']">Output: </span>
+                      <span className="font-['Space_Mono'] text-gray-700">{fmtTokens(row.outputTokens)}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-['DM_Sans']">Costo: </span>
+                      <span className="font-['Space_Mono'] font-bold text-[#1C1C1C]">{fmtUsd(row.costUsd)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-[#1C1C1C]">
@@ -308,38 +345,32 @@ export default function AiUsagePage() {
                 </tr>
               </thead>
               <tbody>
-                {byFeature.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-gray-400 font-['DM_Sans'] text-sm">
-                      Sin datos para este mes
+                {byFeature.map((row, i) => (
+                  <tr key={row.feature} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-6 py-3 font-['DM_Sans'] text-sm text-[#1C1C1C]">
+                      {FEATURE_LABELS[row.feature] ?? row.feature}
+                    </td>
+                    <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
+                      {row.calls}
+                    </td>
+                    <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
+                      {fmtTokens(row.inputTokens)}
+                    </td>
+                    <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
+                      {fmtTokens(row.outputTokens)}
+                    </td>
+                    <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
+                      {fmtUsd(row.costUsd)}
+                    </td>
+                    <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
+                      {row.pct.toFixed(1)}%
                     </td>
                   </tr>
-                ) : (
-                  byFeature.map((row, i) => (
-                    <tr key={row.feature} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="px-6 py-3 font-['DM_Sans'] text-sm text-[#1C1C1C]">
-                        {FEATURE_LABELS[row.feature] ?? row.feature}
-                      </td>
-                      <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
-                        {row.calls}
-                      </td>
-                      <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
-                        {fmtTokens(row.inputTokens)}
-                      </td>
-                      <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
-                        {fmtTokens(row.outputTokens)}
-                      </td>
-                      <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
-                        {fmtUsd(row.costUsd)}
-                      </td>
-                      <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
-                        {row.pct.toFixed(1)}%
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
+            </div>
+            </>
           )}
         </div>
 
@@ -352,7 +383,39 @@ export default function AiUsagePage() {
           </div>
           {loadingUser ? (
             <p className="text-gray-400 font-['DM_Sans'] p-6">Cargando...</p>
+          ) : byUser.length === 0 ? (
+            <p className="text-center text-gray-400 font-['DM_Sans'] text-sm p-6">Sin datos para este mes</p>
           ) : (
+            <>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {byUser.map((row) => (
+                <div key={row.userId ?? 'system'} className="p-4 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C]">
+                      {row.userId === null ? 'Sistema (cron)' : row.userName}
+                    </p>
+                    <span className="font-['DM_Sans'] text-xs text-gray-500">{row.userRole ?? '-'}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-x-4 text-xs">
+                    <div>
+                      <span className="text-gray-400 font-['DM_Sans']">Llamadas</span>
+                      <p className="font-['Space_Mono'] text-gray-700">{row.calls}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-['DM_Sans']">Tokens</span>
+                      <p className="font-['Space_Mono'] text-gray-700">{fmtTokens(row.inputTokens + row.outputTokens)}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-['DM_Sans']">Costo</span>
+                      <p className="font-['Space_Mono'] font-bold text-[#1C1C1C]">{fmtUsd(row.costUsd)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-[#1C1C1C]">
@@ -374,35 +437,29 @@ export default function AiUsagePage() {
                 </tr>
               </thead>
               <tbody>
-                {byUser.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-gray-400 font-['DM_Sans'] text-sm">
-                      Sin datos para este mes
+                {byUser.map((row, i) => (
+                  <tr key={row.userId ?? 'system'} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-6 py-3 font-['DM_Sans'] text-sm text-[#1C1C1C]">
+                      {row.userId === null ? 'Sistema (cron)' : row.userName}
+                    </td>
+                    <td className="px-6 py-3 font-['DM_Sans'] text-sm text-gray-500">
+                      {row.userRole ?? '-'}
+                    </td>
+                    <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
+                      {row.calls}
+                    </td>
+                    <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
+                      {fmtTokens(row.inputTokens + row.outputTokens)}
+                    </td>
+                    <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
+                      {fmtUsd(row.costUsd)}
                     </td>
                   </tr>
-                ) : (
-                  byUser.map((row, i) => (
-                    <tr key={row.userId ?? 'system'} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="px-6 py-3 font-['DM_Sans'] text-sm text-[#1C1C1C]">
-                        {row.userId === null ? 'Sistema (cron)' : row.userName}
-                      </td>
-                      <td className="px-6 py-3 font-['DM_Sans'] text-sm text-gray-500">
-                        {row.userRole ?? '-'}
-                      </td>
-                      <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
-                        {row.calls}
-                      </td>
-                      <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
-                        {fmtTokens(row.inputTokens + row.outputTokens)}
-                      </td>
-                      <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
-                        {fmtUsd(row.costUsd)}
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
+            </div>
+            </>
           )}
         </div>
       </div>
