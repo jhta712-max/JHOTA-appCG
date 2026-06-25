@@ -48,7 +48,7 @@ function StatCard({
   icon: Icon, label, value, sub, color = 'text-[#F5C218]',
 }: { icon: any; label: string; value: string | number; sub?: string; color?: string }) {
   return (
-    <div className="bg-[#1C1C1C] rounded-xl border border-[#2a2a2a] p-4 hover:border-[#F5C218]/40 transition-colors group">
+    <div className="bg-[#1C1C1C] border border-[#2a2a2a] p-4 hover:border-[#F5C218]/40 transition-colors group">
       <div className="flex items-start gap-3">
         <div className="p-2 rounded-lg bg-[#111] mt-0.5">
           <Icon className="w-4 h-4 text-gray-600 group-hover:text-[#F5C218]/60 transition-colors" />
@@ -294,18 +294,18 @@ function SubscriptionsTab() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-[#1C1C1C] rounded-xl border border-[#2a2a2a] p-4">
+        <div className="bg-[#1C1C1C] border border-[#2a2a2a] p-4">
           <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-widest">Costo mensual total</p>
           <p className="font-['Space_Mono'] text-2xl font-bold mt-1" style={{ color: '#F5C218' }}>
             ${totalMonthly.toFixed(2)}
             <span className="font-['DM_Sans'] text-sm font-normal text-gray-500 ml-1">USD</span>
           </p>
         </div>
-        <div className="bg-[#1C1C1C] rounded-xl border border-[#2a2a2a] p-4">
+        <div className="bg-[#1C1C1C] border border-[#2a2a2a] p-4">
           <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-widest">Servicios activos</p>
           <p className="font-['Space_Mono'] text-2xl font-bold text-white mt-1">{activeSubs.length}</p>
         </div>
-        <div className="bg-[#1C1C1C] rounded-xl border border-[#2a2a2a] p-4">
+        <div className="bg-[#1C1C1C] border border-[#2a2a2a] p-4">
           <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-widest">Proximos 7 dias</p>
           <div className="flex items-center gap-2 mt-1">
             <p className="font-['Space_Mono'] text-2xl font-bold text-white">{upcoming.length}</p>
@@ -320,7 +320,7 @@ function SubscriptionsTab() {
 
       {/* Upcoming payments */}
       {upcoming.length > 0 && (
-        <div className="bg-[#1C1C1C] rounded-xl border border-[#F5C218]/20 overflow-hidden">
+        <div className="bg-[#1C1C1C] border border-[#F5C218]/20 overflow-hidden">
           <div className="px-4 py-3 border-b border-[#F5C218]/10 bg-[#F5C218]/5">
             <h3 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-[#F5C218] flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
@@ -347,7 +347,7 @@ function SubscriptionsTab() {
       )}
 
       {/* Full subscriptions table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white border border-gray-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <h3 className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-widest text-gray-700">Todos los servicios</h3>
           <button
@@ -768,13 +768,13 @@ export default function MonitoringPage() {
     <div className="space-y-5 max-w-6xl">
 
       {/* Hero header band */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 mb-2" style={{ background: '#1C1C1C' }}>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-5 mb-2" style={{ background: '#1C1C1C' }}>
         <div className="max-w-6xl flex items-start justify-between gap-4">
           <div>
             <p className="font-['Barlow_Condensed'] text-xs tracking-[0.25em] uppercase mb-1" style={{ color: '#F5C218' }}>
               ADMINISTRACIÓN / SISTEMA
             </p>
-            <h1 className="font-['Barlow_Condensed'] text-4xl font-bold tracking-tight text-white uppercase">
+            <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold tracking-tight text-white uppercase">
               Monitoreo del Sistema
             </h1>
             {dashData && (
@@ -839,7 +839,7 @@ export default function MonitoringPage() {
           {isLoading ? (
             <ProjectListSkeleton />
           ) : isError || !dashData ? (
-            <div className="bg-red-950/30 border border-red-800 rounded-xl p-6 flex items-start gap-3">
+            <div className="bg-red-950/30 border border-red-800 p-6 flex items-start gap-3">
               <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
               <div>
                 <p className="font-['Barlow_Condensed'] font-bold text-red-400 tracking-wide uppercase">No se pudo cargar el dashboard</p>
@@ -911,7 +911,7 @@ export default function MonitoringPage() {
                   </div>
 
                   {/* Top endpoints */}
-                  <div className="bg-[#111] rounded-xl border border-[#2a2a2a] p-4">
+                  <div className="bg-[#111] border border-[#2a2a2a] p-4">
                     <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3 flex items-center gap-2">
                       <Activity className="w-4 h-4 text-gray-600" />
                       Endpoints top
@@ -941,7 +941,7 @@ export default function MonitoringPage() {
                 </div>
 
                 {/* Status codes */}
-                <div className="bg-[#111] rounded-xl border border-[#2a2a2a] p-4">
+                <div className="bg-[#111] border border-[#2a2a2a] p-4">
                   <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3">Distribución de códigos de respuesta (24h)</h2>
                   <div className="flex gap-3 flex-wrap">
                     {Object.entries(d.metrics.statusCodes).map(([code, count]) => {
@@ -965,7 +965,7 @@ export default function MonitoringPage() {
                 </div>
 
                 {/* ── Asistente IA ─────────────────────────────────────── */}
-                <div className="bg-[#0D0D0D] rounded-xl border overflow-hidden" style={{ borderColor: 'rgba(245,194,24,0.3)' }}>
+                <div className="bg-[#0D0D0D] border overflow-hidden" style={{ borderColor: 'rgba(245,194,24,0.3)' }}>
                   <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: 'rgba(245,194,24,0.15)' }}>
                     <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-300 flex items-center gap-2">
                       <Bot className="w-4 h-4" style={{ color: '#F5C218' }} />
@@ -1110,7 +1110,7 @@ export default function MonitoringPage() {
                 </div>
 
                 {/* Logs recientes */}
-                <div className="bg-[#111] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                <div className="bg-[#111] border border-[#2a2a2a] overflow-hidden">
                   <div className="px-4 py-3 border-b border-[#222] flex items-center justify-between">
                     <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 text-yellow-500" />
@@ -1131,7 +1131,7 @@ export default function MonitoringPage() {
                 </div>
 
                 {/* Logs completos con filtros */}
-                <div className="bg-[#111] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                <div className="bg-[#111] border border-[#2a2a2a] overflow-hidden">
                   <div className="px-4 py-3 border-b border-[#222]">
                     <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3">Logs del sistema</h2>
                     <div className="flex gap-2 flex-wrap">
@@ -1189,7 +1189,7 @@ export default function MonitoringPage() {
                 </div>
 
                 {/* Info del servidor */}
-                <div className="bg-[#111] rounded-xl border border-[#2a2a2a] p-4">
+                <div className="bg-[#111] border border-[#2a2a2a] p-4">
                   <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3 flex items-center gap-2">
                     <Server className="w-4 h-4 text-gray-600" />
                     Información del servidor
