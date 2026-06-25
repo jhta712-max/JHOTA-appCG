@@ -219,7 +219,7 @@ export default function ExpensesPage() {
 
       {/* Hero header band */}
       <div
-        className="flex items-center justify-between px-6 py-5"
+        className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5"
         style={{ background: '#1C1C1C' }}
       >
         <div>
@@ -230,7 +230,7 @@ export default function ExpensesPage() {
             MÓDULO / GASTOS
           </p>
           <h1
-            className="text-3xl uppercase tracking-widest text-white leading-none"
+            className="text-3xl md:text-5xl uppercase tracking-widest text-white leading-none"
             style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             Gastos
@@ -449,7 +449,7 @@ export default function ExpensesPage() {
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                   Categoría

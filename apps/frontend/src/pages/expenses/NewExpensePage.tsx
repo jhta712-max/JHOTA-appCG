@@ -422,7 +422,7 @@ export default function NewExpensePage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
           {/* ── SECCIÓN 1: Foto de factura ── */}
-          <div className="bg-white border border-gray-200 p-5 space-y-4">
+          <div className="bg-white border border-gray-200 p-4 md:p-5 space-y-4">
             {/* Section header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -589,7 +589,7 @@ export default function NewExpensePage() {
           </div>
 
           {/* ── SECCIÓN 2: Información del gasto ── */}
-          <div className="bg-white border border-gray-200 p-5 space-y-4">
+          <div className="bg-white border border-gray-200 p-4 md:p-5 space-y-4">
             <div className="flex items-center gap-2">
               <span
                 className="w-6 h-6 text-xs font-bold flex items-center justify-center"
@@ -629,7 +629,7 @@ export default function NewExpensePage() {
             />
 
             {/* Fecha + Monto */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <AiField label="Fecha *" aiActive={aiFields.has('expenseDate')} onClear={() => clearAiField('expenseDate')}>
                 <input
                   type="date"
@@ -751,7 +751,7 @@ export default function NewExpensePage() {
             </AiField>
 
             {/* Categoría + Método de pago */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <AiField label="Categoría *" aiActive={aiFields.has('categoryId')} onClear={() => clearAiField('categoryId')}>
                 <select
                   className={inputCls(!!errors.categoryId, aiFields.has('categoryId'))}
@@ -790,7 +790,7 @@ export default function NewExpensePage() {
                 </span>
               </label>
               {useCreditLine && (
-                <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Proveedor</label>
                     <select
@@ -863,7 +863,7 @@ export default function NewExpensePage() {
 
             {/* Bank / reference fields for TRANSFER or CHECK */}
             {(watch('paymentMethod') === 'TRANSFER' || watch('paymentMethod') === 'CHECK') && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Banco emisor</label>
                   <input
@@ -898,7 +898,7 @@ export default function NewExpensePage() {
           </div>
 
           {/* ── SECCIÓN 3: Comprobante fiscal ── */}
-          <div className="bg-white border border-gray-200 p-5 space-y-4">
+          <div className="bg-white border border-gray-200 p-4 md:p-5 space-y-4">
             <div className="flex items-center gap-2">
               <span
                 className="w-6 h-6 text-xs font-bold flex items-center justify-center"

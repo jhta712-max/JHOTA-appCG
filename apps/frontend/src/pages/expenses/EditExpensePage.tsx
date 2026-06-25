@@ -220,7 +220,7 @@ export default function EditExpensePage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
         {/* Sección 1 — Datos del gasto */}
-        <div className="bg-white border border-gray-100 p-5 space-y-4">
+        <div className="bg-white border border-gray-100 p-4 md:p-5 space-y-4">
           <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
             <span
               className="w-6 h-6 text-xs font-bold flex items-center justify-center"
@@ -249,7 +249,7 @@ export default function EditExpensePage() {
             onChange={setProjectItemId}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Fecha *</label>
               <input type="date" className={`${inputCls} ${errors.expenseDate ? 'border-red-400' : ''}`}
@@ -335,7 +335,7 @@ export default function EditExpensePage() {
             {errors.description && <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{errors.description.message}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Categoría *</label>
               <select className={`${inputCls} ${errors.categoryId ? 'border-red-400' : ''}`}
@@ -386,7 +386,7 @@ export default function EditExpensePage() {
 
           {/* Bank / reference fields for TRANSFER or CHECK */}
           {(watch('paymentMethod') === 'TRANSFER' || watch('paymentMethod') === 'CHECK') && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Banco emisor</label>
                 <input
@@ -414,7 +414,7 @@ export default function EditExpensePage() {
         </div>
 
         {/* Sección 2 — Comprobante fiscal */}
-        <div className="bg-white border border-gray-100 p-5 space-y-4">
+        <div className="bg-white border border-gray-100 p-4 md:p-5 space-y-4">
           <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
             <span
               className="w-6 h-6 text-xs font-bold flex items-center justify-center"
@@ -425,7 +425,7 @@ export default function EditExpensePage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button type="button" onClick={() => setHasFiscal(true)}
               className={`p-4 border-2 text-center transition-all ${hasFiscal ? 'border-[#F5C218] bg-[#F5C218]/5' : 'border-gray-200 hover:border-gray-300'}`}>
               <Receipt className={`w-6 h-6 mx-auto mb-1 ${hasFiscal ? 'text-[#1C1C1C]' : 'text-gray-400'}`} />
@@ -456,7 +456,7 @@ export default function EditExpensePage() {
                   <p className="font-['DM_Sans'] text-red-500 text-xs mt-1">{(errors as any).fiscalVoucher.ncf.message}</p>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>RNC Suplidor *</label>
                   <input type="text" placeholder="101234567" maxLength={11}
