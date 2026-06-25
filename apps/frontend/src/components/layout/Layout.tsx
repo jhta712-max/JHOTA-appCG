@@ -378,7 +378,7 @@ export default function Layout() {
 
       {/* ── Desktop sidebar ──────────────────────────────── */}
       <aside
-        className="hidden md:flex flex-col w-60 fixed inset-y-0 left-0 z-30"
+        className="hidden lg:flex flex-col w-60 fixed inset-y-0 left-0 z-30"
         style={{ background: '#1C1C1C' }}
       >
         <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
@@ -451,7 +451,7 @@ export default function Layout() {
       {/* ── Mobile overlay ───────────────────────────────── */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/70 z-40 md:hidden"
+          className="fixed inset-0 bg-black/70 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -459,7 +459,7 @@ export default function Layout() {
       {/* ── Mobile drawer ────────────────────────────────── */}
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 w-72 z-50 flex flex-col transition-transform duration-300 md:hidden',
+          'fixed inset-y-0 left-0 w-72 z-50 flex flex-col transition-transform duration-300 lg:hidden',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
         style={{ background: '#1C1C1C' }}
@@ -497,11 +497,11 @@ export default function Layout() {
       </aside>
 
       {/* ── Main content ─────────────────────────────────── */}
-      <div className="flex-1 flex flex-col md:ml-60 min-h-screen min-w-0">
+      <div className="flex-1 flex flex-col lg:ml-60 min-h-screen min-w-0">
 
         {/* Mobile header */}
         <header
-          className="md:hidden sticky top-0 z-20 border-b border-white/10 px-4 py-3 flex items-center gap-3"
+          className="lg:hidden sticky top-0 z-20 border-b border-white/10 px-4 py-3 flex items-center gap-3"
           style={{ background: '#1C1C1C' }}
         >
           <button onClick={() => setSidebarOpen(true)} className="text-gray-400 hover:text-white p-1">
@@ -522,7 +522,7 @@ export default function Layout() {
         {/* Role preview banner */}
         {isPreviewing && (
           <div
-            className="hidden md:flex items-center justify-between border-b px-6 py-2"
+            className="hidden lg:flex items-center justify-between border-b px-6 py-2"
             style={{ background: '#F5C218' }}
           >
             <p className="text-xs font-semibold text-[#1C1C1C] flex items-center gap-2 font-['DM_Sans']">
@@ -533,7 +533,7 @@ export default function Layout() {
         )}
 
         {/* Page content */}
-        <main className="flex-1 p-4 md:p-6 max-w-6xl w-full mx-auto">
+        <main className="flex-1 p-4 lg:p-6 max-w-6xl w-full mx-auto">
           <Outlet />
         </main>
 
