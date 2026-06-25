@@ -169,7 +169,7 @@ export default function PayrollFormPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero header */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-6">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
         <Link
           to={isEdit ? `/payrolls/${id}` : '/payrolls'}
           className="flex items-center gap-1.5 text-[#F5C218] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
@@ -190,7 +190,7 @@ export default function PayrollFormPage() {
         </p>
       </div>
 
-      <div className="px-4 md:px-6 py-4 md:py-6 max-w-4xl space-y-5">
+      <div className="px-4 md:px-6 py-4 md:py-5 max-w-4xl space-y-5">
         {error && (
           <div className="bg-[#1C1C1C] border border-red-500/40 text-red-400 text-sm px-4 py-3 flex items-start gap-2 font-['DM_Sans']">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
