@@ -169,7 +169,7 @@ export default function QuotationDetailPage() {
     <div className="max-w-2xl mx-auto">
 
       {/* Hero header */}
-      <div className="px-5 py-6 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#1C1C1C' }}>
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
@@ -180,7 +180,7 @@ export default function QuotationDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-3 flex-wrap mb-1">
-              <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl text-white truncate">
+              <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl md:text-5xl text-white truncate">
                 {quotation.supplierName}
               </h1>
               {quotation.quotationNumber && (
@@ -305,8 +305,8 @@ export default function QuotationDetailPage() {
           <div className="px-5 py-3" style={{ background: '#1C1C1C' }}>
             <span className="font-['Barlow_Condensed'] uppercase tracking-widest text-sm text-white">Detalles</span>
           </div>
-          <div className="p-5 space-y-4 bg-white">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="p-4 md:p-5 space-y-4 bg-white">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="flex items-start gap-2">
                 <Calendar className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                 <div>
@@ -355,7 +355,7 @@ export default function QuotationDetailPage() {
                 </div>
               )}
 
-              <div className="flex items-start gap-2 col-span-2">
+              <div className="flex items-start gap-2 md:col-span-2">
                 <CreditCard className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                 <div>
                   <p className={labelCls}>Subtotal / ITBIS / Total</p>

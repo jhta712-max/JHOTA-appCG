@@ -230,7 +230,7 @@ export default function QuotationFormPage() {
     <div className="max-w-2xl mx-auto">
 
       {/* Hero header */}
-      <div className="px-5 py-6 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#1C1C1C' }}>
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
@@ -241,7 +241,7 @@ export default function QuotationFormPage() {
         <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-gray-400 mb-1">
           MÓDULO / COTIZACIONES
         </p>
-        <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl text-white">
+        <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl md:text-5xl text-white">
           {isEdit ? 'Editar Cotización' : 'Nueva Cotización'}
         </h1>
         <p className="font-['DM_Sans'] text-sm text-gray-400 mt-1">
@@ -257,7 +257,7 @@ export default function QuotationFormPage() {
             Extraer con IA
           </span>
         </div>
-        <div className="p-5 space-y-3 bg-white">
+        <div className="p-4 md:p-5 space-y-3 bg-white">
           <p className="font-['DM_Sans'] text-xs text-gray-500">
             Sube una foto o PDF de la cotización y Claude extraerá los datos automáticamente.
           </p>
@@ -294,7 +294,7 @@ export default function QuotationFormPage() {
         {/* 01 Proyecto */}
         <div className="border border-gray-200">
           <SectionHeader num="01" title="Proyecto" />
-          <div className="p-5 space-y-4 bg-white">
+          <div className="p-4 md:p-5 space-y-4 bg-white">
             <div>
               <label className={labelCls}>Proyecto *</label>
               <select
@@ -334,7 +334,7 @@ export default function QuotationFormPage() {
         {/* 02 Suplidor */}
         <div className="border border-gray-200">
           <SectionHeader num="02" title="Suplidor" />
-          <div className="p-5 bg-white space-y-4">
+          <div className="p-4 md:p-5 bg-white space-y-4">
             {/* Vinculación al catálogo de suplidores */}
             <div>
               <label className={labelCls}>Suplidor del catálogo <span className="font-normal normal-case text-gray-400">(opcional — activa filtro en órdenes de pago)</span></label>
@@ -379,7 +379,7 @@ export default function QuotationFormPage() {
         {/* 03 Documento */}
         <div className="border border-gray-200">
           <SectionHeader num="03" title="Documento" />
-          <div className="p-5 bg-white">
+          <div className="p-4 md:p-5 bg-white">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Número de cotización</label>
@@ -416,7 +416,7 @@ export default function QuotationFormPage() {
         {/* 04 Montos */}
         <div className="border border-gray-200">
           <SectionHeader num="04" title="Montos" />
-          <div className="p-5 bg-white">
+          <div className="p-4 md:p-5 bg-white">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className={labelCls}>Subtotal *</label>
@@ -455,7 +455,7 @@ export default function QuotationFormPage() {
         {/* 05 Condiciones */}
         <div className="border border-gray-200">
           <SectionHeader num="05" title="Condiciones" />
-          <div className="p-5 space-y-4 bg-white">
+          <div className="p-4 md:p-5 space-y-4 bg-white">
             <div>
               <label className={labelCls}>Descripción del trabajo / servicio *</label>
               <textarea

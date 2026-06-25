@@ -85,14 +85,14 @@ export default function QuotationsPage() {
     <div className="space-y-0 font-['DM_Sans']">
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-6 py-8 -mx-4 sm:-mx-6 lg:-mx-8 mb-6">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5 -mx-4 sm:-mx-6 lg:-mx-8 mb-6">
         <div className="max-w-full">
           <p className="font-['Barlow_Condensed'] text-[#F5C218] text-xs font-semibold tracking-[0.2em] uppercase mb-1">
             MÓDULO / COTIZACIONES
           </p>
           <div className="flex items-end justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="font-['Barlow_Condensed'] text-white text-5xl font-bold tracking-tight leading-none uppercase">
+              <h1 className="font-['Barlow_Condensed'] text-white text-3xl md:text-5xl font-bold tracking-tight leading-none uppercase">
                 COTIZACIONES
               </h1>
               <p className="text-zinc-400 text-sm mt-2 font-['DM_Sans'] h-5 flex items-center">
