@@ -511,21 +511,21 @@ export default function PaymentOrdersPage() {
       )}
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-6 py-8 mb-6">
-        <div className="flex items-end justify-between max-w-5xl">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5 mb-6">
+        <div className="flex items-start md:items-end justify-between gap-3 max-w-5xl">
           <div>
             <p className="text-[#F5C218] text-xs font-bold tracking-[0.2em] uppercase font-['Space_Mono'] mb-2">
               MÓDULO / ÓRDENES DE PAGO
             </p>
-            <h1 className="text-4xl font-black text-white font-['Barlow_Condensed'] uppercase tracking-tight leading-none">
+            <h1 className="text-3xl md:text-5xl font-black text-white font-['Barlow_Condensed'] uppercase tracking-tight leading-none">
               ÓRDENES DE PAGO
             </h1>
             <p className="text-gray-400 text-sm mt-2">Solicitudes de pago vía transferencia · Nómina · Materiales · General</p>
           </div>
           <button
             onClick={() => openOrderModal()}
-            className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-5 py-3 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors">
-            <Plus className="w-4 h-4" /> Nueva orden
+            className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-4 md:px-5 py-2.5 md:py-3 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors shrink-0">
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nueva orden</span><span className="sm:hidden">Nueva</span>
           </button>
         </div>
       </div>
@@ -865,51 +865,92 @@ export default function PaymentOrdersPage() {
               </p>
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-[#1C1C1C]">
-                <tr>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono']">#</th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide">Tipo</th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide">Beneficiario</th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide">Proyecto</th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono']">Monto</th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide">Estado</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-[#1C1C1C]">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono']">#</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide">Tipo</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide">Beneficiario</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide">Proyecto</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono']">Monto</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide">Estado</th>
+                      <th className="px-4 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {orders.map((o) => (
+                      <tr key={o.id}
+                        className={`hover:bg-gray-50 transition-colors cursor-pointer ${viewingOrder?.id === o.id ? 'bg-yellow-50 border-l-4 border-[#F5C218]' : ''}`}
+                        onClick={() => setViewingOrder(viewingOrder?.id === o.id ? null : o)}>
+                        <td className="px-4 py-3 text-xs text-gray-400 font-['Space_Mono'] font-bold">OP-{String(o.number).padStart(3, '0')}</td>
+                        <td className="px-4 py-3"><TypeBadge type={o.orderType} /></td>
+                        <td className="px-4 py-3">
+                          <p className="font-bold text-[#1C1C1C]">{o.supplier.name}</p>
+                          <p className="text-xs text-gray-400">{o.supplier.bank ?? ''}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-xs font-bold text-gray-500 font-['Space_Mono']">{o.project.code}</p>
+                          <p className="text-xs text-gray-700 font-medium leading-tight">{o.project.name}</p>
+                        </td>
+                        <td className="px-4 py-3 font-black text-[#1C1C1C] font-['Space_Mono']">{fmtMonto(o.amount, o.currency)}</td>
+                        <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center gap-1 justify-end">
+                            <button onClick={(e) => { e.stopPropagation(); copyText(o.generatedText ?? ''); }}
+                              className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] rounded transition-colors" title="Copiar mensaje">
+                              <ClipboardCopy className="w-4 h-4" />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web')); }}
+                              className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" title="Compartir por WhatsApp">
+                              <MessageCircle className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="md:hidden divide-y divide-gray-100">
                 {orders.map((o) => (
-                  <tr key={o.id}
-                    className={`hover:bg-gray-50 transition-colors cursor-pointer ${viewingOrder?.id === o.id ? 'bg-yellow-50 border-l-4 border-[#F5C218]' : ''}`}
+                  <div key={o.id}
+                    className={`p-4 cursor-pointer transition-colors ${viewingOrder?.id === o.id ? 'bg-yellow-50 border-l-4 border-[#F5C218]' : 'hover:bg-gray-50'}`}
                     onClick={() => setViewingOrder(viewingOrder?.id === o.id ? null : o)}>
-                    <td className="px-4 py-3 text-xs text-gray-400 font-['Space_Mono'] font-bold">OP-{String(o.number).padStart(3, '0')}</td>
-                    <td className="px-4 py-3"><TypeBadge type={o.orderType} /></td>
-                    <td className="px-4 py-3">
-                      <p className="font-bold text-[#1C1C1C]">{o.supplier.name}</p>
-                      <p className="text-xs text-gray-400">{o.supplier.bank ?? ''}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-xs font-bold text-gray-500 font-['Space_Mono']">{o.project.code}</p>
-                      <p className="text-xs text-gray-700 font-medium leading-tight">{o.project.name}</p>
-                    </td>
-                    <td className="px-4 py-3 font-black text-[#1C1C1C] font-['Space_Mono']">{fmtMonto(o.amount, o.currency)}</td>
-                    <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center gap-1 justify-end">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-gray-400 font-['Space_Mono'] font-bold">OP-{String(o.number).padStart(3, '0')}</span>
+                        <TypeBadge type={o.orderType} />
+                        <StatusBadge status={o.status} />
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
                         <button onClick={(e) => { e.stopPropagation(); copyText(o.generatedText ?? ''); }}
-                          className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] rounded transition-colors" title="Copiar mensaje">
+                          className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] transition-colors" title="Copiar">
                           <ClipboardCopy className="w-4 h-4" />
                         </button>
                         <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web')); }}
-                          className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" title="Compartir por WhatsApp">
+                          className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors" title="WhatsApp">
                           <MessageCircle className="w-4 h-4" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                    <p className="font-bold text-[#1C1C1C] text-sm">{o.supplier.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-tight line-clamp-2">{o.concept}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <div>
+                        <p className="text-xs font-bold text-gray-400 font-['Space_Mono']">{o.project.code}</p>
+                        <p className="text-xs text-gray-600 leading-tight">{o.project.name}</p>
+                      </div>
+                      <p className="font-black text-[#1C1C1C] font-['Space_Mono'] text-sm">{fmtMonto(o.amount, o.currency)}</p>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>

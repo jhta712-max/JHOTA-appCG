@@ -96,12 +96,12 @@ export default function PendingOrdersPage() {
       )}
 
       {/* Hero header */}
-      <div className="px-5 py-6 flex items-end justify-between gap-4" style={{ background: '#1C1C1C' }}>
+      <div className="px-4 md:px-6 py-4 md:py-5 flex items-start md:items-end justify-between gap-4" style={{ background: '#1C1C1C' }}>
         <div>
           <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-gray-400 mb-1">
             MÓDULO / PAGOS PENDIENTES
           </p>
-          <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl text-white">
+          <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl md:text-5xl font-bold text-white">
             Bandeja de Pagos Pendientes
           </h1>
           <p className="font-['DM_Sans'] text-sm text-gray-400 mt-1">
@@ -178,51 +178,99 @@ export default function PendingOrdersPage() {
             <p className="font-['DM_Sans'] text-xs mt-1">Todas las órdenes han sido pagadas.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ background: '#1C1C1C' }}>
-                  <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">#</th>
-                  <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Tipo</th>
-                  <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Proyecto</th>
-                  <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Beneficiario</th>
-                  <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Concepto</th>
-                  <th className="px-4 py-3 text-right font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Monto</th>
-                  <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Estado</th>
-                  <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Fecha</th>
-                  <th className="px-4 py-3 text-center font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {orders.map((o) => {
-                  const type = ((['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'].includes(o.orderType) ? o.orderType : 'SERVICIO') as OrderType);
-                  const cfg  = TYPE_CFG[type];
-                  return (
-                    <tr key={o.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 font-['Space_Mono'] text-xs text-gray-400 whitespace-nowrap">
-                        OP-{String(o.number).padStart(3, '0')}
-                      </td>
-                      <td className="px-4 py-3">
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ background: '#1C1C1C' }}>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">#</th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Tipo</th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Proyecto</th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Beneficiario</th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Concepto</th>
+                    <th className="px-4 py-3 text-right font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Monto</th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Estado</th>
+                    <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Fecha</th>
+                    <th className="px-4 py-3 text-center font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Acción</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {orders.map((o) => {
+                    const type = ((['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'].includes(o.orderType) ? o.orderType : 'SERVICIO') as OrderType);
+                    const cfg  = TYPE_CFG[type];
+                    return (
+                      <tr key={o.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 font-['Space_Mono'] text-xs text-gray-400 whitespace-nowrap">
+                          OP-{String(o.number).padStart(3, '0')}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold font-['Barlow_Condensed'] uppercase ${cfg.cls}`}>
+                            {TYPE_ICON[type]}
+                            {cfg.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-['Space_Mono'] text-xs text-gray-500">{o.project.code}</p>
+                          <p className="font-['DM_Sans'] text-xs text-gray-700 font-medium leading-tight max-w-[140px] truncate">{o.project.name}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-['DM_Sans'] font-medium text-gray-900">{o.supplier.name}</p>
+                          <p className="font-['DM_Sans'] text-xs text-gray-400">{o.supplier.bank}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-['DM_Sans'] text-gray-700 max-w-[180px] truncate" title={o.concept}>{o.concept}</p>
+                        </td>
+                        <td className="px-4 py-3 text-right font-['Space_Mono'] font-bold text-gray-900 whitespace-nowrap">
+                          {fmtMonto(o.amount, o.currency)}
+                        </td>
+                        <td className="px-4 py-3">
+                          {o.status === 'PENDING' && (
+                            <span className="inline-flex px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase bg-amber-100 text-amber-700">Pendiente</span>
+                          )}
+                          {o.status === 'IN_PROCESS' && (
+                            <span className="inline-flex px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase bg-blue-100 text-blue-700">En proceso</span>
+                          )}
+                          {o.status === 'REJECTED_BANK' && (
+                            <span className="inline-flex px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase bg-red-100 text-red-700">Rechazada</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 font-['Space_Mono'] text-xs text-gray-500 whitespace-nowrap">
+                          {fmtDate(o.createdAt)}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {canPay ? (
+                            <button
+                              onClick={() => setConfirmId(o.id)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-['Barlow_Condensed'] uppercase font-bold transition-opacity mx-auto"
+                              style={{ background: '#F5C218', color: '#1C1C1C' }}
+                            >
+                              <BadgeCheck className="w-3.5 h-3.5" /> Marcar pagada
+                            </button>
+                          ) : (
+                            <span className="font-['DM_Sans'] text-xs text-gray-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {orders.map((o) => {
+                const type = ((['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'].includes(o.orderType) ? o.orderType : 'SERVICIO') as OrderType);
+                const cfg  = TYPE_CFG[type];
+                return (
+                  <div key={o.id} className="p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-['Space_Mono'] text-xs text-gray-400 font-bold">OP-{String(o.number).padStart(3, '0')}</span>
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold font-['Barlow_Condensed'] uppercase ${cfg.cls}`}>
-                          {TYPE_ICON[type]}
-                          {cfg.label}
+                          {TYPE_ICON[type]}{cfg.label}
                         </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-['Space_Mono'] text-xs text-gray-500">{o.project.code}</p>
-                        <p className="font-['DM_Sans'] text-xs text-gray-700 font-medium leading-tight max-w-[140px] truncate">{o.project.name}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-['DM_Sans'] font-medium text-gray-900">{o.supplier.name}</p>
-                        <p className="font-['DM_Sans'] text-xs text-gray-400">{o.supplier.bank}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-['DM_Sans'] text-gray-700 max-w-[180px] truncate" title={o.concept}>{o.concept}</p>
-                      </td>
-                      <td className="px-4 py-3 text-right font-['Space_Mono'] font-bold text-gray-900 whitespace-nowrap">
-                        {fmtMonto(o.amount, o.currency)}
-                      </td>
-                      <td className="px-4 py-3">
                         {o.status === 'PENDING' && (
                           <span className="inline-flex px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase bg-amber-100 text-amber-700">Pendiente</span>
                         )}
@@ -232,29 +280,34 @@ export default function PendingOrdersPage() {
                         {o.status === 'REJECTED_BANK' && (
                           <span className="inline-flex px-2 py-0.5 text-xs font-bold font-['Barlow_Condensed'] uppercase bg-red-100 text-red-700">Rechazada</span>
                         )}
-                      </td>
-                      <td className="px-4 py-3 font-['Space_Mono'] text-xs text-gray-500 whitespace-nowrap">
-                        {fmtDate(o.createdAt)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {canPay ? (
+                      </div>
+                    </div>
+                    <p className="font-['DM_Sans'] font-medium text-gray-900 text-sm">{o.supplier.name}</p>
+                    <p className="font-['DM_Sans'] text-xs text-gray-500 mt-0.5 line-clamp-2">{o.concept}</p>
+                    <div className="flex items-end justify-between mt-2 gap-2">
+                      <div>
+                        <p className="font-['Space_Mono'] text-xs text-gray-400">{o.project.code}</p>
+                        <p className="font-['DM_Sans'] text-xs text-gray-600 leading-tight">{o.project.name}</p>
+                        <p className="font-['Space_Mono'] text-xs text-gray-400 mt-0.5">{fmtDate(o.createdAt)}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <p className="font-['Space_Mono'] font-bold text-gray-900 text-sm">{fmtMonto(o.amount, o.currency)}</p>
+                        {canPay && (
                           <button
                             onClick={() => setConfirmId(o.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-['Barlow_Condensed'] uppercase font-bold transition-opacity mx-auto"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-['Barlow_Condensed'] uppercase font-bold"
                             style={{ background: '#F5C218', color: '#1C1C1C' }}
                           >
-                            <BadgeCheck className="w-3.5 h-3.5" /> Marcar pagada
+                            <BadgeCheck className="w-3.5 h-3.5" /> Pagar
                           </button>
-                        ) : (
-                          <span className="font-['DM_Sans'] text-xs text-gray-400">—</span>
                         )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 
