@@ -291,7 +291,7 @@ export default function EditExpensePage() {
               <span className="font-['DM_Sans'] text-sm font-medium text-blue-800">Pago realizado en moneda extranjera</span>
             </label>
             {useForeign && (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Moneda</label>
                   <select value={foreignCurrency} onChange={(e) => setForeignCurrency(e.target.value)} className={inputCls + ' text-sm'}>
