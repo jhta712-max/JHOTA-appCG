@@ -257,13 +257,13 @@ export default function SuppliersPage() {
     <div className="space-y-0">
 
       {/* ── Hero header ─────────────────────────────────────────── */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#1C1C1C' }}>
         <div className="max-w-6xl flex items-end justify-between gap-4 flex-wrap">
           <div>
             <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#F5C218' }}>
               MÓDULO / SUPLIDORES
             </p>
-            <h1 className="font-['Barlow_Condensed'] text-4xl font-bold tracking-tight text-white uppercase">
+            <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold tracking-tight text-white uppercase">
               Directorio de Suplidores
             </h1>
             <p className="font-['Space_Mono'] text-sm mt-1 h-5 flex items-center" style={{ color: '#F5C218' }}>

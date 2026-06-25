@@ -162,12 +162,12 @@ export default function SupplierDetailPage() {
     const meta = PAGE_META['/suppliers'];
     return (
       <div>
-        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
           <div>
             <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
               {meta.module}
             </p>
-            <h1 className="text-3xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <h1 className="text-3xl md:text-5xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
               {meta.title}
             </h1>
           </div>
@@ -236,7 +236,7 @@ export default function SupplierDetailPage() {
       </Link>
 
       {/* Hero */}
-      <div className="px-5 py-6" style={{ background: '#1C1C1C' }}>
+      <div className="px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4">
             <div
@@ -249,7 +249,7 @@ export default function SupplierDetailPage() {
               <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-gray-400 mb-1">
                 DIRECTORIO / SUPLIDOR
               </p>
-              <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl text-white leading-tight">
+              <h1 className="font-['Barlow_Condensed'] uppercase tracking-wide text-3xl md:text-5xl text-white leading-tight">
                 {supplier.name}
               </h1>
               <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -357,8 +357,8 @@ export default function SupplierDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex">
+      <div className="border-b border-gray-200 overflow-x-auto">
+        <nav className="flex min-w-max">
           {tabs.map((t) => (
             <button
               key={t.key}
@@ -386,7 +386,8 @@ export default function SupplierDetailPage() {
           <EmptyState icon={<FileText className="w-10 h-10 opacity-20" />} message="No hay cotizaciones registradas para este suplidor" />
         ) : (
           <div className="border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: '#1C1C1C' }}>
@@ -432,6 +433,38 @@ export default function SupplierDetailPage() {
                 </tbody>
               </table>
             </div>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {quotations.map((q) => {
+                const paid   = q.payments.reduce((s, p) => s + Number(p.amount), 0);
+                const status = QUOTATION_STATUS[q.status] ?? { label: q.status, cls: 'bg-gray-100 text-gray-600' };
+                const total  = q.currency === 'DOP'
+                  ? fmtDOP(Number(q.total))
+                  : `${q.currency} ${Number(q.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+                return (
+                  <div key={q.id} className="p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-['Space_Mono'] text-xs text-gray-500">COTI-{String(q.number).padStart(3, '0')}</span>
+                        <p className="font-['DM_Sans'] text-sm font-semibold text-gray-800 mt-0.5">{q.project.name}</p>
+                        <p className="font-['Space_Mono'] text-xs text-gray-400">{q.project.code} · {fmtDate(q.quotationDate)}</p>
+                      </div>
+                      <span className={`font-['Barlow_Condensed'] uppercase text-xs px-2 py-0.5 shrink-0 ${status.cls}`}>{status.label}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-['Barlow_Condensed'] text-xs uppercase text-gray-400">Total</span>
+                      <span className="font-['Space_Mono'] text-sm font-bold text-gray-900">{total}</span>
+                    </div>
+                    {paid > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="font-['Barlow_Condensed'] text-xs uppercase text-gray-400">Pagado</span>
+                        <span className="font-['Space_Mono'] text-sm text-gray-500">{fmtDOP(paid)}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )
       )}
@@ -442,7 +475,8 @@ export default function SupplierDetailPage() {
           <EmptyState icon={<DollarSign className="w-10 h-10 opacity-20" />} message="No hay órdenes de pago registradas para este suplidor" />
         ) : (
           <div className="border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: '#1C1C1C' }}>
@@ -491,6 +525,31 @@ export default function SupplierDetailPage() {
                 </tbody>
               </table>
             </div>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {paymentOrders.map((po) => {
+                const status = ORDER_STATUS[po.status] ?? { label: po.status, cls: 'bg-gray-100 text-gray-600' };
+                const amount = po.currency === 'DOP'
+                  ? fmtDOP(Number(po.amount))
+                  : `${po.currency} ${Number(po.amount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+                return (
+                  <div key={po.id} className="p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-['Space_Mono'] text-xs text-gray-500">OP-{String(po.number).padStart(4, '0')}</span>
+                        <p className="font-['DM_Sans'] text-sm font-semibold text-gray-800 mt-0.5 line-clamp-2">{po.concept}</p>
+                        <p className="font-['Space_Mono'] text-xs text-gray-400">{po.project.code} · {po.paidAt ? fmtDate(po.paidAt) : '—'}</p>
+                      </div>
+                      <span className={`font-['Barlow_Condensed'] uppercase text-xs px-2 py-0.5 shrink-0 ${status.cls}`}>{status.label}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-['Barlow_Condensed'] uppercase text-xs px-2 py-0.5 bg-gray-100 text-gray-700">{po.orderType}</span>
+                      <span className="font-['Space_Mono'] text-sm font-bold text-gray-900">{amount}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )
       )}
@@ -508,7 +567,8 @@ export default function SupplierDetailPage() {
           />
         ) : (
           <div className="border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: '#1C1C1C' }}>
@@ -541,6 +601,21 @@ export default function SupplierDetailPage() {
                 </tbody>
               </table>
             </div>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {fiscalVouchers.map((v) => (
+                <div key={v.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-['Space_Mono'] text-xs text-gray-700">{v.ncf}</span>
+                      <p className="font-['DM_Sans'] text-sm text-gray-700 mt-0.5 line-clamp-2">{v.expense.description}</p>
+                      <p className="font-['Space_Mono'] text-xs text-gray-400">{v.expense.project.code} · {fmtDate(v.expense.expenseDate)}</p>
+                    </div>
+                    <span className="font-['Space_Mono'] text-sm font-bold text-gray-900 shrink-0">{fmtDOP(Number(v.expense.amount))}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )
       )}
@@ -551,7 +626,8 @@ export default function SupplierDetailPage() {
           <EmptyState icon={<Sparkles className="w-10 h-10 opacity-20" />} message="No hay gastos de oficina vinculados a este suplidor" />
         ) : (
           <div className="border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: '#1C1C1C' }}>
@@ -582,6 +658,29 @@ export default function SupplierDetailPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {officeExpenses.map((oe) => (
+                <div key={oe.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-['DM_Sans'] text-sm font-semibold text-gray-800 line-clamp-2">{oe.description}</p>
+                      <p className="font-['Space_Mono'] text-xs text-gray-400 mt-0.5">{fmtDate(oe.expenseDate)}</p>
+                    </div>
+                    <span className="font-['Space_Mono'] text-sm font-bold text-gray-900 shrink-0">{fmtDOP(Number(oe.amount))}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-['Barlow_Condensed'] uppercase text-xs text-gray-500">
+                      {oe.category.replace(/_/g, ' ').toLowerCase()}
+                    </span>
+                    <span className="text-gray-300">·</span>
+                    <span className="font-['DM_Sans'] text-xs text-gray-500">
+                      {({ CASH: 'Efectivo', TRANSFER: 'Transf.', CARD: 'Tarjeta', CHECK: 'Cheque', OTHER: 'Otro' } as Record<string,string>)[oe.paymentMethod] ?? oe.paymentMethod}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )
