@@ -265,13 +265,16 @@ function NavPopover({
       style={{
         position: 'fixed',
         left: '244px',
-        top: `${anchorTop}px`,
+        ...(anchorTop >= 0
+          ? { top: `${anchorTop}px` }
+          : { bottom: `${-anchorTop}px` }),
         width: '220px',
         background: '#1C1C1C',
         border: '1px solid rgba(255,255,255,0.1)',
         zIndex: 60,
+        maxHeight: 'calc(100vh - 32px)',
       }}
-      className="shadow-2xl py-1 max-h-[70vh] overflow-y-auto"
+      className="shadow-2xl py-1 overflow-y-auto"
     >
       {unpinnedGroups.map((g) => (
         <div key={g.key}>
@@ -355,7 +358,10 @@ export default function Layout() {
   function handleMoreClick() {
     if (moreRef.current) {
       const rect = moreRef.current.getBoundingClientRect();
-      setAnchorTop(rect.top);
+      // Si hay poco espacio abajo, abrimos hacia arriba usando valor negativo
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const openUp = spaceBelow < 320;
+      setAnchorTop(openUp ? -(window.innerHeight - rect.top) : rect.top);
     }
     setPopoverOpen((v) => !v);
   }
