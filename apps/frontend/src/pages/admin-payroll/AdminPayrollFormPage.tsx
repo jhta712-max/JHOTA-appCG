@@ -26,18 +26,18 @@ export default function AdminPayrollFormPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#1C1C1C] px-8 py-8">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
         <button onClick={() => navigate('/admin-payroll')} className="flex items-center gap-1 text-[#F5C218] text-xs uppercase font-['Barlow_Condensed'] mb-3">
           <ChevronLeft size={14} /> Períodos
         </button>
-        <h1 className="font-['Barlow_Condensed'] text-4xl font-bold text-white uppercase tracking-tight">Nuevo Período</h1>
+        <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">Nuevo Período</h1>
         <p className="text-gray-400 text-sm font-['DM_Sans'] mt-1">
           Se generarán líneas automáticamente para todos los empleados activos con la frecuencia seleccionada.
         </p>
       </div>
 
-      <div className="px-8 py-8 max-w-lg">
-        <form onSubmit={onSubmit} className="bg-white border border-gray-200 p-6 flex flex-col gap-5">
+      <div className="px-4 md:px-6 py-6 md:py-8 max-w-lg">
+        <form onSubmit={onSubmit} className="bg-white border border-gray-200 p-4 md:p-5 flex flex-col gap-5">
           <div>
             <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Tipo de período</label>
             <select name="periodType" required className={inputCls}>
@@ -46,7 +46,7 @@ export default function AdminPayrollFormPage() {
               <option value="BIWEEKLY_2">Quincena 2 (días 16–fin)</option>
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold uppercase text-gray-500 font-['Barlow_Condensed'] mb-1">Fecha inicio</label>
               <input name="periodStart" type="date" required className={inputCls} />

@@ -73,13 +73,13 @@ export default function AdminPayrollDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#1C1C1C] px-8 py-8">
+      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
         <button onClick={() => navigate('/admin-payroll')} className="flex items-center gap-1 text-[#F5C218] text-xs uppercase font-['Barlow_Condensed'] mb-3">
           <ChevronLeft size={14} /> Períodos
         </button>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="font-['Barlow_Condensed'] text-4xl font-bold text-white uppercase tracking-tight">
+            <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">
               NOM-ADM-{String(p.number).padStart(3,'0')}
             </h1>
             <p className="text-gray-400 text-sm font-['DM_Sans'] mt-1">
@@ -111,7 +111,7 @@ export default function AdminPayrollDetailPage() {
       </div>
 
       {/* Totales */}
-      <div className="px-8 py-4 grid grid-cols-3 gap-4">
+      <div className="px-4 md:px-6 py-4 grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { label: 'Total Bruto',      value: p.totalGross },
           { label: 'Total Deducciones', value: p.totalDeductions },
@@ -125,7 +125,7 @@ export default function AdminPayrollDetailPage() {
       </div>
 
       {/* Líneas */}
-      <div className="px-8 pb-8">
+      <div className="px-4 md:px-6 pb-8">
         <div className="bg-white border border-gray-200 overflow-x-auto">
           <table className="w-full text-sm min-w-[900px]">
             <thead>
