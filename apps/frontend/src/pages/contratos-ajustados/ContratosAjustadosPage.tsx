@@ -922,7 +922,6 @@ export default function ContratosAjustadosPage() {
                 </tbody>
               </table>
             </div>
-            </div>
             </>
           )}
         </div>
