@@ -102,7 +102,7 @@ export default function LoginPage() {
       </div>
 
       {/* Panel derecho — formulario */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-gray-50">
+      <div className="flex-1 flex items-center justify-center px-4 py-8 sm:p-6 bg-gray-50">
         <div className="w-full max-w-sm">
 
           {/* Logo mobile */}
@@ -127,14 +127,13 @@ export default function LoginPage() {
 
           {/* Form card */}
           <div
-            className="bg-white shadow-sm border border-gray-100 p-8"
+            className="bg-white shadow-sm border border-gray-100 p-5 sm:p-8"
             style={{ borderLeft: '4px solid #F5C218' }}
           >
             <h1
-              className="uppercase tracking-widest mb-1"
+              className="uppercase tracking-widest mb-1 text-3xl sm:text-4xl"
               style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: '2.25rem',
                 color: '#1C1C1C',
                 fontWeight: 700,
                 lineHeight: 1,
