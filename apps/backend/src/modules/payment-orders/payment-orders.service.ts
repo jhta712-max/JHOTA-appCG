@@ -422,17 +422,18 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
   if (po.status === 'PAID' && userRole !== 'admin')
     throw new AppError(400, 'Solo un administrador puede editar una orden pagada', 'ORDER_CLOSED');
 
-  const supplierId = data.supplierId ?? po.supplierId;
-  const supplier = await prisma.supplier.findUnique({ where: { id: supplierId } });
-  const project  = await prisma.project.findUnique({ where: { id: data.projectId ?? po.projectId } });
+  const supplierId = (data.supplierId ?? po.supplierId) ?? undefined;
+  const supplier = supplierId ? await prisma.supplier.findUnique({ where: { id: supplierId } }) : null;
+  const resolvedProjectId = (data.projectId ?? po.projectId) ?? undefined;
+  const project  = resolvedProjectId ? await prisma.project.findUnique({ where: { id: resolvedProjectId } }) : null;
 
   // Resolve bank account for regenerated text — prefer selected bankAccountId, fall back to default
   const selectedBankAccountId = (data as any).bankAccountId as string | undefined;
   const bankAccount =
-    (selectedBankAccountId
+    (selectedBankAccountId && supplierId
       ? await prisma.supplierBankAccount.findFirst({ where: { id: selectedBankAccountId, supplierId } })
       : null)
-    ?? await prisma.supplierBankAccount.findFirst({ where: { supplierId }, orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] })
+    ?? (supplierId ? await prisma.supplierBankAccount.findFirst({ where: { supplierId }, orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] }) : null)
     ?? (supplier?.bank ? { bank: supplier.bank, accountType: supplier.accountType, accountNumber: supplier.accountNumber! } : null)
     ?? { bank: (po.supplier as any).bank ?? '', accountType: (po.supplier as any).accountType ?? '', accountNumber: (po.supplier as any).accountNumber ?? '' };
 
@@ -453,9 +454,9 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
   const { payrollId, bankAccountId: _bankAccountId, batchItemId: rawItemId, projectItemId: _legacyItemId, ...rest } = data as any;
 
   const resolvedItemId = rawItemId !== undefined
-    ? await resolveBatchItemId(po.projectId, rawItemId, { inherited: true })
+    ? await resolveBatchItemId(po.projectId ?? '', rawItemId, { inherited: true })
     : _legacyItemId !== undefined
-    ? await resolveBatchItemId(po.projectId, _legacyItemId, { inherited: true })
+    ? await resolveBatchItemId(po.projectId ?? '', _legacyItemId, { inherited: true })
     : undefined;
 
   return prisma.paymentOrder.update({
@@ -598,7 +599,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
       const expense = await tx.expense.create({
         data: {
           ...buildExpenseData({
-            projectId:          po.projectId,
+            projectId:          po.projectId ?? '',
             categoryId:         category.id,
             userId,
             expenseDate:        new Date(),
@@ -745,7 +746,7 @@ export async function generateExpenseForOrder(id: string, userId: string) {
       : Number(po.amount);
     const expense = await tx.expense.create({
       data: buildExpenseData({
-        projectId:          po.projectId,
+        projectId:          po.projectId ?? '',
         categoryId:         category.id,
         userId,
         expenseDate:        po.paidAt ?? new Date(),

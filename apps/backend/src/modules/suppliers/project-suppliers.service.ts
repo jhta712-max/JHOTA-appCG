@@ -69,7 +69,7 @@ export async function importFromPayments(projectId: string): Promise<{ imported:
   for (const order of orders) {
     try {
       await prisma.projectSupplier.create({
-        data: { projectId, supplierId: order.supplierId },
+        data: { projectId, supplierId: order.supplierId ?? '' },
       });
       imported++;
     } catch (e: any) {

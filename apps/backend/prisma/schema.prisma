@@ -906,10 +906,10 @@ model SupplierCreditPayment {
 model PaymentOrder {
   id            String    @id @default(uuid()) @db.Uuid
   number        Int // Autoincremental por aplicación
-  orderType     String    @default("SERVICIO") @map("order_type") @db.VarChar(20) // SERVICIO | PAYROLL | MATERIALS
+  orderType     String    @default("SERVICIO") @map("order_type") @db.VarChar(20) // SERVICIO | PAYROLL | MATERIALS | PETTY_CASH | OFFICE
   payingCompany String    @map("paying_company") @db.VarChar(200)
-  supplierId    String    @map("supplier_id") @db.Uuid
-  projectId     String    @map("project_id") @db.Uuid
+  supplierId    String?   @map("supplier_id") @db.Uuid
+  projectId     String?   @map("project_id") @db.Uuid
   amount        Decimal   @db.Decimal(15, 2)
   currency      String    @default("RD$") @db.VarChar(10)
   concept       String    @db.Text
@@ -927,6 +927,9 @@ model PaymentOrder {
   // Vínculos opcionales
   payrollId          String?   @unique @map("payroll_id") @db.Uuid
   expenseId          String?   @unique @map("expense_id") @db.Uuid
+  officeExpenseCategory String?   @map("office_expense_category") @db.VarChar(50)
+  officeSupplierName    String?   @map("office_supplier_name")    @db.VarChar(200)
+  officeExpenseId       String?   @map("office_expense_id")       @db.Text
   contratoAjustadoId String?   @map("contrato_ajustado_id") @db.Uuid
   quotationId        String?   @map("quotation_id") @db.Uuid
   projectItemId      String?   @map("project_item_id") @db.Uuid
@@ -936,8 +939,8 @@ model PaymentOrder {
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  supplier         Supplier          @relation(fields: [supplierId], references: [id])
-  project          Project           @relation(fields: [projectId], references: [id])
+  supplier         Supplier?         @relation(fields: [supplierId], references: [id])
+  project          Project?          @relation(fields: [projectId], references: [id])
   createdBy        User              @relation("PaymentOrderCreatedBy", fields: [createdById], references: [id])
   paidBy           User?             @relation("PaymentOrderPaidBy", fields: [paidById], references: [id])
   exchangeRateValidator     User?          @relation("PaymentOrderExchangeValidatedBy", fields: [exchangeRateValidatedBy], references: [id])
