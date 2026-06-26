@@ -429,10 +429,10 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
       quotationId:           data.orderType === 'SERVICIO' ? (data.quotationId ?? null) : null,
       batchItemId:           batchItemId ?? null,
       creditLineId:          data.creditLineId ?? null,
-      officeExpenseCategory: (data as any).officeExpenseCategory ?? null,
-      officeSupplierName:    (data as any).officeSupplierName    ?? null,
+      officeExpenseCategory: data.officeExpenseCategory ?? null,
+      officeSupplierName:    data.officeSupplierName    ?? null,
       createdById:           userId,
-    } as any,
+    },
     include: INCLUDE,
   });
 }
@@ -599,7 +599,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
     }
 
     // OFFICE orders: auto-create OfficeExpense
-    if (po.orderType === 'OFFICE' && !(po as any).officeExpenseId) {
+    if (po.orderType === 'OFFICE' && !po.officeExpenseId) {
       const isForeign    = po.currency !== 'RD$';
       const exchangeRate = paymentInfo?.exchangeRate ?? null;
       if (isForeign && !exchangeRate) {
@@ -609,11 +609,11 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
         ? Number(po.amount) * exchangeRate
         : Number(po.amount);
 
-      const supplierName = (po as any).supplier?.name ?? (po as any).officeSupplierName ?? null;
+      const supplierName = po.supplier?.name ?? po.officeSupplierName ?? null;
 
       const officeExpense = await tx.officeExpense.create({
         data: {
-          category:      (po as any).officeExpenseCategory as any,
+          category:      po.officeExpenseCategory! as any,
           description:   po.concept,
           amount:        amountDOP,
           itbisAmount:   0,
@@ -631,7 +631,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
 
       await tx.paymentOrder.update({
         where: { id },
-        data:  { officeExpenseId: officeExpense.id } as any,
+        data:  { officeExpenseId: officeExpense.id },
       });
     }
 
