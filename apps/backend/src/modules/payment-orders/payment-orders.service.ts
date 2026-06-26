@@ -211,31 +211,43 @@ export async function getAvailableExpenses(projectId: string) {
 
 // ── Crear ─────────────────────────────────────────────────────
 export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: string) {
-  const project = await prisma.project.findUnique({ where: { id: data.projectId } });
-  if (!project)                    throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
-  if (project.status !== 'ACTIVE') throw new AppError(400, 'El proyecto debe estar activo', 'PROJECT_INACTIVE');
+  const batchItemId = data.projectId
+    ? await resolveBatchItemId(data.projectId, (data as any).batchItemId ?? (data as any).projectItemId)
+    : null;
 
-  const batchItemId = await resolveBatchItemId(data.projectId, (data as any).batchItemId ?? (data as any).projectItemId);
-
-  const supplier = await prisma.supplier.findUnique({ where: { id: data.supplierId } });
-  if (!supplier || !supplier.isActive) throw new AppError(404, 'Suplidor no encontrado o inactivo', 'NOT_FOUND');
-
-  // Resolve bank account: explicit selection → default → first → legacy fields
-  let bankAccount: { bank: string; accountType: string | null; accountNumber: string } | null = null;
-  if (data.bankAccountId) {
-    bankAccount = await prisma.supplierBankAccount.findFirst({ where: { id: data.bankAccountId, supplierId: data.supplierId } });
-    if (!bankAccount) throw new AppError(404, 'Cuenta bancaria no encontrada', 'BANK_ACCOUNT_NOT_FOUND');
-  } else {
-    bankAccount = await prisma.supplierBankAccount.findFirst({
-      where:   { supplierId: data.supplierId },
-      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
-    });
-    if (!bankAccount && supplier.bank && supplier.accountNumber) {
-      bankAccount = { bank: supplier.bank, accountType: supplier.accountType, accountNumber: supplier.accountNumber };
-    }
+  let project: { id: string; code: string; name: string; status: string } | null = null;
+  if (data.orderType !== 'OFFICE') {
+    project = await prisma.project.findUnique({ where: { id: data.projectId! } });
+    if (!project)                    throw new AppError(404, 'Proyecto no encontrado', 'NOT_FOUND');
+    if (project.status !== 'ACTIVE') throw new AppError(400, 'El proyecto debe estar activo', 'PROJECT_INACTIVE');
   }
-  if (!bankAccount)
-    throw new AppError(400, 'El suplidor no tiene datos bancarios registrados. Actualícelo primero.', 'SUPPLIER_NO_BANK');
+
+  let supplier: { id: string; name: string; isActive: boolean; bank: string | null; accountNumber: string | null; accountType: string | null; cedula: string | null; rnc: string | null } | null = null;
+  let bankAccount: { bank: string; accountType: string | null; accountNumber: string } | null = null;
+
+  if (data.orderType !== 'OFFICE') {
+    supplier = await prisma.supplier.findUnique({ where: { id: data.supplierId! } });
+    if (!supplier || !supplier.isActive) throw new AppError(404, 'Suplidor no encontrado o inactivo', 'NOT_FOUND');
+
+    // Resolve bank account: explicit selection → default → first → legacy fields
+    if (data.bankAccountId) {
+      bankAccount = await prisma.supplierBankAccount.findFirst({ where: { id: data.bankAccountId, supplierId: data.supplierId! } });
+      if (!bankAccount) throw new AppError(404, 'Cuenta bancaria no encontrada', 'BANK_ACCOUNT_NOT_FOUND');
+    } else {
+      bankAccount = await prisma.supplierBankAccount.findFirst({
+        where:   { supplierId: data.supplierId! },
+        orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+      });
+      if (!bankAccount && supplier.bank && supplier.accountNumber) {
+        bankAccount = { bank: supplier.bank, accountType: supplier.accountType, accountNumber: supplier.accountNumber };
+      }
+    }
+    if (!bankAccount)
+      throw new AppError(400, 'El suplidor no tiene datos bancarios registrados. Actualícelo primero.', 'SUPPLIER_NO_BANK');
+  } else if (data.supplierId) {
+    // OFFICE with optional supplierId — load supplier for name reference only
+    supplier = await prisma.supplier.findUnique({ where: { id: data.supplierId } });
+  }
 
   if (data.orderType === 'PAYROLL' && data.payrollId) {
     const payroll = await prisma.payroll.findUnique({ where: { id: data.payrollId } });
@@ -249,19 +261,28 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
   const last   = await prisma.paymentOrder.findFirst({ orderBy: { number: 'desc' } });
   const number = (last?.number ?? 0) + 1;
 
-  const generatedText = buildOrderText({
-    payingCompany: data.payingCompany,
-    currency:      data.currency ?? 'RD$',
-    amount:        Number(data.amount),
-    concept:       data.concept,
-    project:       `${project.code} — ${project.name}`,
-    bank:          bankAccount.bank,
-    accountType:   bankAccount.accountType ?? '',
-    accountNumber: bankAccount.accountNumber,
-    holderName:    supplier.name,
-    cedula:        supplier.cedula,
-    rnc:           supplier.rnc,
-  });
+  const generatedText = data.orderType === 'OFFICE'
+    ? [
+        data.payingCompany,
+        `💰 ${data.currency ?? 'RD$'} ${Number(data.amount).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        `📌 Concepto: ${data.concept}`,
+        `📍 Gasto de Oficina`,
+        ...(supplier ? [`Proveedor: ${supplier.name}`] : data.officeSupplierName ? [`Proveedor: ${data.officeSupplierName}`] : []),
+        `📅 Fecha: ${new Date().toLocaleDateString('es-DO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`,
+      ].join('\n')
+    : buildOrderText({
+        payingCompany: data.payingCompany,
+        currency:      data.currency ?? 'RD$',
+        amount:        Number(data.amount),
+        concept:       data.concept,
+        project:       `${project!.code} — ${project!.name}`,
+        bank:          bankAccount!.bank,
+        accountType:   bankAccount!.accountType ?? '',
+        accountNumber: bankAccount!.accountNumber,
+        holderName:    supplier!.name,
+        cedula:        supplier!.cedula,
+        rnc:           supplier!.rnc,
+      });
 
   // Validate contrato ajustado if provided
   if (data.contratoAjustadoId) {
@@ -281,7 +302,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
 
   // ── AUTO-CREATE PAYROLL when type=PAYROLL + payrollData ──────
   if (data.orderType === 'PAYROLL' && data.payrollData) {
-    const payrollLast = await prisma.payroll.findFirst({ where: { projectId: data.projectId }, orderBy: { number: 'desc' } });
+    const payrollLast = await prisma.payroll.findFirst({ where: { projectId: data.projectId! }, orderBy: { number: 'desc' } });
     const payrollNumber = (payrollLast?.number ?? 0) + 1;
 
     const categoryName = data.payrollData.type === 'LABOR' ? 'Mano de obra' : 'Servicios';
@@ -300,7 +321,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
       // 1. Crear nómina directamente en APPROVED (sin pasar por DRAFT)
       const payroll = await tx.payroll.create({
         data: {
-          projectId:   data.projectId,
+          projectId:   data.projectId!,
           number:      payrollNumber,
           periodStart: new Date(data.payrollData!.periodStart),
           periodEnd:   new Date(data.payrollData!.periodEnd),
@@ -319,7 +340,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
               unit:         'Global',
               unitPrice:    Number(data.amount),
               subtotal:     Number(data.amount),
-              supplierName: supplier.name,
+              supplierName: supplier!.name,
               bankName:     bankAccount!.bank,
               bankAccount:  bankAccount!.accountNumber,
             }],
@@ -332,12 +353,12 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
       const nomRef = `NOM-${String(payrollNumber).padStart(3, '0')}`;
       const expense = await tx.expense.create({
         data: {
-          projectId:          data.projectId,
+          projectId:          data.projectId!,
           categoryId:         category!.id,
           userId,
           expenseDate:        new Date(data.payrollData!.periodEnd),
           amount:             Number(data.amount),
-          description:        `${nomRef} — ${supplier.name}: ${data.concept}`,
+          description:        `${nomRef} — ${supplier!.name}: ${data.concept}`,
           paymentMethod:      'TRANSFER',
           hasFiscalDoc:       false,
           notes:              `Auto-generado al crear orden de pago de nómina ${nomRef}.`,
@@ -347,7 +368,7 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
       });
 
       // 3. Vincular gasto a la línea de nómina
-      const line = payroll.lines[0];
+      const line = (payroll as any).lines?.[0];
       if (line) {
         await tx.payrollLine.update({ where: { id: line.id }, data: { expenseId: expense.id } });
       }
@@ -394,22 +415,24 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
   return prisma.paymentOrder.create({
     data: {
       number,
-      orderType:          data.orderType ?? 'SERVICIO',
-      payingCompany:      data.payingCompany,
-      supplierId:         data.supplierId,
-      projectId:          data.projectId,
-      amount:             data.amount,
-      currency:           data.currency ?? 'RD$',
-      concept:            data.concept,
-      notes:              data.notes,
+      orderType:             data.orderType ?? 'SERVICIO',
+      payingCompany:         data.payingCompany,
+      supplierId:            data.supplierId ?? null,
+      projectId:             data.projectId ?? null,
+      amount:                data.amount,
+      currency:              data.currency ?? 'RD$',
+      concept:               data.concept,
+      notes:                 data.notes,
       generatedText,
-      payrollId:          data.orderType === 'PAYROLL' ? (data.payrollId ?? null) : null,
-      contratoAjustadoId: data.contratoAjustadoId ?? null,
-      quotationId:        data.orderType === 'SERVICIO' ? (data.quotationId ?? null) : null,
-      batchItemId:        batchItemId ?? null,
-      creditLineId:       data.creditLineId ?? null,
-      createdById:        userId,
-    },
+      payrollId:             data.orderType === 'PAYROLL' ? (data.payrollId ?? null) : null,
+      contratoAjustadoId:    data.contratoAjustadoId ?? null,
+      quotationId:           data.orderType === 'SERVICIO' ? (data.quotationId ?? null) : null,
+      batchItemId:           batchItemId ?? null,
+      creditLineId:          data.creditLineId ?? null,
+      officeExpenseCategory: (data as any).officeExpenseCategory ?? null,
+      officeSupplierName:    (data as any).officeSupplierName    ?? null,
+      createdById:           userId,
+    } as any,
     include: INCLUDE,
   });
 }
@@ -572,6 +595,43 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
           notes:         `Auto-registrado desde Orden de Pago #${po.number ?? po.id}`,
           createdById:   userId,
         },
+      });
+    }
+
+    // OFFICE orders: auto-create OfficeExpense
+    if (po.orderType === 'OFFICE' && !(po as any).officeExpenseId) {
+      const isForeign    = po.currency !== 'RD$';
+      const exchangeRate = paymentInfo?.exchangeRate ?? null;
+      if (isForeign && !exchangeRate) {
+        throw new AppError(400, `Debe ingresar la tasa de cambio (TC) para órdenes en ${po.currency}`, 'EXCHANGE_RATE_REQUIRED');
+      }
+      const amountDOP = isForeign && exchangeRate
+        ? Number(po.amount) * exchangeRate
+        : Number(po.amount);
+
+      const supplierName = (po as any).supplier?.name ?? (po as any).officeSupplierName ?? null;
+
+      const officeExpense = await tx.officeExpense.create({
+        data: {
+          category:      (po as any).officeExpenseCategory as any,
+          description:   po.concept,
+          amount:        amountDOP,
+          itbisAmount:   0,
+          expenseDate:   new Date(),
+          paymentMethod: (paymentInfo?.paymentMethod ?? 'TRANSFER') as any,
+          supplierName:  supplierName,
+          hasFiscalDoc:  !!(fiscalVoucher?.ncf),
+          fiscalDocNum:  fiscalVoucher?.ncf ?? null,
+          notes:         po.notes
+            ? `[Orden de pago #${po.number}] ${po.notes}`
+            : `Generado desde orden de pago #${po.number}`,
+          createdById:   userId,
+        },
+      });
+
+      await tx.paymentOrder.update({
+        where: { id },
+        data:  { officeExpenseId: officeExpense.id } as any,
       });
     }
 
