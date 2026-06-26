@@ -6,7 +6,7 @@ import {
   FileText, Plus, CheckCircle, AlertCircle, Loader2,
   Pencil, ClipboardCopy, Copy, X,
   BadgeCheck, Clock, Wallet, Link, Unlink, ShoppingCart,
-  MessageCircle, Sparkles, Camera, ArrowRight, RotateCcw,
+  MessageCircle, Sparkles, Camera, ArrowRight, RotateCcw, Building2,
 } from 'lucide-react';
 import { paymentOrdersApi, projectsApi, payrollApi, suppliersApi, usersApi } from '../../api';
 import { useOcrPolling } from '../../hooks/useOcrPolling';
@@ -17,7 +17,7 @@ import { BatchItemSelect } from '../../components/shared/BatchItemSelect';
 import { TransferPaymentForm } from '../../components/shared/TransferPaymentForm';
 import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 
-type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS' | 'PETTY_CASH';
+type OrderType = 'SERVICIO' | 'PAYROLL' | 'MATERIALS' | 'PETTY_CASH' | 'OFFICE';
 type ModalView = 'form' | 'success';
 
 type OrderForm = {
@@ -26,12 +26,14 @@ type OrderForm = {
   notes: string; payrollId: string; bankAccountId: string; contratoAjustadoId: string; quotationId: string;
   payrollPeriodStart: string; payrollPeriodEnd: string; payrollType: 'LABOR' | 'SERVICE';
   batchItemId: string; creditLineId: string | null;
+  officeExpenseCategory: string; officeSupplierName: string;
 };
 const EMPTY_ORDER: OrderForm = {
   orderType: 'SERVICIO', payingCompany: '', supplierId: '', projectId: '',
   amount: '', currency: 'RD$', concept: '', notes: '', payrollId: '', bankAccountId: '', contratoAjustadoId: '', quotationId: '',
   payrollPeriodStart: '', payrollPeriodEnd: '', payrollType: 'LABOR',
   batchItemId: '', creditLineId: null,
+  officeExpenseCategory: '', officeSupplierName: '',
 };
 
 const CURRENCIES = ['RD$', 'US$', '€'];
@@ -45,6 +47,7 @@ const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; 
   PAYROLL:    { label: 'Nómina',      icon: <Wallet className="w-4 h-4" />,       desc: 'Pago de mano de obra',               dark: 'border-blue-400'   },
   MATERIALS:  { label: 'Materiales',  icon: <ShoppingCart className="w-4 h-4" />, desc: 'Compra de insumos por transferencia',dark: 'border-[#F5C218]'  },
   PETTY_CASH: { label: 'Caja chica',  icon: <Sparkles className="w-4 h-4" />,     desc: 'Pagos menores en efectivo',          dark: 'border-green-500'  },
+  OFFICE:     { label: 'Gasto de Oficina', icon: <Building2 className="w-4 h-4" />, desc: 'Gasto administrativo de oficina',  dark: 'border-orange-500' },
 };
 
 const STATUS_CFG: Record<string, { label: string; cls: string; icon: React.ReactNode }> = {
@@ -100,12 +103,13 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function TypeBadge({ type }: { type: any }) {
-  const normalized: OrderType = ['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'].includes(type) ? type : 'SERVICIO';
+  const normalized: OrderType = ['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH', 'OFFICE'].includes(type) ? type : 'SERVICIO';
   const cls: Record<OrderType, string> = {
     SERVICIO:   'bg-purple-100 text-purple-700',
     PAYROLL:    'bg-blue-100 text-blue-700',
     MATERIALS:  'bg-amber-100 text-amber-700',
     PETTY_CASH: 'bg-green-100 text-green-700',
+    OFFICE:     'bg-orange-100 text-orange-700',
   };
   return <span className={`inline-flex px-2 py-0.5 text-xs font-bold uppercase tracking-wide ${cls[normalized]}`}>{ORDER_TYPE_CFG[normalized].label}</span>;
 }
@@ -394,7 +398,7 @@ export default function PaymentOrdersPage() {
 
   const normalizeOrderType = (type: any): OrderType => {
     if (type === 'GENERAL') return 'SERVICIO';
-    if (['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'].includes(type)) return type;
+    if (['SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH', 'OFFICE'].includes(type)) return type;
     return 'SERVICIO';
   };
 
@@ -419,6 +423,8 @@ export default function PaymentOrdersPage() {
       payrollType:        payroll?.type ?? 'LABOR',
       batchItemId:      (o as any).batchItemId ?? '',
       creditLineId:     (o as any).creditLineId ?? null,
+      officeExpenseCategory: (o as any).officeExpenseCategory ?? '',
+      officeSupplierName:    (o as any).officeSupplierName ?? '',
     } : EMPTY_ORDER);
     setModalView('form'); setSessionOrders([]); setLastCreatedOrder(null); setFormErr(''); setOrderModal(true);
   };
@@ -436,8 +442,10 @@ export default function PaymentOrdersPage() {
 
   const saveOrder = () => {
     if (!orderForm.payingCompany.trim()) return setFormErr('La empresa pagadora es requerida');
-    if (!orderForm.supplierId)           return setFormErr('Selecciona un suplidor / beneficiario');
-    if (!orderForm.projectId)            return setFormErr('Selecciona un proyecto');
+    if (!orderForm.supplierId && orderForm.orderType !== 'OFFICE') return setFormErr('Selecciona un suplidor / beneficiario');
+    if (orderForm.orderType === 'OFFICE' && !orderForm.supplierId && !orderForm.officeSupplierName.trim()) return setFormErr('Ingresa el nombre del proveedor o selecciona un suplidor registrado');
+    if (!orderForm.projectId && orderForm.orderType !== 'OFFICE') return setFormErr('Selecciona un proyecto');
+    if (orderForm.orderType === 'OFFICE' && !orderForm.officeExpenseCategory) return setFormErr('Selecciona la categoría de gasto de oficina');
     if (!orderForm.amount || Number(orderForm.amount) <= 0) return setFormErr('El monto debe ser mayor a 0');
     if (!orderForm.concept.trim())       return setFormErr('El concepto es requerido');
 
@@ -452,8 +460,8 @@ export default function PaymentOrdersPage() {
     const payload: any = {
       orderType:          orderForm.orderType,
       payingCompany:      orderForm.payingCompany,
-      supplierId:         orderForm.supplierId,
-      projectId:          orderForm.projectId,
+      supplierId:         orderForm.supplierId || null,
+      projectId:          orderForm.orderType === 'OFFICE' ? null : (orderForm.projectId || null),
       amount:             Number(orderForm.amount),
       currency:           orderForm.currency,
       concept:            orderForm.concept,
@@ -463,6 +471,8 @@ export default function PaymentOrdersPage() {
       quotationId:        orderForm.orderType === 'SERVICIO' ? (orderForm.quotationId || undefined) : undefined,
       batchItemId:      orderForm.batchItemId || undefined,
       creditLineId:     linkToCreditLine ? (orderForm.creditLineId || undefined) : undefined,
+      officeExpenseCategory: orderForm.orderType === 'OFFICE' ? (orderForm.officeExpenseCategory || null) : null,
+      officeSupplierName:    orderForm.orderType === 'OFFICE' ? (orderForm.officeSupplierName || null) : null,
     };
 
     if (isNewPayroll) {
@@ -496,6 +506,8 @@ export default function PaymentOrdersPage() {
       payrollType:        payroll?.type ?? 'LABOR',
       batchItemId:        '',
       creditLineId:       null,
+      officeExpenseCategory: '',
+      officeSupplierName:    '',
     });
     setModalView('form'); setSessionOrders([]); setLastCreatedOrder(null); setFormErr(''); setOrderModal(true);
   };
@@ -1059,6 +1071,7 @@ export default function PaymentOrdersPage() {
                       <button key={t} type="button"
                         onClick={() => setOrderForm((f) => ({
                           ...f, orderType: t, payrollId: '', quotationId: '',
+                          officeExpenseCategory: '', officeSupplierName: '',
                           ...(!editingOrder ? { amount: '', concept: '' } : {}),
                         }))}
                         className={`p-3 border-2 text-left transition-all ${active ? `bg-[#1C1C1C] ${cfg.dark}` : 'border-gray-200 bg-white hover:border-gray-400'}`}>
@@ -1071,19 +1084,21 @@ export default function PaymentOrdersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid gap-4 ${orderForm.orderType === 'OFFICE' ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 <Field label="Empresa pagadora *">
                   <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
                     placeholder="SERVINGMI SRL" value={orderForm.payingCompany}
                     onChange={(e) => setOrderForm((f) => ({ ...f, payingCompany: e.target.value }))} />
                 </Field>
-                <Field label="Proyecto *">
-                  <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.projectId}
-                    onChange={(e) => setOrderForm((f) => ({ ...f, projectId: e.target.value, payrollId: '', contratoAjustadoId: '', batchItemId: '' }))}>
-                    <option value="">— Selecciona —</option>
-                    {projects.map((p) => <option key={p.id} value={p.id}>{p.code} — {p.name}</option>)}
-                  </select>
-                </Field>
+                {orderForm.orderType !== 'OFFICE' && (
+                  <Field label="Proyecto *">
+                    <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.projectId}
+                      onChange={(e) => setOrderForm((f) => ({ ...f, projectId: e.target.value, payrollId: '', contratoAjustadoId: '', batchItemId: '' }))}>
+                      <option value="">— Selecciona —</option>
+                      {projects.map((p) => <option key={p.id} value={p.id}>{p.code} — {p.name}</option>)}
+                    </select>
+                  </Field>
+                )}
               </div>
 
               <BatchItemSelect
@@ -1130,7 +1145,7 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              <Field label="Suplidor / Beneficiario *">
+              <Field label={orderForm.orderType === 'OFFICE' ? 'Suplidor / Beneficiario (opcional)' : 'Suplidor / Beneficiario *'}>
                 <div className="flex gap-2 items-end">
                   <select className="flex-1 border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.supplierId}
                     onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '', contratoAjustadoId: '', creditLineId: null })); setSupplierSearch(''); setLinkToCreditLine(false); setCreditLineSupplierId(''); }}>
@@ -1192,6 +1207,42 @@ export default function PaymentOrdersPage() {
                   </div>
                 );
               })()}
+
+              {orderForm.orderType === 'OFFICE' && !orderForm.supplierId && (
+                <div className="mb-4">
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">
+                    Nombre del proveedor
+                  </label>
+                  <input
+                    type="text"
+                    value={orderForm.officeSupplierName}
+                    onChange={(e) => setOrderForm((f) => ({ ...f, officeSupplierName: e.target.value }))}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                    placeholder="Ej: Ferretería La Industrial"
+                  />
+                </div>
+              )}
+
+              {orderForm.orderType === 'OFFICE' && (
+                <div className="mb-4">
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">
+                    Categoría de gasto <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={orderForm.officeExpenseCategory}
+                    onChange={(e) => setOrderForm((f) => ({ ...f, officeExpenseCategory: e.target.value }))}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none bg-white"
+                  >
+                    <option value="">Seleccionar categoría...</option>
+                    <option value="CLEANING_SUPPLIES">Insumos de Limpieza</option>
+                    <option value="CONSUMABLES">Material Gastable</option>
+                    <option value="OFFICE_SERVICES">Servicios de Oficina</option>
+                    <option value="BIDDING">Licitación</option>
+                    <option value="OFFICE_ASSETS">Activos de Oficina</option>
+                    <option value="OTHER">Otros Gastos de Oficina</option>
+                  </select>
+                </div>
+              )}
 
               {availableContracts.length > 0 && (() => {
                 const selectedContrato = availableContracts.find((c: any) => c.id === orderForm.contratoAjustadoId);
