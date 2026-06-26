@@ -557,7 +557,7 @@ export default function PaymentOrdersPage() {
             </button>
           ))}
           <div className="w-px bg-gray-200 mx-1 self-stretch" />
-          {(['', 'SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH'] as const).map((t) => (
+          {(['', 'SERVICIO', 'PAYROLL', 'MATERIALS', 'PETTY_CASH', 'OFFICE'] as const).map((t) => (
             <button key={t} onClick={() => setFilterType(t)}
               className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide border transition-all ${
                 filterType === t
@@ -847,8 +847,21 @@ export default function PaymentOrdersPage() {
               </div>
             )}
 
+            {/* Enlace a gasto de oficina generado */}
+            {viewingOrder.orderType === 'OFFICE' && (viewingOrder as any).officeExpenseId && (
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <p className="text-xs text-gray-500">Gasto de oficina generado al pagar:</p>
+                <a
+                  href="/office-expenses"
+                  className="text-xs font-bold font-['DM_Sans'] text-[#F5C218] underline hover:text-[#1C1C1C] transition-colors"
+                >
+                  Ver gasto de oficina →
+                </a>
+              </div>
+            )}
+
             {/* Generar gasto retroactivo */}
-            {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && viewingOrder.orderType !== 'PAYROLL' && (
+            {viewingOrder.status === 'PAID' && !viewingOrder.expenseId && viewingOrder.orderType !== 'PAYROLL' && viewingOrder.orderType !== 'OFFICE' && (
               <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                 <p className="text-xs text-amber-600 flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5" /> Esta orden no tiene gasto registrado en el proyecto.
