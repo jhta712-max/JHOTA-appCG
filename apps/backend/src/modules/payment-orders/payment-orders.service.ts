@@ -261,12 +261,21 @@ export async function createPaymentOrder(data: CreatePaymentOrderInput, userId: 
   const last   = await prisma.paymentOrder.findFirst({ orderBy: { number: 'desc' } });
   const number = (last?.number ?? 0) + 1;
 
+  const OFFICE_CATEGORY_LABELS: Record<string, string> = {
+    CLEANING_SUPPLIES: 'Insumos de Limpieza',
+    CONSUMABLES:       'Material Gastable',
+    OFFICE_SERVICES:   'Servicios de Oficina',
+    BIDDING:           'Licitación',
+    OFFICE_ASSETS:     'Activos de Oficina',
+    OTHER:             'Otros Gastos de Oficina',
+  };
   const generatedText = data.orderType === 'OFFICE'
     ? [
+        `🏢 GASTO DE OFICINA`,
         data.payingCompany,
         `💰 ${data.currency ?? 'RD$'} ${Number(data.amount).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
         `📌 Concepto: ${data.concept}`,
-        `📍 Gasto de Oficina`,
+        ...(data.officeExpenseCategory ? [`📂 Categoría: ${OFFICE_CATEGORY_LABELS[data.officeExpenseCategory] ?? data.officeExpenseCategory}`] : []),
         ...(supplier ? [`Proveedor: ${supplier.name}`] : data.officeSupplierName ? [`Proveedor: ${data.officeSupplierName}`] : []),
         `📅 Fecha: ${new Date().toLocaleDateString('es-DO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`,
       ].join('\n')
