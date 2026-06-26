@@ -67,9 +67,10 @@ export async function importFromPayments(projectId: string): Promise<{ imported:
   let skipped = 0;
 
   for (const order of orders) {
+    if (!order.supplierId) { skipped++; continue; } // skip OFFICE orders with no supplier
     try {
       await prisma.projectSupplier.create({
-        data: { projectId, supplierId: order.supplierId ?? '' },
+        data: { projectId, supplierId: order.supplierId },
       });
       imported++;
     } catch (e: any) {

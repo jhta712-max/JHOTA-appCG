@@ -435,7 +435,7 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
       : null)
     ?? (supplierId ? await prisma.supplierBankAccount.findFirst({ where: { supplierId }, orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] }) : null)
     ?? (supplier?.bank ? { bank: supplier.bank, accountType: supplier.accountType, accountNumber: supplier.accountNumber! } : null)
-    ?? { bank: (po.supplier as any).bank ?? '', accountType: (po.supplier as any).accountType ?? '', accountNumber: (po.supplier as any).accountNumber ?? '' };
+    ?? (po.supplier ? { bank: (po.supplier as any).bank ?? '', accountType: (po.supplier as any).accountType ?? '', accountNumber: (po.supplier as any).accountNumber ?? '' } : { bank: '', accountType: '', accountNumber: '' });
 
   const merged = {
     payingCompany: data.payingCompany ?? po.payingCompany,
@@ -453,10 +453,12 @@ export async function updatePaymentOrder(id: string, data: UpdatePaymentOrderInp
 
   const { payrollId, bankAccountId: _bankAccountId, batchItemId: rawItemId, projectItemId: _legacyItemId, ...rest } = data as any;
 
-  const resolvedItemId = rawItemId !== undefined
-    ? await resolveBatchItemId(po.projectId ?? '', rawItemId, { inherited: true })
-    : _legacyItemId !== undefined
-    ? await resolveBatchItemId(po.projectId ?? '', _legacyItemId, { inherited: true })
+  const resolvedItemId = po.projectId
+    ? (rawItemId !== undefined
+        ? await resolveBatchItemId(po.projectId, rawItemId, { inherited: true })
+        : _legacyItemId !== undefined
+        ? await resolveBatchItemId(po.projectId, _legacyItemId, { inherited: true })
+        : undefined)
     : undefined;
 
   return prisma.paymentOrder.update({
@@ -573,7 +575,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
       });
     }
 
-    if (!po.expenseId && po.orderType !== 'PAYROLL') {
+    if (!po.expenseId && po.orderType !== 'PAYROLL' && po.orderType !== 'OFFICE') {
       const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : po.orderType === 'PETTY_CASH' ? 'Caja Chica' : 'Servicios';
       const category = await tx.expenseCategory.upsert({
         where:  { name: categoryName },
@@ -599,7 +601,7 @@ export async function markAsPaid(id: string, userId: string, fiscalVoucher?: Fis
       const expense = await tx.expense.create({
         data: {
           ...buildExpenseData({
-            projectId:          po.projectId ?? '',
+            projectId:          po.projectId!,
             categoryId:         category.id,
             userId,
             expenseDate:        new Date(),
@@ -728,6 +730,7 @@ export async function generateExpenseForOrder(id: string, userId: string) {
   if (po.status !== 'PAID')       throw new AppError(400, 'Solo se puede generar gasto para órdenes pagadas', 'ORDER_NOT_PAID');
   if (po.expenseId)               throw new AppError(409, 'Esta orden ya tiene un gasto vinculado', 'ALREADY_HAS_EXPENSE');
   if (po.orderType === 'PAYROLL') throw new AppError(400, 'Las órdenes de nómina no generan gasto individual', 'PAYROLL_NO_EXPENSE');
+  if (po.orderType === 'OFFICE') throw new AppError(400, 'Las órdenes de oficina no generan gasto de proyecto', 'OFFICE_NO_PROJECT_EXPENSE');
 
   const categoryName = po.orderType === 'MATERIALS' ? 'Materiales' : po.orderType === 'PETTY_CASH' ? 'Caja Chica' : 'Servicios';
   const category = await prisma.expenseCategory.upsert({
@@ -746,7 +749,7 @@ export async function generateExpenseForOrder(id: string, userId: string) {
       : Number(po.amount);
     const expense = await tx.expense.create({
       data: buildExpenseData({
-        projectId:          po.projectId ?? '',
+        projectId:          po.projectId!,
         categoryId:         category.id,
         userId,
         expenseDate:        po.paidAt ?? new Date(),
