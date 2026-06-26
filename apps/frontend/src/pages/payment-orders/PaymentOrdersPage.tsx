@@ -1114,16 +1114,18 @@ export default function PaymentOrdersPage() {
                 )}
               </div>
 
-              <BatchItemSelect
-                projectId={
-                  projects.find((p) => p.id === orderForm.projectId)?.batchesEnabled
-                    ? orderForm.projectId || undefined
-                    : undefined
-                }
-                value={orderForm.batchItemId}
-                onChange={(v) => setOrderForm((f) => ({ ...f, batchItemId: v }))}
-                className="mb-3"
-              />
+              {orderForm.orderType !== 'OFFICE' && (
+                <BatchItemSelect
+                  projectId={
+                    projects.find((p) => p.id === orderForm.projectId)?.batchesEnabled
+                      ? orderForm.projectId || undefined
+                      : undefined
+                  }
+                  value={orderForm.batchItemId}
+                  onChange={(v) => setOrderForm((f) => ({ ...f, batchItemId: v }))}
+                  className="mb-3"
+                />
+              )}
 
               {orderForm.orderType === 'PAYROLL' && !editingOrder && (
                 <div className="bg-blue-50 border-l-4 border-blue-400 p-4 space-y-3 mb-1">

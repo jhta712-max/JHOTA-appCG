@@ -929,7 +929,7 @@ model PaymentOrder {
   expenseId          String?   @unique @map("expense_id") @db.Uuid
   officeExpenseCategory String?   @map("office_expense_category") @db.VarChar(50)
   officeSupplierName    String?   @map("office_supplier_name")    @db.VarChar(200)
-  officeExpenseId       String?   @map("office_expense_id")       @db.Text
+  officeExpenseId       String?   @map("office_expense_id")       @db.Uuid
   contratoAjustadoId String?   @map("contrato_ajustado_id") @db.Uuid
   quotationId        String?   @map("quotation_id") @db.Uuid
   projectItemId      String?   @map("project_item_id") @db.Uuid
