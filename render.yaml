@@ -49,14 +49,6 @@ services:
       - key: ANTHROPIC_API_KEY
         sync: false
 
-      - key: ULTRAMSG_INSTANCE_ID
-        sync: false
-
-      - key: ULTRAMSG_TOKEN
-        sync: false
-
-      - key: NOTIFY_WHATSAPP_TO
-        sync: false
 
     autoDeploy: true
 
