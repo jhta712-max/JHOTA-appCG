@@ -10,13 +10,23 @@ import { forceFlush } from './middlewares/requestLogger';
 
 async function start() {
   try {
+    // Resuelve migraciones en estado failed antes del deploy (P3009).
+    // Cada resolve falla silenciosamente si la migración no está en ese estado.
+    const rolledBack = [
+      '20260531000000_init_baseline',
+      '20260602000001_add_bidding_to_office_expense_category',
+    ];
+    for (const m of rolledBack) {
+      try {
+        execSync(`./node_modules/.bin/prisma migrate resolve --rolled-back ${m} --schema ./prisma/schema.prisma`, { stdio: 'pipe', cwd: process.cwd() });
+        logger.info(`Migration rolled-back: ${m}`);
+      } catch (_) { /* no estaba en failed, ignorar */ }
+    }
+    // Marca la baseline como aplicada (los 20260518* ya crearon el schema base).
     try {
-      // Resuelve baseline fallida (P3009) antes de deploy — safe to run always,
-      // falla silenciosamente si la migración ya está en estado correcto.
-      execSync('./node_modules/.bin/prisma migrate resolve --rolled-back 20260531000000_init_baseline --schema ./prisma/schema.prisma', { stdio: 'pipe', cwd: process.cwd() });
-      execSync('./node_modules/.bin/prisma migrate resolve --applied   20260531000000_init_baseline --schema ./prisma/schema.prisma', { stdio: 'pipe', cwd: process.cwd() });
-      logger.info('Baseline migration resuelta.');
-    } catch (_) { /* no estaba en estado fallido, ignorar */ }
+      execSync('./node_modules/.bin/prisma migrate resolve --applied 20260531000000_init_baseline --schema ./prisma/schema.prisma', { stdio: 'pipe', cwd: process.cwd() });
+      logger.info('Baseline migration marcada como applied.');
+    } catch (_) { /* ya está aplicada, ignorar */ }
 
     try {
       logger.info('Ejecutando migraciones de base de datos...');
