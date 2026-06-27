@@ -8,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   viewAsRole: string | null;
   setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  patchUser: (patch: Partial<User>) => void;
   clearAuth: () => void;
   setViewAsRole: (role: string | null) => void;
 }
@@ -24,6 +25,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem('accessToken',  accessToken);
     localStorage.setItem('refreshToken', refreshToken);
     set({ user, accessToken, refreshToken, isAuthenticated: true });
+  },
+
+  patchUser: (patch) => {
+    set((s) => {
+      if (!s.user) return s;
+      const updated = { ...s.user, ...patch };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return { user: updated };
+    });
   },
 
   clearAuth: () => {

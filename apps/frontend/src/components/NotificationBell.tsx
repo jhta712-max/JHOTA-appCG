@@ -80,7 +80,7 @@ export default function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative p-2.5 rounded-full transition-all hover:scale-110 hover:shadow-lg"
+        className="relative p-2.5 transition-all hover:scale-110 hover:shadow-lg"
         style={{
           background: '#1D4ED8',
           color: '#0D1B48',
@@ -89,20 +89,20 @@ export default function NotificationBell() {
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center leading-none shadow-lg">
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[11px] font-bold flex items-center justify-center leading-none shadow-lg">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-white shadow-2xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <span className="font-semibold text-gray-900 text-sm">
               Notificaciones
               {unreadCount > 0 && (
-                <span className="ml-2 text-xs bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded-full">
+                <span className="ml-2 text-xs bg-red-100 text-red-600 font-bold px-1.5 py-0.5">
                   {unreadCount} nuevas
                 </span>
               )}
@@ -112,7 +112,7 @@ export default function NotificationBell() {
                 <button
                   onClick={() => markAllRead.mutate()}
                   disabled={markAllRead.isPending}
-                  className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 px-2 py-1 rounded-lg hover:bg-primary-50 transition-colors"
+                  className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 px-2 py-1 hover:bg-primary-50 transition-colors"
                   title="Marcar todas como leídas"
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
@@ -121,7 +121,7 @@ export default function NotificationBell() {
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -157,7 +157,7 @@ export default function NotificationBell() {
                     <p className="text-xs text-gray-400 mt-1">{timeAgo(n.createdAt)}</p>
                   </div>
                   {!n.isRead && (
-                    <span className="mt-1.5 w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                    <span className="mt-1.5 w-2 h-2 bg-blue-500 shrink-0" />
                   )}
                 </button>
               ))

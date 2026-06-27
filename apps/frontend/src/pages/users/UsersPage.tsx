@@ -33,8 +33,9 @@ const labelCls = "block text-xs font-semibold uppercase tracking-wide text-gray-
 // ─── Componente ───────────────────────────────────────────────────────────────
 
 export default function UsersPage() {
-  const qc   = useQueryClient();
-  const self = useAuthStore((s) => s.user);
+  const qc        = useQueryClient();
+  const self      = useAuthStore((s) => s.user);
+  const patchUser = useAuthStore((s) => s.patchUser);
   const { isAdmin, isSupervisor: canManage } = useRole();
 
   const [modal,       setModal]       = useState<'invite' | 'edit' | null>(null);
@@ -95,8 +96,9 @@ export default function UsersPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => usersApi.update(id, data),
-    onSuccess: () => {
+    onSuccess: (_res, vars) => {
       qc.invalidateQueries({ queryKey: ['users'] });
+      if (vars.id === self?.id) patchUser({ name: vars.data.name, email: vars.data.email, phone: vars.data.phone });
       setApiOk('Usuario actualizado');
       closeModal();
     },
