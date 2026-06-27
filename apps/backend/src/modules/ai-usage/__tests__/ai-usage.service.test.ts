@@ -42,7 +42,7 @@ describe('getMonthlySummary', () => {
   it('computes cost from token sums', async () => {
     const result = await getMonthlySummary('2026-06');
     // 100k input @ $1/M = $0.10; 20k output @ $5/M = $0.10; total = $0.20
-    expect(result.estimatedCostUsd).toBeCloseTo(0.20);
+    expect(result.totalCostUsd).toBeCloseTo(0.20);
     expect(result.totalCalls).toBe(42);
     expect(result.totalInputTokens).toBe(100_000);
     expect(result.totalOutputTokens).toBe(20_000);
