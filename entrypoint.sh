@@ -6,7 +6,7 @@ set -e
 if [ "$SKIP_STARTUP_MIGRATIONS" != "1" ]; then
   echo "Running database migrations..."
   PRISMA_BIN=$(find /app/node_modules/.pnpm -type f -name "index.js" -path "*/prisma/build/index.js" 2>/dev/null | head -1)
-  node "$PRISMA_BIN" migrate deploy --schema /app/prisma/schema.prisma
+  node "$PRISMA_BIN" migrate deploy --schema /app/apps/backend/prisma/schema.prisma
 fi
 echo "Starting server..."
-exec node dist/server.js
+exec node /app/apps/backend/dist/server.js

@@ -19,20 +19,21 @@ ARG CACHE_BUST=default
 RUN echo "Cache bust: $CACHE_BUST" && pnpm run db:generate
 RUN pnpm run build
 
-# Stage 2: Production — copy compiled output + node_modules from builder
+# Stage 2: Production — preserve full pnpm workspace layout for correct module resolution
 FROM node:24-alpine
 WORKDIR /app
 
 # Explicit OpenSSL 3.x libraries for Prisma linux-musl-openssl-3.0.x binary target
 RUN apk add --no-cache openssl libssl3
 
-# Copy generated dist and prisma files
-COPY --from=builder /app/apps/backend/dist    ./dist
-COPY --from=builder /app/apps/backend/prisma  ./prisma
-COPY --from=builder /app/apps/backend/package.json ./
-
-# Copy the full monorepo node_modules (includes .pnpm store + generated Prisma client)
-COPY --from=builder /app/node_modules         ./node_modules
+# Preserve the pnpm workspace structure so Node.js module resolution walks up correctly:
+#   /app/apps/backend/dist/server.js → /app/apps/backend/node_modules/ (symlinks)
+#                                    → /app/node_modules/.pnpm/ (actual packages)
+COPY --from=builder /app/node_modules              ./node_modules
+COPY --from=builder /app/apps/backend/node_modules ./apps/backend/node_modules
+COPY --from=builder /app/apps/backend/dist         ./apps/backend/dist
+COPY --from=builder /app/apps/backend/package.json ./apps/backend/package.json
+COPY --from=builder /app/apps/backend/prisma       ./apps/backend/prisma
 
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
