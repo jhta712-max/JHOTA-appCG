@@ -197,6 +197,9 @@ utils/
 - Platform: Render (auto-deploy on push to main)
 - Production URL (backend): https://jhota-backend.onrender.com
 - Production URL (frontend): https://jhota-frontend.onrender.com
+- Render Service ID (backend): srv-d900ouok1i2s73f8f0n0
+- Render Service ID (frontend): srv-d900pg9o3t8c73bqb640
+- Production URL (frontend): https://jhota-frontend.onrender.com
 - Deploy workflow: automatic — Render picks up push to `main` branch
 - Deploy status command: HTTP health check
 - Merge method: merge commit
