@@ -11,6 +11,14 @@ import { forceFlush } from './middlewares/requestLogger';
 async function start() {
   try {
     try {
+      // Resuelve baseline fallida (P3009) antes de deploy — safe to run always,
+      // falla silenciosamente si la migración ya está en estado correcto.
+      execSync('./node_modules/.bin/prisma migrate resolve --rolled-back 20260531000000_init_baseline --schema ./prisma/schema.prisma', { stdio: 'pipe', cwd: process.cwd() });
+      execSync('./node_modules/.bin/prisma migrate resolve --applied   20260531000000_init_baseline --schema ./prisma/schema.prisma', { stdio: 'pipe', cwd: process.cwd() });
+      logger.info('Baseline migration resuelta.');
+    } catch (_) { /* no estaba en estado fallido, ignorar */ }
+
+    try {
       logger.info('Ejecutando migraciones de base de datos...');
       execSync('./node_modules/.bin/prisma migrate deploy --schema ./prisma/schema.prisma', {
         stdio: 'inherit',

@@ -27,8 +27,8 @@ services:
 
     dockerfilePath: ./Dockerfile.backend
 
-    # Migraciones en pre-deploy: si fallan, Render no despliega y mantiene la versión anterior
-    preDeployCommand: node /app/node_modules/.bin/prisma migrate deploy --schema /app/prisma/schema.prisma
+    # Migraciones en pre-deploy: resuelve baseline fallida primero, luego deploy
+    preDeployCommand: "node /app/node_modules/.bin/prisma migrate resolve --rolled-back 20260531000000_init_baseline --schema /app/prisma/schema.prisma 2>/dev/null; node /app/node_modules/.bin/prisma migrate resolve --applied 20260531000000_init_baseline --schema /app/prisma/schema.prisma 2>/dev/null; node /app/node_modules/.bin/prisma migrate deploy --schema /app/prisma/schema.prisma"
 
     envVars:
       - key: NODE_ENV
