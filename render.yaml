@@ -8,7 +8,7 @@ services:
     region: ohio
     runtime: docker
 
-    dockerfilePath: ./Dockerfile.backend
+    dockerfilePath: Dockerfile.backend
 
     # Migraciones en pre-deploy: resuelve baseline fallida primero, luego deploy
     preDeployCommand: "node /app/node_modules/.bin/prisma migrate resolve --rolled-back 20260531000000_init_baseline --schema /app/prisma/schema.prisma 2>/dev/null; node /app/node_modules/.bin/prisma migrate resolve --applied 20260531000000_init_baseline --schema /app/prisma/schema.prisma 2>/dev/null; node /app/node_modules/.bin/prisma migrate deploy --schema /app/prisma/schema.prisma"
@@ -66,7 +66,7 @@ services:
     region: ohio
     runtime: docker
 
-    dockerfilePath: ./Dockerfile.frontend
+    dockerfilePath: Dockerfile.frontend
 
     buildCommand: null
     startCommand: null
