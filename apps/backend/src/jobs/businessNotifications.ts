@@ -387,9 +387,9 @@ async function checkAiCostAlert(): Promise<void> {
     const month   = new Date().toISOString().slice(0, 7);
     const summary = await getMonthlySummary(month);
 
-    if (summary.estimatedCostUsd >= alertConfig.monthlyLimitUsd) {
-      const pct     = ((summary.estimatedCostUsd / alertConfig.monthlyLimitUsd) * 100).toFixed(0);
-      const message = `⚠️ *ALERTA CONSUMO IA* — JHOTA Construcciones\n\nEl costo estimado de Claude API en ${month} es *$${summary.estimatedCostUsd.toFixed(4)} USD* (${pct}% del límite de $${alertConfig.monthlyLimitUsd} USD).\n\nTokens de entrada: ${summary.totalInputTokens.toLocaleString()}\nTokens de salida: ${summary.totalOutputTokens.toLocaleString()}\nLlamadas totales: ${summary.totalCalls}`;
+    if (summary.totalCostUsd >= alertConfig.monthlyLimitUsd) {
+      const pct     = ((summary.totalCostUsd / alertConfig.monthlyLimitUsd) * 100).toFixed(0);
+      const message = `⚠️ *ALERTA CONSUMO IA* — JHOTA Construcciones\n\nEl costo estimado de Claude API en ${month} es *$${summary.totalCostUsd.toFixed(4)} USD* (${pct}% del límite de $${alertConfig.monthlyLimitUsd} USD).\n\nTokens de entrada: ${summary.totalInputTokens.toLocaleString()}\nTokens de salida: ${summary.totalOutputTokens.toLocaleString()}\nLlamadas totales: ${summary.totalCalls}`;
       await sendWhatsApp(message, 'SYSTEM');
     }
   } catch (err) {

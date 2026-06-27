@@ -88,7 +88,7 @@ export async function getByFeature(month: string): Promise<FeatureBreakdown[]> {
       costUsd:     cost,
       pct:         totalCost > 0 ? (cost / totalCost) * 100 : 0,
     };
-  }).sort((a, b) => b.estimatedCostUsd - a.estimatedCostUsd);
+  }).sort((a, b) => b.costUsd - a.costUsd);
 }
 
 export async function getByUser(month: string): Promise<UserBreakdown[]> {
@@ -124,7 +124,7 @@ export async function getByUser(month: string): Promise<UserBreakdown[]> {
       outputTokens: output,
       costUsd:      computeCostUsd(input, output),
     };
-  }).sort((a, b) => b.estimatedCostUsd - a.estimatedCostUsd);
+  }).sort((a, b) => b.costUsd - a.costUsd);
 }
 
 export async function getAlert(): Promise<AlertConfig | null> {
