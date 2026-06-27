@@ -5,26 +5,27 @@ export interface MonthlySummary {
   month:              string;
   totalInputTokens:   number;
   totalOutputTokens:  number;
-  estimatedCostUsd:   number;
+  totalCostUsd:       number;
   totalCalls:         number;
 }
 
 export interface FeatureBreakdown {
-  feature:           string;
-  calls:             number;
-  inputTokens:       number;
-  outputTokens:      number;
-  estimatedCostUsd:  number;
-  pctOfTotal:        number;
+  feature:     string;
+  calls:       number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd:     number;
+  pct:         number;
 }
 
 export interface UserBreakdown {
-  userId:            string | null;
-  userName:          string;
-  userRole:          string;
-  calls:             number;
-  totalTokens:       number;
-  estimatedCostUsd:  number;
+  userId:       string | null;
+  userName:     string;
+  userRole:     string | null;
+  calls:        number;
+  inputTokens:  number;
+  outputTokens: number;
+  costUsd:      number;
 }
 
 export interface AlertConfig {
@@ -57,7 +58,7 @@ export async function getMonthlySummary(month: string): Promise<MonthlySummary> 
     month,
     totalInputTokens:  inputTokens,
     totalOutputTokens: outputTokens,
-    estimatedCostUsd:  computeCostUsd(inputTokens, outputTokens),
+    totalCostUsd:      computeCostUsd(inputTokens, outputTokens),
     totalCalls:        agg._count.id ?? 0,
   };
 }
@@ -80,12 +81,12 @@ export async function getByFeature(month: string): Promise<FeatureBreakdown[]> {
   return rows.map((r) => {
     const cost = computeCostUsd(r._sum.inputTokens ?? 0, r._sum.outputTokens ?? 0);
     return {
-      feature:          r.feature,
-      calls:            r._count.id,
-      inputTokens:      r._sum.inputTokens  ?? 0,
-      outputTokens:     r._sum.outputTokens ?? 0,
-      estimatedCostUsd: cost,
-      pctOfTotal:       totalCost > 0 ? (cost / totalCost) * 100 : 0,
+      feature:     r.feature,
+      calls:       r._count.id,
+      inputTokens: r._sum.inputTokens  ?? 0,
+      outputTokens: r._sum.outputTokens ?? 0,
+      costUsd:     cost,
+      pct:         totalCost > 0 ? (cost / totalCost) * 100 : 0,
     };
   }).sort((a, b) => b.estimatedCostUsd - a.estimatedCostUsd);
 }
@@ -115,12 +116,13 @@ export async function getByUser(month: string): Promise<UserBreakdown[]> {
     const input  = r._sum.inputTokens  ?? 0;
     const output = r._sum.outputTokens ?? 0;
     return {
-      userId:           r.userId,
-      userName:         user?.name ?? 'Sistema (cron)',
-      userRole:         user?.role?.name ?? '—',
-      calls:            r._count.id,
-      totalTokens:      input + output,
-      estimatedCostUsd: computeCostUsd(input, output),
+      userId:       r.userId,
+      userName:     user?.name ?? 'Sistema (cron)',
+      userRole:     user?.role?.name ?? null,
+      calls:        r._count.id,
+      inputTokens:  input,
+      outputTokens: output,
+      costUsd:      computeCostUsd(input, output),
     };
   }).sort((a, b) => b.estimatedCostUsd - a.estimatedCostUsd);
 }

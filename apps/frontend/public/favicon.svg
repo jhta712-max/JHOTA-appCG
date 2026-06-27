@@ -1,13 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Navy background square -->
+  <!-- Navy background -->
   <rect width="512" height="512" fill="#0D1B48"/>
-  <!-- Blue accent bar at bottom -->
-  <rect x="0" y="440" width="512" height="72" fill="#1D4ED8"/>
-  <!-- House/building shape in blue -->
-  <polygon points="256,80 420,220 420,400 92,400 92,220" fill="#1D4ED8"/>
-  <!-- Door cutout -->
-  <rect x="210" y="290" width="92" height="110" fill="#0D1B48"/>
-  <!-- Window -->
-  <rect x="130" y="240" width="70" height="60" fill="#0D1B48" opacity="0.6"/>
-  <rect x="310" y="240" width="70" height="60" fill="#0D1B48" opacity="0.6"/>
+
+  <!-- J letter — white on navy, matching the uploaded JHOTA logo proportions -->
+  <!-- Top-right serif cap of J -->
+  <rect x="164" y="80" width="184" height="52" fill="white"/>
+  <!-- Small left extension at top -->
+  <rect x="164" y="80" width="52" height="20" fill="white"/>
+  <!-- Vertical stem -->
+  <rect x="296" y="80" width="52" height="290" fill="white"/>
+  <!-- Bottom left foot of J -->
+  <rect x="112" y="360" width="236" height="52" fill="white"/>
+  <!-- Connecting curve approximation (bottom-right of stem to left foot) -->
+  <!-- Bottom line accent -->
+  <rect x="80" y="444" width="352" height="18" fill="white" opacity="0.5"/>
 </svg>
