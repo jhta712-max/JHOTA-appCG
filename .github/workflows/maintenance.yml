@@ -46,17 +46,14 @@ jobs:
 
       - name: Ejecutar agente de mantenimiento
         env:
-          SERVINGMI_BACKEND_URL: ${{ vars.SERVINGMI_BACKEND_URL }}
-          SERVINGMI_ADMIN_EMAIL: ${{ secrets.SERVINGMI_ADMIN_EMAIL }}
-          SERVINGMI_ADMIN_PASS:  ${{ secrets.SERVINGMI_ADMIN_PASS }}
+          SERVINGMI_BACKEND_URL: ${{ vars.JHOTA_BACKEND_URL }}
+          SERVINGMI_ADMIN_EMAIL: ${{ secrets.JHOTA_ADMIN_EMAIL }}
+          SERVINGMI_ADMIN_PASS:  ${{ secrets.JHOTA_ADMIN_PASS }}
           GH_TOKEN:              ${{ secrets.GITHUB_TOKEN }}
           GH_REPO:               ${{ github.repository }}
           TRIGGER_TYPE:          ${{ github.event_name == 'schedule' && 'weekly' || github.event_name == 'push' && 'post-deploy' || 'manual' }}
           RENDER_API_KEY:        ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID:     ${{ vars.RENDER_SERVICE_ID }}
-          ULTRAMSG_INSTANCE_ID:  ${{ secrets.ULTRAMSG_INSTANCE_ID }}
-          ULTRAMSG_TOKEN:        ${{ secrets.ULTRAMSG_TOKEN }}
-          NOTIFY_WHATSAPP_TO:    ${{ secrets.NOTIFY_WHATSAPP_TO }}
         run: pnpm --filter backend exec tsx ../../scripts/maintenance-agent.ts
 
       - name: Guardar cache actualizado
