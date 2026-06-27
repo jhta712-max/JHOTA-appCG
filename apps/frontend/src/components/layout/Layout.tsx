@@ -62,7 +62,7 @@ const ROLE_OPTIONS = [
 
 function AppIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
-    <img src="/logo.png" alt="JHOTA Construcciones" className={className} style={{ objectFit: 'contain' }} />
+    <img src="/icon.png" alt="JHOTACO" className={className} style={{ objectFit: 'contain' }} />
   );
 }
 
@@ -385,7 +385,7 @@ export default function Layout() {
           <AppIcon className="w-9 h-10 shrink-0" />
           <div className="min-w-0">
             <p className="font-bold text-white text-base uppercase tracking-widest leading-none font-['Barlow_Condensed']">
-              JHOTA
+              JHOTACO
             </p>
             <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-tight mt-0.5 font-['Barlow_Condensed']">
               JHOTA Construcciones
@@ -468,7 +468,7 @@ export default function Layout() {
           <div className="flex items-center gap-3">
             <AppIcon className="w-8 h-9 shrink-0" />
             <div>
-              <p className="font-bold text-white uppercase tracking-widest font-['Barlow_Condensed']">JHOTA</p>
+              <p className="font-bold text-white uppercase tracking-widest font-['Barlow_Condensed']">JHOTACO</p>
               <p className="text-[10px] text-gray-500 uppercase tracking-widest font-['Barlow_Condensed']">JHOTA Construcciones</p>
             </div>
           </div>
@@ -509,7 +509,7 @@ export default function Layout() {
           </button>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <AppIcon className="w-6 h-7 shrink-0" />
-            <span className="font-bold text-white uppercase tracking-widest text-sm font-['Barlow_Condensed']">JHOTA</span>
+            <span className="font-bold text-white uppercase tracking-widest text-sm font-['Barlow_Condensed']">JHOTACO</span>
           </div>
           <RoleViewSwitcher compact />
         </header>
