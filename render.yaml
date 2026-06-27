@@ -62,7 +62,7 @@ services:
 
     autoDeploy: true
 
-    healthCheckPath: /api/v1/health
+    healthCheckPath: /health
 
     depends:
       - jhota-postgres

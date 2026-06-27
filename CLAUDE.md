@@ -180,3 +180,25 @@ utils/
 3. Si hay error de deploy → `workspace/TROUBLESHOOTING/DOCKER_ISSUES.md`
 4. Si necesitas agregar módulo → `workspace/DEVELOPMENT_GUIDES/ADDING_NEW_MODULE.md`
 5. Para correr y hacer screenshots de la app → usa el skill `/run-servingmi`
+
+## Deploy Configuration (configured by /setup-deploy)
+- Platform: Render (auto-deploy on push to main)
+- Production URL (backend): https://jhota-backend.onrender.com
+- Production URL (frontend): https://jhota-frontend.onrender.com
+- Deploy workflow: automatic — Render picks up push to `main` branch
+- Deploy status command: HTTP health check
+- Merge method: merge commit
+- Project type: web app (monorepo — backend API + frontend SPA, both Docker)
+- Post-deploy health check: https://jhota-backend.onrender.com/health
+
+### Notes
+- Health check route in app: `GET /health` (matches render.yaml `healthCheckPath: /health`)
+- Pre-deploy command (configured in render.yaml): `prisma migrate deploy`
+- Current live backend (servingmi branding): https://servingmi-backend.onrender.com/health responds 200
+- render.yaml service names: `jhota-backend` and `jhota-frontend`
+
+### Custom deploy hooks
+- Pre-merge: `pnpm build:backend` (TypeScript typecheck)
+- Deploy trigger: automatic on push to `main`
+- Deploy status: poll `https://jhota-backend.onrender.com/health` until 200
+- Health check: https://jhota-backend.onrender.com/health
