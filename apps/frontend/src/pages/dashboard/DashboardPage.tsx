@@ -28,9 +28,9 @@ function SectionHeader({ icon: Icon, title, action }: { icon: React.ElementType;
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
-        <span className="w-0.5 h-5 shrink-0" style={{ background: '#F5C218' }} />
+        <span className="w-0.5 h-5 shrink-0" style={{ background: '#1D4ED8' }} />
         <Icon className="w-4 h-4 text-gray-400 shrink-0" />
-        <h2 className="font-bold uppercase tracking-wide text-[#1C1C1C] text-sm font-['Barlow_Condensed']">
+        <h2 className="font-bold uppercase tracking-wide text-[#0D1B48] text-sm font-['Barlow_Condensed']">
           {title}
         </h2>
       </div>
@@ -42,7 +42,7 @@ function SectionHeader({ icon: Icon, title, action }: { icon: React.ElementType;
 function ViewAllLink({ to, label = 'Ver todos' }: { to: string; label?: string }) {
   return (
     <Link to={to}
-      className="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-[#1C1C1C] flex items-center gap-1 transition-colors font-['Barlow_Condensed']">
+      className="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-[#0D1B48] flex items-center gap-1 transition-colors font-['Barlow_Condensed']">
       {label} <ArrowRight className="w-3 h-3" />
     </Link>
   );
@@ -142,7 +142,7 @@ export default function DashboardPage() {
           <p className="text-xs uppercase tracking-widest text-gray-400 font-['Barlow_Condensed'] mb-1">
             {new Date().toLocaleDateString('es-DO', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
-          <h1 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] leading-none text-3xl md:text-5xl">
+          <h1 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#0D1B48] leading-none text-3xl md:text-5xl">
             {greeting()}, {user?.name?.split(' ')[0]}
           </h1>
           <p className="font-['DM_Sans'] text-gray-400 text-sm mt-1">Aquí está el resumen de hoy</p>
@@ -150,13 +150,13 @@ export default function DashboardPage() {
         {canCreateExpense && (
           <Link to="/expenses/new"
             className="hidden sm:flex items-center gap-2 px-4 py-2.5 text-sm font-bold uppercase tracking-wide font-['Barlow_Condensed'] transition-colors"
-            style={{ background: '#F5C218', color: '#1C1C1C' }}>
+            style={{ background: '#1D4ED8', color: '#ffffff' }}>
             <Plus className="w-4 h-4" /> Nuevo gasto
           </Link>
         )}
         {canViewReports && !canCreateExpense && (
           <Link to="/reports"
-            className="hidden sm:flex items-center gap-2 px-4 py-2.5 text-sm font-bold uppercase tracking-wide font-['Barlow_Condensed'] border border-[#1C1C1C] text-[#1C1C1C] hover:bg-[#1C1C1C] hover:text-white transition-colors">
+            className="hidden sm:flex items-center gap-2 px-4 py-2.5 text-sm font-bold uppercase tracking-wide font-['Barlow_Condensed'] border border-[#0D1B48] text-[#0D1B48] hover:bg-[#0D1B48] hover:text-white transition-colors">
             <TrendingUp className="w-4 h-4" /> Ver reportes
           </Link>
         )}
@@ -170,17 +170,17 @@ export default function DashboardPage() {
         dashboardAlerts.creditAlerts.length > 0 ||
         dashboardAlerts.expiringSubscriptions.length > 0
       ) && (
-        <div className="border border-[#F5C218]/40 bg-[#1C1C1C]/[0.02] p-4 space-y-2">
-          <h2 className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-[0.15em] text-[#1C1C1C] mb-3 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-[#F5C218]" />
+        <div className="border border-[#1D4ED8]/40 bg-[#0D1B48]/[0.02] p-4 space-y-2">
+          <h2 className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-[0.15em] text-[#0D1B48] mb-3 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-[#1D4ED8]" />
             ATENCIÓN REQUERIDA
           </h2>
 
           {/* Budget alerts */}
           {dashboardAlerts!.budgetAlerts.map((p) => (
             <Link key={p.id} to={`/projects/${p.id}`}
-              className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2 hover:bg-[#F5C218]/10 transition-colors block">
-              <AlertTriangle className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+              className="flex items-start gap-2 p-2 border-l-2 border-[#1D4ED8] bg-[#1D4ED8]/5 mb-2 hover:bg-[#1D4ED8]/10 transition-colors block">
+              <AlertTriangle className="w-4 h-4 text-[#1D4ED8] shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <span className="font-['DM_Sans'] text-sm text-gray-800">
                   Proyecto <strong>{p.code}</strong> — presupuesto al{' '}
@@ -197,23 +197,23 @@ export default function DashboardPage() {
           {/* Credit alerts */}
           {dashboardAlerts!.creditAlerts.map((cl) => (
             <Link key={cl.id} to={`/suppliers/${cl.supplierId}`}
-              className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2 hover:bg-[#F5C218]/10 transition-colors block">
-              <AlertTriangle className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+              className="flex items-start gap-2 p-2 border-l-2 border-[#1D4ED8] bg-[#1D4ED8]/5 mb-2 hover:bg-[#1D4ED8]/10 transition-colors block">
+              <AlertTriangle className="w-4 h-4 text-[#1D4ED8] shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <span className="font-['DM_Sans'] text-sm text-gray-800">
                   Crédito <strong>{cl.supplierName}</strong> — {cl.pct}% consumido
                 </span>
                 <p className="font-['Space_Mono'] text-xs text-gray-500">Disponible: RD$ {cl.available.toLocaleString()} de RD$ {cl.limit.toLocaleString()}</p>
               </div>
-              <span className="font-['Barlow_Condensed'] text-xs font-bold px-1.5 py-0.5 shrink-0" style={{ background: cl.pct >= 95 ? '#ef4444' : '#F5C218', color: cl.pct >= 95 ? '#fff' : '#1C1C1C' }}>{cl.pct}%</span>
+              <span className="font-['Barlow_Condensed'] text-xs font-bold px-1.5 py-0.5 shrink-0" style={{ background: cl.pct >= 95 ? '#ef4444' : '#1D4ED8', color: cl.pct >= 95 ? '#fff' : '#0D1B48' }}>{cl.pct}%</span>
             </Link>
           ))}
 
           {/* Expiring quotations */}
           {dashboardAlerts!.expiringQuotations.map((q) => (
             <Link key={q.id} to={`/quotations/${q.id}`}
-              className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2 hover:bg-[#F5C218]/10 transition-colors block">
-              <Clock className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+              className="flex items-start gap-2 p-2 border-l-2 border-[#1D4ED8] bg-[#1D4ED8]/5 mb-2 hover:bg-[#1D4ED8]/10 transition-colors block">
+              <Clock className="w-4 h-4 text-[#1D4ED8] shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <span className="font-['DM_Sans'] text-sm text-gray-800">
                   Cotización <strong>{q.supplierName}</strong>{q.projectCode ? ` — ${q.projectCode}` : ''} vence en <strong>{q.daysLeft}d</strong>
@@ -224,8 +224,8 @@ export default function DashboardPage() {
 
           {/* Expiring subscriptions */}
           {dashboardAlerts!.expiringSubscriptions.map((s) => (
-            <div key={s.id} className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2">
-              <Clock className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+            <div key={s.id} className="flex items-start gap-2 p-2 border-l-2 border-[#1D4ED8] bg-[#1D4ED8]/5 mb-2">
+              <Clock className="w-4 h-4 text-[#1D4ED8] shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <span className="font-['DM_Sans'] text-sm text-gray-800">
                   Suscripción <strong>{s.serviceName}</strong> — pago en <strong>{s.daysLeft}d</strong>
@@ -238,10 +238,10 @@ export default function DashboardPage() {
           {/* Pending orders summary (only if there are many) */}
           {dashboardAlerts!.pendingOrders.length > 0 && (
             <Link to="/pending-orders"
-              className="flex items-start gap-2 p-2 border-l-2 border-[#F5C218] bg-[#F5C218]/5 mb-2 hover:bg-[#F5C218]/10 transition-colors block">
-              <FileText className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+              className="flex items-start gap-2 p-2 border-l-2 border-[#1D4ED8] bg-[#1D4ED8]/5 mb-2 hover:bg-[#1D4ED8]/10 transition-colors block">
+              <FileText className="w-4 h-4 text-[#1D4ED8] shrink-0 mt-0.5" />
               <span className="font-['DM_Sans'] text-sm text-gray-800 flex-1">
-                <span className="font-['Barlow_Condensed'] text-xs font-bold bg-[#F5C218] text-[#1C1C1C] px-1.5 py-0.5 mr-2">{dashboardAlerts!.pendingOrders.length}</span>
+                <span className="font-['Barlow_Condensed'] text-xs font-bold bg-[#1D4ED8] text-[#0D1B48] px-1.5 py-0.5 mr-2">{dashboardAlerts!.pendingOrders.length}</span>
                 órdenes de pago pendientes de autorización
               </span>
             </Link>
@@ -253,42 +253,42 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
 
         {/* Proyectos activos */}
-        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #1C1C1C' }}>
+        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #0D1B48' }}>
           <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed']">Proyectos activos</p>
-          <p className="font-['Space_Mono'] text-3xl font-bold text-[#1C1C1C] mt-1 leading-none">{projects.length}</p>
+          <p className="font-['Space_Mono'] text-3xl font-bold text-[#0D1B48] mt-1 leading-none">{projects.length}</p>
           <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">en ejecución</p>
         </div>
 
         {/* Gastos registrados */}
-        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #1C1C1C' }}>
+        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #0D1B48' }}>
           <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed']">Gastos registrados</p>
-          <p className="font-['Space_Mono'] text-3xl font-bold text-[#1C1C1C] mt-1 leading-none">{expensesData?.pagination?.total ?? 0}</p>
+          <p className="font-['Space_Mono'] text-3xl font-bold text-[#0D1B48] mt-1 leading-none">{expensesData?.pagination?.total ?? 0}</p>
           <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">total acumulado</p>
         </div>
 
         {/* Cotizaciones abiertas */}
-        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #F5C218' }}>
+        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #1D4ED8' }}>
           <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed']">Cotizaciones abiertas</p>
-          <p className="font-['Space_Mono'] text-3xl font-bold mt-1 leading-none" style={{ color: '#F5C218' }}>{openQuotations.length}</p>
+          <p className="font-['Space_Mono'] text-3xl font-bold mt-1 leading-none" style={{ color: '#1D4ED8' }}>{openQuotations.length}</p>
           <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1 truncate">{totalOpenAmount > 0 ? fmt(totalOpenAmount) : 'sin monto'}</p>
         </div>
 
         {/* Presupuesto total */}
-        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #1C1C1C' }}>
+        <div className="border border-gray-200 bg-white p-4" style={{ borderTop: '3px solid #0D1B48' }}>
           <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed']">Presupuesto total</p>
-          <p className="font-['Space_Mono'] text-base font-bold text-[#1C1C1C] mt-1 leading-tight truncate">{fmt(totalBudget)}</p>
+          <p className="font-['Space_Mono'] text-base font-bold text-[#0D1B48] mt-1 leading-tight truncate">{fmt(totalBudget)}</p>
           <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">todos los proyectos</p>
         </div>
 
         {/* Pagos pendientes */}
         <Link to="/pending-orders"
-          className="border bg-white p-4 transition-colors col-span-2 md:col-span-1 group hover:border-[#F5C218]"
-          style={{ borderTop: '3px solid #F5C218' }}>
+          className="border bg-white p-4 transition-colors col-span-2 md:col-span-1 group hover:border-[#1D4ED8]"
+          style={{ borderTop: '3px solid #1D4ED8' }}>
           <p className="text-[10px] uppercase tracking-widest text-gray-400 font-['Barlow_Condensed'] flex items-center gap-1">
-            <Clock className="w-3 h-3" style={{ color: '#F5C218' }} /> Pagos pendientes
+            <Clock className="w-3 h-3" style={{ color: '#1D4ED8' }} /> Pagos pendientes
           </p>
           <p className="font-['Space_Mono'] text-3xl font-bold mt-1 leading-none"
-             style={{ color: pendingOrders.length > 0 ? '#F5C218' : '#1C1C1C' }}>
+             style={{ color: pendingOrders.length > 0 ? '#1D4ED8' : '#0D1B48' }}>
             {pendingOrders.length}
           </p>
           <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1 truncate">
@@ -299,7 +299,7 @@ export default function DashboardPage() {
         {/* Deuda con suplidores */}
         {(isAdmin || isSupervisor) && creditSummaryData && (
           <div
-            className={`bg-white border p-5 cursor-pointer col-span-2 md:col-span-1 ${hasCriticalCreditLine ? 'border-[#F5C218]' : 'border-gray-200'}`}
+            className={`bg-white border p-5 cursor-pointer col-span-2 md:col-span-1 ${hasCriticalCreditLine ? 'border-[#1D4ED8]' : 'border-gray-200'}`}
             onClick={() => {
               document.getElementById('credit-section')?.scrollIntoView({ behavior: 'smooth' });
             }}
@@ -307,14 +307,14 @@ export default function DashboardPage() {
             <div className="text-xs font-['Barlow_Condensed'] tracking-[0.15em] text-gray-400 uppercase mb-1">
               DEUDA CON SUPLIDORES
             </div>
-            <div className="text-2xl font-['Space_Mono'] font-bold text-[#1C1C1C]">
+            <div className="text-2xl font-['Space_Mono'] font-bold text-[#0D1B48]">
               RD$ {creditSummaryData.totalPending.toLocaleString()}
             </div>
             <div className="text-xs text-gray-500 mt-1 font-['DM_Sans']">
               {creditSummaryData.activeLines} líneas activas · RD$ {creditSummaryData.totalAvailable.toLocaleString()} disponible
             </div>
             {hasCriticalCreditLine && (
-              <div className="text-xs text-[#F5C218] mt-1 font-['DM_Sans']">⚠ Línea(s) en estado crítico</div>
+              <div className="text-xs text-[#1D4ED8] mt-1 font-['DM_Sans']">⚠ Línea(s) en estado crítico</div>
             )}
           </div>
         )}
@@ -325,9 +325,9 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-2 gap-5">
 
           {/* Gastos por mes */}
-          <div className="p-5" style={{ background: '#1C1C1C' }}>
+          <div className="p-5" style={{ background: '#0D1B48' }}>
             <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2"
-                style={{ color: '#F5C218' }}>
+                style={{ color: '#1D4ED8' }}>
               <TrendingUp className="w-4 h-4" />
               Gastos por mes
             </h2>
@@ -351,16 +351,16 @@ export default function DashboardPage() {
                   />
                   <Bar dataKey="total" radius={[0, 0, 0, 0]}>
                     {statsData.byMonth.map((_, i) => (
-                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#F5C218' : '#D4A017'} fillOpacity={i === statsData.byMonth.length - 1 ? 1 : 0.75} />
+                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#1D4ED8' : '#D4A017'} fillOpacity={i === statsData.byMonth.length - 1 ? 1 : 0.75} />
                     ))}
                   </Bar>
                   <Line
                     type="monotone"
                     dataKey="total"
-                    stroke="#F5C218"
+                    stroke="#1D4ED8"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: '#F5C218', strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: '#F5C218' }}
+                    dot={{ r: 3, fill: '#1D4ED8', strokeWidth: 0 }}
+                    activeDot={{ r: 5, fill: '#1D4ED8' }}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
@@ -369,8 +369,8 @@ export default function DashboardPage() {
 
           {/* Gastos por categoría */}
           <div className="border border-gray-200 bg-white p-5">
-            <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] text-sm mb-4 flex items-center gap-2">
-              <span className="w-0.5 h-4 shrink-0" style={{ background: '#F5C218' }} />
+            <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#0D1B48] text-sm mb-4 flex items-center gap-2">
+              <span className="w-0.5 h-4 shrink-0" style={{ background: '#1D4ED8' }} />
               <Receipt className="w-4 h-4 text-gray-400" />
               Gastos por categoría
             </h2>
@@ -379,11 +379,11 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {statsData.byCategory.map((cat, i) => {
-                  const fills = ['#F5C218','#D4A017','#B8880E','#9C720B','#805C08','#644606','#483004'];
+                  const fills = ['#1D4ED8','#D4A017','#B8880E','#9C720B','#805C08','#644606','#483004'];
                   return (
                     <div key={i}>
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-['DM_Sans'] font-semibold text-[#1C1C1C] uppercase tracking-wide truncate max-w-[55%]">{cat.name}</span>
+                        <span className="font-['DM_Sans'] font-semibold text-[#0D1B48] uppercase tracking-wide truncate max-w-[55%]">{cat.name}</span>
                         <span className="font-['Space_Mono'] text-gray-500 shrink-0 ml-2">{cat.pct}% · {fmt(cat.total)}</span>
                       </div>
                       <div className="h-1.5 bg-gray-100 overflow-hidden">
@@ -401,7 +401,7 @@ export default function DashboardPage() {
 
       {/* Alerta cotizaciones próximas a vencer */}
       {expiring.length > 0 && (
-        <div className="border-l-4 p-4 space-y-2" style={{ borderColor: '#F5C218', background: '#FFFBEB' }}>
+        <div className="border-l-4 p-4 space-y-2" style={{ borderColor: '#1D4ED8', background: '#FFFBEB' }}>
           <div className="flex items-center gap-2 font-bold text-sm font-['Barlow_Condensed'] uppercase tracking-wide text-amber-800">
             <Clock className="w-4 h-4 shrink-0" />
             {expiring.length} cotización{expiring.length > 1 ? 'es vencen' : ' vence'} en los próximos 7 días
@@ -432,17 +432,17 @@ export default function DashboardPage() {
 
                 return (
                   <Link key={p.id} to={`/projects/${p.id}`}
-                    className="border border-gray-200 bg-white p-5 hover:border-[#1C1C1C] transition-all group space-y-3 block overflow-hidden"
-                    style={{ borderTop: '3px solid #1C1C1C' }}>
+                    className="border border-gray-200 bg-white p-5 hover:border-[#0D1B48] transition-all group space-y-3 block overflow-hidden"
+                    style={{ borderTop: '3px solid #0D1B48' }}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0 overflow-hidden">
-                        <p className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] truncate text-sm leading-tight">
+                        <p className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#0D1B48] truncate text-sm leading-tight">
                           {p.name}
                         </p>
                         <p className="font-['Space_Mono'] text-[10px] text-gray-400 mt-0.5 truncate">{p.code} · {p.client ?? 'Sin cliente'}</p>
                       </div>
                       <span className="ml-2 shrink-0 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 font-['Barlow_Condensed']"
-                            style={{ background: '#F5C218', color: '#1C1C1C' }}>
+                            style={{ background: '#1D4ED8', color: '#ffffff' }}>
                         Activo
                       </span>
                     </div>
@@ -450,7 +450,7 @@ export default function DashboardPage() {
                     <div>
                       <div className="flex justify-between font-['Space_Mono'] text-[10px] text-gray-400 mb-1">
                         <span>Ejecutado</span>
-                        <span className="font-bold text-[#1C1C1C]">{pct}%</span>
+                        <span className="font-bold text-[#0D1B48]">{pct}%</span>
                       </div>
                       <div className="h-1.5 bg-gray-100 overflow-hidden">
                         <div className="h-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
@@ -460,11 +460,11 @@ export default function DashboardPage() {
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
                       <div>
                         <p className="font-['Barlow_Condensed'] text-[10px] uppercase tracking-wide text-gray-400">Presupuesto</p>
-                        <p className="font-['Space_Mono'] text-xs font-bold text-[#1C1C1C]">{fmt(budget)}</p>
+                        <p className="font-['Space_Mono'] text-xs font-bold text-[#0D1B48]">{fmt(budget)}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-['Barlow_Condensed'] text-[10px] uppercase tracking-wide text-gray-400">Gastos · {p._count?.expenses ?? 0}</p>
-                        <p className="font-['Space_Mono'] text-xs font-bold" style={{ color: pct >= 90 ? '#ef4444' : '#1C1C1C' }}>
+                        <p className="font-['Space_Mono'] text-xs font-bold" style={{ color: pct >= 90 ? '#ef4444' : '#0D1B48' }}>
                           {fmt(expended)}
                         </p>
                       </div>
@@ -480,7 +480,7 @@ export default function DashboardPage() {
       {/* ── Crédito de suplidores ────────────────────────────── */}
       {(isAdmin || isSupervisor) && creditSummaryData && creditSummaryData.lines.length > 0 && (
         <div id="credit-section" className="mt-8">
-          <h2 className="font-['Barlow_Condensed'] text-2xl font-bold text-[#1C1C1C] uppercase tracking-tight mb-4">
+          <h2 className="font-['Barlow_Condensed'] text-2xl font-bold text-[#0D1B48] uppercase tracking-tight mb-4">
             CRÉDITO DE SUPLIDORES
           </h2>
           <div className="bg-white border border-gray-200 overflow-hidden">
@@ -488,7 +488,7 @@ export default function DashboardPage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[#1C1C1C]">
+                  <tr className="bg-[#0D1B48]">
                     {['SUPLIDOR', 'LÍMITE', 'CONSUMIDO', 'PENDIENTE', 'DISPONIBLE', 'ESTADO'].map((h) => (
                       <th key={h} className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">{h}</th>
                     ))}
@@ -504,10 +504,10 @@ export default function DashboardPage() {
                       : { label: 'CRÍTICO', cls: 'bg-red-100 text-red-700' };
                     return (
                       <tr key={line.creditLineId} className="border-t border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3 font-['DM_Sans'] font-medium text-[#1C1C1C]">{line.supplierName}</td>
+                        <td className="px-4 py-3 font-['DM_Sans'] font-medium text-[#0D1B48]">{line.supplierName}</td>
                         <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.creditLimit.toLocaleString()}</td>
                         <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.consumed.toLocaleString()}</td>
-                        <td className="px-4 py-3 font-['Space_Mono'] font-bold text-[#1C1C1C]">RD$ {line.pending.toLocaleString()}</td>
+                        <td className="px-4 py-3 font-['Space_Mono'] font-bold text-[#0D1B48]">RD$ {line.pending.toLocaleString()}</td>
                         <td className="px-4 py-3 font-['Space_Mono'] text-gray-700">RD$ {line.available.toLocaleString()}</td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 text-xs font-['Barlow_Condensed'] font-bold uppercase tracking-wide ${status.cls}`}>
@@ -532,7 +532,7 @@ export default function DashboardPage() {
                 return (
                   <div key={line.creditLineId} className="p-4">
                     <div className="flex justify-between items-start mb-2">
-                      <p className="font-['Barlow_Condensed'] font-bold text-base uppercase text-[#1C1C1C]">{line.supplierName}</p>
+                      <p className="font-['Barlow_Condensed'] font-bold text-base uppercase text-[#0D1B48]">{line.supplierName}</p>
                       <span className={`text-xs px-2 py-0.5 font-['Barlow_Condensed'] font-bold uppercase ${status.cls}`}>{status.label}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-sm">
@@ -558,7 +558,7 @@ export default function DashboardPage() {
               })}
             </div>
             <div className="px-4 py-3 border-t border-gray-100 text-right">
-              <a href="/suppliers" className="text-xs font-['DM_Sans'] text-[#1C1C1C] hover:text-[#F5C218] underline">
+              <a href="/suppliers" className="text-xs font-['DM_Sans'] text-[#0D1B48] hover:text-[#1D4ED8] underline">
                 Ver todos en Suplidores →
               </a>
             </div>
@@ -570,8 +570,8 @@ export default function DashboardPage() {
       {pendingOrders.length > 0 && (
         <div className="border border-gray-200 bg-white">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100"
-               style={{ borderLeft: '3px solid #F5C218' }}>
-            <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] text-sm flex items-center gap-2">
+               style={{ borderLeft: '3px solid #1D4ED8' }}>
+            <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#0D1B48] text-sm flex items-center gap-2">
               <Wallet className="w-4 h-4 text-gray-400" /> Órdenes de pago pendientes
             </h2>
             <ViewAllLink to="/pending-orders" label="Ver todas" />
@@ -580,15 +580,15 @@ export default function DashboardPage() {
             {pendingOrders.map((o: any) => (
               <div key={o.id} className="flex items-center justify-between px-5 py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C] truncate">{o.supplier?.name}</p>
+                  <p className="font-['DM_Sans'] text-sm font-semibold text-[#0D1B48] truncate">{o.supplier?.name}</p>
                   <p className="font-['Space_Mono'] text-[10px] text-gray-400">
                     {o.project?.code} · {o.concept}
                   </p>
                 </div>
                 <div className="text-right ml-3 shrink-0">
-                  <p className="font-['Space_Mono'] text-sm font-bold text-[#1C1C1C]">{fmt(Number(o.amount))}</p>
+                  <p className="font-['Space_Mono'] text-sm font-bold text-[#0D1B48]">{fmt(Number(o.amount))}</p>
                   <span className="font-['Barlow_Condensed'] text-[10px] uppercase tracking-wide px-2 py-0.5 font-bold"
-                        style={{ background: '#F5C218', color: '#1C1C1C' }}>
+                        style={{ background: '#1D4ED8', color: '#ffffff' }}>
                     Pendiente
                   </span>
                 </div>
@@ -604,8 +604,8 @@ export default function DashboardPage() {
 
           <div className="border border-gray-200 bg-white">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] text-sm flex items-center gap-2">
-                <span className="w-0.5 h-4 shrink-0" style={{ background: '#F5C218' }} />
+              <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#0D1B48] text-sm flex items-center gap-2">
+                <span className="w-0.5 h-4 shrink-0" style={{ background: '#1D4ED8' }} />
                 <Receipt className="w-4 h-4 text-gray-400" /> Gastos recientes
               </h2>
               <ViewAllLink to="/expenses" />
@@ -617,11 +617,11 @@ export default function DashboardPage() {
                 <Link key={e.id} to={`/expenses/${e.id}`}
                   className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors group">
                   <div className="min-w-0">
-                    <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C] truncate">{e.description}</p>
+                    <p className="font-['DM_Sans'] text-sm font-semibold text-[#0D1B48] truncate">{e.description}</p>
                     <p className="font-['Space_Mono'] text-[10px] text-gray-400">{e.project.code} · {e.category.name}</p>
                   </div>
                   <div className="text-right ml-3 shrink-0">
-                    <p className="font-['Space_Mono'] text-sm font-bold text-[#1C1C1C]">{fmt(Number(e.amount))}</p>
+                    <p className="font-['Space_Mono'] text-sm font-bold text-[#0D1B48]">{fmt(Number(e.amount))}</p>
                     <p className="font-['Space_Mono'] text-[10px] text-gray-400">{fmtDate(e.expenseDate)}</p>
                   </div>
                 </Link>
@@ -631,8 +631,8 @@ export default function DashboardPage() {
 
           <div className="border border-gray-200 bg-white">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#1C1C1C] text-sm flex items-center gap-2">
-                <span className="w-0.5 h-4 shrink-0" style={{ background: '#F5C218' }} />
+              <h2 className="font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-[#0D1B48] text-sm flex items-center gap-2">
+                <span className="w-0.5 h-4 shrink-0" style={{ background: '#1D4ED8' }} />
                 <FileText className="w-4 h-4 text-gray-400" /> Cotizaciones
               </h2>
               <ViewAllLink to="/quotations" label="Ver todas" />
@@ -644,14 +644,14 @@ export default function DashboardPage() {
                 <Link key={q.id} to={`/quotations/${q.id}`}
                   className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors group">
                   <div className="flex-1 min-w-0">
-                    <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C] truncate">
+                    <p className="font-['DM_Sans'] text-sm font-semibold text-[#0D1B48] truncate">
                       {q.supplierName}
                       {q.quotationNumber && <span className="font-['Space_Mono'] text-[10px] text-gray-400 ml-1">#{q.quotationNumber}</span>}
                     </p>
                     <p className="font-['Space_Mono'] text-[10px] text-gray-400">{q.project.code} · {fmtDate(q.quotationDate)}</p>
                   </div>
                   <div className="text-right shrink-0 space-y-1">
-                    <p className="font-['Space_Mono'] text-sm font-bold text-[#1C1C1C]">{fmt(Number(q.total), q.currency)}</p>
+                    <p className="font-['Space_Mono'] text-sm font-bold text-[#0D1B48]">{fmt(Number(q.total), q.currency)}</p>
                     <span className={`inline-flex text-[10px] px-2 py-0.5 font-bold font-['Barlow_Condensed'] uppercase tracking-wide ${QUOTATION_STATUS_COLORS[q.status as QuotationStatus]}`}>
                       {QUOTATION_STATUS_LABELS[q.status as QuotationStatus]}
                     </span>
@@ -669,7 +669,7 @@ export default function DashboardPage() {
       {canCreateExpense && (
         <Link to="/expenses/new"
           className="flex items-center justify-center gap-2 w-full sm:hidden py-4 text-base font-bold uppercase tracking-wide font-['Barlow_Condensed']"
-          style={{ background: '#F5C218', color: '#1C1C1C' }}>
+          style={{ background: '#1D4ED8', color: '#ffffff' }}>
           <Plus className="w-5 h-5" /> Registrar nuevo gasto
         </Link>
       )}
@@ -681,7 +681,7 @@ export default function DashboardPage() {
             icon={TrendingUp}
             title="Portafolio de Proyectos"
             action={
-              <Link to="/reports" className="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-[#1C1C1C] flex items-center gap-1 transition-colors font-['Barlow_Condensed']">
+              <Link to="/reports" className="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-[#0D1B48] flex items-center gap-1 transition-colors font-['Barlow_Condensed']">
                 Reporte varianza <ArrowRight className="w-3 h-3" />
               </Link>
             }
@@ -690,7 +690,7 @@ export default function DashboardPage() {
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-[#1C1C1C]">
+                <tr className="bg-[#0D1B48]">
                   {['Código', 'Proyecto', 'Estado', 'Presupuesto', 'Ejecutado', 'Comprometido', 'Disponible', '%'].map((h) => (
                     <th key={h} className="text-left px-3 py-2 font-['Barlow_Condensed'] text-gray-400 uppercase tracking-[0.1em] text-xs whitespace-nowrap">
                       {h}
@@ -708,10 +708,10 @@ export default function DashboardPage() {
                     ACTIVE: 'Activo', COMPLETED: 'Completado', ON_HOLD: 'En pausa', CANCELLED: 'Cancelado',
                   };
                   return (
-                    <tr key={p.id} className={`${rowCls} hover:bg-[#F5C218]/5 transition-colors`}>
+                    <tr key={p.id} className={`${rowCls} hover:bg-[#1D4ED8]/5 transition-colors`}>
                       <td className="px-3 py-2 font-['Space_Mono'] text-gray-500 whitespace-nowrap">{p.code}</td>
                       <td className="px-3 py-2 font-['DM_Sans'] text-gray-800 max-w-[200px] truncate">
-                        <Link to={`/projects/${p.id}`} className="hover:text-[#1C1C1C] hover:underline">
+                        <Link to={`/projects/${p.id}`} className="hover:text-[#0D1B48] hover:underline">
                           {p.name}
                         </Link>
                       </td>
@@ -753,7 +753,7 @@ export default function DashboardPage() {
                 <div key={p.id} className="p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1 min-w-0 mr-2">
-                      <Link to={`/projects/${p.id}`} className="font-['Barlow_Condensed'] font-bold text-base uppercase text-[#1C1C1C] hover:underline block truncate">
+                      <Link to={`/projects/${p.id}`} className="font-['Barlow_Condensed'] font-bold text-base uppercase text-[#0D1B48] hover:underline block truncate">
                         {p.name}
                       </Link>
                       <span className="font-['Space_Mono'] text-[10px] text-gray-400">{p.code}</span>
@@ -811,8 +811,8 @@ export default function DashboardPage() {
 
       {/* Aviso DGII */}
       {canCreateExpense && (
-        <div className="border-l-4 p-4 flex items-start gap-3" style={{ borderColor: '#F5C218', background: '#FFFBEB' }}>
-          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#F5C218' }} />
+        <div className="border-l-4 p-4 flex items-start gap-3" style={{ borderColor: '#1D4ED8', background: '#FFFBEB' }}>
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#1D4ED8' }} />
           <p className="font-['DM_Sans'] text-xs text-amber-800">
             <strong className="font-['Barlow_Condensed'] uppercase tracking-wide">Recuerda:</strong>{' '}
             Todo gasto con comprobante fiscal debe incluir NCF y RNC del suplidor para cumplimiento con la DGII.

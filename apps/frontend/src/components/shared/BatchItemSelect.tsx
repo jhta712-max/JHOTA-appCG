@@ -28,7 +28,7 @@ export function BatchItemSelect({ projectId, value, onChange, required = true, d
         onChange={(e) => onChange(e.target.value)}
         required={required}
         disabled={disabled}
-        className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] bg-white"
+        className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] bg-white"
       >
         <option value="">— Selecciona un ítem —</option>
         {items.map((item: any) => (

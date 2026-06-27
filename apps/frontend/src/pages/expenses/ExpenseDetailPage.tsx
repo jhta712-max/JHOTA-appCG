@@ -102,9 +102,9 @@ export default function ExpenseDetailPage() {
     const meta = PAGE_META['/expenses'];
     return (
       <div>
-        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#0D1B48' }}>
           <div>
-            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
+            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8' }}>
               {meta.module}
             </p>
             <h1 className="text-3xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -142,19 +142,19 @@ export default function ExpenseDetailPage() {
     (isOwnExpense && isRejected && (isSupervisor || isOperator))
   );
 
-  const inputCls = "w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white resize-none";
+  const inputCls = "w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] bg-white resize-none";
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
 
       {/* Hero header */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 mb-2" style={{ background: '#1C1C1C' }}>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 mb-2" style={{ background: '#0D1B48' }}>
         <div className="max-w-2xl flex items-start gap-3">
-          <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-[#F5C218] p-1 mt-1 transition-colors">
+          <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-[#1D4ED8] p-1 mt-1 transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#F5C218' }}>
+            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#1D4ED8' }}>
               MÓDULO / GASTOS
             </p>
             <div className="flex items-center gap-2 flex-wrap">
@@ -162,7 +162,7 @@ export default function ExpenseDetailPage() {
                 {expense.description}
               </h1>
               {isVoided   && <span className="font-['DM_Sans'] text-xs px-2 py-0.5 bg-red-900 text-red-300 font-medium">Anulado</span>}
-              {isActive   && <span className="font-['DM_Sans'] text-xs px-2 py-0.5" style={{ background: '#F5C218', color: '#1C1C1C' }}>Activo</span>}
+              {isActive   && <span className="font-['DM_Sans'] text-xs px-2 py-0.5" style={{ background: '#1D4ED8', color: '#ffffff' }}>Activo</span>}
               {isPending  && <span className="font-['DM_Sans'] text-xs px-2 py-0.5 bg-amber-900/50 text-amber-300 font-medium flex items-center gap-1"><Clock className="w-3 h-3" />Pendiente</span>}
               {isRejected && <span className="font-['DM_Sans'] text-xs px-2 py-0.5 bg-red-900/50 text-red-300 font-medium flex items-center gap-1"><XCircle className="w-3 h-3" />Rechazado</span>}
             </div>
@@ -174,7 +174,7 @@ export default function ExpenseDetailPage() {
             <Link
               to={`/expenses/${id}/edit`}
               className="font-['Barlow_Condensed'] uppercase text-xs font-bold px-3 py-2 flex items-center gap-1.5 transition-colors shrink-0"
-              style={{ background: '#F5C218', color: '#1C1C1C' }}
+              style={{ background: '#1D4ED8', color: '#ffffff' }}
             >
               <Edit className="w-4 h-4" /> Editar
             </Link>
@@ -227,7 +227,7 @@ export default function ExpenseDetailPage() {
             <div>
               <p className="font-['DM_Sans'] text-xs text-gray-400">Proyecto</p>
               <Link to={`/projects/${expense.project?.id}`}
-                className="font-['DM_Sans'] font-medium text-[#1C1C1C] hover:text-[#F5C218] transition-colors">
+                className="font-['DM_Sans'] font-medium text-[#0D1B48] hover:text-[#1D4ED8] transition-colors">
                 {expense.project?.code}
               </Link>
             </div>
@@ -247,7 +247,7 @@ export default function ExpenseDetailPage() {
               <div>
                 <p className="font-['DM_Sans'] text-xs text-gray-400">Item del proyecto</p>
                 <p className="font-['DM_Sans'] font-medium text-gray-800">
-                  <span className="font-['Space_Mono'] text-[#1C1C1C]">#{expense.projectItem.number}</span>{' '}
+                  <span className="font-['Space_Mono'] text-[#0D1B48]">#{expense.projectItem.number}</span>{' '}
                   {expense.projectItem.name}
                 </p>
               </div>
@@ -277,12 +277,12 @@ export default function ExpenseDetailPage() {
       {expense.hasFiscalDoc && expense.fiscalVoucher && (
         <div className="bg-white border border-gray-100 p-5 space-y-3">
           <h2 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-800 flex items-center gap-2">
-            <Receipt className="w-4 h-4" style={{ color: '#F5C218' }} /> Comprobante Fiscal
+            <Receipt className="w-4 h-4" style={{ color: '#1D4ED8' }} /> Comprobante Fiscal
           </h2>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="col-span-2 bg-[#1C1C1C] p-3">
+            <div className="col-span-2 bg-[#0D1B48] p-3">
               <p className="font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-400 mb-0.5">NCF</p>
-              <p className="font-['Space_Mono'] font-bold text-lg" style={{ color: '#F5C218' }}>{expense.fiscalVoucher.ncf}</p>
+              <p className="font-['Space_Mono'] font-bold text-lg" style={{ color: '#1D4ED8' }}>{expense.fiscalVoucher.ncf}</p>
               <p className="font-['DM_Sans'] text-xs text-gray-400 mt-0.5">
                 {expense.fiscalVoucher.isElectronic ? 'e-NCF Electrónico (Ley 32-23)' : 'NCF Tradicional'}
               </p>
@@ -397,7 +397,7 @@ export default function ExpenseDetailPage() {
             <div className="space-y-3">
               <div>
                 <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Motivo de rechazo *</label>
-                <textarea rows={2} className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white resize-none"
+                <textarea rows={2} className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] bg-white resize-none"
                   placeholder="Explica por qué se rechaza este gasto..."
                   value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} />
               </div>
@@ -445,9 +445,9 @@ export default function ExpenseDetailPage() {
 
       {/* Aprobado por */}
       {isActive && expense.approvedBy && (
-        <div className="bg-[#1C1C1C] border border-[#F5C218]/40 p-4 flex items-center gap-3">
-          <CheckCircle className="w-4 h-4 shrink-0" style={{ color: '#F5C218' }} />
-          <p className="font-['DM_Sans'] text-sm" style={{ color: '#F5C218' }}>
+        <div className="bg-[#0D1B48] border border-[#1D4ED8]/40 p-4 flex items-center gap-3">
+          <CheckCircle className="w-4 h-4 shrink-0" style={{ color: '#1D4ED8' }} />
+          <p className="font-['DM_Sans'] text-sm" style={{ color: '#1D4ED8' }}>
             Aprobado por <strong>{expense.approvedBy.name}</strong>
             {expense.approvedAt && <> el {fmtDate(expense.approvedAt)}</>}
           </p>
@@ -500,7 +500,7 @@ export default function ExpenseDetailPage() {
               </p>
               <div>
                 <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Motivo de anulación *</label>
-                <textarea rows={2} className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white resize-none"
+                <textarea rows={2} className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] bg-white resize-none"
                   placeholder="Explica el motivo de la anulación..."
                   value={voidReason} onChange={(e) => setVoidReason(e.target.value)} />
               </div>
@@ -549,7 +549,7 @@ export default function ExpenseDetailPage() {
         <div className="pb-6">
           <button
             onClick={() => setShowHistory(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 hover:border-[#F5C218] transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 hover:border-[#1D4ED8] transition-colors"
           >
             <span className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide text-gray-700 flex items-center gap-2">
               <Clock className="w-4 h-4" /> Historial de cambios
@@ -576,7 +576,7 @@ export default function ExpenseDetailPage() {
                     if (nd.rejectionReason) changes.push(`Motivo rechazo: ${nd.rejectionReason}`);
                     return (
                       <div key={log.id} className="px-4 py-3 flex items-start gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#F5C218] mt-2 shrink-0" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] mt-2 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <span className="font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide text-gray-700">

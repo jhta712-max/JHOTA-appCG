@@ -318,7 +318,7 @@ export default function NewExpensePage() {
   const inputCls = (hasError?: boolean, isAi?: boolean) =>
     [
       'border border-gray-300 rounded-none px-3 py-2 text-sm font-[\'DM_Sans\'] w-full',
-      'focus:ring-2 focus:ring-[#F5C218] focus:outline-none',
+      'focus:ring-2 focus:ring-[#1D4ED8] focus:outline-none',
       hasError ? 'border-red-400' : '',
       isAi     ? 'ring-2 ring-violet-400' : '',
     ].filter(Boolean).join(' ');
@@ -332,12 +332,12 @@ export default function NewExpensePage() {
     {duplicates.length > 0 && pendingPayload && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div className="bg-white w-full max-w-lg shadow-2xl">
-          <div className="bg-[#1C1C1C] px-5 py-4 flex items-center justify-between">
+          <div className="bg-[#0D1B48] px-5 py-4 flex items-center justify-between">
             <h2 className="font-['Barlow_Condensed'] text-lg font-bold uppercase tracking-wide text-white">
               ⚠ Posible Gasto Duplicado
             </h2>
             <button onClick={() => { setDuplicates([]); setPendingPayload(null); }}
-              className="text-gray-400 hover:text-[#F5C218] text-xl leading-none">✕</button>
+              className="text-gray-400 hover:text-[#1D4ED8] text-xl leading-none">✕</button>
           </div>
           <div className="p-5">
             <p className="font-['DM_Sans'] text-sm text-gray-700 mb-4">
@@ -348,7 +348,7 @@ export default function NewExpensePage() {
                 <div key={d.id} className="border border-gray-200 px-3 py-2.5 bg-gray-50">
                   <div className="flex justify-between items-start">
                     <span className="font-['DM_Sans'] text-sm text-gray-800 flex-1 pr-2">{d.description}</span>
-                    <span className="font-['Space_Mono'] text-sm font-bold text-[#1C1C1C] shrink-0">{fmtAmt(d.amount)}</span>
+                    <span className="font-['Space_Mono'] text-sm font-bold text-[#0D1B48] shrink-0">{fmtAmt(d.amount)}</span>
                   </div>
                   <div className="flex gap-3 mt-1">
                     <span className="font-['DM_Sans'] text-xs text-gray-500">{new Date(d.expenseDate).toLocaleDateString('es-DO')}</span>
@@ -367,7 +367,7 @@ export default function NewExpensePage() {
               </button>
               <button
                 onClick={() => { const p = pendingPayload; setDuplicates([]); setPendingPayload(null); mutation.mutate(p); }}
-                className="flex-1 bg-[#F5C218] text-[#1C1C1C] py-2 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide hover:bg-[#e6b400]"
+                className="flex-1 bg-[#1D4ED8] text-[#0D1B48] py-2 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide hover:bg-[#e6b400]"
               >
                 Registrar de todas formas
               </button>
@@ -379,11 +379,11 @@ export default function NewExpensePage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* ── Top header band ── */}
-      <div style={{ background: '#1C1C1C' }} className="px-4 py-4">
+      <div style={{ background: '#0D1B48' }} className="px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="text-gray-400 hover:text-[#F5C218] transition-colors p-1"
+            className="text-gray-400 hover:text-[#1D4ED8] transition-colors p-1"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -405,7 +405,7 @@ export default function NewExpensePage() {
 
         {/* ── Success banner ── */}
         {success && (
-          <div className="bg-[#1C1C1C] border border-[#F5C218]/40 px-4 py-3 flex items-center gap-2" style={{ color: '#F5C218' }}>
+          <div className="bg-[#0D1B48] border border-[#1D4ED8]/40 px-4 py-3 flex items-center gap-2" style={{ color: '#1D4ED8' }}>
             <CheckCircle className="w-4 h-4 shrink-0" />
             <p className="font-['DM_Sans'] text-sm font-medium">{success}</p>
           </div>
@@ -428,11 +428,11 @@ export default function NewExpensePage() {
               <div className="flex items-center gap-2">
                 <span
                   className="w-6 h-6 text-xs font-bold flex items-center justify-center"
-                  style={{ background: '#F5C218', color: '#1C1C1C' }}
+                  style={{ background: '#1D4ED8', color: '#ffffff' }}
                 >
                   1
                 </span>
-                <h2 className="font-['Barlow_Condensed'] uppercase tracking-wide text-[#1C1C1C] text-lg">
+                <h2 className="font-['Barlow_Condensed'] uppercase tracking-wide text-[#0D1B48] text-lg">
                   Foto de factura
                 </h2>
               </div>
@@ -460,7 +460,7 @@ export default function NewExpensePage() {
                 <button
                   type="button"
                   onClick={() => cameraRef.current?.click()}
-                  className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 hover:border-[#F5C218] hover:bg-yellow-50 p-4 cursor-pointer transition-colors"
+                  className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 hover:border-[#1D4ED8] hover:bg-yellow-50 p-4 cursor-pointer transition-colors"
                 >
                   <Camera className="w-7 h-7 text-gray-400" />
                   <div className="text-center">
@@ -471,7 +471,7 @@ export default function NewExpensePage() {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 hover:border-[#F5C218] hover:bg-yellow-50 p-4 cursor-pointer transition-colors"
+                  className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-300 hover:border-[#1D4ED8] hover:bg-yellow-50 p-4 cursor-pointer transition-colors"
                 >
                   <Upload className="w-7 h-7 text-gray-400" />
                   <div className="text-center">
@@ -593,11 +593,11 @@ export default function NewExpensePage() {
             <div className="flex items-center gap-2">
               <span
                 className="w-6 h-6 text-xs font-bold flex items-center justify-center"
-                style={{ background: '#F5C218', color: '#1C1C1C' }}
+                style={{ background: '#1D4ED8', color: '#ffffff' }}
               >
                 2
               </span>
-              <h2 className="font-['Barlow_Condensed'] uppercase tracking-wide text-[#1C1C1C] text-lg">
+              <h2 className="font-['Barlow_Condensed'] uppercase tracking-wide text-[#0D1B48] text-lg">
                 Información del gasto
               </h2>
             </div>
@@ -643,8 +643,8 @@ export default function NewExpensePage() {
                   if (days < 7) return null;
                   const isOld = days >= 30;
                   return (
-                    <div className={`mt-1 px-2 py-1.5 border-l-2 ${isOld ? 'border-red-500 bg-red-50' : 'border-[#F5C218] bg-[#F5C218]/10'}`}>
-                      <p className={`font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-wide ${isOld ? 'text-red-700' : 'text-[#1C1C1C]'}`}>
+                    <div className={`mt-1 px-2 py-1.5 border-l-2 ${isOld ? 'border-red-500 bg-red-50' : 'border-[#1D4ED8] bg-[#1D4ED8]/10'}`}>
+                      <p className={`font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-wide ${isOld ? 'text-red-700' : 'text-[#0D1B48]'}`}>
                         {isOld ? '⚠ Fecha muy antigua' : '⚠ Fecha inusual'}
                       </p>
                       <p className="font-['DM_Sans'] text-xs text-gray-600 mt-0.5">
@@ -784,7 +784,7 @@ export default function NewExpensePage() {
                 <input type="checkbox" checked={useCreditLine} onChange={(e) => {
                   setUseCreditLine(e.target.checked);
                   if (!e.target.checked) { setCreditLineId(''); setCreditSupplierId(''); }
-                }} className="accent-[#F5C218]" />
+                }} className="accent-[#1D4ED8]" />
                 <span className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide text-gray-700">
                   Recibido a crédito de proveedor
                 </span>
@@ -794,7 +794,7 @@ export default function NewExpensePage() {
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Proveedor</label>
                     <select
-                      className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                      className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                       value={creditSupplierId}
                       onChange={(e) => { setCreditSupplierId(e.target.value); setCreditLineId(''); }}>
                       <option value="">— Selecciona proveedor —</option>
@@ -804,7 +804,7 @@ export default function NewExpensePage() {
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Línea de crédito</label>
                     <select
-                      className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                      className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                       value={creditLineId}
                       onChange={(e) => setCreditLineId(e.target.value)}
                       disabled={!creditSupplierId}>
@@ -902,11 +902,11 @@ export default function NewExpensePage() {
             <div className="flex items-center gap-2">
               <span
                 className="w-6 h-6 text-xs font-bold flex items-center justify-center"
-                style={{ background: '#F5C218', color: '#1C1C1C' }}
+                style={{ background: '#1D4ED8', color: '#ffffff' }}
               >
                 3
               </span>
-              <h2 className="font-['Barlow_Condensed'] uppercase tracking-wide text-[#1C1C1C] text-lg">
+              <h2 className="font-['Barlow_Condensed'] uppercase tracking-wide text-[#0D1B48] text-lg">
                 Comprobante fiscal
               </h2>
               {(aiFields.has('ncf') || aiFields.has('supplierName') || aiFields.has('supplierRnc')) && (
@@ -967,7 +967,7 @@ export default function NewExpensePage() {
               type="submit"
               disabled={mutation.isPending || (ocrResult !== null && !ocrValidated)}
               title={ocrResult && !ocrValidated ? 'Marca el checkbox de validación para confirmar los datos del OCR' : ''}
-              style={{ background: '#F5C218', color: '#1C1C1C' }}
+              style={{ background: '#1D4ED8', color: '#ffffff' }}
               className={[
                 'font-[\'Barlow_Condensed\'] uppercase tracking-widest font-bold flex-1 py-3',
                 'flex items-center justify-center gap-2 transition-opacity',
@@ -976,7 +976,7 @@ export default function NewExpensePage() {
             >
               {mutation.isPending ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" />
                   Guardando...
                 </>
               ) : (

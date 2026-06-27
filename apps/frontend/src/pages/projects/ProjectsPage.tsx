@@ -39,12 +39,12 @@ export default function ProjectsPage() {
       {/* Hero header band */}
       <div
         className="px-4 md:px-6 py-4 md:py-5 flex items-center justify-between"
-        style={{ background: '#1C1C1C' }}
+        style={{ background: '#0D1B48' }}
       >
         <div>
           <p
             className="text-xs uppercase tracking-widest mb-1"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif", color: '#F5C218' }}
+            style={{ fontFamily: "'Barlow Condensed', sans-serif", color: '#1D4ED8' }}
           >
             Módulo / Proyectos
           </p>
@@ -56,7 +56,7 @@ export default function ProjectsPage() {
           </h1>
           <p
             className="text-sm mt-1 h-5 flex items-center"
-            style={{ fontFamily: "'Space Mono', monospace", color: '#F5C218' }}
+            style={{ fontFamily: "'Space Mono', monospace", color: '#1D4ED8' }}
           >
             {isLoading
               ? <SkeletonBlock className="h-4 w-36 bg-gray-600" />
@@ -68,7 +68,7 @@ export default function ProjectsPage() {
           <Link
             to="/projects/new"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm uppercase tracking-wide font-bold"
-            style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: "'Barlow Condensed', sans-serif" }}
+            style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: "'Barlow Condensed', sans-serif" }}
           >
             <Plus className="w-4 h-4" /> Nuevo Proyecto
           </Link>
@@ -80,7 +80,7 @@ export default function ProjectsPage() {
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
-            className="w-full border border-gray-300 px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+            className="w-full border border-gray-300 px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
             style={{ fontFamily: "'DM Sans', sans-serif", borderRadius: 0 }}
             placeholder="Buscar por nombre, código o cliente..."
             value={search}
@@ -88,7 +88,7 @@ export default function ProjectsPage() {
           />
         </div>
         <select
-          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
           style={{ fontFamily: "'DM Sans', sans-serif", borderRadius: 0 }}
           value={status}
           onChange={(e) => setStatus(e.target.value)}
@@ -108,9 +108,9 @@ export default function ProjectsPage() {
         <div className="bg-white border border-gray-200 p-12 text-center">
           <div
             className="w-14 h-14 flex items-center justify-center mx-auto mb-4"
-            style={{ background: '#1C1C1C' }}
+            style={{ background: '#0D1B48' }}
           >
-            <FolderOpen className="w-7 h-7" style={{ color: '#F5C218' }} />
+            <FolderOpen className="w-7 h-7" style={{ color: '#1D4ED8' }} />
           </div>
           <p
             className="text-xl uppercase tracking-widest text-gray-800 mb-1"
@@ -122,7 +122,7 @@ export default function ProjectsPage() {
             <Link
               to="/projects/new"
               className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm uppercase tracking-wide font-bold"
-              style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: "'Barlow Condensed', sans-serif" }}
+              style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: "'Barlow Condensed', sans-serif" }}
             >
               <Plus className="w-4 h-4" /> Crear primer proyecto
             </Link>
@@ -134,18 +134,18 @@ export default function ProjectsPage() {
             <Link
               key={p.id}
               to={`/projects/${p.id}`}
-              className="bg-white border border-gray-200 hover:border-[#F5C218] transition-colors p-3 md:p-4 flex items-center gap-3 md:gap-4 group cursor-pointer"
+              className="bg-white border border-gray-200 hover:border-[#1D4ED8] transition-colors p-3 md:p-4 flex items-center gap-3 md:gap-4 group cursor-pointer"
             >
               <div
                 className="w-10 h-10 flex items-center justify-center shrink-0"
-                style={{ background: '#1C1C1C' }}
+                style={{ background: '#0D1B48' }}
               >
-                <FolderOpen className="w-5 h-5" style={{ color: '#F5C218' }} />
+                <FolderOpen className="w-5 h-5" style={{ color: '#1D4ED8' }} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p
-                    className="font-semibold text-[#1C1C1C]"
+                    className="font-semibold text-[#0D1B48]"
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
                     {p.name}
@@ -166,7 +166,7 @@ export default function ProjectsPage() {
               </div>
               <div className="text-right shrink-0 hidden sm:block">
                 <p
-                  className="text-sm font-bold text-[#1C1C1C]"
+                  className="text-sm font-bold text-[#0D1B48]"
                   style={{ fontFamily: "'Space Mono', monospace" }}
                 >
                   {formatCurrency(Number(p.estimatedBudget))}
@@ -179,7 +179,7 @@ export default function ProjectsPage() {
                 </p>
               </div>
               <ArrowRight
-                className="w-4 h-4 shrink-0 text-gray-300 group-hover:text-[#F5C218] transition-colors"
+                className="w-4 h-4 shrink-0 text-gray-300 group-hover:text-[#1D4ED8] transition-colors"
               />
             </Link>
           ))}

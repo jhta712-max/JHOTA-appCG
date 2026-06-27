@@ -14,8 +14,8 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
-function AppLogo({ className = 'w-12 h-14' }: { className?: string }) {
-  return <img src="/logo.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }}/>;
+function AppLogo({ className = 'w-48' }: { className?: string }) {
+  return <img src="/logo.png" alt="JHOTA Construcciones" className={className} style={{ objectFit: 'contain' }}/>;
 }
 
 export default function LoginPage() {
@@ -52,30 +52,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#1C1C1C' }}>
+    <div className="min-h-screen flex" style={{ background: '#0D1B48' }}>
 
       {/* Panel izquierdo — branding (solo desktop) */}
       <div
         className="hidden lg:flex flex-col justify-between w-2/5 p-12"
         style={{ background: '#141414' }}
       >
-        <div className="flex items-center gap-3">
-          <AppLogo className="w-10 h-12" />
-          <div>
-            <p
-              className="font-bold text-lg uppercase tracking-widest"
-              style={{ fontFamily: "'Barlow Condensed', sans-serif", color: '#F5C218' }}
-            >
-              SERVINGMI
-            </p>
-            <p className="text-xs text-gray-500" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Control de Proyectos
-            </p>
-          </div>
+        <div className="flex items-center">
+          <AppLogo className="w-48" />
         </div>
 
         <div>
-          <div className="border-t-2 w-12 mb-6" style={{ borderColor: '#F5C218' }} />
+          <div className="border-t-2 w-12 mb-6" style={{ borderColor: '#1D4ED8' }} />
           <h2
             className="font-bold text-white uppercase tracking-widest mb-4"
             style={{
@@ -85,7 +74,7 @@ export default function LoginPage() {
             }}
           >
             Control de gastos<br />
-            <span style={{ color: '#F5C218' }}>por proyectos</span>
+            <span style={{ color: '#1D4ED8' }}>por proyectos</span>
           </h2>
           <p
             className="text-gray-400 text-sm leading-relaxed"
@@ -106,35 +95,20 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
 
           {/* Logo mobile */}
-          <div className="flex lg:hidden items-center justify-center gap-3 mb-8">
-            <AppLogo className="w-10 h-12" />
-            <div>
-              <p
-                className="font-bold uppercase tracking-widest"
-                style={{
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: '1.5rem',
-                  color: '#1C1C1C',
-                }}
-              >
-                SERVINGMI
-              </p>
-              <p className="text-xs text-gray-500" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Control de Proyectos
-              </p>
-            </div>
+          <div className="flex lg:hidden items-center justify-center mb-8">
+            <AppLogo className="w-48" />
           </div>
 
           {/* Form card */}
           <div
             className="bg-white shadow-sm border border-gray-100 p-5 sm:p-8"
-            style={{ borderLeft: '4px solid #F5C218' }}
+            style={{ borderLeft: '4px solid #1D4ED8' }}
           >
             <h1
               className="uppercase tracking-widest mb-1 text-3xl sm:text-4xl"
               style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
-                color: '#1C1C1C',
+                color: '#0D1B48',
                 fontWeight: 700,
                 lineHeight: 1,
               }}
@@ -173,7 +147,7 @@ export default function LoginPage() {
                 <input
                   type="email"
                   placeholder="correo@empresa.com"
-                  className="border border-gray-300 rounded-none px-3 py-2.5 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                  className="border border-gray-300 rounded-none px-3 py-2.5 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                   {...register('email')}
                 />
@@ -196,7 +170,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => navigate('/forgot-password')}
                     className="text-xs font-semibold hover:opacity-75 transition-opacity"
-                    style={{ color: '#F5C218', fontFamily: "'DM Sans', sans-serif" }}
+                    style={{ color: '#1D4ED8', fontFamily: "'DM Sans', sans-serif" }}
                   >
                     ¿Olvidaste tu contraseña?
                   </button>
@@ -205,7 +179,7 @@ export default function LoginPage() {
                   <input
                     type={showPwd ? 'text' : 'password'}
                     placeholder="••••••••"
-                    className="border border-gray-300 rounded-none px-3 py-2.5 text-sm w-full pr-10 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                    className="border border-gray-300 rounded-none px-3 py-2.5 text-sm w-full pr-10 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
                     {...register('password')}
                   />
@@ -229,14 +203,14 @@ export default function LoginPage() {
                 disabled={isSubmitting}
                 className="w-full py-3 uppercase tracking-widest font-bold text-lg flex items-center justify-center gap-2 mt-2 transition-opacity hover:opacity-90 disabled:opacity-60"
                 style={{
-                  background: '#F5C218',
-                  color: '#1C1C1C',
+                  background: '#1D4ED8',
+                  color: '#ffffff',
                   fontFamily: "'Barlow Condensed', sans-serif",
                 }}
               >
                 {isSubmitting ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-[#1C1C1C]/30 border-t-[#1C1C1C] rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     Entrando...
                   </>
                 ) : (
@@ -253,7 +227,7 @@ export default function LoginPage() {
           {needsSetup && (
             <div
               className="mt-5 border-l-4 bg-yellow-50 p-4"
-              style={{ borderLeftColor: '#F5C218' }}
+              style={{ borderLeftColor: '#1D4ED8' }}
             >
               <p
                 className="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1.5"

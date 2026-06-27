@@ -36,7 +36,7 @@ function statusBadgeClass(status: string): string {
     case 'PAID':      return 'bg-green-900 text-green-300 border border-green-700';
     case 'APPROVED':  return 'bg-green-900 text-green-300 border border-green-700';
     case 'CANCELLED': return 'bg-red-900 text-red-300 border border-red-700';
-    case 'PENDING':   return 'bg-[#F5C218]/20 text-[#F5C218] border border-[#F5C218]/40';
+    case 'PENDING':   return 'bg-[#1D4ED8]/20 text-[#1D4ED8] border border-[#1D4ED8]/40';
     default:          return 'bg-zinc-700 text-zinc-200 border border-zinc-600';
   }
 }
@@ -46,7 +46,7 @@ function statusBarClass(status: string): string {
     case 'PAID':      return 'bg-green-400';
     case 'APPROVED':  return 'bg-green-400';
     case 'CANCELLED': return 'bg-red-400';
-    case 'PENDING':   return 'bg-[#F5C218]';
+    case 'PENDING':   return 'bg-[#1D4ED8]';
     default:          return 'bg-amber-400';
   }
 }
@@ -85,9 +85,9 @@ export default function QuotationsPage() {
     <div className="space-y-0 font-['DM_Sans']">
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5 -mx-4 sm:-mx-6 lg:-mx-8 mb-6">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5 -mx-4 sm:-mx-6 lg:-mx-8 mb-6">
         <div className="max-w-full">
-          <p className="font-['Barlow_Condensed'] text-[#F5C218] text-xs font-semibold tracking-[0.2em] uppercase mb-1">
+          <p className="font-['Barlow_Condensed'] text-[#1D4ED8] text-xs font-semibold tracking-[0.2em] uppercase mb-1">
             MÓDULO / COTIZACIONES
           </p>
           <div className="flex items-end justify-between gap-4 flex-wrap">
@@ -98,14 +98,14 @@ export default function QuotationsPage() {
               <p className="text-zinc-400 text-sm mt-2 font-['DM_Sans'] h-5 flex items-center">
                 {isLoading
                   ? <SkeletonBlock className="h-4 w-32 bg-gray-600" />
-                  : <><span className="font-['Space_Mono'] text-[#F5C218]">{pagination?.total ?? 0}</span>{' '}cotizaciones registradas</>
+                  : <><span className="font-['Space_Mono'] text-[#1D4ED8]">{pagination?.total ?? 0}</span>{' '}cotizaciones registradas</>
                 }
               </p>
             </div>
             {canCreateQuotation && (
               <Link
                 to="/quotations/new"
-                className="inline-flex items-center gap-2 bg-[#F5C218] hover:bg-yellow-400 text-[#1C1C1C] font-['Barlow_Condensed'] font-bold text-sm tracking-wider uppercase px-5 py-2.5 transition-colors shrink-0"
+                className="inline-flex items-center gap-2 bg-[#1D4ED8] hover:bg-yellow-400 text-[#0D1B48] font-['Barlow_Condensed'] font-bold text-sm tracking-wider uppercase px-5 py-2.5 transition-colors shrink-0"
               >
                 <Plus className="w-4 h-4" />
                 NUEVA COTIZACIÓN
@@ -140,14 +140,14 @@ export default function QuotationsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input
-              className="w-full border border-zinc-200 pl-9 pr-3 py-2.5 text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-[#F5C218] font-['DM_Sans'] transition-colors"
+              className="w-full border border-zinc-200 pl-9 pr-3 py-2.5 text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-[#1D4ED8] font-['DM_Sans'] transition-colors"
               placeholder="Buscar suplidor, número..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
           <select
-            className="w-full border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-[#F5C218] font-['DM_Sans'] bg-white transition-colors"
+            className="w-full border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-[#1D4ED8] font-['DM_Sans'] bg-white transition-colors"
             value={projectId}
             onChange={(e) => { setProjectId(e.target.value); setPage(1); }}
           >
@@ -157,7 +157,7 @@ export default function QuotationsPage() {
             ))}
           </select>
           <select
-            className="w-full border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-[#F5C218] font-['DM_Sans'] bg-white transition-colors disabled:opacity-50"
+            className="w-full border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-[#1D4ED8] font-['DM_Sans'] bg-white transition-colors disabled:opacity-50"
             value={overdue ? '' : status}
             disabled={overdue}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
@@ -180,8 +180,8 @@ export default function QuotationsPage() {
         <ProjectListSkeleton />
       ) : quotations.length === 0 ? (
         <div className="bg-white border border-zinc-200 py-16 px-6 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-[#F5C218]/10 border border-[#F5C218]/30 mb-4">
-            <FileText className="w-7 h-7 text-[#F5C218]" />
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-[#1D4ED8]/10 border border-[#1D4ED8]/30 mb-4">
+            <FileText className="w-7 h-7 text-[#1D4ED8]" />
           </div>
           <p className="font-['Barlow_Condensed'] text-zinc-800 text-xl font-bold uppercase tracking-wide mb-1">
             Sin cotizaciones
@@ -192,7 +192,7 @@ export default function QuotationsPage() {
           {canCreateQuotation && !overdue && (
             <Link
               to="/quotations/new"
-              className="inline-flex items-center gap-2 mt-5 bg-[#F5C218] hover:bg-yellow-400 text-[#1C1C1C] font-['Barlow_Condensed'] font-bold text-sm tracking-wider uppercase px-5 py-2.5 transition-colors"
+              className="inline-flex items-center gap-2 mt-5 bg-[#1D4ED8] hover:bg-yellow-400 text-[#0D1B48] font-['Barlow_Condensed'] font-bold text-sm tracking-wider uppercase px-5 py-2.5 transition-colors"
             >
               <Plus className="w-4 h-4" />
               NUEVA COTIZACIÓN
@@ -206,7 +206,7 @@ export default function QuotationsPage() {
               <Link
                 key={q.id}
                 to={`/quotations/${q.id}`}
-                className="bg-white border border-zinc-200 hover:border-[#F5C218]/60 hover:shadow-sm flex items-center gap-0 transition-all group block"
+                className="bg-white border border-zinc-200 hover:border-[#1D4ED8]/60 hover:shadow-sm flex items-center gap-0 transition-all group block"
               >
                 {/* Status bar */}
                 <div className={`w-1 self-stretch shrink-0 ${statusBarClass(q.status)}`} />
@@ -215,7 +215,7 @@ export default function QuotationsPage() {
                   {/* Quotation number badge */}
                   <div className="shrink-0">
                     {q.quotationNumber ? (
-                      <span className="inline-flex items-center bg-[#1C1C1C] px-2.5 py-1 font-['Space_Mono'] text-[#F5C218] text-xs tracking-wider">
+                      <span className="inline-flex items-center bg-[#0D1B48] px-2.5 py-1 font-['Space_Mono'] text-[#1D4ED8] text-xs tracking-wider">
                         #{q.quotationNumber}
                       </span>
                     ) : (
@@ -227,7 +227,7 @@ export default function QuotationsPage() {
 
                   {/* Main info */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-['Barlow_Condensed'] text-lg font-bold text-zinc-900 leading-tight group-hover:text-[#1C1C1C] truncate tracking-wide">
+                    <p className="font-['Barlow_Condensed'] text-lg font-bold text-zinc-900 leading-tight group-hover:text-[#0D1B48] truncate tracking-wide">
                       {q.supplierName}
                     </p>
                     <p className="text-xs text-zinc-400 mt-0.5 truncate font-['DM_Sans']">
@@ -262,7 +262,7 @@ export default function QuotationsPage() {
                 </div>
 
                 <div className="px-3 shrink-0">
-                  <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-[#F5C218] transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-[#1D4ED8] transition-colors" />
                 </div>
               </Link>
             ))}
@@ -272,7 +272,7 @@ export default function QuotationsPage() {
           {pagination && pagination.totalPages > 1 && (
             <div className="flex items-center justify-center gap-4 pt-6">
               <button
-                className="font-['Barlow_Condensed'] text-sm font-bold tracking-wider uppercase px-5 py-2 border border-zinc-300 text-zinc-600 hover:border-[#1C1C1C] hover:bg-[#1C1C1C] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="font-['Barlow_Condensed'] text-sm font-bold tracking-wider uppercase px-5 py-2 border border-zinc-300 text-zinc-600 hover:border-[#0D1B48] hover:bg-[#0D1B48] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 disabled={!pagination.hasPrevPage}
                 onClick={() => setPage(p => p - 1)}
               >
@@ -282,7 +282,7 @@ export default function QuotationsPage() {
                 {pagination.page} / {pagination.totalPages}
               </span>
               <button
-                className="font-['Barlow_Condensed'] text-sm font-bold tracking-wider uppercase px-5 py-2 border border-zinc-300 text-zinc-600 hover:border-[#1C1C1C] hover:bg-[#1C1C1C] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="font-['Barlow_Condensed'] text-sm font-bold tracking-wider uppercase px-5 py-2 border border-zinc-300 text-zinc-600 hover:border-[#0D1B48] hover:bg-[#0D1B48] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 disabled={!pagination.hasNextPage}
                 onClick={() => setPage(p => p + 1)}
               >

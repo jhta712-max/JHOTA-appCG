@@ -1,11 +1,11 @@
 {
-  "name": "SERVINGMI — Control de Gastos",
-  "short_name": "SERVINGMI",
-  "description": "Sistema de control de gastos, proyectos y nóminas — Servicios Ingenieriles & Mineros",
+  "name": "JHOTA Construcciones — Control de Gastos",
+  "short_name": "JHOTA",
+  "description": "Sistema de control de gastos, proyectos y nóminas — JHOTA Constructora, SRL.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#F5C218",
+  "theme_color": "#1D4ED8",
   "background_color": "#ffffff",
   "icons": [
     {

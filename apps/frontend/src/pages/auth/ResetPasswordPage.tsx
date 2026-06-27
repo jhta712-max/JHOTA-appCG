@@ -59,7 +59,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#1C1C1C' }}>
+    <div className="min-h-screen flex" style={{ background: '#0D1B48' }}>
       {/* Panel izquierdo — branding (solo desktop) */}
       <div className="hidden lg:flex flex-col justify-between w-2/5 p-12"
            style={{ background: '#141414' }}>
@@ -74,7 +74,7 @@ export default function ResetPasswordPage() {
         <div>
           <h2 className="text-3xl font-bold text-white leading-snug mb-4">
             Control de gastos<br />
-            <span style={{ color: '#F5C218' }}>por proyectos</span>
+            <span style={{ color: '#1D4ED8' }}>por proyectos</span>
           </h2>
           <p className="text-gray-400 text-sm leading-relaxed">
             Gestiona los gastos de cada proyecto con trazabilidad completa,

@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 
 /**
  * Modal estándar del design system industrial:
- * overlay oscuro, panel blanco sin radius, header #1C1C1C con título
+ * overlay oscuro, panel blanco sin radius, header #0D1B48 con título
  * uppercase y botón X (gris → amarillo on hover).
  *
  * El contenido (children) define su propio padding — normalmente `p-6`.
@@ -21,11 +21,11 @@ export default function FormModal({
   return (
     <div className="fixed inset-0 bg-black/60 z-[60] flex items-end justify-center md:items-center md:p-4">
       <div className={`bg-white w-full max-h-[85vh] overflow-y-auto shadow-2xl md:max-h-[90vh] md:${maxWidth}`}>
-        <div className="bg-[#1C1C1C] flex items-center justify-between px-6 py-4">
+        <div className="bg-[#0D1B48] flex items-center justify-between px-6 py-4">
           <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">
             {title}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-[#F5C218] transition-colors">
+          <button onClick={onClose} className="text-gray-400 hover:text-[#1D4ED8] transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>

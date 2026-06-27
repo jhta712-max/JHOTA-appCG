@@ -195,16 +195,16 @@ export default function OfficeExpensesPage() {
 
       {/* Flash */}
       {flash && (
-        <div className="fixed top-4 right-4 z-50 bg-[#1C1C1C] text-[#F5C218] px-4 py-2.5 rounded-none shadow-2xl text-sm font-bold tracking-wide border-l-4 border-[#F5C218]">
+        <div className="fixed top-4 right-4 z-50 bg-[#0D1B48] text-[#1D4ED8] px-4 py-2.5 rounded-none shadow-2xl text-sm font-bold tracking-wide border-l-4 border-[#1D4ED8]">
           {flash}
         </div>
       )}
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5 mb-6">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5 mb-6">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[#F5C218] text-xs font-bold tracking-[0.2em] uppercase font-['Space_Mono'] mb-2">
+            <p className="text-[#1D4ED8] text-xs font-bold tracking-[0.2em] uppercase font-['Space_Mono'] mb-2">
               MÓDULO / GASTOS DE OFICINA
             </p>
             <h1 className="text-3xl md:text-5xl font-black text-white font-['Barlow_Condensed'] uppercase tracking-tight leading-none">
@@ -218,7 +218,7 @@ export default function OfficeExpensesPage() {
             {summaryData && (
               <div className="text-right">
                 <p className="text-gray-500 text-xs font-['Space_Mono'] uppercase tracking-wide">Este mes</p>
-                <p className="text-[#F5C218] text-2xl font-black font-['Space_Mono']">
+                <p className="text-[#1D4ED8] text-2xl font-black font-['Space_Mono']">
                   {fmt(summaryData.currentMonth.total)}
                 </p>
               </div>
@@ -226,7 +226,7 @@ export default function OfficeExpensesPage() {
             {isSupervisor && (
               <button
                 onClick={openCreate}
-                className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-5 py-3 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors"
+                className="flex items-center gap-2 bg-[#1D4ED8] text-[#0D1B48] px-5 py-3 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors"
               >
                 <Plus className="w-4 h-4" /> Nuevo Gasto
               </button>
@@ -251,12 +251,12 @@ export default function OfficeExpensesPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-gray-100">
                 <div className="p-5">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono'] mb-1">Este Mes</p>
-                  <p className="text-xl font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(summaryData.currentMonth.total)}</p>
+                  <p className="text-xl font-black text-[#0D1B48] font-['Space_Mono']">{fmt(summaryData.currentMonth.total)}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{summaryData.currentMonth.count} registros</p>
                 </div>
                 <div className="p-5">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono'] mb-1">Total Histórico</p>
-                  <p className="text-xl font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(summaryData.allTime.total)}</p>
+                  <p className="text-xl font-black text-[#0D1B48] font-['Space_Mono']">{fmt(summaryData.allTime.total)}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{summaryData.allTime.count} registros</p>
                 </div>
                 {summaryData.byCategory.slice(0, 2).map((cat) => (
@@ -264,7 +264,7 @@ export default function OfficeExpensesPage() {
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono'] mb-1 truncate">
                       {OFFICE_EXPENSE_CATEGORY_LABELS[cat.category as OfficeExpenseCategory]}
                     </p>
-                    <p className="text-xl font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(cat.total)}</p>
+                    <p className="text-xl font-black text-[#0D1B48] font-['Space_Mono']">{fmt(cat.total)}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{cat.count} registros</p>
                   </div>
                 ))}
@@ -279,7 +279,7 @@ export default function OfficeExpensesPage() {
             <button
               onClick={() => setCatFilter('')}
               className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors border ${
-                catFilter === '' ? 'bg-[#1C1C1C] text-[#F5C218] border-[#1C1C1C]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                catFilter === '' ? 'bg-[#0D1B48] text-[#1D4ED8] border-[#0D1B48]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
               }`}
             >
               Todas
@@ -289,7 +289,7 @@ export default function OfficeExpensesPage() {
                 key={key}
                 onClick={() => setCatFilter(key)}
                 className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors border ${
-                  catFilter === key ? 'bg-[#1C1C1C] text-[#F5C218] border-[#1C1C1C]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                  catFilter === key ? 'bg-[#0D1B48] text-[#1D4ED8] border-[#0D1B48]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
                 }`}
               >
                 {label}
@@ -317,14 +317,14 @@ export default function OfficeExpensesPage() {
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-1.5 px-3 py-2 border text-xs font-bold uppercase tracking-wide transition-colors ${
                 showFilters || activeFilterCount > 0
-                  ? 'bg-[#F5C218] border-[#F5C218] text-[#1C1C1C]'
+                  ? 'bg-[#1D4ED8] border-[#1D4ED8] text-[#0D1B48]'
                   : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
               }`}
             >
               <Filter className="w-3.5 h-3.5" />
               Filtros
               {activeFilterCount > 0 && (
-                <span className="bg-[#1C1C1C] text-[#F5C218] text-xs w-4 h-4 flex items-center justify-center font-bold">
+                <span className="bg-[#0D1B48] text-[#1D4ED8] text-xs w-4 h-4 flex items-center justify-center font-bold">
                   {activeFilterCount}
                 </span>
               )}
@@ -344,7 +344,7 @@ export default function OfficeExpensesPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Comprobante</label>
-                  <select className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" value={hasFiscalDoc} onChange={(e) => setHasFiscalDoc(e.target.value)}>
+                  <select className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" value={hasFiscalDoc} onChange={(e) => setHasFiscalDoc(e.target.value)}>
                     <option value="">Todos</option>
                     <option value="true">Con factura</option>
                     <option value="false">Sin factura</option>
@@ -352,11 +352,11 @@ export default function OfficeExpensesPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Desde</label>
-                  <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                  <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Hasta</label>
-                  <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                  <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
                 </div>
               </div>
             </div>
@@ -367,14 +367,14 @@ export default function OfficeExpensesPage() {
         {isLoading ? (
           <ExpenseListSkeleton />
         ) : expenses.length === 0 ? (
-          <div className="bg-[#1C1C1C] p-16 text-center">
-            <Sparkles className="w-10 h-10 text-[#F5C218] mx-auto mb-4" />
+          <div className="bg-[#0D1B48] p-16 text-center">
+            <Sparkles className="w-10 h-10 text-[#1D4ED8] mx-auto mb-4" />
             <p className="text-white font-bold font-['Barlow_Condensed'] text-xl uppercase tracking-wide">Sin gastos registrados</p>
             <p className="text-gray-400 text-sm mt-2">
               {catFilter ? 'Prueba con otra categoría' : 'Registra el primer gasto de oficina'}
             </p>
             {isSupervisor && (
-              <button onClick={openCreate} className="mt-5 bg-[#F5C218] text-[#1C1C1C] px-5 py-2.5 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors inline-flex items-center gap-2">
+              <button onClick={openCreate} className="mt-5 bg-[#1D4ED8] text-[#0D1B48] px-5 py-2.5 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors inline-flex items-center gap-2">
                 <Plus className="w-4 h-4" /> Registrar gasto
               </button>
             )}
@@ -385,17 +385,17 @@ export default function OfficeExpensesPage() {
               <button
                 key={exp.id}
                 onClick={() => setViewingExp(exp)}
-                className="w-full bg-white border border-gray-200 hover:border-[#1C1C1C] hover:shadow-md transition-all text-left group flex items-center gap-0"
+                className="w-full bg-white border border-gray-200 hover:border-[#0D1B48] hover:shadow-md transition-all text-left group flex items-center gap-0"
               >
                 {/* Category dot bar */}
                 <div className={`w-1 self-stretch ${CATEGORY_DOT[exp.category]}`} />
                 <div className="flex items-center gap-4 px-5 py-4 flex-1 min-w-0">
-                  <div className="w-10 h-10 bg-[#1C1C1C] flex items-center justify-center shrink-0">
-                    <Receipt className="w-4 h-4 text-[#F5C218]" />
+                  <div className="w-10 h-10 bg-[#0D1B48] flex items-center justify-center shrink-0">
+                    <Receipt className="w-4 h-4 text-[#1D4ED8]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-bold text-[#1C1C1C] group-hover:text-[#1C1C1C] transition-colors truncate font-['Barlow_Condensed'] text-lg uppercase tracking-wide">
+                      <p className="font-bold text-[#0D1B48] group-hover:text-[#0D1B48] transition-colors truncate font-['Barlow_Condensed'] text-lg uppercase tracking-wide">
                         {exp.description}
                       </p>
                       <span className={`text-xs px-2 py-0.5 font-bold uppercase tracking-wide ${CATEGORY_COLORS[exp.category]}`}>
@@ -413,7 +413,7 @@ export default function OfficeExpensesPage() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-black text-[#1C1C1C] font-['Space_Mono'] text-lg">{fmt(exp.amount)}</p>
+                    <p className="font-black text-[#0D1B48] font-['Space_Mono'] text-lg">{fmt(exp.amount)}</p>
                     <p className="text-xs text-gray-400 font-['DM_Sans']">{exp.createdBy?.name}</p>
                   </div>
                 </div>
@@ -439,7 +439,7 @@ export default function OfficeExpensesPage() {
                     type="button"
                     disabled={ocrLoading}
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[#F5C218] text-[#1C1C1C] bg-yellow-50 hover:bg-yellow-100 transition-colors text-sm font-bold uppercase tracking-wide"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[#1D4ED8] text-[#0D1B48] bg-yellow-50 hover:bg-yellow-100 transition-colors text-sm font-bold uppercase tracking-wide"
                   >
                     {ocrLoading
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando recibo...</>
@@ -457,7 +457,7 @@ export default function OfficeExpensesPage() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Categoría *</label>
-                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as OfficeExpenseCategory }))} required>
                   {CATEGORIES.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
                 </select>
@@ -465,7 +465,7 @@ export default function OfficeExpensesPage() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Descripción *</label>
-                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   placeholder="Ej: Compra de papel carta, detergente industrial..."
                   value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} required minLength={3} />
               </div>
@@ -473,32 +473,32 @@ export default function OfficeExpensesPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Monto (DOP) *</label>
-                  <input type="number" step="0.01" min="0.01" className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  <input type="number" step="0.01" min="0.01" className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                     placeholder="0.00" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} required />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">ITBIS (DOP)</label>
-                  <input type="number" step="0.01" min="0" className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  <input type="number" step="0.01" min="0" className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                     placeholder="0.00" value={form.itbisAmount} onChange={(e) => setForm((f) => ({ ...f, itbisAmount: e.target.value }))} />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha *</label>
-                <input type="date" className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                <input type="date" className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   value={form.expenseDate} onChange={(e) => setForm((f) => ({ ...f, expenseDate: e.target.value }))} required />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Suplidor (opcional)</label>
-                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   placeholder="Nombre del suplidor o comercio"
                   value={form.supplierName} onChange={(e) => setForm((f) => ({ ...f, supplierName: e.target.value }))} />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Método de pago *</label>
-                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   value={form.paymentMethod} onChange={(e) => setForm((f) => ({ ...f, paymentMethod: e.target.value, companyCardId: '' }))} required>
                   {Object.entries(PAYMENT_METHODS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
@@ -507,7 +507,7 @@ export default function OfficeExpensesPage() {
               {form.paymentMethod === 'CARD' && (
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Tarjeta corporativa *</label>
-                  <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                     value={form.companyCardId} onChange={(e) => setForm((f) => ({ ...f, companyCardId: e.target.value }))} required>
                     <option value="">Seleccionar tarjeta...</option>
                     {(cardsData ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.holderName} — ···{c.lastFour} ({c.bank})</option>)}
@@ -518,20 +518,20 @@ export default function OfficeExpensesPage() {
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="hasFiscalDoc" checked={form.hasFiscalDoc}
                   onChange={(e) => setForm((f) => ({ ...f, hasFiscalDoc: e.target.checked }))}
-                  className="w-4 h-4 border-gray-300 accent-[#F5C218]" />
+                  className="w-4 h-4 border-gray-300 accent-[#1D4ED8]" />
                 <label htmlFor="hasFiscalDoc" className="text-sm text-gray-700">Tiene documento fiscal (factura / NCF)</label>
               </div>
               {form.hasFiscalDoc && (
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Número de comprobante</label>
-                  <input className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  <input className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                     placeholder="Ej: B0100000001" value={form.fiscalDocNum} onChange={(e) => setForm((f) => ({ ...f, fiscalDocNum: e.target.value }))} />
                 </div>
               )}
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Notas (opcional)</label>
-                <textarea className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] resize-none"
+                <textarea className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] resize-none"
                   rows={2} placeholder="Observaciones adicionales..."
                   value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
               </div>
@@ -568,7 +568,7 @@ export default function OfficeExpensesPage() {
                 </button>
                 <button type="submit"
                   disabled={isSubmitting || (form.hasFiscalDoc && !ocrValidated && !editingId)}
-                  className="flex-1 bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                  className="flex-1 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                   <Save className="w-4 h-4" />
                   {isSubmitting ? 'Guardando...' : editingId ? 'Actualizar' : 'Guardar gasto'}
                 </button>
@@ -581,7 +581,7 @@ export default function OfficeExpensesPage() {
       {viewingExp && (
         <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md shadow-2xl">
-            <div className="bg-[#1C1C1C] flex items-center justify-between px-6 py-4">
+            <div className="bg-[#0D1B48] flex items-center justify-between px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 ${CATEGORY_DOT[viewingExp.category]}`} />
                 <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">Detalle del Gasto</h2>
@@ -596,10 +596,10 @@ export default function OfficeExpensesPage() {
                   <span className={`text-xs px-2 py-0.5 font-bold uppercase tracking-wide ${CATEGORY_COLORS[viewingExp.category]}`}>
                     {OFFICE_EXPENSE_CATEGORY_LABELS[viewingExp.category]}
                   </span>
-                  <p className="font-bold text-[#1C1C1C] mt-2 font-['Barlow_Condensed'] text-xl uppercase tracking-wide">{viewingExp.description}</p>
+                  <p className="font-bold text-[#0D1B48] mt-2 font-['Barlow_Condensed'] text-xl uppercase tracking-wide">{viewingExp.description}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(viewingExp.amount)}</p>
+                  <p className="text-2xl font-black text-[#0D1B48] font-['Space_Mono']">{fmt(viewingExp.amount)}</p>
                   {Number(viewingExp.itbisAmount) > 0 && (
                     <p className="text-xs text-gray-500 font-['Space_Mono'] mt-0.5">ITBIS: {fmt(viewingExp.itbisAmount)}</p>
                   )}

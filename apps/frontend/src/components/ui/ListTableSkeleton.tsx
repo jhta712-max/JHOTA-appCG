@@ -11,7 +11,7 @@ export function ListTableSkeleton({ cols, rows = 8, colWidths }: Props) {
   return (
     <div className="bg-white border border-gray-200 overflow-hidden">
       <table className="w-full">
-        <thead style={{ background: '#1C1C1C' }}>
+        <thead style={{ background: '#0D1B48' }}>
           <tr>
             {Array.from({ length: cols }).map((_, i) => (
               <th key={i} className="px-4 py-3" style={{ width: colWidths?.[i] }}>

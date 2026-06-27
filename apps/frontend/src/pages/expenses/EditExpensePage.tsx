@@ -27,7 +27,7 @@ const NCF_REGEX   = /^[A-Z]\d{10}$/;
 const E_NCF_REGEX = /^E\d{12}$/;
 const RNC_REGEX   = /^\d{9}(\d{2})?$/;
 
-const inputCls = "w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent bg-white";
+const inputCls = "w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-transparent bg-white";
 const labelCls = "block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5";
 
 export default function EditExpensePage() {
@@ -150,7 +150,7 @@ export default function EditExpensePage() {
   if (loadingExpense) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
-        <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#F5C218' }} />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#1D4ED8' }} />
         <span className="font-['DM_Sans'] text-sm text-gray-500">Cargando gasto...</span>
       </div>
     );
@@ -189,16 +189,16 @@ export default function EditExpensePage() {
     <div className="max-w-lg mx-auto space-y-0 pb-10">
 
       {/* Hero header */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 mb-6" style={{ background: '#0D1B48' }}>
         <div className="max-w-lg flex items-center gap-3">
           <button
             onClick={() => navigate(`/expenses/${id}`)}
-            className="p-2 text-gray-400 hover:text-[#F5C218] transition-colors"
+            className="p-2 text-gray-400 hover:text-[#1D4ED8] transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#F5C218' }}>
+            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#1D4ED8' }}>
               MÓDULO / GASTOS
             </p>
             <h1 className="font-['Barlow_Condensed'] text-3xl font-bold tracking-tight text-white uppercase">
@@ -224,7 +224,7 @@ export default function EditExpensePage() {
           <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
             <span
               className="w-6 h-6 text-xs font-bold flex items-center justify-center"
-              style={{ background: '#F5C218', color: '#1C1C1C' }}
+              style={{ background: '#1D4ED8', color: '#ffffff' }}
             >1</span>
             <h2 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-800">
               Datos del gasto
@@ -261,8 +261,8 @@ export default function EditExpensePage() {
                 if (days < 7) return null;
                 const isOld = days >= 30;
                 return (
-                  <div className={`mt-1 px-2 py-1.5 border-l-2 ${isOld ? 'border-red-500 bg-red-50' : 'border-[#F5C218] bg-[#F5C218]/10'}`}>
-                    <p className={`font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-wide ${isOld ? 'text-red-700' : 'text-[#1C1C1C]'}`}>
+                  <div className={`mt-1 px-2 py-1.5 border-l-2 ${isOld ? 'border-red-500 bg-red-50' : 'border-[#1D4ED8] bg-[#1D4ED8]/10'}`}>
+                    <p className={`font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-wide ${isOld ? 'text-red-700' : 'text-[#0D1B48]'}`}>
                       {isOld ? '⚠ Fecha muy antigua' : '⚠ Fecha inusual'}
                     </p>
                     <p className="font-['DM_Sans'] text-xs text-gray-600 mt-0.5">
@@ -418,7 +418,7 @@ export default function EditExpensePage() {
           <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
             <span
               className="w-6 h-6 text-xs font-bold flex items-center justify-center"
-              style={{ background: '#F5C218', color: '#1C1C1C' }}
+              style={{ background: '#1D4ED8', color: '#ffffff' }}
             >2</span>
             <h2 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-800">
               Comprobante fiscal
@@ -427,9 +427,9 @@ export default function EditExpensePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button type="button" onClick={() => setHasFiscal(true)}
-              className={`p-4 border-2 text-center transition-all ${hasFiscal ? 'border-[#F5C218] bg-[#F5C218]/5' : 'border-gray-200 hover:border-gray-300'}`}>
-              <Receipt className={`w-6 h-6 mx-auto mb-1 ${hasFiscal ? 'text-[#1C1C1C]' : 'text-gray-400'}`} />
-              <p className={`font-['Barlow_Condensed'] text-sm font-bold uppercase ${hasFiscal ? 'text-[#1C1C1C]' : 'text-gray-600'}`}>Tiene NCF</p>
+              className={`p-4 border-2 text-center transition-all ${hasFiscal ? 'border-[#1D4ED8] bg-[#1D4ED8]/5' : 'border-gray-200 hover:border-gray-300'}`}>
+              <Receipt className={`w-6 h-6 mx-auto mb-1 ${hasFiscal ? 'text-[#0D1B48]' : 'text-gray-400'}`} />
+              <p className={`font-['Barlow_Condensed'] text-sm font-bold uppercase ${hasFiscal ? 'text-[#0D1B48]' : 'text-gray-600'}`}>Tiene NCF</p>
             </button>
             <button type="button" onClick={() => setHasFiscal(false)}
               className={`p-4 border-2 text-center transition-all ${!hasFiscal ? 'border-gray-400 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
@@ -501,10 +501,10 @@ export default function EditExpensePage() {
             type="submit"
             disabled={mutation.isPending}
             className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-2.5 flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
-            style={{ background: '#F5C218', color: '#1C1C1C' }}
+            style={{ background: '#1D4ED8', color: '#ffffff' }}
           >
             {mutation.isPending
-              ? <><span className="w-4 h-4 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> Guardando...</>
+              ? <><span className="w-4 h-4 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" /> Guardando...</>
               : <><CheckCircle className="w-4 h-4" /> Guardar cambios</>
             }
           </button>

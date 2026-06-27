@@ -33,14 +33,14 @@ export default function AdminPayrollsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
-        <p className="text-[#F5C218] text-xs font-bold uppercase tracking-[0.2em] font-['Barlow_Condensed'] mb-1">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
+        <p className="text-[#1D4ED8] text-xs font-bold uppercase tracking-[0.2em] font-['Barlow_Condensed'] mb-1">
           Nómina Administrativa
         </p>
         <div className="flex items-center justify-between">
           <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">Períodos</h1>
           {canCreate && (
-            <button onClick={() => navigate('/admin-payroll/new')} className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed']">
+            <button onClick={() => navigate('/admin-payroll/new')} className="flex items-center gap-2 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed']">
               <Plus size={16} /> Nuevo Período
             </button>
           )}
@@ -48,10 +48,10 @@ export default function AdminPayrollsPage() {
       </div>
 
       <div className="px-4 md:px-6 py-4 flex gap-3">
-        <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="border border-gray-200 px-3 py-1.5 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218]">
+        <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="border border-gray-200 px-3 py-1.5 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8]">
           {[2025, 2026, 2027].map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-gray-200 px-3 py-1.5 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218]">
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-gray-200 px-3 py-1.5 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8]">
           <option value="">Todos los estados</option>
           {Object.entries(STATUS_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
@@ -66,7 +66,7 @@ export default function AdminPayrollsPage() {
             <div className="hidden md:block bg-white border border-gray-200 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[#1C1C1C]">
+                  <tr className="bg-[#0D1B48]">
                     {['#','Tipo','Período','Empleados','Total Bruto','Total Neto','Estado',''].map((h) => (
                       <th key={h} className="text-left px-4 py-3 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">{h}</th>
                     ))}
@@ -86,7 +86,7 @@ export default function AdminPayrollsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-3">
-                          <Link to={`/admin-payroll/${p.id}`} className="text-xs text-[#1C1C1C] underline font-['DM_Sans']">Ver</Link>
+                          <Link to={`/admin-payroll/${p.id}`} className="text-xs text-[#0D1B48] underline font-['DM_Sans']">Ver</Link>
                           {p.status !== 'VOIDED' && (
                             <a href={adminPayrollsApi.exportUrl(p.id)} className="text-xs text-gray-500" title="Exportar Excel">
                               <Download size={14} />
@@ -122,7 +122,7 @@ export default function AdminPayrollsPage() {
                       <p className="font-['Space_Mono'] font-bold text-gray-900 text-sm">RD$ {fmt(p.totalNet)}</p>
                     </div>
                     <div className="flex gap-3">
-                      <Link to={`/admin-payroll/${p.id}`} className="text-xs text-[#1C1C1C] underline font-['DM_Sans']">Ver</Link>
+                      <Link to={`/admin-payroll/${p.id}`} className="text-xs text-[#0D1B48] underline font-['DM_Sans']">Ver</Link>
                       {p.status !== 'VOIDED' && (
                         <a href={adminPayrollsApi.exportUrl(p.id)} className="text-xs text-gray-500" title="Exportar Excel">
                           <Download size={14} />

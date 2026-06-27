@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { ChevronLeft } from 'lucide-react';
 import { adminPayrollsApi } from '../../api/index';
 
-const inputCls = "w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]";
+const inputCls = "w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]";
 
 export default function AdminPayrollFormPage() {
   const navigate = useNavigate();
@@ -26,8 +26,8 @@ export default function AdminPayrollFormPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
-        <button onClick={() => navigate('/admin-payroll')} className="flex items-center gap-1 text-[#F5C218] text-xs uppercase font-['Barlow_Condensed'] mb-3">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
+        <button onClick={() => navigate('/admin-payroll')} className="flex items-center gap-1 text-[#1D4ED8] text-xs uppercase font-['Barlow_Condensed'] mb-3">
           <ChevronLeft size={14} /> Períodos
         </button>
         <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">Nuevo Período</h1>
@@ -69,7 +69,7 @@ export default function AdminPayrollFormPage() {
             <button type="button" onClick={() => navigate('/admin-payroll')} className="px-4 py-2 text-sm border border-gray-200 text-gray-600 font-['DM_Sans']">
               Cancelar
             </button>
-            <button type="submit" disabled={createMut.isPending} className="px-4 py-2 text-sm bg-[#F5C218] text-[#1C1C1C] font-bold uppercase font-['Barlow_Condensed'] disabled:opacity-50">
+            <button type="submit" disabled={createMut.isPending} className="px-4 py-2 text-sm bg-[#1D4ED8] text-[#0D1B48] font-bold uppercase font-['Barlow_Condensed'] disabled:opacity-50">
               {createMut.isPending ? 'Generando...' : 'Generar Período'}
             </button>
           </div>

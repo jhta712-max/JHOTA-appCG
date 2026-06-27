@@ -24,7 +24,7 @@ export default function Header() {
   return (
     <header
       className="h-16 border-b border-white/10 flex items-center justify-between px-6 fixed top-0 right-0 left-60 z-20 md:block hidden"
-      style={{ background: '#1C1C1C' }}
+      style={{ background: '#0D1B48' }}
     >
       {/* Left section */}
       <div className="flex-1" />
@@ -43,7 +43,7 @@ export default function Header() {
           {/* Avatar */}
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-semibold text-sm"
-            style={{ background: '#F5C218', color: '#1C1C1C' }}
+            style={{ background: '#1D4ED8', color: '#ffffff' }}
           >
             {user?.name?.charAt(0).toUpperCase()}
           </div>

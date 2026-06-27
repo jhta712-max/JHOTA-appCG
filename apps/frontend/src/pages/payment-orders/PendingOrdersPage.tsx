@@ -31,7 +31,7 @@ function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white";
+const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] bg-white";
 const labelCls = "block text-xs font-semibold uppercase tracking-wide text-gray-500 font-['Barlow_Condensed'] mb-1";
 
 export default function PendingOrdersPage() {
@@ -89,14 +89,14 @@ export default function PendingOrdersPage() {
       {toast && (
         <div
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 text-sm font-['DM_Sans'] font-semibold shadow-lg"
-          style={{ background: '#1C1C1C', color: '#F5C218' }}
+          style={{ background: '#0D1B48', color: '#1D4ED8' }}
         >
           {toast}
         </div>
       )}
 
       {/* Hero header */}
-      <div className="px-4 md:px-6 py-4 md:py-5 flex items-start md:items-end justify-between gap-4" style={{ background: '#1C1C1C' }}>
+      <div className="px-4 md:px-6 py-4 md:py-5 flex items-start md:items-end justify-between gap-4" style={{ background: '#0D1B48' }}>
         <div>
           <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-gray-400 mb-1">
             MÓDULO / PAGOS PENDIENTES
@@ -112,7 +112,7 @@ export default function PendingOrdersPage() {
           onClick={() => setShowFilters((v) => !v)}
           className="flex items-center gap-2 px-3 py-2 text-sm font-['Barlow_Condensed'] uppercase tracking-wide font-bold shrink-0 transition-colors"
           style={showFilters
-            ? { background: '#F5C218', color: '#1C1C1C' }
+            ? { background: '#1D4ED8', color: '#ffffff' }
             : { background: 'transparent', color: '#9ca3af', border: '1px solid #4b5563' }
           }
         >
@@ -124,14 +124,14 @@ export default function PendingOrdersPage() {
       {orders.length > 0 && (
         <div className="grid grid-cols-2 gap-px bg-gray-200">
           <div className="bg-white p-5 flex items-center gap-3">
-            <div className="w-1 h-10 shrink-0" style={{ background: '#F5C218' }} />
+            <div className="w-1 h-10 shrink-0" style={{ background: '#1D4ED8' }} />
             <div>
               <p className="font-['Barlow_Condensed'] uppercase tracking-wide text-xs text-gray-500 mb-1">Órdenes sin pagar</p>
               <p className="font-['Space_Mono'] text-3xl font-bold text-gray-900">{orders.length}</p>
             </div>
           </div>
           <div className="bg-white p-5 flex items-center gap-3">
-            <div className="w-1 h-10 shrink-0" style={{ background: '#F5C218' }} />
+            <div className="w-1 h-10 shrink-0" style={{ background: '#1D4ED8' }} />
             <div>
               <p className="font-['Barlow_Condensed'] uppercase tracking-wide text-xs text-gray-500 mb-1">Monto total pendiente</p>
               <p className="font-['Space_Mono'] text-xl font-bold text-gray-900">
@@ -183,7 +183,7 @@ export default function PendingOrdersPage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: '#1C1C1C' }}>
+                  <tr style={{ background: '#0D1B48' }}>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">#</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Tipo</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Proyecto</th>
@@ -243,7 +243,7 @@ export default function PendingOrdersPage() {
                             <button
                               onClick={() => setConfirmId(o.id)}
                               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-['Barlow_Condensed'] uppercase font-bold transition-opacity mx-auto"
-                              style={{ background: '#F5C218', color: '#1C1C1C' }}
+                              style={{ background: '#1D4ED8', color: '#ffffff' }}
                             >
                               <BadgeCheck className="w-3.5 h-3.5" /> Marcar pagada
                             </button>
@@ -296,7 +296,7 @@ export default function PendingOrdersPage() {
                           <button
                             onClick={() => setConfirmId(o.id)}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-['Barlow_Condensed'] uppercase font-bold"
-                            style={{ background: '#F5C218', color: '#1C1C1C' }}
+                            style={{ background: '#1D4ED8', color: '#ffffff' }}
                           >
                             <BadgeCheck className="w-3.5 h-3.5" /> Pagar
                           </button>
@@ -315,14 +315,14 @@ export default function PendingOrdersPage() {
       {confirmId && confirmOrder && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-sm shadow-xl">
-            <div className="flex items-center justify-between px-6 py-4" style={{ background: '#1C1C1C' }}>
+            <div className="flex items-center justify-between px-6 py-4" style={{ background: '#0D1B48' }}>
               <h3 className="font-['Barlow_Condensed'] uppercase tracking-wide text-white">Confirmar pago</h3>
               <button onClick={() => setConfirmId(null)} className="text-gray-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
-              <div className="border-l-4 border-[#F5C218] bg-amber-50 p-4 space-y-1.5">
+              <div className="border-l-4 border-[#1D4ED8] bg-amber-50 p-4 space-y-1.5">
                 <p className="font-['Space_Mono'] text-xs text-gray-500 mb-2">
                   OP-{String(confirmOrder.number).padStart(3, '0')}
                 </p>
@@ -350,7 +350,7 @@ export default function PendingOrdersPage() {
                   onClick={() => markPaidMut.mutate(confirmId)}
                   disabled={markPaidMut.isPending}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 font-['Barlow_Condensed'] uppercase text-sm font-bold disabled:opacity-50"
-                  style={{ background: '#F5C218', color: '#1C1C1C' }}
+                  style={{ background: '#1D4ED8', color: '#ffffff' }}
                 >
                   {markPaidMut.isPending
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando…</>

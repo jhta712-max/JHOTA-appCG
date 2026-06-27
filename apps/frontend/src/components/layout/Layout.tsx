@@ -62,7 +62,7 @@ const ROLE_OPTIONS = [
 
 function AppIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
-    <img src="/logo.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }} />
+    <img src="/logo.png" alt="JHOTA Construcciones" className={className} style={{ objectFit: 'contain' }} />
   );
 }
 
@@ -104,7 +104,7 @@ function RoleViewSwitcher({ compact = false, dropUp = false }: { compact?: boole
 
       {open && (
         <div className={clsx(
-          'absolute right-0 w-52 bg-[#1C1C1C] border border-white/10 py-1 z-50 shadow-2xl',
+          'absolute right-0 w-52 bg-[#0D1B48] border border-white/10 py-1 z-50 shadow-2xl',
           dropUp ? 'bottom-full mb-1' : 'top-full mt-1',
         )}>
           <p className="px-3 pt-2 pb-1 text-xs font-bold text-gray-500 uppercase tracking-widest font-['Barlow_Condensed']">
@@ -117,11 +117,11 @@ function RoleViewSwitcher({ compact = false, dropUp = false }: { compact?: boole
               className={clsx(
                 "w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 font-['DM_Sans']",
                 (viewAsRole ?? '') === opt.value
-                  ? 'text-[#F5C218] bg-white/5 font-semibold'
+                  ? 'text-[#1D4ED8] bg-white/5 font-semibold'
                   : 'text-gray-400 hover:text-white hover:bg-white/5',
               )}
             >
-              <span className={clsx('w-1 h-1 shrink-0', (viewAsRole ?? '') === opt.value ? 'bg-[#F5C218]' : 'bg-transparent')} />
+              <span className={clsx('w-1 h-1 shrink-0', (viewAsRole ?? '') === opt.value ? 'bg-[#1D4ED8]' : 'bg-transparent')} />
               {opt.label}
             </button>
           ))}
@@ -152,8 +152,8 @@ function SidebarFooter({
         </div>
       )}
       <div className="flex items-center gap-3 px-2 py-2">
-        <div className="w-8 h-8 flex items-center justify-center shrink-0" style={{ background: '#F5C218' }}>
-          <span className="text-[#1C1C1C] text-sm font-bold font-['Barlow_Condensed']">
+        <div className="w-8 h-8 flex items-center justify-center shrink-0" style={{ background: '#1D4ED8' }}>
+          <span className="text-[#0D1B48] text-sm font-bold font-['Barlow_Condensed']">
             {userName?.charAt(0).toUpperCase()}
           </span>
         </div>
@@ -202,10 +202,10 @@ function NavItemLink({
       className={({ isActive }) => clsx(
         "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors relative group font-['DM_Sans']",
         isActive
-          ? 'text-[#1C1C1C] font-semibold'
+          ? 'text-[#0D1B48] font-semibold'
           : 'text-gray-400 hover:text-white hover:bg-white/8',
       )}
-      style={({ isActive }) => isActive ? { background: '#F5C218' } : {}}
+      style={({ isActive }) => isActive ? { background: '#1D4ED8' } : {}}
     >
       {({ isActive }) => (
         <>
@@ -217,7 +217,7 @@ function NavItemLink({
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUnpin(); }}
               className={clsx(
                 'opacity-0 group-hover:opacity-100 transition-opacity shrink-0',
-                isActive ? 'text-[#1C1C1C]/40 hover:text-[#1C1C1C]' : 'text-gray-600 hover:text-red-400',
+                isActive ? 'text-[#0D1B48]/40 hover:text-[#0D1B48]' : 'text-gray-600 hover:text-red-400',
               )}
               title="Quitar de favoritos"
             >
@@ -269,7 +269,7 @@ function NavPopover({
           ? { top: `${anchorTop}px` }
           : { bottom: `${-anchorTop}px` }),
         width: '220px',
-        background: '#1C1C1C',
+        background: '#0D1B48',
         border: '1px solid rgba(255,255,255,0.1)',
         zIndex: 60,
         maxHeight: 'calc(100vh - 32px)',
@@ -291,7 +291,7 @@ function NavPopover({
                 onClick={onClose}
                 className={({ isActive }) => clsx(
                   "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors flex-1 font-['DM_Sans']",
-                  isActive ? 'text-[#F5C218]' : 'text-gray-400 hover:text-white hover:bg-white/8',
+                  isActive ? 'text-[#1D4ED8]' : 'text-gray-400 hover:text-white hover:bg-white/8',
                 )}
               >
                 <Icon className="w-4 h-4 shrink-0" />
@@ -300,7 +300,7 @@ function NavPopover({
               <button
                 type="button"
                 onClick={() => onPin(to)}
-                className="pr-3 text-gray-600 hover:text-[#F5C218] transition-colors opacity-0 group-hover/row:opacity-100"
+                className="pr-3 text-gray-600 hover:text-[#1D4ED8] transition-colors opacity-0 group-hover/row:opacity-100"
                 title="Fijar en barra principal"
               >
                 <Pin className="w-3.5 h-3.5" />
@@ -379,16 +379,16 @@ export default function Layout() {
       {/* ── Desktop sidebar ──────────────────────────────── */}
       <aside
         className="hidden lg:flex flex-col w-60 fixed inset-y-0 left-0 z-30"
-        style={{ background: '#1C1C1C' }}
+        style={{ background: '#0D1B48' }}
       >
         <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
           <AppIcon className="w-9 h-10 shrink-0" />
           <div className="min-w-0">
             <p className="font-bold text-white text-base uppercase tracking-widest leading-none font-['Barlow_Condensed']">
-              SERVINGMI
+              JHOTA
             </p>
             <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-tight mt-0.5 font-['Barlow_Condensed']">
-              Control de Gastos
+              JHOTA Construcciones
             </p>
           </div>
         </div>
@@ -418,7 +418,7 @@ export default function Layout() {
                   className={clsx(
                     "w-full flex items-center gap-3 px-1 py-2.5 text-sm font-medium transition-colors font-['DM_Sans']",
                     popoverOpen
-                      ? 'text-[#F5C218]'
+                      ? 'text-[#1D4ED8]'
                       : 'text-gray-500 hover:text-gray-300 hover:bg-white/8',
                   )}
                 >
@@ -462,14 +462,14 @@ export default function Layout() {
           'fixed inset-y-0 left-0 w-72 z-50 flex flex-col transition-transform duration-300 lg:hidden',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
-        style={{ background: '#1C1C1C' }}
+        style={{ background: '#0D1B48' }}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
             <AppIcon className="w-8 h-9 shrink-0" />
             <div>
-              <p className="font-bold text-white uppercase tracking-widest font-['Barlow_Condensed']">SERVINGMI</p>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-['Barlow_Condensed']">Control de Gastos</p>
+              <p className="font-bold text-white uppercase tracking-widest font-['Barlow_Condensed']">JHOTA</p>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-['Barlow_Condensed']">JHOTA Construcciones</p>
             </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} aria-label="Cerrar menú" className="text-gray-400 hover:text-white p-1">
@@ -502,14 +502,14 @@ export default function Layout() {
         {/* Mobile header */}
         <header
           className="lg:hidden sticky top-0 z-20 border-b border-white/10 px-4 py-3 flex items-center gap-3"
-          style={{ background: '#1C1C1C' }}
+          style={{ background: '#0D1B48' }}
         >
           <button onClick={() => setSidebarOpen(true)} className="text-gray-400 hover:text-white p-1">
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <AppIcon className="w-6 h-7 shrink-0" />
-            <span className="font-bold text-white uppercase tracking-widest text-sm font-['Barlow_Condensed']">SERVINGMI</span>
+            <span className="font-bold text-white uppercase tracking-widest text-sm font-['Barlow_Condensed']">JHOTA</span>
           </div>
           <RoleViewSwitcher compact />
         </header>
@@ -523,9 +523,9 @@ export default function Layout() {
         {isPreviewing && (
           <div
             className="hidden lg:flex items-center justify-between border-b px-6 py-2"
-            style={{ background: '#F5C218' }}
+            style={{ background: '#1D4ED8' }}
           >
-            <p className="text-xs font-semibold text-[#1C1C1C] flex items-center gap-2 font-['DM_Sans']">
+            <p className="text-xs font-semibold text-[#0D1B48] flex items-center gap-2 font-['DM_Sans']">
               <Eye className="w-3.5 h-3.5" />
               Viendo interfaz como <strong className="uppercase">{viewAsRole}</strong> — datos reales.
             </p>

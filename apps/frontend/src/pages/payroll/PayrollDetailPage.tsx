@@ -102,11 +102,11 @@ export default function PayrollDetailPage() {
     const meta = PAGE_META['/payrolls'];
     return (
       <div>
-        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#0D1B48' }}>
           <div>
             <p
               className="text-xs uppercase tracking-widest mb-1"
-              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8' }}
             >
               {meta.module}
             </p>
@@ -183,17 +183,17 @@ export default function PayrollDetailPage() {
     <div className="space-y-5 max-w-5xl" style={{ fontFamily: 'DM Sans, sans-serif' }}>
 
       {/* Back */}
-      <Link to="/payrolls" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#1C1C1C] transition-colors" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <Link to="/payrolls" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0D1B48] transition-colors" style={{ fontFamily: 'DM Sans, sans-serif' }}>
         <ArrowLeft className="w-4 h-4" /> Volver a nóminas
       </Link>
 
       {/* Header card */}
       <div className="overflow-hidden border border-gray-200 shadow-sm">
         {/* Dark hero band */}
-        <div className="px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
+        <div className="px-4 md:px-6 py-4 md:py-5" style={{ background: '#0D1B48' }}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs tracking-widest uppercase mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
+              <p className="text-xs tracking-widest uppercase mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8' }}>
                 NÓMINA
               </p>
               <div className="flex items-center gap-3 mb-2">
@@ -210,7 +210,7 @@ export default function PayrollDetailPage() {
               <h1 className="text-2xl uppercase tracking-wide text-white mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {payroll.description}
               </h1>
-              <p className="text-sm font-bold" style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}>
+              <p className="text-sm font-bold" style={{ fontFamily: 'Space Mono, monospace', color: '#1D4ED8' }}>
                 {payroll.project.code}
                 <span className="font-normal text-gray-400 ml-1">— {payroll.project.name}</span>
               </p>
@@ -280,7 +280,7 @@ export default function PayrollDetailPage() {
           {/* Detalles de pago */}
           {payroll.status === 'PAID' && (payroll.paymentBank || payroll.paymentReference || payroll.receiptNumber || payroll.receivedBy) && (
             <div className="mt-4 pt-3 border-t border-gray-100">
-              <div className="border-l-4 bg-yellow-50 p-3 rounded-r-lg" style={{ borderLeftColor: '#F5C218' }}>
+              <div className="border-l-4 bg-yellow-50 p-3 rounded-r-lg" style={{ borderLeftColor: '#1D4ED8' }}>
                 <p className="text-xs font-semibold text-yellow-800 mb-2 flex items-center gap-1.5 uppercase tracking-wide" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Wallet className="w-3.5 h-3.5" /> Detalle del pago
                 </p>
@@ -397,7 +397,7 @@ export default function PayrollDetailPage() {
                   onClick={() => { setActionError(''); approveMut.mutate(); }}
                   disabled={approveMut.isPending || (payroll.lines?.length ?? 0) === 0}
                   className="flex items-center gap-1.5 px-4 py-2 font-bold uppercase tracking-wide rounded-lg disabled:opacity-50 transition-opacity"
-                  style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}>
+                  style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}>
                   <CheckCircle className="w-4 h-4" />
                   {approveMut.isPending ? 'Aprobando…' : 'Aprobar'}
                 </button>
@@ -423,7 +423,7 @@ export default function PayrollDetailPage() {
               <button
                 onClick={() => { setActionError(''); setPayModal(true); }}
                 className="flex items-center gap-1.5 px-4 py-2 font-bold uppercase tracking-wide rounded-lg transition-opacity"
-                style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}>
+                style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}>
                 <DollarSign className="w-4 h-4" /> Marcar como Pagada
               </button>
               <button
@@ -466,9 +466,9 @@ export default function PayrollDetailPage() {
       {/* Lines table */}
       <div className="overflow-hidden border border-gray-200 shadow-sm">
         {/* Dark section header */}
-        <div className="px-4 md:px-5 py-3 flex items-center justify-between" style={{ background: '#1C1C1C' }}>
+        <div className="px-4 md:px-5 py-3 flex items-center justify-between" style={{ background: '#0D1B48' }}>
           <h2 className="font-bold uppercase tracking-widest text-white flex items-center gap-2 text-sm" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-            <Wallet className="w-4 h-4" style={{ color: '#F5C218' }} />
+            <Wallet className="w-4 h-4" style={{ color: '#1D4ED8' }} />
             Líneas de nómina
             <span className="text-gray-400 text-xs font-normal normal-case tracking-normal" style={{ fontFamily: 'Space Mono, monospace' }}>
               ({payroll.lines?.length ?? 0})
@@ -489,7 +489,7 @@ export default function PayrollDetailPage() {
               <button
                 onClick={() => { setAddingLine(true); setActionError(''); }}
                 className="hidden md:flex items-center gap-1.5 text-xs px-3 py-1.5 font-bold uppercase tracking-wide transition-opacity hover:opacity-90"
-                style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <Plus className="w-3.5 h-3.5" /> Agregar línea
               </button>
             </div>
@@ -513,7 +513,7 @@ export default function PayrollDetailPage() {
                 <span className="text-xs text-gray-500" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                   {Number(line.quantity).toLocaleString('es-DO', { maximumFractionDigits: 3 })} {line.unit} × RD$ {Number(line.unitPrice).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                 </span>
-                <span className="font-bold text-sm" style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}>
+                <span className="font-bold text-sm" style={{ fontFamily: 'Space Mono, monospace', color: '#0D1B48' }}>
                   RD$ {Number(line.subtotal).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -555,7 +555,7 @@ export default function PayrollDetailPage() {
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm min-w-[900px]">
             <thead>
-              <tr style={{ background: '#1C1C1C' }}>
+              <tr style={{ background: '#0D1B48' }}>
                 <th className="px-3 py-2.5 text-left w-8 uppercase tracking-wide text-gray-300" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.7rem' }}>#</th>
                 <th className="px-3 py-2.5 text-left w-36 uppercase tracking-wide text-gray-300" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.7rem' }}>Nombre Suplidor</th>
                 <th className="px-3 py-2.5 text-left uppercase tracking-wide text-gray-300" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.7rem' }}>Concepto de Servicio</th>
@@ -766,7 +766,7 @@ export default function PayrollDetailPage() {
 
               {/* Add line form row */}
               {addingLine && (
-                <tr style={{ background: '#fffbf0', borderTop: '2px solid #F5C218' }}>
+                <tr style={{ background: '#fffbf0', borderTop: '2px solid #1D4ED8' }}>
                   <td className="px-3 py-1.5 text-gray-400 text-xs" style={{ fontFamily: 'Space Mono, monospace' }}>+</td>
                   <td className="px-2 py-1">
                     <input placeholder="Nombre suplidor"
@@ -837,14 +837,14 @@ export default function PayrollDetailPage() {
               )}
             </tbody>
             <tfoot>
-              <tr style={{ background: '#1C1C1C', borderTop: '2px solid #333' }}>
+              <tr style={{ background: '#0D1B48', borderTop: '2px solid #333' }}>
                 <td colSpan={isDraft ? FIXED_COLS : FIXED_COLS - 1} className="px-5 py-3 text-right font-bold uppercase tracking-widest text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                   TOTAL A PAGAR
                 </td>
-                <td className="px-5 py-3 text-right font-bold whitespace-nowrap" style={{ fontFamily: 'Space Mono, monospace', fontSize: '1.1rem', color: '#F5C218' }}>
+                <td className="px-5 py-3 text-right font-bold whitespace-nowrap" style={{ fontFamily: 'Space Mono, monospace', fontSize: '1.1rem', color: '#1D4ED8' }}>
                   RD$ {Number(payroll.totalAmount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                 </td>
-                {(isDraft || isApproved) && <td style={{ background: '#1C1C1C' }} />}
+                {(isDraft || isApproved) && <td style={{ background: '#0D1B48' }} />}
               </tr>
             </tfoot>
           </table>
@@ -856,8 +856,8 @@ export default function PayrollDetailPage() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md shadow-2xl overflow-hidden" style={{ borderRadius: '0' }}>
             {/* Dark modal header */}
-            <div className="px-6 py-4 flex items-center gap-3" style={{ background: '#1C1C1C' }}>
-              <DollarSign className="w-5 h-5" style={{ color: '#F5C218' }} />
+            <div className="px-6 py-4 flex items-center gap-3" style={{ background: '#0D1B48' }}>
+              <DollarSign className="w-5 h-5" style={{ color: '#1D4ED8' }} />
               <h3 className="font-bold uppercase tracking-widest text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '1.1rem' }}>
                 Registrar pago
               </h3>
@@ -898,7 +898,7 @@ export default function PayrollDetailPage() {
                     (payForm.paymentMethod === 'CASH' && (!payForm.receiptNumber.trim() || !payForm.receivedBy.trim()))
                   }
                   className="flex-1 py-2.5 font-bold uppercase tracking-wide disabled:opacity-50 transition-opacity"
-                  style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   {payMut.isPending ? 'Guardando…' : 'Confirmar pago'}
                 </button>
                 <button
@@ -917,8 +917,8 @@ export default function PayrollDetailPage() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md shadow-2xl overflow-hidden" style={{ borderRadius: '0' }}>
             {/* Dark modal header */}
-            <div className="px-6 py-4 flex items-center gap-3" style={{ background: '#1C1C1C' }}>
-              <Link2 className="w-5 h-5" style={{ color: '#F5C218' }} />
+            <div className="px-6 py-4 flex items-center gap-3" style={{ background: '#0D1B48' }}>
+              <Link2 className="w-5 h-5" style={{ color: '#1D4ED8' }} />
               <h3 className="font-bold uppercase tracking-widest text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '1.1rem' }}>
                 Vincular Orden de Pago
               </h3>
@@ -959,7 +959,7 @@ export default function PayrollDetailPage() {
                   onClick={() => linkOrderMut.mutate(linkOrderId)}
                   disabled={!linkOrderId || linkOrderMut.isPending}
                   className="flex-1 py-2.5 font-bold uppercase tracking-wide disabled:opacity-50 transition-opacity"
-                  style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   {linkOrderMut.isPending ? 'Vinculando…' : 'Vincular'}
                 </button>
                 <button
@@ -978,7 +978,7 @@ export default function PayrollDetailPage() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md shadow-2xl overflow-hidden" style={{ borderRadius: '0' }}>
             {/* Dark modal header */}
-            <div className="px-6 py-4 flex items-center gap-3" style={{ background: '#1C1C1C' }}>
+            <div className="px-6 py-4 flex items-center gap-3" style={{ background: '#0D1B48' }}>
               <Ban className="w-5 h-5 text-red-400" />
               <h3 className="font-bold uppercase tracking-widest text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '1.1rem' }}>
                 Anular nómina

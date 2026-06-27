@@ -82,8 +82,8 @@ export default function NotificationBell() {
         onClick={() => setOpen((v) => !v)}
         className="relative p-2.5 rounded-full transition-all hover:scale-110 hover:shadow-lg"
         style={{
-          background: '#F5C218',
-          color: '#1C1C1C',
+          background: '#1D4ED8',
+          color: '#0D1B48',
         }}
         aria-label="Notificaciones"
       >

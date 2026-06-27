@@ -2,9 +2,9 @@ export default function DataDeletionPage() {
   return (
     <div style={{ fontFamily: 'DM Sans, system-ui, sans-serif', background: '#f9fafb', minHeight: '100vh' }}>
       {/* Header */}
-      <div style={{ background: '#1C1C1C', padding: '24px 40px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ background: '#0D1B48', padding: '24px 40px', display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div>
-          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
             SERVINGMI
           </p>
           <h1 style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', fontSize: '28px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
@@ -20,7 +20,7 @@ export default function DataDeletionPage() {
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px' }}>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             ¿Cómo solicitar la eliminación de sus datos?
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>
@@ -30,7 +30,7 @@ export default function DataDeletionPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             Opción 1 — Contactar al administrador de su organización
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>
@@ -41,11 +41,11 @@ export default function DataDeletionPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             Opción 2 — Contactar al soporte de SERVINGMI
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7, marginBottom: '12px' }}>
-            Envíe un correo electrónico a <strong>admin.servingmi7@gmail.com</strong> con el asunto
+            Envíe un correo electrónico a <strong>admin.jhota7@gmail.com</strong> con el asunto
             <strong> "Solicitud de eliminación de datos"</strong> indicando:
           </p>
           <ul style={{ color: '#374151', lineHeight: 2, paddingLeft: '24px' }}>
@@ -59,7 +59,7 @@ export default function DataDeletionPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             ¿Qué datos se eliminan?
           </h2>
           <ul style={{ color: '#374151', lineHeight: 2, paddingLeft: '24px' }}>
@@ -77,7 +77,7 @@ export default function DataDeletionPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             Datos de conexión con Facebook / WhatsApp
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>

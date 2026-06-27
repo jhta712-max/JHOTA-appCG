@@ -113,9 +113,9 @@ export default function CardsPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
         <div className="max-w-4xl mx-auto">
-          <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#F5C218] uppercase mb-2">
+          <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#1D4ED8] uppercase mb-2">
             ADMINISTRACIÓN / TARJETAS
           </p>
           <div className="flex items-end justify-between gap-4">
@@ -129,7 +129,7 @@ export default function CardsPage() {
             </div>
             <button
               onClick={openCreate}
-              className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors shrink-0"
+              className="flex items-center gap-2 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors shrink-0"
             >
               <Plus className="w-4 h-4" /> Nueva tarjeta
             </button>
@@ -141,7 +141,7 @@ export default function CardsPage() {
 
         {/* Flash message */}
         {successMsg && (
-          <div className="flex items-center gap-2 bg-[#1C1C1C] border border-[#F5C218]/40 text-[#F5C218] p-3 font-['DM_Sans'] text-sm">
+          <div className="flex items-center gap-2 bg-[#0D1B48] border border-[#1D4ED8]/40 text-[#1D4ED8] p-3 font-['DM_Sans'] text-sm">
             <CheckCircle className="w-4 h-4 shrink-0" />
             <p className="flex-1">{successMsg}</p>
           </div>
@@ -153,7 +153,7 @@ export default function CardsPage() {
             onClick={() => setShowAll(false)}
             className={`px-4 py-2 font-['DM_Sans'] text-sm font-medium transition-all ${
               !showAll
-                ? 'bg-[#1C1C1C] text-white'
+                ? 'bg-[#0D1B48] text-white'
                 : 'text-gray-500 hover:bg-gray-50'
             }`}
           >
@@ -163,7 +163,7 @@ export default function CardsPage() {
             onClick={() => setShowAll(true)}
             className={`px-4 py-2 font-['DM_Sans'] text-sm font-medium transition-all ${
               showAll
-                ? 'bg-[#1C1C1C] text-white'
+                ? 'bg-[#0D1B48] text-white'
                 : 'text-gray-500 hover:bg-gray-50'
             }`}
           >
@@ -181,7 +181,7 @@ export default function CardsPage() {
               <p className="font-['DM_Sans'] text-sm text-gray-400">No hay tarjetas registradas</p>
               <button
                 onClick={openCreate}
-                className="mt-4 bg-[#F5C218] text-[#1C1C1C] px-4 py-2 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors"
+                className="mt-4 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors"
               >
                 Agregar primera tarjeta
               </button>
@@ -213,7 +213,7 @@ export default function CardsPage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => openEdit(card)}
-                      className="p-1.5 text-gray-400 hover:text-[#F5C218] hover:bg-[#F5C218]/10 transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-[#1D4ED8] hover:bg-[#1D4ED8]/10 transition-colors"
                       title="Editar"
                     >
                       <Pencil className="w-4 h-4" />
@@ -237,7 +237,7 @@ export default function CardsPage() {
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#1C1C1C]">
+              <thead className="bg-[#0D1B48]">
                 <tr>
                   <th className="text-left px-5 py-3.5 font-['Barlow_Condensed'] text-xs font-semibold text-gray-400 uppercase tracking-[0.15em]">Tarjeta-habiente</th>
                   <th className="text-left px-5 py-3.5 font-['Barlow_Condensed'] text-xs font-semibold text-gray-400 uppercase tracking-[0.15em]">Tipo</th>
@@ -273,7 +273,7 @@ export default function CardsPage() {
                       <div className="flex items-center gap-1 justify-end">
                         <button
                           onClick={() => openEdit(card)}
-                          className="p-1.5 text-gray-400 hover:text-[#F5C218] hover:bg-[#F5C218]/10 transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-[#1D4ED8] hover:bg-[#1D4ED8]/10 transition-colors"
                           title="Editar"
                         >
                           <Pencil className="w-4 h-4" />
@@ -308,12 +308,12 @@ export default function CardsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
           <div className="bg-white shadow-2xl w-full max-w-md">
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-[#1C1C1C]">
+            <div className="flex items-center justify-between px-6 py-4 bg-[#0D1B48]">
               <h2 className="font-['Barlow_Condensed'] text-lg font-semibold text-white uppercase tracking-wide flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-[#F5C218]" />
+                <CreditCard className="w-4 h-4 text-[#1D4ED8]" />
                 {modal === 'create' ? 'Nueva tarjeta corporativa' : 'Editar tarjeta'}
               </h2>
-              <button onClick={closeModal} className="text-gray-400 hover:text-[#F5C218] transition-colors">
+              <button onClick={closeModal} className="text-gray-400 hover:text-[#1D4ED8] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -332,7 +332,7 @@ export default function CardsPage() {
                 </label>
                 <input
                   type="text"
-                  className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                  className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                   placeholder="Ej: Juan Pérez"
                   value={form.holderName}
                   onChange={(e) => setForm((f) => ({ ...f, holderName: e.target.value }))}
@@ -345,7 +345,7 @@ export default function CardsPage() {
                     Tipo *
                   </label>
                   <select
-                    className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                    className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                     value={form.cardType}
                     onChange={(e) => setForm((f) => ({ ...f, cardType: e.target.value }))}
                   >
@@ -358,7 +358,7 @@ export default function CardsPage() {
                   </label>
                   <input
                     type="text"
-                    className="w-full font-['Space_Mono'] text-sm border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                    className="w-full font-['Space_Mono'] text-sm border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                     placeholder="0000"
                     maxLength={4}
                     value={form.lastFour}
@@ -373,7 +373,7 @@ export default function CardsPage() {
                 </label>
                 <input
                   type="text"
-                  className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                  className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                   placeholder="Ej: Banco Popular"
                   value={form.bank}
                   onChange={(e) => setForm((f) => ({ ...f, bank: e.target.value }))}
@@ -391,7 +391,7 @@ export default function CardsPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex-1 bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSaving
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</>

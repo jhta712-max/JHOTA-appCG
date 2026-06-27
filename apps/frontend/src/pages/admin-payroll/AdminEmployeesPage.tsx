@@ -60,13 +60,13 @@ export default function AdminEmployeesPage() {
     }
   };
 
-  const inputCls = "w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]";
+  const inputCls = "w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]";
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
-        <p className="text-[#F5C218] text-xs font-bold uppercase tracking-[0.2em] font-['Barlow_Condensed'] mb-1">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
+        <p className="text-[#1D4ED8] text-xs font-bold uppercase tracking-[0.2em] font-['Barlow_Condensed'] mb-1">
           Nómina Administrativa
         </p>
         <div className="flex items-center justify-between">
@@ -76,7 +76,7 @@ export default function AdminEmployeesPage() {
           {canEdit && (
             <button
               onClick={() => setModal({ open: true, data: {} })}
-              className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed']"
+              className="flex items-center gap-2 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed']"
             >
               <Plus size={16} /> Nuevo Empleado
             </button>
@@ -93,7 +93,7 @@ export default function AdminEmployeesPage() {
             <div className="hidden md:block bg-white border border-gray-200 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[#1C1C1C]">
+                  <tr className="bg-[#0D1B48]">
                     {['Empleado','Cargo','Frecuencia','Salario Base','Estado',''].map((h) => (
                       <th key={h} className="text-left px-4 py-3 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">{h}</th>
                     ))}
@@ -118,7 +118,7 @@ export default function AdminEmployeesPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-3">
-                          <Link to={`/admin-payroll/employees/${emp.id}`} className="text-xs text-[#1C1C1C] underline font-['DM_Sans']">
+                          <Link to={`/admin-payroll/employees/${emp.id}`} className="text-xs text-[#0D1B48] underline font-['DM_Sans']">
                             Ver detalle
                           </Link>
                           {canEdit && (
@@ -156,7 +156,7 @@ export default function AdminEmployeesPage() {
                   <p className="font-['DM_Sans'] text-gray-500 text-xs">{emp.position} · {FREQ_LABEL[emp.paymentFrequency]}</p>
                   <p className="font-['Space_Mono'] text-gray-900 text-sm mt-1">RD$ {fmt(emp.baseSalary)}</p>
                   <div className="flex gap-3 mt-2">
-                    <Link to={`/admin-payroll/employees/${emp.id}`} className="text-xs text-[#1C1C1C] underline font-['DM_Sans']">
+                    <Link to={`/admin-payroll/employees/${emp.id}`} className="text-xs text-[#0D1B48] underline font-['DM_Sans']">
                       Ver detalle
                     </Link>
                     {canEdit && (
@@ -221,7 +221,7 @@ export default function AdminEmployeesPage() {
                 Cancelar
               </button>
               <button type="submit" disabled={createMut.isPending || updateMut.isPending}
-                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50">
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#1D4ED8] text-[#0D1B48] disabled:opacity-50">
                 {createMut.isPending || updateMut.isPending ? 'Guardando…' : 'Guardar'}
               </button>
             </div>

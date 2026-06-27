@@ -50,12 +50,12 @@ function CubicacionRow({
 
   if (editing) {
     return (
-      <tr className="bg-[#F5C218]/10 border-t border-[#F5C218]/30">
-        <td className="px-3 py-2 text-sm font-bold text-[#F5C218]" style={{ fontFamily: "'Space Mono', monospace" }}>#{cub.number}</td>
+      <tr className="bg-[#1D4ED8]/10 border-t border-[#1D4ED8]/30">
+        <td className="px-3 py-2 text-sm font-bold text-[#1D4ED8]" style={{ fontFamily: "'Space Mono', monospace" }}>#{cub.number}</td>
         <td className="px-2 py-2">
           <input
             type="number" min="0.01" step="0.01"
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none bg-white"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none bg-white"
             style={{ fontFamily: "'Space Mono', monospace" }}
             value={form.amount}
             onChange={(e) => setForm({ ...form, amount: e.target.value })}
@@ -65,7 +65,7 @@ function CubicacionRow({
           <div className="flex items-center gap-1">
             <input
               type="number" min="0" max="100" step="1"
-              className="w-16 px-2 py-1.5 text-sm border border-gray-300 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none bg-white"
+              className="w-16 px-2 py-1.5 text-sm border border-gray-300 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none bg-white"
               style={{ fontFamily: "'Space Mono', monospace" }}
               value={form.progressPct}
               onChange={(e) => setForm({ ...form, progressPct: e.target.value })}
@@ -75,7 +75,7 @@ function CubicacionRow({
         </td>
         <td className="px-2 py-2">
           <input
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none bg-white"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none bg-white"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -84,7 +84,7 @@ function CubicacionRow({
         <td className="px-2 py-2">
           <input
             type="date"
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none bg-white"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none bg-white"
             style={{ fontFamily: "'Space Mono', monospace" }}
             value={form.date}
             onChange={(e) => setForm({ ...form, date: e.target.value })}
@@ -94,7 +94,7 @@ function CubicacionRow({
           <input
             type="text"
             maxLength={19}
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none bg-white"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none bg-white"
             style={{ fontFamily: "'Space Mono', monospace" }}
             value={form.ncf ?? ''}
             onChange={(e) => setForm({ ...form, ncf: e.target.value })}
@@ -106,7 +106,7 @@ function CubicacionRow({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="p-1.5 bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400] transition-colors disabled:opacity-60"
+              className="p-1.5 bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400] transition-colors disabled:opacity-60"
             >
               <Check className="w-4 h-4" />
             </button>
@@ -125,13 +125,13 @@ function CubicacionRow({
   return (
     <tr className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
       <td className="px-3 py-3 text-sm font-bold text-gray-400" style={{ fontFamily: "'Space Mono', monospace" }}>#{cub.number}</td>
-      <td className="px-3 py-3 text-sm font-bold text-[#1C1C1C]" style={{ fontFamily: "'Space Mono', monospace" }}>{fmt(cub.amount)}</td>
+      <td className="px-3 py-3 text-sm font-bold text-[#0D1B48]" style={{ fontFamily: "'Space Mono', monospace" }}>{fmt(cub.amount)}</td>
       <td className="px-3 py-3">
         <div className="flex items-center gap-2">
           <div className="w-16 h-1.5 bg-gray-200 overflow-hidden">
             <div
               className="h-full"
-              style={{ width: `${Math.min(cub.progressPct, 100)}%`, background: '#F5C218' }}
+              style={{ width: `${Math.min(cub.progressPct, 100)}%`, background: '#1D4ED8' }}
             />
           </div>
           <span className="text-sm font-medium text-gray-700" style={{ fontFamily: "'Space Mono', monospace" }}>{cub.progressPct}%</span>
@@ -144,7 +144,7 @@ function CubicacionRow({
         <div className="flex gap-1">
           <button
             onClick={() => setEditing(true)}
-            className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218]/20 transition-colors"
+            className="p-1.5 text-gray-400 hover:text-[#0D1B48] hover:bg-[#1D4ED8]/20 transition-colors"
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
@@ -378,9 +378,9 @@ export default function ProjectFinancialPage() {
     const meta = PAGE_META['/projects'];
     return (
       <div>
-        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-6 py-5" style={{ background: '#0D1B48' }}>
           <div>
-            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
+            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8' }}>
               {meta.module}
             </p>
             <h1 className="text-3xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -417,7 +417,7 @@ export default function ProjectFinancialPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* Hero header band */}
-      <div className="bg-[#1C1C1C]">
+      <div className="bg-[#0D1B48]">
         <div className="max-w-4xl mx-auto px-5 pt-4 pb-5">
 
           {/* Breadcrumb */}
@@ -427,12 +427,12 @@ export default function ProjectFinancialPage() {
           >
             <button
               onClick={() => navigate(`/projects/${id}`)}
-              className="flex items-center gap-1.5 text-[#F5C218] hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-[#1D4ED8] hover:text-white transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <Link
                 to={`/projects/${id}`}
-                className="text-[#F5C218] hover:text-white transition-colors"
+                className="text-[#1D4ED8] hover:text-white transition-colors"
               >
                 {financial ? project.code : 'Proyecto'}
               </Link>
@@ -455,7 +455,7 @@ export default function ProjectFinancialPage() {
             </div>
             <button
               onClick={() => { setShowForm(true); setError(''); }}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400] transition-colors shrink-0"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400] transition-colors shrink-0"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <Plus className="w-4 h-4" /> Nueva cubicación
@@ -473,7 +473,7 @@ export default function ProjectFinancialPage() {
           {/* Presupuesto total */}
           <div className="bg-white p-4">
             <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-4 h-4 text-[#F5C218]" />
+              <DollarSign className="w-4 h-4 text-[#1D4ED8]" />
               <p
                 className="text-xs text-gray-500 uppercase tracking-wide"
                 style={{ fontFamily: "'Barlow_Condensed', sans-serif" }}
@@ -482,7 +482,7 @@ export default function ProjectFinancialPage() {
               </p>
             </div>
             <p
-              className="text-lg font-bold text-[#1C1C1C]"
+              className="text-lg font-bold text-[#0D1B48]"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
               {fmt(project.totalBudget)}
@@ -500,7 +500,7 @@ export default function ProjectFinancialPage() {
           {/* Total cubicado */}
           <div className="bg-white p-4">
             <div className="flex items-center gap-2 mb-2">
-              <BarChart2 className="w-4 h-4 text-[#F5C218]" />
+              <BarChart2 className="w-4 h-4 text-[#1D4ED8]" />
               <p
                 className="text-xs text-gray-500 uppercase tracking-wide"
                 style={{ fontFamily: "'Barlow_Condensed', sans-serif" }}
@@ -650,16 +650,16 @@ export default function ProjectFinancialPage() {
         {/* Comparativa financiera */}
         <div className="bg-white border border-gray-200 p-5 space-y-4">
           <h2
-            className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-[#1C1C1C] flex items-center gap-2"
+            className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-[#0D1B48] flex items-center gap-2"
           >
-            <Activity className="w-4 h-4 text-[#F5C218]" />
+            <Activity className="w-4 h-4 text-[#1D4ED8]" />
             Comparativa financiera
           </h2>
 
           {/* Avance físico */}
           {sinCubicaciones ? (
-            <div className="flex items-start gap-3 bg-[#1C1C1C] border border-[#F5C218]/30 px-4 py-3">
-              <AlertCircle className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 bg-[#0D1B48] border border-[#1D4ED8]/30 px-4 py-3">
+              <AlertCircle className="w-4 h-4 text-[#1D4ED8] shrink-0 mt-0.5" />
               <div>
                 <p
                   className="text-sm font-medium text-white"
@@ -686,7 +686,7 @@ export default function ProjectFinancialPage() {
                   Avance físico (última cubicación)
                 </span>
                 <span
-                  className="font-bold text-[#1C1C1C]"
+                  className="font-bold text-[#0D1B48]"
                   style={{ fontFamily: "'Space Mono', monospace" }}
                 >
                   {lastProgressPct.toFixed(1)}%
@@ -695,7 +695,7 @@ export default function ProjectFinancialPage() {
               <div className="h-2 bg-gray-200 overflow-hidden">
                 <div
                   className="h-full transition-all duration-700"
-                  style={{ width: `${lastProgressPct}%`, background: '#F5C218' }}
+                  style={{ width: `${lastProgressPct}%`, background: '#1D4ED8' }}
                 />
               </div>
             </div>
@@ -817,7 +817,7 @@ export default function ProjectFinancialPage() {
           >
             {!sinCubicaciones && (
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3" style={{ background: '#F5C218' }} />
+                <div className="w-3 h-3" style={{ background: '#1D4ED8' }} />
                 Avance físico
               </div>
             )}
@@ -835,7 +835,7 @@ export default function ProjectFinancialPage() {
         {/* ── Anticipos recibidos ─────────────────────────────── */}
         <div className="bg-white border border-gray-200">
           {/* Header */}
-          <div className="bg-[#1C1C1C] px-6 py-4 flex items-center justify-between">
+          <div className="bg-[#0D1B48] px-6 py-4 flex items-center justify-between">
             <h2 className="font-['Barlow_Condensed'] text-lg font-bold text-white uppercase tracking-wide">
               Anticipos recibidos
             </h2>
@@ -846,7 +846,7 @@ export default function ProjectFinancialPage() {
                   setAnticipoForm({ amount: '', date: '', ncf: '', description: '' });
                   setShowAnticipoForm(v => !v);
                 }}
-                className="bg-[#F5C218] text-[#1C1C1C] px-3 py-1.5 text-xs font-['Barlow_Condensed'] font-bold uppercase tracking-wide hover:bg-yellow-400 transition-colors"
+                className="bg-[#1D4ED8] text-[#0D1B48] px-3 py-1.5 text-xs font-['Barlow_Condensed'] font-bold uppercase tracking-wide hover:bg-yellow-400 transition-colors"
               >
                 + Agregar anticipo
               </button>
@@ -865,7 +865,7 @@ export default function ProjectFinancialPage() {
                     type="number"
                     value={anticipoForm.amount}
                     onChange={e => setAnticipoForm(f => ({ ...f, amount: e.target.value }))}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none"
                     placeholder="0.00"
                   />
                 </div>
@@ -877,7 +877,7 @@ export default function ProjectFinancialPage() {
                     type="date"
                     value={anticipoForm.date}
                     onChange={e => setAnticipoForm(f => ({ ...f, date: e.target.value }))}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none"
                   />
                 </div>
                 <div>
@@ -888,7 +888,7 @@ export default function ProjectFinancialPage() {
                     type="text"
                     value={anticipoForm.ncf}
                     onChange={e => setAnticipoForm(f => ({ ...f, ncf: e.target.value }))}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none"
                     placeholder="B0100000001 o E310000000001"
                     maxLength={19}
                   />
@@ -901,7 +901,7 @@ export default function ProjectFinancialPage() {
                     type="text"
                     value={anticipoForm.description}
                     onChange={e => setAnticipoForm(f => ({ ...f, description: e.target.value }))}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none"
                     placeholder="Anticipo contractual 20% según contrato"
                     maxLength={500}
                   />
@@ -917,7 +917,7 @@ export default function ProjectFinancialPage() {
                 <button
                   onClick={handleSaveAnticipo}
                   disabled={!anticipoForm.amount || !anticipoForm.date || createAnticipoMutation.isPending || updateAnticipoMutation.isPending}
-                  className="px-4 py-2 text-sm bg-[#F5C218] text-[#1C1C1C] font-['Barlow_Condensed'] font-bold uppercase tracking-wide hover:bg-yellow-400 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 text-sm bg-[#1D4ED8] text-[#0D1B48] font-['Barlow_Condensed'] font-bold uppercase tracking-wide hover:bg-yellow-400 disabled:opacity-50 transition-colors"
                 >
                   {editingAnticipoId ? 'Guardar cambios' : 'Registrar anticipo'}
                 </button>
@@ -934,7 +934,7 @@ export default function ProjectFinancialPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-[#1C1C1C]">
+                  <tr className="bg-[#0D1B48]">
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">N°</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Fecha</th>
                     <th className="px-4 py-3 text-right font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Monto</th>
@@ -950,7 +950,7 @@ export default function ProjectFinancialPage() {
                       <td className="px-4 py-3 font-['DM_Sans'] text-sm text-gray-700">
                         {fmtDate(anticipo.date, { day: '2-digit', month: 'short', year: 'numeric' })}
                       </td>
-                      <td className="px-4 py-3 font-['Space_Mono'] text-sm font-bold text-[#1C1C1C] text-right">
+                      <td className="px-4 py-3 font-['Space_Mono'] text-sm font-bold text-[#0D1B48] text-right">
                         {fmt(anticipo.amount)}
                       </td>
                       <td className="px-4 py-3 font-['Space_Mono'] text-xs text-gray-500">
@@ -964,7 +964,7 @@ export default function ProjectFinancialPage() {
                           <div className="flex gap-2 justify-end">
                             <button
                               onClick={() => handleEditAnticipo(anticipo)}
-                              className="text-gray-400 hover:text-[#F5C218] transition-colors text-xs p-1"
+                              className="text-gray-400 hover:text-[#1D4ED8] transition-colors text-xs p-1"
                               title="Editar"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -985,7 +985,7 @@ export default function ProjectFinancialPage() {
                 <tfoot>
                   <tr className="border-t-2 border-gray-200">
                     <td colSpan={2} className="px-4 py-3 font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500">Total anticipos</td>
-                    <td className="px-4 py-3 font-['Space_Mono'] text-sm font-bold text-[#1C1C1C] text-right">
+                    <td className="px-4 py-3 font-['Space_Mono'] text-sm font-bold text-[#0D1B48] text-right">
                       {fmt(financials.totalAnticipos ?? 0)}
                     </td>
                     <td colSpan={canEdit ? 3 : 2}></td>
@@ -998,9 +998,9 @@ export default function ProjectFinancialPage() {
 
         {/* ── Gastos Extraordinarios ─────────────────────────────── */}
         <div>
-          <div className="bg-[#1C1C1C] px-4 py-3 flex items-center justify-between">
+          <div className="bg-[#0D1B48] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Zap size={14} className="text-[#F5C218]" />
+              <Zap size={14} className="text-[#1D4ED8]" />
               <span className="font-['Barlow_Condensed'] text-sm text-white uppercase tracking-widest">
                 Gastos Extraordinarios
               </span>
@@ -1008,7 +1008,7 @@ export default function ProjectFinancialPage() {
             {canEdit && (
               <button
                 onClick={() => openExtraModal(null)}
-                className="flex items-center gap-1 bg-[#F5C218] text-[#1C1C1C] px-3 py-1 text-xs font-bold font-['Barlow_Condensed'] uppercase hover:bg-yellow-400 transition-colors"
+                className="flex items-center gap-1 bg-[#1D4ED8] text-[#0D1B48] px-3 py-1 text-xs font-bold font-['Barlow_Condensed'] uppercase hover:bg-yellow-400 transition-colors"
               >
                 + Agregar
               </button>
@@ -1051,7 +1051,7 @@ export default function ProjectFinancialPage() {
                     <td className="px-4 py-2">
                       {canEdit && (
                         <div className="flex gap-2">
-                          <button onClick={() => openExtraModal(e)} className="text-gray-400 hover:text-[#F5C218]">
+                          <button onClick={() => openExtraModal(e)} className="text-gray-400 hover:text-[#1D4ED8]">
                             <Pencil size={14} />
                           </button>
                           <button
@@ -1072,16 +1072,16 @@ export default function ProjectFinancialPage() {
 
         {/* Formulario nueva cubicación */}
         {showForm && (
-          <div className="bg-white border border-[#F5C218] p-5 space-y-4">
+          <div className="bg-white border border-[#1D4ED8] p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2
-                className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-[#1C1C1C]"
+                className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-[#0D1B48]"
               >
                 Nueva cubicación #{cubicaciones.length + 1}
               </h2>
               <button
                 onClick={() => { setShowForm(false); setError(''); }}
-                className="text-gray-400 hover:text-[#F5C218] transition-colors p-1"
+                className="text-gray-400 hover:text-[#1D4ED8] transition-colors p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1106,7 +1106,7 @@ export default function ProjectFinancialPage() {
                 </label>
                 <input
                   type="number" min="0.01" step="0.01"
-                  className="w-full px-3 py-2 border border-gray-200 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none text-sm"
                   style={{ fontFamily: "'Space Mono', monospace" }}
                   placeholder="1500000"
                   value={form.amount}
@@ -1123,7 +1123,7 @@ export default function ProjectFinancialPage() {
                 <div className="relative">
                   <input
                     type="number" min="0" max="100" step="1"
-                    className="w-full px-3 py-2 pr-8 border border-gray-200 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none text-sm"
+                    className="w-full px-3 py-2 pr-8 border border-gray-200 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none text-sm"
                     style={{ fontFamily: "'Space Mono', monospace" }}
                     placeholder="35"
                     value={form.progressPct}
@@ -1147,7 +1147,7 @@ export default function ProjectFinancialPage() {
                   Descripción / concepto *
                 </label>
                 <input
-                  className="w-full px-3 py-2 border border-gray-200 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none text-sm"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                   placeholder="Ej. Avance de obra — Mes de mayo"
                   value={form.description}
@@ -1163,7 +1163,7 @@ export default function ProjectFinancialPage() {
                 </label>
                 <input
                   type="date"
-                  className="w-full px-3 py-2 border border-gray-200 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none text-sm"
                   style={{ fontFamily: "'Space Mono', monospace" }}
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
@@ -1179,7 +1179,7 @@ export default function ProjectFinancialPage() {
                   type="text"
                   value={form.ncf ?? ''}
                   onChange={e => setForm(f => ({ ...f, ncf: e.target.value }))}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none"
                   placeholder="B0100000001 o E310000000001"
                   maxLength={19}
                 />
@@ -1199,12 +1199,12 @@ export default function ProjectFinancialPage() {
                 type="button"
                 onClick={handleCreate}
                 disabled={saving}
-                className="flex items-center justify-center gap-2 flex-1 py-2.5 bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400] transition-colors text-sm font-medium disabled:opacity-60"
+                className="flex items-center justify-center gap-2 flex-1 py-2.5 bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400] transition-colors text-sm font-medium disabled:opacity-60"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 {saving ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-[#1C1C1C]/40 border-t-[#1C1C1C] rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-[#0D1B48]/40 border-t-[#0D1B48] rounded-full animate-spin" />
                     Guardando...
                   </>
                 ) : (
@@ -1219,18 +1219,18 @@ export default function ProjectFinancialPage() {
 
         {/* Tabla de cubicaciones */}
         <div className="bg-white border border-gray-200 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 bg-[#1C1C1C]">
+          <div className="flex items-center justify-between px-5 py-4 bg-[#0D1B48]">
             <h2
               className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-white flex items-center gap-2"
             >
-              <BarChart2 className="w-4 h-4 text-[#F5C218]" />
+              <BarChart2 className="w-4 h-4 text-[#1D4ED8]" />
               Historial de cubicaciones
               {cubicaciones.length > 0 && (
                 <span
                   className="text-xs px-2 py-0.5 font-medium"
                   style={{
                     background: 'rgba(245,194,24,0.15)',
-                    color: '#F5C218',
+                    color: '#1D4ED8',
                     fontFamily: "'Space Mono', monospace",
                   }}
                 >
@@ -1245,7 +1245,7 @@ export default function ProjectFinancialPage() {
               >
                 Total:{' '}
                 <span
-                  className="font-bold text-[#F5C218]"
+                  className="font-bold text-[#1D4ED8]"
                   style={{ fontFamily: "'Space Mono', monospace" }}
                 >
                   {fmt(totalCubicado)}
@@ -1264,7 +1264,7 @@ export default function ProjectFinancialPage() {
               <p className="text-xs mt-1">Registra los cobros al cliente según el avance de la obra</p>
               <button
                 onClick={() => setShowForm(true)}
-                className="flex items-center gap-1.5 mx-auto mt-4 px-4 py-2 text-sm font-medium bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400] transition-colors"
+                className="flex items-center gap-1.5 mx-auto mt-4 px-4 py-2 text-sm font-medium bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400] transition-colors"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 <Plus className="w-4 h-4" /> Registrar primera cubicación
@@ -1273,7 +1273,7 @@ export default function ProjectFinancialPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-[#1C1C1C] border-t border-[#F5C218]/20">
+                <thead className="bg-[#0D1B48] border-t border-[#1D4ED8]/20">
                   <tr>
                     <th
                       className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-[0.15em] w-10"
@@ -1324,7 +1324,7 @@ export default function ProjectFinancialPage() {
                     />
                   ))}
                 </tbody>
-                <tfoot className="bg-gray-50 border-t-2 border-[#1C1C1C]">
+                <tfoot className="bg-gray-50 border-t-2 border-[#0D1B48]">
                   <tr>
                     <td
                       className="px-3 py-3 text-xs text-gray-500 font-semibold uppercase"
@@ -1356,7 +1356,7 @@ export default function ProjectFinancialPage() {
         {cubicaciones.length > 0 && (
           <div className="bg-white border border-gray-200 p-5">
             <h2
-              className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-[#1C1C1C] mb-4"
+              className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-[#0D1B48] mb-4"
             >
               Resumen de cierre financiero
             </h2>
@@ -1466,7 +1466,7 @@ export default function ProjectFinancialPage() {
               type="text"
               value={extraForm.description}
               onChange={e => setExtraForm(f => ({ ...f, description: e.target.value }))}
-              className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+              className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
               placeholder="Ej: Comisión bancaria enero"
               required
             />
@@ -1480,7 +1480,7 @@ export default function ProjectFinancialPage() {
               <select
                 value={extraForm.category}
                 onChange={e => setExtraForm(f => ({ ...f, category: e.target.value }))}
-                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
               >
                 {Object.entries(CATEGORY_LABELS).map(([val, label]) => (
                   <option key={val} value={val}>{label}</option>
@@ -1496,7 +1496,7 @@ export default function ProjectFinancialPage() {
                 type="date"
                 value={extraForm.date}
                 onChange={e => setExtraForm(f => ({ ...f, date: e.target.value }))}
-                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                 required
               />
             </div>
@@ -1512,7 +1512,7 @@ export default function ProjectFinancialPage() {
               step="0.01"
               value={extraForm.amount}
               onChange={e => setExtraForm(f => ({ ...f, amount: e.target.value }))}
-              className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+              className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
               placeholder="0.00"
               required
             />
@@ -1526,7 +1526,7 @@ export default function ProjectFinancialPage() {
               value={extraForm.notes}
               onChange={e => setExtraForm(f => ({ ...f, notes: e.target.value }))}
               rows={2}
-              className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] resize-none"
+              className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] resize-none"
               placeholder="Detalles adicionales..."
             />
           </div>
@@ -1542,7 +1542,7 @@ export default function ProjectFinancialPage() {
             <button
               type="submit"
               disabled={createExtraMut.isPending || updateExtraMut.isPending}
-              className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50"
+              className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#1D4ED8] text-[#0D1B48] disabled:opacity-50"
             >
               {createExtraMut.isPending || updateExtraMut.isPending ? 'Guardando…' : (extraModal.editing ? 'Guardar cambios' : 'Registrar')}
             </button>

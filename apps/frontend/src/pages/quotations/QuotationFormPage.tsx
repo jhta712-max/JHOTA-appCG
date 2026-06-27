@@ -37,15 +37,15 @@ const EMPTY: FormData = {
   observations: '', notes: '', batchItemId: '',
 };
 
-const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white";
+const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] bg-white";
 const labelCls = "block text-xs font-semibold uppercase tracking-wide text-gray-500 font-['Barlow_Condensed'] mb-1";
 
 function SectionHeader({ num, title }: { num: string; title: string }) {
   return (
-    <div className="flex items-center gap-3 px-5 py-3" style={{ background: '#1C1C1C' }}>
+    <div className="flex items-center gap-3 px-5 py-3" style={{ background: '#0D1B48' }}>
       <span
         className="w-7 h-7 flex items-center justify-center text-sm font-bold shrink-0"
-        style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Space Mono, monospace' }}
+        style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Space Mono, monospace' }}
       >
         {num}
       </span>
@@ -230,7 +230,7 @@ export default function QuotationFormPage() {
     <div className="max-w-2xl mx-auto">
 
       {/* Hero header */}
-      <div className="px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#0D1B48' }}>
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
@@ -251,8 +251,8 @@ export default function QuotationFormPage() {
 
       {/* OCR section */}
       <div className="mb-5 border border-gray-200">
-        <div className="flex items-center gap-2 px-5 py-3" style={{ background: '#1C1C1C' }}>
-          <Sparkles className="w-4 h-4" style={{ color: '#F5C218' }} />
+        <div className="flex items-center gap-2 px-5 py-3" style={{ background: '#0D1B48' }}>
+          <Sparkles className="w-4 h-4" style={{ color: '#1D4ED8' }} />
           <span className="font-['Barlow_Condensed'] uppercase tracking-widest text-sm text-white">
             Extraer con IA
           </span>
@@ -273,7 +273,7 @@ export default function QuotationFormPage() {
               onClick={handleOcr}
               disabled={!ocrFile || ocrLoading}
               className="flex items-center gap-2 px-4 py-2 text-sm font-['Barlow_Condensed'] uppercase tracking-wide font-bold disabled:opacity-50 shrink-0 transition-opacity"
-              style={{ background: '#1C1C1C', color: '#F5C218' }}
+              style={{ background: '#0D1B48', color: '#1D4ED8' }}
             >
               {ocrLoading
                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando...</>
@@ -282,7 +282,7 @@ export default function QuotationFormPage() {
             </button>
           </div>
           {ocrMsg && (
-            <div className="border-l-4 border-[#F5C218] bg-amber-50 px-4 py-2 text-xs font-['DM_Sans'] text-amber-800">
+            <div className="border-l-4 border-[#1D4ED8] bg-amber-50 px-4 py-2 text-xs font-['DM_Sans'] text-amber-800">
               ✓ {ocrMsg} — Revisa y ajusta los campos antes de guardar.
             </div>
           )}
@@ -441,8 +441,8 @@ export default function QuotationFormPage() {
                 <label className={labelCls}>Total *</label>
                 <input
                   type="number" step="0.01" min="0"
-                  className={`w-full border rounded-none px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#F5C218] ${errors.total ? 'border-red-400 bg-white text-gray-900' : 'border-[#F5C218]'}`}
-                  style={errors.total ? {} : { background: '#F5C218', color: '#1C1C1C', fontFamily: 'Space Mono, monospace' }}
+                  className={`w-full border rounded-none px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] ${errors.total ? 'border-red-400 bg-white text-gray-900' : 'border-[#1D4ED8]'}`}
+                  style={errors.total ? {} : { background: '#1D4ED8', color: '#ffffff', fontFamily: 'Space Mono, monospace' }}
                   placeholder="0.00"
                   value={form.total} onChange={(e) => set('total', e.target.value)}
                 />
@@ -524,7 +524,7 @@ export default function QuotationFormPage() {
             type="submit"
             disabled={mutation.isPending}
             className="flex-1 flex items-center justify-center gap-2 py-3 font-['Barlow_Condensed'] uppercase tracking-wide text-sm font-bold disabled:opacity-50 transition-opacity"
-            style={{ background: '#F5C218', color: '#1C1C1C' }}
+            style={{ background: '#1D4ED8', color: '#ffffff' }}
           >
             {mutation.isPending
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</>

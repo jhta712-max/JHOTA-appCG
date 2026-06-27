@@ -36,7 +36,7 @@ const EMPTY_FORM: ContratoForm = {
 
 function ProgressBar({ pct, sobregirado }: { pct: number; sobregirado: boolean }) {
   const clamped = Math.min(pct, 100);
-  const color = sobregirado ? 'bg-red-500' : pct >= 90 ? 'bg-[#F5C218]' : 'bg-green-500';
+  const color = sobregirado ? 'bg-red-500' : pct >= 90 ? 'bg-[#1D4ED8]' : 'bg-green-500';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 bg-gray-200 h-1.5 overflow-hidden">
@@ -107,7 +107,7 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="bg-[#1C1C1C] flex items-center justify-between px-6 py-4">
+        <div className="bg-[#0D1B48] flex items-center justify-between px-6 py-4">
           <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">
             {editing ? 'Editar Contrato' : 'Nuevo Contrato Ajustado'}
           </h2>
@@ -118,7 +118,7 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Proyecto</label>
             <select value={form.projectId} onChange={(e) => set('projectId', e.target.value)}
-              className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]">
+              className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]">
               <option value="">Seleccionar proyecto...</option>
               {projects.map((p: any) => <option key={p.id} value={p.id}>{p.code} - {p.name}</option>)}
             </select>
@@ -127,7 +127,7 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Suplidor</label>
             <select value={form.supplierId} onChange={(e) => set('supplierId', e.target.value)}
-              className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]">
+              className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]">
               <option value="">Seleccionar suplidor...</option>
               {suppliers.map((s: any) => <option key={s.id} value={s.id}>{s.name}{s.rnc ? ` (${s.rnc})` : ''}</option>)}
             </select>
@@ -136,7 +136,7 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Descripción del Trabajo</label>
             <textarea value={form.descripcionTrabajo} onChange={(e) => set('descripcionTrabajo', e.target.value)}
-              rows={3} className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C] resize-none"
+              rows={3} className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48] resize-none"
               placeholder="Descripción detallada del trabajo contratado..." />
           </div>
 
@@ -144,12 +144,12 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Monto (RD$)</label>
               <input type="number" min="0" step="0.01" value={form.montoContratado} onChange={(e) => set('montoContratado', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1C1C1C]" placeholder="0.00" />
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#0D1B48]" placeholder="0.00" />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha de Contrato</label>
               <input type="date" value={form.fechaContrato} onChange={(e) => set('fechaContrato', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" />
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]" />
             </div>
           </div>
 
@@ -157,7 +157,7 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Estado</label>
               <select value={form.estado} onChange={(e) => set('estado', e.target.value as ContratoForm['estado'])}
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]">
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]">
                 <option value="ACTIVO">Activo</option>
                 <option value="COMPLETADO">Completado</option>
                 <option value="CANCELADO">Cancelado</option>
@@ -168,7 +168,7 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Observaciones (opcional)</label>
             <textarea value={form.observaciones} onChange={(e) => set('observaciones', e.target.value)}
-              rows={2} className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C] resize-none"
+              rows={2} className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48] resize-none"
               placeholder="Notas adicionales..." />
           </div>
 
@@ -184,7 +184,7 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
               Cancelar
             </button>
             <button type="submit" disabled={mutation.isPending}
-              className="px-4 py-2.5 text-sm font-bold bg-[#F5C218] text-[#1C1C1C] hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center gap-2 uppercase tracking-wide">
+              className="px-4 py-2.5 text-sm font-bold bg-[#1D4ED8] text-[#0D1B48] hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center gap-2 uppercase tracking-wide">
               {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               {editing ? 'Guardar Cambios' : 'Crear Contrato'}
             </button>
@@ -228,7 +228,7 @@ function VincularGastoModal({ contratoId, projectId, onClose, onSuccess }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-white w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
-        <div className="bg-[#1C1C1C] flex items-center justify-between px-6 py-4">
+        <div className="bg-[#0D1B48] flex items-center justify-between px-6 py-4">
           <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">Vincular Gasto</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
         </div>
@@ -238,7 +238,7 @@ function VincularGastoModal({ contratoId, projectId, onClose, onSuccess }: {
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
             <input value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por descripción..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-200 text-sm focus:outline-none focus:border-[#1C1C1C]" />
+              className="w-full pl-9 pr-3 py-2 border border-gray-200 text-sm focus:outline-none focus:border-[#0D1B48]" />
           </div>
         </div>
 
@@ -256,16 +256,16 @@ function VincularGastoModal({ contratoId, projectId, onClose, onSuccess }: {
               {filtered.map((exp) => (
                 <label key={exp.id}
                   className={clsx('flex items-center gap-3 p-3 border cursor-pointer transition-colors',
-                    selected === exp.id ? 'border-[#1C1C1C] bg-gray-50' : 'border-gray-200 hover:bg-gray-50',
+                    selected === exp.id ? 'border-[#0D1B48] bg-gray-50' : 'border-gray-200 hover:bg-gray-50',
                   )}>
                   <input type="radio" name="expense" value={exp.id}
                     checked={selected === exp.id} onChange={() => setSelected(exp.id)}
-                    className="accent-[#1C1C1C]" />
+                    className="accent-[#0D1B48]" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-800 truncate">{exp.description}</p>
                     <p className="text-xs text-gray-400 font-['Space_Mono']">{fmtDate(exp.expenseDate)}</p>
                   </div>
-                  <span className="text-sm font-black text-[#1C1C1C] shrink-0 font-['Space_Mono']">{fmt(exp.amount)}</span>
+                  <span className="text-sm font-black text-[#0D1B48] shrink-0 font-['Space_Mono']">{fmt(exp.amount)}</span>
                 </label>
               ))}
             </div>
@@ -284,7 +284,7 @@ function VincularGastoModal({ contratoId, projectId, onClose, onSuccess }: {
             Cancelar
           </button>
           <button disabled={!selected || mutation.isPending} onClick={() => mutation.mutate()}
-            className="px-4 py-2.5 text-sm font-bold bg-[#F5C218] text-[#1C1C1C] hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center gap-2 uppercase tracking-wide">
+            className="px-4 py-2.5 text-sm font-bold bg-[#1D4ED8] text-[#0D1B48] hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center gap-2 uppercase tracking-wide">
             {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Vincular Gasto
           </button>
@@ -346,7 +346,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
       <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
         <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
           {/* Header */}
-          <div className="bg-[#1C1C1C] sticky top-0 z-10 flex items-start justify-between px-6 py-4">
+          <div className="bg-[#0D1B48] sticky top-0 z-10 flex items-start justify-between px-6 py-4">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">Contrato Ajustado</h2>
@@ -364,7 +364,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
             <div className="flex items-center gap-2 shrink-0">
               {canEdit && (
                 <button onClick={onEdit}
-                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 border border-gray-600 hover:border-[#F5C218] hover:text-[#F5C218] text-gray-300 transition-colors font-bold uppercase tracking-wide">
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 border border-gray-600 hover:border-[#1D4ED8] hover:text-[#1D4ED8] text-gray-300 transition-colors font-bold uppercase tracking-wide">
                   <Pencil className="w-3.5 h-3.5" /> Editar
                 </button>
               )}
@@ -402,7 +402,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
               </div>
 
               {/* Financiero */}
-              <div className="bg-[#1C1C1C] p-5 space-y-4">
+              <div className="bg-[#0D1B48] p-5 space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 font-['Space_Mono']">Monto base</p>
@@ -414,13 +414,13 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 font-['Space_Mono']">Balance</p>
-                    <p className={clsx('font-black font-[\'Space_Mono\'] text-lg', detail.sobregirado ? 'text-red-400' : 'text-[#F5C218]')}>
+                    <p className={clsx('font-black font-[\'Space_Mono\'] text-lg', detail.sobregirado ? 'text-red-400' : 'text-[#1D4ED8]')}>
                       {fmt(detail.balancePendiente ?? 0)}
                     </p>
                   </div>
                 </div>
                 {(detail.adendas?.length ?? 0) > 0 && (
-                  <div className="flex items-center justify-between text-xs bg-[#2a2a2a] px-3 py-1.5 text-[#F5C218] font-['Space_Mono']">
+                  <div className="flex items-center justify-between text-xs bg-[#2a2a2a] px-3 py-1.5 text-[#1D4ED8] font-['Space_Mono']">
                     <span>+ Adendas: <strong>{fmt(detail.sumAdendas ?? 0)}</strong></span>
                     <span>Total efectivo: <strong>{fmt(detail.montoEfectivo ?? Number(detail.montoContratado))}</strong></span>
                   </div>
@@ -434,12 +434,12 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
               {/* Adendas */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-black text-[#1C1C1C] uppercase tracking-wide font-['Barlow_Condensed']">
+                  <h3 className="text-sm font-black text-[#0D1B48] uppercase tracking-wide font-['Barlow_Condensed']">
                     Adendas por monto ({detail.adendas?.length ?? 0})
                   </h3>
                   {canEdit && detail.estado === 'ACTIVO' && !showAdendaForm && (
                     <button onClick={() => setShowAdendaForm(true)}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-[#1C1C1C] text-[#F5C218] hover:bg-gray-800 transition-colors font-bold uppercase tracking-wide">
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-[#0D1B48] text-[#1D4ED8] hover:bg-gray-800 transition-colors font-bold uppercase tracking-wide">
                       <FilePlus className="w-3.5 h-3.5" /> Nueva adenda
                     </button>
                   )}
@@ -447,22 +447,22 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
 
                 {showAdendaForm && (
                   <div className="bg-gray-50 border border-gray-200 p-4 mb-3 space-y-3">
-                    <p className="text-xs font-bold text-[#1C1C1C] uppercase tracking-wide font-['Space_Mono']">Nueva adenda de monto</p>
+                    <p className="text-xs font-bold text-[#0D1B48] uppercase tracking-wide font-['Space_Mono']">Nueva adenda de monto</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Monto adicional *</label>
-                        <input type="number" min="1" step="0.01" className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1C1C1C]"
+                        <input type="number" min="1" step="0.01" className="w-full border border-gray-200 px-3 py-2 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#0D1B48]"
                           placeholder="0.00" value={adendaForm.monto} onChange={(e) => setAdendaForm((f) => ({ ...f, monto: e.target.value }))} />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha *</label>
-                        <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                        <input type="date" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0D1B48]"
                           value={adendaForm.fecha} onChange={(e) => setAdendaForm((f) => ({ ...f, fecha: e.target.value }))} />
                       </div>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Descripción *</label>
-                      <input type="text" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                      <input type="text" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0D1B48]"
                         placeholder="Ej: Ampliación alcance trabajos adicionales"
                         value={adendaForm.descripcion} onChange={(e) => setAdendaForm((f) => ({ ...f, descripcion: e.target.value }))} />
                     </div>
@@ -477,7 +477,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                           if (!adendaForm.fecha) return setAdendaError('La fecha es requerida');
                           addAdendaMut.mutate();
                         }}
-                        className="px-3 py-1.5 text-xs font-bold bg-[#F5C218] text-[#1C1C1C] hover:bg-yellow-300 disabled:opacity-50 flex items-center gap-1.5 uppercase tracking-wide">
+                        className="px-3 py-1.5 text-xs font-bold bg-[#1D4ED8] text-[#0D1B48] hover:bg-yellow-300 disabled:opacity-50 flex items-center gap-1.5 uppercase tracking-wide">
                         {addAdendaMut.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
                         Agregar adenda
                       </button>
@@ -496,7 +496,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                 ) : (
                   <div className="border border-gray-200 overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-[#1C1C1C] border-b border-gray-200">
+                      <thead className="bg-[#0D1B48] border-b border-gray-200">
                         <tr>
                           <th className="text-left px-3 py-2 text-xs font-bold text-white uppercase tracking-wide font-['Space_Mono']">#</th>
                           <th className="text-left px-3 py-2 text-xs font-bold text-white uppercase tracking-wide">Descripción</th>
@@ -511,7 +511,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                             <td className="px-3 py-2 text-gray-400 font-['Space_Mono'] text-xs">A-{String(a.number).padStart(2, '0')}</td>
                             <td className="px-3 py-2 text-gray-800">{a.descripcion}</td>
                             <td className="px-3 py-2 text-gray-500 whitespace-nowrap text-xs font-['Space_Mono']">{fmtDate(a.fecha)}</td>
-                            <td className="px-3 py-2 text-right font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(Number(a.monto))}</td>
+                            <td className="px-3 py-2 text-right font-black text-[#0D1B48] font-['Space_Mono']">{fmt(Number(a.monto))}</td>
                             {canEdit && (
                               <td className="px-3 py-2 text-right">
                                 <button onClick={() => deleteAdendaMut.mutate(a.id)} disabled={deleteAdendaMut.isPending}
@@ -531,12 +531,12 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
               {/* Gastos vinculados */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-black text-[#1C1C1C] uppercase tracking-wide font-['Barlow_Condensed']">
+                  <h3 className="text-sm font-black text-[#0D1B48] uppercase tracking-wide font-['Barlow_Condensed']">
                     Gastos Vinculados ({detail.expenses?.length ?? 0})
                   </h3>
                   {canEdit && detail.estado === 'ACTIVO' && (
                     <button onClick={() => setShowVincular(true)}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-[#1C1C1C] text-[#F5C218] hover:bg-gray-800 transition-colors font-bold uppercase tracking-wide">
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-[#0D1B48] text-[#1D4ED8] hover:bg-gray-800 transition-colors font-bold uppercase tracking-wide">
                       <Link className="w-3.5 h-3.5" /> Vincular Gasto
                     </button>
                   )}
@@ -555,7 +555,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                 ) : (
                   <div className="border border-gray-200 overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-[#1C1C1C] border-b border-gray-200">
+                      <thead className="bg-[#0D1B48] border-b border-gray-200">
                         <tr>
                           <th className="text-left px-3 py-2 text-xs font-bold text-white uppercase tracking-wide">Descripción</th>
                           <th className="text-left px-3 py-2 text-xs font-bold text-white uppercase tracking-wide">Fecha</th>
@@ -568,7 +568,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                           <tr key={exp.id} className="border-t border-gray-100 hover:bg-gray-50">
                             <td className="px-3 py-2 text-gray-800">{exp.description}</td>
                             <td className="px-3 py-2 text-gray-500 whitespace-nowrap text-xs font-['Space_Mono']">{fmtDate(exp.expenseDate)}</td>
-                            <td className="px-3 py-2 text-right font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(exp.amount)}</td>
+                            <td className="px-3 py-2 text-right font-black text-[#0D1B48] font-['Space_Mono']">{fmt(exp.amount)}</td>
                             {canEdit && (
                               <td className="px-3 py-2 text-right">
                                 <button onClick={() => unlinkMutation.mutate(exp.id)} disabled={unlinkMutation.isPending}
@@ -645,10 +645,10 @@ export default function ContratosAjustadosPage() {
     <div className="font-['DM_Sans'] space-y-0">
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5 mb-6">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5 mb-6">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[#F5C218] text-xs font-bold tracking-[0.2em] uppercase font-['Space_Mono'] mb-2">
+            <p className="text-[#1D4ED8] text-xs font-bold tracking-[0.2em] uppercase font-['Space_Mono'] mb-2">
               MÓDULO / CONTRATOS
             </p>
             <h1 className="text-3xl md:text-5xl font-black text-white font-['Barlow_Condensed'] uppercase tracking-tight leading-none">
@@ -666,7 +666,7 @@ export default function ContratosAjustadosPage() {
             {canCreate && (
               <button
                 onClick={() => { setEditing(null); setShowForm(true); }}
-                className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-5 py-3 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors">
+                className="flex items-center gap-2 bg-[#1D4ED8] text-[#0D1B48] px-5 py-3 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors">
                 <Plus className="w-4 h-4" /> Nuevo Contrato
               </button>
             )}
@@ -681,7 +681,7 @@ export default function ContratosAjustadosPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-gray-200">
             <div className="bg-white p-5">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1 font-['Space_Mono']">Total Contratado</p>
-              <p className="text-xl font-black text-[#1C1C1C] font-['Space_Mono']">{fmt(resumen.totales.contratado)}</p>
+              <p className="text-xl font-black text-[#0D1B48] font-['Space_Mono']">{fmt(resumen.totales.contratado)}</p>
             </div>
             <div className="bg-white p-5">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1 font-['Space_Mono']">Total Pagado</p>
@@ -689,11 +689,11 @@ export default function ContratosAjustadosPage() {
             </div>
             <div className="bg-white p-5">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1 font-['Space_Mono']">Balance Pendiente</p>
-              <p className="text-xl font-black text-[#F5C218] font-['Space_Mono']">{fmt(resumen.totales.pendiente)}</p>
+              <p className="text-xl font-black text-[#1D4ED8] font-['Space_Mono']">{fmt(resumen.totales.pendiente)}</p>
             </div>
             <div className="bg-white p-5">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1 font-['Space_Mono']">Contratos Activos</p>
-              <p className="text-xl font-black text-[#1C1C1C] font-['Space_Mono']">{resumen.indicadores.activos}</p>
+              <p className="text-xl font-black text-[#0D1B48] font-['Space_Mono']">{resumen.indicadores.activos}</p>
             </div>
           </div>
         )}
@@ -741,15 +741,15 @@ export default function ContratosAjustadosPage() {
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
             <input value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por descripción o suplidor..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-200 text-sm focus:outline-none focus:border-[#1C1C1C]" />
+              className="w-full pl-9 pr-3 py-2 border border-gray-200 text-sm focus:outline-none focus:border-[#0D1B48]" />
           </div>
           <select value={filterProject} onChange={(e) => setFilterProject(e.target.value)}
-            className="border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1C1C1C]">
+            className="border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0D1B48]">
             <option value="">Todos los proyectos</option>
             {projects.map((p: any) => <option key={p.id} value={p.id}>{p.code} - {p.name}</option>)}
           </select>
           <select value={filterEstado} onChange={(e) => setFilterEstado(e.target.value)}
-            className="border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1C1C1C]">
+            className="border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0D1B48]">
             <option value="">Todos los estados</option>
             <option value="ACTIVO">Activo</option>
             <option value="COMPLETADO">Completado</option>
@@ -769,8 +769,8 @@ export default function ContratosAjustadosPage() {
               <p className="text-sm text-red-600">Error al cargar los contratos</p>
             </div>
           ) : contratos.length === 0 ? (
-            <div className="bg-[#1C1C1C] flex flex-col items-center justify-center py-16 text-center">
-              <FileCheck className="w-10 h-10 text-[#F5C218] mb-3" />
+            <div className="bg-[#0D1B48] flex flex-col items-center justify-center py-16 text-center">
+              <FileCheck className="w-10 h-10 text-[#1D4ED8] mb-3" />
               <p className="text-white font-bold font-['Barlow_Condensed'] text-xl uppercase tracking-wide">Sin contratos registrados</p>
               <p className="text-gray-400 text-sm mt-1">
                 {search || filterProject || filterEstado ? 'Prueba con otros filtros' : 'Crea el primer contrato ajustado'}
@@ -784,7 +784,7 @@ export default function ContratosAjustadosPage() {
                 <div key={c.id} className="p-4 space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="font-black text-[#1C1C1C] font-['Space_Mono'] text-xs">{c.project?.code}</p>
+                      <p className="font-black text-[#0D1B48] font-['Space_Mono'] text-xs">{c.project?.code}</p>
                       <p className="text-xs text-gray-500 truncate">{c.project?.name}</p>
                     </div>
                     <div className="flex flex-col gap-1 items-end shrink-0">
@@ -803,7 +803,7 @@ export default function ContratosAjustadosPage() {
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Contratado</p>
-                      <p className="font-black text-[#1C1C1C] font-['Space_Mono'] text-sm">{fmt(c.montoEfectivo ?? c.montoContratado)}</p>
+                      <p className="font-black text-[#0D1B48] font-['Space_Mono'] text-sm">{fmt(c.montoEfectivo ?? c.montoContratado)}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Pagado</p>
@@ -811,7 +811,7 @@ export default function ContratosAjustadosPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Balance</p>
-                      <p className={clsx('font-black font-[\'Space_Mono\'] text-sm', c.sobregirado ? 'text-red-600' : 'text-[#F5C218]')}>
+                      <p className={clsx('font-black font-[\'Space_Mono\'] text-sm', c.sobregirado ? 'text-red-600' : 'text-[#1D4ED8]')}>
                         {fmt(c.balancePendiente)}
                       </p>
                     </div>
@@ -819,12 +819,12 @@ export default function ContratosAjustadosPage() {
                   <ProgressBar pct={c.porcentajeEjecutado} sobregirado={c.sobregirado} />
                   <div className="flex items-center gap-1 pt-1">
                     <button onClick={() => setDetailContrato(c)}
-                      className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] transition-colors" title="Ver detalle">
+                      className="p-1.5 text-gray-400 hover:text-[#0D1B48] hover:bg-[#1D4ED8] transition-colors" title="Ver detalle">
                       <FileCheck className="w-4 h-4" />
                     </button>
                     {canEdit && (
                       <button onClick={() => handleEdit(c)}
-                        className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-gray-100 transition-colors" title="Editar">
+                        className="p-1.5 text-gray-400 hover:text-[#0D1B48] hover:bg-gray-100 transition-colors" title="Editar">
                         <Pencil className="w-4 h-4" />
                       </button>
                     )}
@@ -841,7 +841,7 @@ export default function ContratosAjustadosPage() {
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-[#1C1C1C]">
+                <thead className="bg-[#0D1B48]">
                   <tr>
                     <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono']">Proyecto</th>
                     <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono']">Suplidor</th>
@@ -858,7 +858,7 @@ export default function ContratosAjustadosPage() {
                   {contratos.map((c) => (
                     <tr key={c.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-black text-[#1C1C1C] font-['Space_Mono'] text-xs">{c.project?.code}</p>
+                        <p className="font-black text-[#0D1B48] font-['Space_Mono'] text-xs">{c.project?.code}</p>
                         <p className="text-xs text-gray-400 truncate max-w-[120px]">{c.project?.name}</p>
                       </td>
                       <td className="px-4 py-3">
@@ -868,7 +868,7 @@ export default function ContratosAjustadosPage() {
                       <td className="px-4 py-3 hidden md:table-cell">
                         <p className="text-gray-700 truncate max-w-[200px]">{c.descripcionTrabajo}</p>
                       </td>
-                      <td className="px-4 py-3 text-right font-black text-[#1C1C1C] whitespace-nowrap font-['Space_Mono']">
+                      <td className="px-4 py-3 text-right font-black text-[#0D1B48] whitespace-nowrap font-['Space_Mono']">
                         {fmt(c.montoEfectivo ?? c.montoContratado)}
                         {c.sumAdendas > 0 && (
                           <p className="text-[10px] text-indigo-400 font-normal">+{fmt(c.sumAdendas)} adendas</p>
@@ -878,7 +878,7 @@ export default function ContratosAjustadosPage() {
                         {fmt(c.pagadoAcumulado)}
                       </td>
                       <td className="px-4 py-3 text-right hidden lg:table-cell whitespace-nowrap">
-                        <span className={clsx('font-black font-[\'Space_Mono\']', c.sobregirado ? 'text-red-600' : 'text-[#F5C218]')}>
+                        <span className={clsx('font-black font-[\'Space_Mono\']', c.sobregirado ? 'text-red-600' : 'text-[#1D4ED8]')}>
                           {fmt(c.balancePendiente)}
                         </span>
                       </td>
@@ -900,12 +900,12 @@ export default function ContratosAjustadosPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1 justify-end">
                           <button onClick={() => setDetailContrato(c)}
-                            className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] transition-colors" title="Ver detalle">
+                            className="p-1.5 text-gray-400 hover:text-[#0D1B48] hover:bg-[#1D4ED8] transition-colors" title="Ver detalle">
                             <FileCheck className="w-4 h-4" />
                           </button>
                           {canEdit && (
                             <button onClick={() => handleEdit(c)}
-                              className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-gray-100 transition-colors" title="Editar">
+                              className="p-1.5 text-gray-400 hover:text-[#0D1B48] hover:bg-gray-100 transition-colors" title="Editar">
                               <Pencil className="w-4 h-4" />
                             </button>
                           )}

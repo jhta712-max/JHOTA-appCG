@@ -2,9 +2,9 @@ export default function PrivacyPolicyPage() {
   return (
     <div style={{ fontFamily: 'DM Sans, system-ui, sans-serif', background: '#f9fafb', minHeight: '100vh' }}>
       {/* Header */}
-      <div style={{ background: '#1C1C1C', padding: '24px 40px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ background: '#0D1B48', padding: '24px 40px', display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div>
-          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
             SERVINGMI
           </p>
           <h1 style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', fontSize: '28px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px' }}>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             1. Identificación del Responsable
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>
@@ -31,7 +31,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             2. Datos que Recopilamos
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7, marginBottom: '12px' }}>
@@ -46,7 +46,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             3. Uso de WhatsApp y Mensajería
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7, marginBottom: '12px' }}>
@@ -63,7 +63,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             4. Finalidad del Tratamiento
           </h2>
           <ul style={{ color: '#374151', lineHeight: 2, paddingLeft: '24px' }}>
@@ -76,7 +76,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             5. Compartición de Datos con Terceros
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7, marginBottom: '12px' }}>
@@ -95,7 +95,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             6. Retención de Datos
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>
@@ -107,7 +107,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             7. Derechos de los Usuarios
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7, marginBottom: '12px' }}>
@@ -125,7 +125,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             8. Seguridad
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>
@@ -136,7 +136,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#1C1C1C', borderBottom: '2px solid #F5C218', paddingBottom: '8px', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
             9. Cambios a esta Política
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>

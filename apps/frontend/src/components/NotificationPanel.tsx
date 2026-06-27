@@ -152,7 +152,7 @@ export default function NotificationPanel({
           isDark ? 'border-white/10' : 'border-gray-200'
         }`}>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg" style={{ background: '#F5C218' }}>
+            <div className="p-2 rounded-lg" style={{ background: '#1D4ED8' }}>
               <Bell className="w-5 h-5 text-gray-900" />
             </div>
             <div>
@@ -328,7 +328,7 @@ export default function NotificationPanel({
                         {!n.isRead && (
                           <span
                             className="mt-1 w-2.5 h-2.5 rounded-full shrink-0"
-                            style={{ background: '#F5C218' }}
+                            style={{ background: '#1D4ED8' }}
                           />
                         )}
                       </button>

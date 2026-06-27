@@ -197,11 +197,11 @@ export default function ProjectDetailPage() {
     const meta = PAGE_META['/projects'];
     return (
       <div>
-        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#0D1B48' }}>
           <div>
             <p
               className="text-xs uppercase tracking-widest mb-1"
-              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8' }}
             >
               {meta.module}
             </p>
@@ -236,13 +236,13 @@ export default function ProjectDetailPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* Hero header band */}
-      <div className="bg-[#1C1C1C]">
+      <div className="bg-[#0D1B48]">
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-5">
 
           {/* Breadcrumb */}
           <button
             onClick={() => navigate('/projects')}
-            className="flex items-center gap-1.5 text-sm text-[#F5C218] hover:text-white transition-colors mb-4"
+            className="flex items-center gap-1.5 text-sm text-[#1D4ED8] hover:text-white transition-colors mb-4"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -266,7 +266,7 @@ export default function ProjectDetailPage() {
               </div>
               <p
                 className="text-sm"
-                style={{ fontFamily: "'Space Mono', monospace", color: '#F5C218' }}
+                style={{ fontFamily: "'Space Mono', monospace", color: '#1D4ED8' }}
               >
                 {project.code}
               </p>
@@ -278,7 +278,7 @@ export default function ProjectDetailPage() {
                 type="button"
                 onClick={handleAiSummary}
                 disabled={aiSummaryLoading}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-60 bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400]"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-60 bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400]"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 {aiSummaryLoading
@@ -290,21 +290,21 @@ export default function ProjectDetailPage() {
                 <>
                   <Link
                     to={`/projects/import-batches`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-600 text-gray-300 hover:border-[#F5C218] hover:text-white transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-600 text-gray-300 hover:border-[#1D4ED8] hover:text-white transition-colors"
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
                     <Upload className="w-4 h-4" /> Importar
                   </Link>
                   <Link
                     to={`/projects/${id}/financial`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-600 text-gray-300 hover:border-[#F5C218] hover:text-white transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-600 text-gray-300 hover:border-[#1D4ED8] hover:text-white transition-colors"
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
                     <BarChart2 className="w-4 h-4" /> Análisis financiero
                   </Link>
                   <Link
                     to={`/projects/${id}/edit`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-600 text-gray-300 hover:border-[#F5C218] hover:text-white transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-600 text-gray-300 hover:border-[#1D4ED8] hover:text-white transition-colors"
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
                     <Edit className="w-4 h-4" /> Editar
@@ -439,16 +439,16 @@ export default function ProjectDetailPage() {
 
         {/* AI Summary panel */}
         {aiSummaryOpen && (
-          <div className="bg-[#1C1C1C] border border-[#F5C218]/40 overflow-hidden">
+          <div className="bg-[#0D1B48] border border-[#1D4ED8]/40 overflow-hidden">
             <button
               type="button"
               onClick={() => setAiSummaryOpen((o) => !o)}
               className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/5 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#F5C218]" />
+                <Sparkles className="w-4 h-4 text-[#1D4ED8]" />
                 <span
-                  className="font-semibold text-[#F5C218] text-sm"
+                  className="font-semibold text-[#1D4ED8] text-sm"
                   style={{ fontFamily: "'Barlow_Condensed', sans-serif" }}
                 >
                   Resumen ejecutivo IA
@@ -467,21 +467,21 @@ export default function ProjectDetailPage() {
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); handleAiSummary(); }}
-                    className="text-[#F5C218]/60 hover:text-[#F5C218] p-1 hover:bg-white/10"
+                    className="text-[#1D4ED8]/60 hover:text-[#1D4ED8] p-1 hover:bg-white/10"
                     title="Regenerar"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                   </button>
                 )}
                 {aiSummaryOpen
-                  ? <ChevronUp className="w-4 h-4 text-[#F5C218]/60" />
-                  : <ChevronDown className="w-4 h-4 text-[#F5C218]/60" />
+                  ? <ChevronUp className="w-4 h-4 text-[#1D4ED8]/60" />
+                  : <ChevronDown className="w-4 h-4 text-[#1D4ED8]/60" />
                 }
               </div>
             </button>
-            <div className="px-5 py-4 border-t border-[#F5C218]/20">
+            <div className="px-5 py-4 border-t border-[#1D4ED8]/20">
               {aiSummaryLoading ? (
-                <div className="flex items-center gap-3 text-[#F5C218] py-2">
+                <div className="flex items-center gap-3 text-[#1D4ED8] py-2">
                   <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                   <p
                     className="text-sm"
@@ -505,9 +505,9 @@ export default function ProjectDetailPage() {
         {/* Financial summary */}
         <div className="bg-white border border-gray-200 p-5 space-y-4">
           <h2
-            className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-[#1C1C1C] flex items-center gap-2"
+            className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-[#0D1B48] flex items-center gap-2"
           >
-            <TrendingUp className="w-4 h-4 text-[#F5C218]" />
+            <TrendingUp className="w-4 h-4 text-[#1D4ED8]" />
             Resumen financiero
           </h2>
 
@@ -524,7 +524,7 @@ export default function ProjectDetailPage() {
                 Presupuesto{addendums.length > 0 ? ' total' : ''}
               </p>
               <p
-                className="text-lg font-bold text-[#1C1C1C]"
+                className="text-lg font-bold text-[#0D1B48]"
                 style={{ fontFamily: "'Space Mono', monospace" }}
               >
                 {fmt(project.totalBudget ?? project.estimatedBudget)}
@@ -633,7 +633,7 @@ export default function ProjectDetailPage() {
                 className={`h-full transition-all duration-500 ${usedPct >= 90 ? '' : barColor}`}
                 style={{
                   width: `${usedPct}%`,
-                  ...(usedPct >= 90 ? { background: '#F5C218' } : {}),
+                  ...(usedPct >= 90 ? { background: '#1D4ED8' } : {}),
                 }}
               />
             </div>
@@ -669,7 +669,7 @@ export default function ProjectDetailPage() {
                   const pctOfBudget = hasBudget && budget > 0 ? Math.min((spent / budget) * 100, 100) : pctOfTotal;
                   const barColor   = hasBudget && budget > 0
                     ? (spent / budget >= 1 ? '#ef4444' : spent / budget >= 0.85 ? '#f59e0b' : '#22c55e')
-                    : '#F5C218';
+                    : '#1D4ED8';
                   const isEditingThis = cbEditing?.categoryId === bc.category?.id;
 
                   return (
@@ -692,7 +692,7 @@ export default function ProjectDetailPage() {
                           {canManageBudgets && !isEditingThis && (
                             <button
                               onClick={() => setCbEditing({ categoryId: bc.category!.id, budget: hasBudget ? String(budget) : '' })}
-                              className="text-gray-300 hover:text-[#F5C218] transition-colors ml-1">
+                              className="text-gray-300 hover:text-[#1D4ED8] transition-colors ml-1">
                               <Edit className="w-3 h-3" />
                             </button>
                           )}
@@ -718,10 +718,10 @@ export default function ProjectDetailPage() {
                               if (e.key === 'Escape') setCbEditing(null);
                             }}
                             placeholder="Presupuesto DOP"
-                            className="text-xs border border-[#F5C218] px-2 py-1 w-36 focus:outline-none font-['Space_Mono']"
+                            className="text-xs border border-[#1D4ED8] px-2 py-1 w-36 focus:outline-none font-['Space_Mono']"
                           />
                           <button onClick={() => upsertCbMut.mutate({ categoryId: cbEditing.categoryId, budget: Number(cbEditing.budget) })}
-                            className="px-2 py-1 bg-[#F5C218] text-[#1C1C1C] text-xs font-bold uppercase hover:bg-yellow-300 transition-colors">
+                            className="px-2 py-1 bg-[#1D4ED8] text-[#0D1B48] text-xs font-bold uppercase hover:bg-yellow-300 transition-colors">
                             OK
                           </button>
                           <button onClick={() => setCbEditing(null)}
@@ -773,10 +773,10 @@ export default function ProjectDetailPage() {
                           if (e.key === 'Escape') { setCbNewCatId(''); setCbNewBudget(''); }
                         }}
                         placeholder="Presupuesto DOP"
-                        className="text-xs border border-[#F5C218] px-2 py-1 w-32 focus:outline-none font-['Space_Mono']"
+                        className="text-xs border border-[#1D4ED8] px-2 py-1 w-32 focus:outline-none font-['Space_Mono']"
                       />
                       <button onClick={() => cbNewBudget && upsertCbMut.mutate({ categoryId: Number(cbNewCatId), budget: Number(cbNewBudget) })}
-                        className="px-2 py-1 bg-[#F5C218] text-[#1C1C1C] text-xs font-bold uppercase hover:bg-yellow-300 transition-colors">
+                        className="px-2 py-1 bg-[#1D4ED8] text-[#0D1B48] text-xs font-bold uppercase hover:bg-yellow-300 transition-colors">
                         OK
                       </button>
                       <button onClick={() => { setCbNewCatId(''); setCbNewBudget(''); }}
@@ -786,7 +786,7 @@ export default function ProjectDetailPage() {
                     <select
                       value=""
                       onChange={(e) => setCbNewCatId(e.target.value)}
-                      className="text-xs border border-dashed border-gray-300 px-2 py-1 text-gray-400 focus:outline-none focus:border-[#F5C218] font-['DM_Sans'] cursor-pointer"
+                      className="text-xs border border-dashed border-gray-300 px-2 py-1 text-gray-400 focus:outline-none focus:border-[#1D4ED8] font-['DM_Sans'] cursor-pointer"
                     >
                       <option value="">+ Asignar presupuesto a categoría…</option>
                       {byCategory
@@ -807,19 +807,19 @@ export default function ProjectDetailPage() {
         <div className="bg-white border border-gray-200">
           {/* Card header — dark band */}
           <div
-            className="flex items-center justify-between px-5 py-4 bg-[#1C1C1C]"
+            className="flex items-center justify-between px-5 py-4 bg-[#0D1B48]"
           >
             <h2
               className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-white flex items-center gap-2"
             >
-              <FileText className="w-4 h-4 text-[#F5C218]" />
+              <FileText className="w-4 h-4 text-[#1D4ED8]" />
               Cotizaciones
               {quotationsData?.pagination?.total != null && quotationsData.pagination.total > 0 && (
                 <span
                   className="text-xs px-2 py-0.5 font-medium"
                   style={{
                     background: 'rgba(245,194,24,0.15)',
-                    color: '#F5C218',
+                    color: '#1D4ED8',
                     fontFamily: "'Space Mono', monospace",
                   }}
                 >
@@ -829,7 +829,7 @@ export default function ProjectDetailPage() {
             </h2>
             <Link
               to={`/quotations/new?projectId=${id}`}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-gray-600 text-gray-300 hover:border-[#F5C218] hover:text-white transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-gray-600 text-gray-300 hover:border-[#1D4ED8] hover:text-white transition-colors"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <Plus className="w-3.5 h-3.5" /> Nueva cotización
@@ -849,11 +849,11 @@ export default function ProjectDetailPage() {
                 <Link
                   key={q.id}
                   to={`/quotations/${q.id}`}
-                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors group border-l-4 border-l-transparent hover:border-l-[#F5C218]"
+                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors group border-l-4 border-l-transparent hover:border-l-[#1D4ED8]"
                 >
                   <div className="flex-1 min-w-0">
                     <p
-                      className="text-sm font-medium text-gray-900 truncate group-hover:text-[#1C1C1C]"
+                      className="text-sm font-medium text-gray-900 truncate group-hover:text-[#0D1B48]"
                       style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       {q.supplierName}
@@ -894,7 +894,7 @@ export default function ProjectDetailPage() {
             <div className="px-5 py-3 border-t border-gray-100">
               <Link
                 to={`/quotations?projectId=${id}`}
-                className="text-sm font-medium text-[#F5C218] hover:text-[#e6b400] transition-colors"
+                className="text-sm font-medium text-[#1D4ED8] hover:text-[#e6b400] transition-colors"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 Ver todas las cotizaciones →
@@ -907,7 +907,7 @@ export default function ProjectDetailPage() {
         <div className="bg-white border border-gray-200">
           {/* Card header — dark band */}
           <div
-            className="flex items-center justify-between px-5 py-4 bg-[#1C1C1C]"
+            className="flex items-center justify-between px-5 py-4 bg-[#0D1B48]"
           >
             <h2
               className="font-['Barlow_Condensed'] text-base uppercase tracking-widest text-white"
@@ -917,7 +917,7 @@ export default function ProjectDetailPage() {
             <Link
               to={`/expenses/new`}
               state={{ projectId: id }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400]"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400]"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <Plus className="w-3.5 h-3.5" /> Nuevo gasto
@@ -947,7 +947,7 @@ export default function ProjectDetailPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <p
-                        className="text-sm font-medium text-gray-900 truncate group-hover:text-[#1C1C1C]"
+                        className="text-sm font-medium text-gray-900 truncate group-hover:text-[#0D1B48]"
                         style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {e.description}
@@ -957,8 +957,8 @@ export default function ProjectDetailPage() {
                           className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold tracking-widest uppercase"
                           style={{
                             fontFamily: "'Space Mono', monospace",
-                            background: '#F5C218',
-                            color: '#1C1C1C',
+                            background: '#1D4ED8',
+                            color: '#0D1B48',
                           }}
                         >
                           {(e as any).batchItem.code}
@@ -1022,7 +1022,7 @@ export default function ProjectDetailPage() {
             <div className="px-5 py-3 border-t border-gray-100">
               <Link
                 to={`/expenses?projectId=${id}`}
-                className="text-sm font-medium text-[#F5C218] hover:text-[#e6b400] transition-colors"
+                className="text-sm font-medium text-[#1D4ED8] hover:text-[#e6b400] transition-colors"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 Ver todos los gastos →
@@ -1033,10 +1033,10 @@ export default function ProjectDetailPage() {
 
       {/* ── Items del proyecto ─────────────────────────────────── */}
       <div className="mt-8 bg-white border border-gray-200">
-        <div className="bg-[#1C1C1C] px-5 py-3 flex items-center justify-between">
+        <div className="bg-[#0D1B48] px-5 py-3 flex items-center justify-between">
           <h2 className="font-['Barlow_Condensed'] text-sm font-bold text-white uppercase tracking-[0.15em]">
             Items del Proyecto
-            <span className="ml-2 font-['Space_Mono'] text-[#F5C218] text-xs">{items.length}</span>
+            <span className="ml-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">{items.length}</span>
           </h2>
           <span className="text-xs text-gray-400 font-['DM_Sans']">Partidas / lotes de licitación</span>
         </div>
@@ -1049,12 +1049,12 @@ export default function ProjectDetailPage() {
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
               placeholder="Nombre del nuevo item…"
-              className="flex-1 border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+              className="flex-1 border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
             />
             <button
               type="submit"
               disabled={!itemName.trim() || createItem.isPending}
-              className="px-4 py-2 bg-[#F5C218] text-[#1C1C1C] text-sm font-bold font-['Barlow_Condensed'] uppercase tracking-wide disabled:opacity-40"
+              className="px-4 py-2 bg-[#1D4ED8] text-[#0D1B48] text-sm font-bold font-['Barlow_Condensed'] uppercase tracking-wide disabled:opacity-40"
             >
               {createItem.isPending ? '…' : 'Agregar'}
             </button>
@@ -1089,9 +1089,9 @@ export default function ProjectDetailPage() {
                               value={editingItem.name}
                               onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
                               autoFocus
-                              className="flex-1 border border-[#F5C218] px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none"
+                              className="flex-1 border border-[#1D4ED8] px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none"
                             />
-                            <button type="submit" className="text-xs text-[#F5C218] font-bold px-2">Guardar</button>
+                            <button type="submit" className="text-xs text-[#1D4ED8] font-bold px-2">Guardar</button>
                             <button type="button" onClick={() => setEditingItem(null)} className="text-xs text-gray-400 px-1">✕</button>
                           </form>
                         ) : (
@@ -1106,7 +1106,7 @@ export default function ProjectDetailPage() {
                           <div className="flex gap-2 justify-end">
                             <button
                               onClick={() => setEditingItem({ id: item.id, name: item.name })}
-                              className="text-xs text-gray-400 hover:text-[#F5C218] transition-colors"
+                              className="text-xs text-gray-400 hover:text-[#1D4ED8] transition-colors"
                             >
                               Editar
                             </button>
@@ -1138,9 +1138,9 @@ export default function ProjectDetailPage() {
                             value={editingItem.name}
                             onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
                             autoFocus
-                            className="flex-1 border border-[#F5C218] px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none"
+                            className="flex-1 border border-[#1D4ED8] px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none"
                           />
-                          <button type="submit" className="text-xs text-[#F5C218] font-bold px-2">OK</button>
+                          <button type="submit" className="text-xs text-[#1D4ED8] font-bold px-2">OK</button>
                           <button type="button" onClick={() => setEditingItem(null)} className="text-xs text-gray-400 px-1">✕</button>
                         </form>
                       ) : (
@@ -1153,7 +1153,7 @@ export default function ProjectDetailPage() {
                       </span>
                       {canEdit && !editingItem && (
                         <div className="flex gap-2">
-                          <button onClick={() => setEditingItem({ id: item.id, name: item.name })} className="text-xs text-gray-400 hover:text-[#F5C218]">Editar</button>
+                          <button onClick={() => setEditingItem({ id: item.id, name: item.name })} className="text-xs text-gray-400 hover:text-[#1D4ED8]">Editar</button>
                           <button onClick={() => handleToggleActive(item)} disabled={updateItem.isPending} className={`text-xs ${item.active ? 'text-gray-400 hover:text-red-500' : 'text-gray-400 hover:text-green-600'}`}>
                             {item.active ? 'Desactivar' : 'Activar'}
                           </button>
@@ -1178,7 +1178,7 @@ export default function ProjectDetailPage() {
             <div className="flex gap-2 flex-wrap justify-end">
               <button
                 onClick={() => { setShowSuggestions((v) => !v); if (!showSuggestions) fetchSuggestions(); }}
-                className="flex items-center gap-1 text-xs border border-[#F5C218] text-[#F5C218] px-3 py-1 font-bold uppercase font-['Barlow_Condensed'] hover:bg-[#F5C218] hover:text-[#1C1C1C] transition-colors"
+                className="flex items-center gap-1 text-xs border border-[#1D4ED8] text-[#1D4ED8] px-3 py-1 font-bold uppercase font-['Barlow_Condensed'] hover:bg-[#1D4ED8] hover:text-[#0D1B48] transition-colors"
               >
                 <Sparkles size={12} /> IA
               </button>
@@ -1191,7 +1191,7 @@ export default function ProjectDetailPage() {
               </button>
               <button
                 onClick={() => setShowAddSupplier(true)}
-                className="flex items-center gap-1 text-xs bg-[#F5C218] text-[#1C1C1C] px-3 py-1 font-bold uppercase font-['Barlow_Condensed']"
+                className="flex items-center gap-1 text-xs bg-[#1D4ED8] text-[#0D1B48] px-3 py-1 font-bold uppercase font-['Barlow_Condensed']"
               >
                 <UserPlus size={12} /> Agregar
               </button>
@@ -1204,7 +1204,7 @@ export default function ProjectDetailPage() {
             <select
               value={addSupplierId}
               onChange={(e) => setAddSupplierId(e.target.value)}
-              className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218]"
+              className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8]"
             >
               <option value="">— Seleccionar suplidor —</option>
               {allSuppliers
@@ -1217,7 +1217,7 @@ export default function ProjectDetailPage() {
               <button
                 onClick={() => addSupplierId && assignMut.mutate(addSupplierId)}
                 disabled={!addSupplierId || assignMut.isPending}
-                className="flex-1 py-2 text-xs font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50"
+                className="flex-1 py-2 text-xs font-bold uppercase font-['Barlow_Condensed'] bg-[#1D4ED8] text-[#0D1B48] disabled:opacity-50"
               >
                 {assignMut.isPending ? 'Asignando…' : 'Asignar'}
               </button>
@@ -1233,7 +1233,7 @@ export default function ProjectDetailPage() {
 
         {/* AI Suggestions Panel */}
         {showSuggestions && (
-          <div className="mb-4 border border-[#F5C218]/30 bg-[#F5C218]/5 p-4">
+          <div className="mb-4 border border-[#1D4ED8]/30 bg-[#1D4ED8]/5 p-4">
             <div className="flex items-center justify-between mb-3">
               <p className="font-['Barlow_Condensed'] text-xs font-bold uppercase text-gray-600 tracking-[0.1em] flex items-center gap-1">
                 <Sparkles size={11} /> Sugerencias IA
@@ -1263,7 +1263,7 @@ export default function ProjectDetailPage() {
                       <button
                         onClick={() => assignMut.mutate(s.supplierId)}
                         disabled={assignMut.isPending}
-                        className="text-xs bg-[#F5C218] text-[#1C1C1C] px-2 py-1 font-bold uppercase font-['Barlow_Condensed'] disabled:opacity-50"
+                        className="text-xs bg-[#1D4ED8] text-[#0D1B48] px-2 py-1 font-bold uppercase font-['Barlow_Condensed'] disabled:opacity-50"
                       >
                         Asignar
                       </button>
@@ -1283,7 +1283,7 @@ export default function ProjectDetailPage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[#1C1C1C]">
+                  <tr className="bg-[#0D1B48]">
                     {['Nombre', 'RNC', ''].map((h) => (
                       <th key={h} className="text-left px-3 py-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.1em]">{h}</th>
                     ))}

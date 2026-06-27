@@ -84,7 +84,7 @@ function formToPayload(f: SupplierForm) {
   };
 }
 
-const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white";
+const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] bg-white";
 const labelCls = "block text-xs font-semibold uppercase tracking-wide text-gray-500 font-['Barlow_Condensed'] mb-1";
 
 export default function SupplierDetailPage() {
@@ -162,9 +162,9 @@ export default function SupplierDetailPage() {
     const meta = PAGE_META['/suppliers'];
     return (
       <div>
-        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#0D1B48' }}>
           <div>
-            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
+            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8' }}>
               {meta.module}
             </p>
             <h1 className="text-3xl md:text-5xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -211,7 +211,7 @@ export default function SupplierDetailPage() {
       {apiOk && (
         <div
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 text-sm font-['DM_Sans'] font-semibold shadow-lg flex items-center gap-2"
-          style={{ background: '#1C1C1C', color: '#F5C218' }}
+          style={{ background: '#0D1B48', color: '#1D4ED8' }}
         >
           <CheckCircle className="w-4 h-4" />
           {apiOk}
@@ -236,14 +236,14 @@ export default function SupplierDetailPage() {
       </Link>
 
       {/* Hero */}
-      <div className="px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
+      <div className="px-4 md:px-6 py-4 md:py-5" style={{ background: '#0D1B48' }}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4">
             <div
               className="w-14 h-14 flex items-center justify-center shrink-0"
-              style={{ background: supplier.isActive ? '#F5C218' : '#4b5563' }}
+              style={{ background: supplier.isActive ? '#1D4ED8' : '#4b5563' }}
             >
-              <Building2 className="w-7 h-7" style={{ color: '#1C1C1C' }} />
+              <Building2 className="w-7 h-7" style={{ color: '#0D1B48' }} />
             </div>
             <div>
               <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-gray-400 mb-1">
@@ -256,7 +256,7 @@ export default function SupplierDetailPage() {
                 <span
                   className="font-['Barlow_Condensed'] uppercase tracking-wide text-xs px-2 py-0.5"
                   style={supplier.isActive
-                    ? { background: '#F5C218', color: '#1C1C1C' }
+                    ? { background: '#1D4ED8', color: '#ffffff' }
                     : { background: '#374151', color: '#9ca3af' }
                   }
                 >
@@ -281,7 +281,7 @@ export default function SupplierDetailPage() {
               <button
                 onClick={openEdit}
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-['Barlow_Condensed'] uppercase font-bold transition-colors"
-                style={{ background: '#F5C218', color: '#1C1C1C' }}
+                style={{ background: '#1D4ED8', color: '#ffffff' }}
               >
                 <Pencil className="w-3.5 h-3.5" /> Editar
               </button>
@@ -330,7 +330,7 @@ export default function SupplierDetailPage() {
 
       {/* Bank data panel */}
       {(supplier.bank || supplier.accountNumber) && (
-        <div className="border-l-4 border-[#F5C218] bg-amber-50 p-4 flex items-center gap-4 flex-wrap">
+        <div className="border-l-4 border-[#1D4ED8] bg-amber-50 p-4 flex items-center gap-4 flex-wrap">
           <CreditCard className="w-4 h-4 text-amber-600 shrink-0" />
           {supplier.bank && (
             <span className="font-['DM_Sans'] font-semibold text-gray-800 text-sm">{supplier.bank}</span>
@@ -348,11 +348,11 @@ export default function SupplierDetailPage() {
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-gray-200">
-        <StatCard label="Total cotizado"  value={fmtDOP(stats.totalQuoted)}              icon={<BarChart3 className="w-4 h-4" />}   iconBg="#F5C218"  iconColor="#1C1C1C" />
+        <StatCard label="Total cotizado"  value={fmtDOP(stats.totalQuoted)}              icon={<BarChart3 className="w-4 h-4" />}   iconBg="#1D4ED8"  iconColor="#0D1B48" />
         <StatCard label="Total pagado"    value={fmtDOP(stats.totalPaid)}                icon={<CheckCircle className="w-4 h-4" />} iconBg="#16a34a"  iconColor="#fff"    />
         <StatCard label="Órd. de pago"    value={fmtDOP(stats.totalPaymentOrders ?? 0)}  icon={<DollarSign className="w-4 h-4" />}  iconBg="#2563eb"  iconColor="#fff"    />
         <StatCard label="Gastos oficina"  value={fmtDOP(stats.totalOfficeExpenses ?? 0)} icon={<Sparkles className="w-4 h-4" />}    iconBg="#7c3aed"  iconColor="#fff"    />
-        <StatCard label="Cotizaciones"    value={String(stats.quotationCount)}            icon={<FileText className="w-4 h-4" />}    iconBg="#1C1C1C"  iconColor="#F5C218" />
+        <StatCard label="Cotizaciones"    value={String(stats.quotationCount)}            icon={<FileText className="w-4 h-4" />}    iconBg="#0D1B48"  iconColor="#1D4ED8" />
         <StatCard label="Proyectos"       value={String(stats.projectCount)}              icon={<Building2 className="w-4 h-4" />}   iconBg="#374151"  iconColor="#fff"    />
       </div>
 
@@ -365,13 +365,13 @@ export default function SupplierDetailPage() {
               onClick={() => setActiveTab(t.key)}
               className={`px-4 py-3 text-sm font-['Barlow_Condensed'] uppercase tracking-wide transition-colors border-b-2 ${
                 activeTab === t.key
-                  ? 'border-[#F5C218] text-gray-900 font-bold'
+                  ? 'border-[#1D4ED8] text-gray-900 font-bold'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
               {t.label}
               <span className={`ml-1.5 font-['Space_Mono'] text-xs px-1.5 py-0.5 ${
-                activeTab === t.key ? 'bg-[#F5C218] text-[#1C1C1C]' : 'bg-gray-100 text-gray-500'
+                activeTab === t.key ? 'bg-[#1D4ED8] text-[#0D1B48]' : 'bg-gray-100 text-gray-500'
               }`}>
                 {t.count}
               </span>
@@ -390,7 +390,7 @@ export default function SupplierDetailPage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: '#1C1C1C' }}>
+                  <tr style={{ background: '#0D1B48' }}>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">No.</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Fecha</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Proyecto</th>
@@ -479,7 +479,7 @@ export default function SupplierDetailPage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: '#1C1C1C' }}>
+                  <tr style={{ background: '#0D1B48' }}>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">No.</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Tipo</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Concepto</th>
@@ -571,7 +571,7 @@ export default function SupplierDetailPage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: '#1C1C1C' }}>
+                  <tr style={{ background: '#0D1B48' }}>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">NCF</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Fecha</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Proyecto</th>
@@ -630,7 +630,7 @@ export default function SupplierDetailPage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: '#1C1C1C' }}>
+                  <tr style={{ background: '#0D1B48' }}>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Fecha</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Descripción</th>
                     <th className="px-4 py-3 text-left font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">Categoría</th>
@@ -690,7 +690,7 @@ export default function SupplierDetailPage() {
       {editModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-white w-full max-w-lg shadow-xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ background: '#1C1C1C' }}>
+            <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ background: '#0D1B48' }}>
               <h3 className="font-['Barlow_Condensed'] uppercase tracking-wide text-white">Editar suplidor</h3>
               <button
                 onClick={() => { setEditModal(false); setApiError(''); }}
@@ -754,8 +754,8 @@ export default function SupplierDetailPage() {
 
               {/* Bank data section */}
               <div className="pt-2">
-                <div className="flex items-center gap-2 px-4 py-2.5 mb-3" style={{ background: '#1C1C1C' }}>
-                  <CreditCard className="w-3.5 h-3.5 shrink-0" style={{ color: '#F5C218' }} />
+                <div className="flex items-center gap-2 px-4 py-2.5 mb-3" style={{ background: '#0D1B48' }}>
+                  <CreditCard className="w-3.5 h-3.5 shrink-0" style={{ color: '#1D4ED8' }} />
                   <span className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-white">
                     Datos bancarios
                   </span>
@@ -797,7 +797,7 @@ export default function SupplierDetailPage() {
                   type="submit"
                   disabled={updateMutation.isPending}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 font-['Barlow_Condensed'] uppercase text-sm font-bold disabled:opacity-50"
-                  style={{ background: '#F5C218', color: '#1C1C1C' }}
+                  style={{ background: '#1D4ED8', color: '#ffffff' }}
                 >
                   {updateMutation.isPending ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>

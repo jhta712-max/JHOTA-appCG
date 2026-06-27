@@ -10,15 +10,15 @@ export default function ImportBatchesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero header */}
-      <div className="bg-[#1C1C1C] px-6 py-6">
+      <div className="bg-[#0D1B48] px-6 py-6">
         <button
           onClick={() => navigate('/projects')}
-          className="flex items-center gap-1.5 text-[#F5C218] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
+          className="flex items-center gap-1.5 text-[#1D4ED8] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver a proyectos
         </button>
-        <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-[#F5C218] uppercase mb-1">
+        <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-[#1D4ED8] uppercase mb-1">
           MÓDULO / IMPORTACIÓN
         </p>
         <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight">
@@ -48,7 +48,7 @@ export default function ImportBatchesPage() {
         </div>
 
         {/* CSV Format Info */}
-        <div className="bg-white border border-[#F5C218]/40 p-6">
+        <div className="bg-white border border-[#1D4ED8]/40 p-6">
           <h3 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-3">
             Formato del archivo CSV
           </h3>
@@ -57,7 +57,7 @@ export default function ImportBatchesPage() {
           </p>
           <div className="border border-gray-200 overflow-x-auto mb-3">
             <table className="text-xs w-full">
-              <thead className="bg-[#1C1C1C]">
+              <thead className="bg-[#0D1B48]">
                 <tr>
                   <th className="text-left p-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Campo</th>
                   <th className="text-left p-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Requerido</th>
@@ -66,52 +66,52 @@ export default function ImportBatchesPage() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">batch_code</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">batch_code</td>
                   <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
                   <td className="p-2 text-gray-600 font-['DM_Sans']">MOPC-CCC-LPN-2021-0036</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">item_code</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">item_code</td>
                   <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
                   <td className="p-2 text-gray-600 font-['DM_Sans']">ITEM-5</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">provincia</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">provincia</td>
                   <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
                   <td className="p-2 text-gray-600 font-['DM_Sans']">Puerto Plata</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">sector</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">sector</td>
                   <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
                   <td className="p-2 text-gray-600 font-['DM_Sans']">Puerto Plata Gualete</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">descripcion</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">descripcion</td>
                   <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
                   <td className="p-2 text-gray-600 font-['DM_Sans']">ARENA</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">monto</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">monto</td>
                   <td className="p-2 text-green-600 font-['DM_Sans']">✓</td>
                   <td className="p-2 text-gray-600 font-['Space_Mono'] text-xs">16200.0</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">categoria</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">categoria</td>
                   <td className="p-2 text-gray-400 font-['DM_Sans']">Opcional</td>
                   <td className="p-2 text-gray-600 font-['DM_Sans']">Materiales</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">fecha</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">fecha</td>
                   <td className="p-2 text-gray-400 font-['DM_Sans']">Opcional</td>
                   <td className="p-2 text-gray-600 font-['Space_Mono'] text-xs">2021-06-15</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">proveedor</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">proveedor</td>
                   <td className="p-2 text-gray-400 font-['DM_Sans']">Opcional</td>
                   <td className="p-2 text-gray-600 font-['DM_Sans']">Proveedor XYZ</td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-['Space_Mono'] text-[#F5C218] text-xs">metodo_pago</td>
+                  <td className="p-2 font-['Space_Mono'] text-[#1D4ED8] text-xs">metodo_pago</td>
                   <td className="p-2 text-gray-400 font-['DM_Sans']">Opcional</td>
                   <td className="p-2 text-gray-600 font-['Space_Mono'] text-xs">CASH</td>
                 </tr>

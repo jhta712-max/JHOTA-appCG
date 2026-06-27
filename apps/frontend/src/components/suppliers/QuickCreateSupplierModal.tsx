@@ -111,7 +111,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
       <div className="p-6 space-y-5">
 
         {error && (
-          <div className="flex items-start gap-2 bg-[#1C1C1C] border border-red-500/40 text-red-400 px-4 py-3">
+          <div className="flex items-start gap-2 bg-[#0D1B48] border border-red-500/40 text-red-400 px-4 py-3">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <p className="text-sm">{error}</p>
           </div>
@@ -137,7 +137,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Nombre o razón social"
                   maxLength={200}
-                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                 />
               </div>
 
@@ -165,7 +165,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                         onChange={(e) => setRnc(e.target.value)}
                         placeholder="000000000"
                         maxLength={11}
-                        className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                        className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                       />
                     </div>
 
@@ -181,7 +181,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="809-000-0000"
                           maxLength={20}
-                          className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                          className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                         />
                       </div>
 
@@ -195,7 +195,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="correo@ejemplo.com"
-                          className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                          className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                         />
                       </div>
                     </div>
@@ -217,7 +217,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                   onChange={(e) => setRnc(e.target.value)}
                   placeholder="000000000"
                   maxLength={11}
-                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                 />
                 {rncValidation.status === 'validating' && (
                   <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
@@ -251,7 +251,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Nombre o razón social"
                   maxLength={200}
-                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                 />
               </div>
 
@@ -267,7 +267,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="809-000-0000"
                     maxLength={20}
-                    className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                    className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                   />
                 </div>
 
@@ -281,7 +281,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="correo@ejemplo.com"
-                    className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                    className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                   />
                 </div>
               </div>
@@ -307,7 +307,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                 onChange={(e) => setBankName(e.target.value)}
                 placeholder="Banreservas, Popular, BHD..."
                 maxLength={100}
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
               />
             </div>
 
@@ -320,7 +320,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                 <select
                   value={accountType}
                   onChange={(e) => setAccountType(e.target.value as typeof ACCOUNT_TYPES[number])}
-                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                 >
                   {ACCOUNT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
@@ -334,7 +334,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value as typeof CURRENCIES[number])}
-                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
                 >
                   {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -352,7 +352,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
                 onChange={(e) => setAccountNumber(e.target.value)}
                 placeholder="000-000000-0"
                 maxLength={50}
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] rounded-none"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] rounded-none"
               />
             </div>
           </div>
@@ -372,7 +372,7 @@ export default function QuickCreateSupplierModal({ open, onClose, onCreated, mod
             type="button"
             onClick={handleSubmit}
             disabled={saving}
-            className="bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-yellow-400 transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-yellow-400 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {saving ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Creando...</>

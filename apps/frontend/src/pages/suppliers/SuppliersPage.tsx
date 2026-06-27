@@ -257,16 +257,16 @@ export default function SuppliersPage() {
     <div className="space-y-0">
 
       {/* ── Hero header ─────────────────────────────────────────── */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#0D1B48' }}>
         <div className="max-w-6xl flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#F5C218' }}>
+            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#1D4ED8' }}>
               MÓDULO / SUPLIDORES
             </p>
             <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold tracking-tight text-white uppercase">
               Directorio de Suplidores
             </h1>
-            <p className="font-['Space_Mono'] text-sm mt-1 h-5 flex items-center" style={{ color: '#F5C218' }}>
+            <p className="font-['Space_Mono'] text-sm mt-1 h-5 flex items-center" style={{ color: '#1D4ED8' }}>
               {isLoading
                 ? <SkeletonBlock className="h-4 w-32 bg-gray-600" />
                 : `${count} suplidor${count !== 1 ? 'es' : ''} registrado${count !== 1 ? 's' : ''}`
@@ -277,7 +277,7 @@ export default function SuppliersPage() {
             <button
               onClick={openCreate}
               className="flex items-center gap-2 px-4 py-2.5 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide transition-all hover:opacity-90"
-              style={{ background: '#F5C218', color: '#1C1C1C' }}
+              style={{ background: '#1D4ED8', color: '#ffffff' }}
             >
               <Plus className="w-4 h-4" />
               Nuevo Suplidor
@@ -289,7 +289,7 @@ export default function SuppliersPage() {
       <div className="space-y-5">
         {/* Feedback */}
         {apiOk && (
-          <div className="flex items-center gap-2 bg-[#1C1C1C] border border-[#F5C218]/40 text-[#F5C218] p-3 text-sm font-['DM_Sans']">
+          <div className="flex items-center gap-2 bg-[#0D1B48] border border-[#1D4ED8]/40 text-[#1D4ED8] p-3 text-sm font-['DM_Sans']">
             <CheckCircle className="w-4 h-4 shrink-0" />
             <span className="flex-1">{apiOk}</span>
             <button onClick={() => setApiOk('')}><X className="w-3.5 h-3.5" /></button>
@@ -311,7 +311,7 @@ export default function SuppliersPage() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-xs font-bold uppercase font-['Barlow_Condensed'] tracking-[0.1em] border-b-2 transition-colors ${
                 activeTab === tab
-                  ? 'border-[#F5C218] text-[#1C1C1C]'
+                  ? 'border-[#1D4ED8] text-[#0D1B48]'
                   : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -328,7 +328,7 @@ export default function SuppliersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre o RNC..."
-            className="w-full pl-9 pr-9 py-2.5 text-sm font-['DM_Sans'] bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent"
+            className="w-full pl-9 pr-9 py-2.5 text-sm font-['DM_Sans'] bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-transparent"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -345,12 +345,12 @@ export default function SuppliersPage() {
             {suppliers.map((s) => (
               <div
                 key={s.id}
-                className={`bg-white border border-gray-100 p-4 flex items-center gap-4 transition-all hover:border-[#F5C218]/40 hover:shadow-sm ${!s.isActive ? 'opacity-50' : ''}`}
+                className={`bg-white border border-gray-100 p-4 flex items-center gap-4 transition-all hover:border-[#1D4ED8]/40 hover:shadow-sm ${!s.isActive ? 'opacity-50' : ''}`}
               >
                 {/* Avatar */}
                 <div
                   className="w-11 h-11 flex items-center justify-center shrink-0 font-['Barlow_Condensed'] text-lg font-bold"
-                  style={{ background: s.isActive ? '#1C1C1C' : '#E5E7EB', color: s.isActive ? '#F5C218' : '#9CA3AF' }}
+                  style={{ background: s.isActive ? '#0D1B48' : '#E5E7EB', color: s.isActive ? '#1D4ED8' : '#9CA3AF' }}
                 >
                   {s.name.charAt(0).toUpperCase()}
                 </div>
@@ -409,7 +409,7 @@ export default function SuppliersPage() {
                   )}
                   <Link
                     to={`/suppliers/${s.id}`}
-                    className="font-['Barlow_Condensed'] flex items-center gap-1 text-xs font-semibold uppercase tracking-wide px-3 py-1.5 border transition-all hover:border-[#F5C218] hover:text-[#1C1C1C]"
+                    className="font-['Barlow_Condensed'] flex items-center gap-1 text-xs font-semibold uppercase tracking-wide px-3 py-1.5 border transition-all hover:border-[#1D4ED8] hover:text-[#0D1B48]"
                     style={{ borderColor: '#E5E7EB', color: '#6B7280' }}
                   >
                     Historial
@@ -421,8 +421,8 @@ export default function SuppliersPage() {
           </div>
         ) : (
           <div className="bg-white border border-gray-100 p-14 text-center">
-            <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4" style={{ background: '#1C1C1C' }}>
-              <Building2 className="w-7 h-7" style={{ color: '#F5C218' }} />
+            <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4" style={{ background: '#0D1B48' }}>
+              <Building2 className="w-7 h-7" style={{ color: '#1D4ED8' }} />
             </div>
             <p className="font-['Barlow_Condensed'] text-lg font-bold text-gray-700 uppercase tracking-wide">
               {debouncedSearch ? 'Sin resultados' : 'Sin suplidores'}
@@ -434,7 +434,7 @@ export default function SuppliersPage() {
               <button
                 onClick={openCreate}
                 className="mt-5 px-4 py-2.5 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide transition-all hover:opacity-90"
-                style={{ background: '#F5C218', color: '#1C1C1C' }}
+                style={{ background: '#1D4ED8', color: '#ffffff' }}
               >
                 Registrar primer suplidor
               </button>
@@ -449,7 +449,7 @@ export default function SuppliersPage() {
           <div className="bg-white w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
 
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 shrink-0" style={{ background: '#1C1C1C' }}>
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 shrink-0" style={{ background: '#0D1B48' }}>
               <h3 className="font-['Barlow_Condensed'] text-xl font-bold text-white uppercase tracking-wide">
                 {modal === 'create' ? 'Nuevo Suplidor' : `Editar: ${editing?.name}`}
               </h3>
@@ -471,7 +471,7 @@ export default function SuppliersPage() {
                     Nombre <span className="text-red-500">*</span>
                   </label>
                   <input
-                    className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent"
+                    className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-transparent"
                     name="name" value={form.name} onChange={handleChange}
                     placeholder="Ej: Ferretería La Central, S.R.L." required minLength={2} maxLength={200}
                   />
@@ -482,7 +482,7 @@ export default function SuppliersPage() {
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">RNC</label>
                     <div className="relative">
                       <input
-                        className={`w-full font-['Space_Mono'] text-sm border px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] pr-8 ${
+                        className={`w-full font-['Space_Mono'] text-sm border px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] pr-8 ${
                           rncValidation.status === 'valid'         ? 'border-emerald-400' :
                           rncValidation.status === 'not_found'     ? 'border-red-300' :
                           rncValidation.status === 'invalid_format'? 'border-red-300' :
@@ -491,7 +491,7 @@ export default function SuppliersPage() {
                         name="rnc" value={form.rnc} onChange={handleChange} placeholder="9 u 11 dígitos" maxLength={11}
                       />
                       {rncValidation.status === 'validating' && (
-                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 border-2 border-[#F5C218] border-t-transparent rounded-full animate-spin" />
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 border-2 border-[#1D4ED8] border-t-transparent rounded-full animate-spin" />
                       )}
                     </div>
                     {rncValidation.status === 'valid' && (
@@ -506,7 +506,7 @@ export default function SuppliersPage() {
                           <button
                             type="button"
                             onClick={() => setForm((p) => ({ ...p, name: rncValidation.name }))}
-                            className="font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide text-[#1C1C1C] underline hover:no-underline"
+                            className="font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide text-[#0D1B48] underline hover:no-underline"
                           >
                             Auto-completar nombre
                           </button>
@@ -525,7 +525,7 @@ export default function SuppliersPage() {
                   </div>
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Cédula</label>
-                    <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="cedula" value={form.cedula} onChange={handleChange} placeholder="001-0000000-0" maxLength={20} />
+                    <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="cedula" value={form.cedula} onChange={handleChange} placeholder="001-0000000-0" maxLength={20} />
                     <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">Persona física</p>
                   </div>
                 </div>
@@ -533,22 +533,22 @@ export default function SuppliersPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Teléfono</label>
-                    <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="phone" value={form.phone} onChange={handleChange} placeholder="809-000-0000" maxLength={20} />
+                    <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="phone" value={form.phone} onChange={handleChange} placeholder="809-000-0000" maxLength={20} />
                   </div>
                   <div>
                     <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Email</label>
-                    <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="email" type="email" value={form.email} onChange={handleChange} placeholder="contacto@empresa.com" maxLength={150} />
+                    <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="email" type="email" value={form.email} onChange={handleChange} placeholder="contacto@empresa.com" maxLength={150} />
                   </div>
                 </div>
 
                 <div>
                   <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Dirección</label>
-                  <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="address" value={form.address} onChange={handleChange} placeholder="Calle, sector, ciudad" maxLength={500} />
+                  <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="address" value={form.address} onChange={handleChange} placeholder="Calle, sector, ciudad" maxLength={500} />
                 </div>
 
                 <div>
                   <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Notas</label>
-                  <textarea className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] resize-none" name="notes" value={form.notes} onChange={handleChange} placeholder="Información adicional..." rows={2} maxLength={1000} />
+                  <textarea className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] resize-none" name="notes" value={form.notes} onChange={handleChange} placeholder="Información adicional..." rows={2} maxLength={1000} />
                 </div>
 
                 {/* Cuenta bancaria opcional — solo en creación */}
@@ -561,11 +561,11 @@ export default function SuppliersPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Banco</label>
-                          <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="bank" value={bankForm.bank} onChange={handleBankChange} placeholder="Banreservas, Popular…" maxLength={100} />
+                          <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="bank" value={bankForm.bank} onChange={handleBankChange} placeholder="Banreservas, Popular…" maxLength={100} />
                         </div>
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Tipo</label>
-                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountType" value={bankForm.accountType} onChange={handleBankChange}>
+                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="accountType" value={bankForm.accountType} onChange={handleBankChange}>
                             {ACCOUNT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                           </select>
                         </div>
@@ -573,11 +573,11 @@ export default function SuppliersPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Número de cuenta</label>
-                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountNumber" value={bankForm.accountNumber} onChange={handleBankChange} placeholder="000-000000-0" maxLength={50} />
+                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="accountNumber" value={bankForm.accountNumber} onChange={handleBankChange} placeholder="000-000000-0" maxLength={50} />
                         </div>
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Moneda</label>
-                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="currency" value={bankForm.currency} onChange={handleBankChange}>
+                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="currency" value={bankForm.currency} onChange={handleBankChange}>
                             {['RD$', 'US$', '€'].map((c) => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </div>
@@ -592,8 +592,8 @@ export default function SuppliersPage() {
                   </button>
                   <button type="submit" disabled={isPending}
                     className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-2.5 flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
-                    style={{ background: '#F5C218', color: '#1C1C1C' }}>
-                    {isPending ? <span className="w-4 h-4 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                    style={{ background: '#1D4ED8', color: '#ffffff' }}>
+                    {isPending ? <span className="w-4 h-4 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                     {modal === 'create' ? 'Crear Suplidor' : 'Guardar Cambios'}
                   </button>
                 </div>
@@ -614,7 +614,7 @@ export default function SuppliersPage() {
                       <button
                         onClick={() => { setShowBankForm(true); setEditingAccount(null); setBankForm(EMPTY_BANK); }}
                         className="flex items-center gap-1.5 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide px-3 py-1.5 border-2 transition-colors"
-                        style={{ borderColor: '#F5C218', color: '#1C1C1C' }}>
+                        style={{ borderColor: '#1D4ED8', color: '#0D1B48' }}>
                         <Plus className="w-3.5 h-3.5" />Agregar
                       </button>
                     )}
@@ -623,13 +623,13 @@ export default function SuppliersPage() {
                   {bankAccounts && bankAccounts.length > 0 ? (
                     <div className="space-y-2 mb-4">
                       {bankAccounts.map((acc) => (
-                        <div key={acc.id} className={`flex items-center gap-3 p-3 border transition-colors ${acc.isDefault ? 'border-[#F5C218]/40 bg-[#F5C218]/5' : 'border-gray-100 bg-gray-50'}`}>
-                          <CreditCard className={`w-4 h-4 shrink-0 ${acc.isDefault ? 'text-[#F5C218]' : 'text-gray-400'}`} />
+                        <div key={acc.id} className={`flex items-center gap-3 p-3 border transition-colors ${acc.isDefault ? 'border-[#1D4ED8]/40 bg-[#1D4ED8]/5' : 'border-gray-100 bg-gray-50'}`}>
+                          <CreditCard className={`w-4 h-4 shrink-0 ${acc.isDefault ? 'text-[#1D4ED8]' : 'text-gray-400'}`} />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-['Barlow_Condensed'] text-sm font-bold text-gray-800 uppercase">{acc.bank}</span>
                               {acc.isDefault && (
-                                <span className="font-['DM_Sans'] text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: '#F5C218', color: '#1C1C1C' }}>
+                                <span className="font-['DM_Sans'] text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: '#1D4ED8', color: '#ffffff' }}>
                                   Predeterminada
                                 </span>
                               )}
@@ -647,11 +647,11 @@ export default function SuppliersPage() {
                           <div className="flex items-center gap-1 shrink-0">
                             {!acc.isDefault && (
                               <button onClick={() => setDefaultMutation.mutate({ supplierId: editing.id, accountId: acc.id })}
-                                className="p-1.5 text-gray-400 hover:text-[#F5C218] hover:bg-[#F5C218]/10 transition-colors" title="Predeterminada">
+                                className="p-1.5 text-gray-400 hover:text-[#1D4ED8] hover:bg-[#1D4ED8]/10 transition-colors" title="Predeterminada">
                                 <Star className="w-3.5 h-3.5" />
                               </button>
                             )}
-                            {acc.isDefault && <span className="p-1.5 text-[#F5C218]"><StarOff className="w-3.5 h-3.5" /></span>}
+                            {acc.isDefault && <span className="p-1.5 text-[#1D4ED8]"><StarOff className="w-3.5 h-3.5" /></span>}
                             <button onClick={() => openEditAccount(acc)} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
                             {bankAccounts.length > 1 && (
                               <button onClick={() => { if (confirm('¿Eliminar esta cuenta bancaria?')) deleteBankMutation.mutate({ supplierId: editing.id, accountId: acc.id }); }}
@@ -680,25 +680,25 @@ export default function SuppliersPage() {
                       )}
                       <div>
                         <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1">Banco <span className="text-red-500">*</span></label>
-                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="bank" value={bankForm.bank} onChange={handleBankChange} placeholder="Banreservas, Banco Popular, BHD…" maxLength={100} required />
+                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="bank" value={bankForm.bank} onChange={handleBankChange} placeholder="Banreservas, Banco Popular, BHD…" maxLength={100} required />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1">Tipo</label>
-                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountType" value={bankForm.accountType} onChange={handleBankChange}>
+                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="accountType" value={bankForm.accountType} onChange={handleBankChange}>
                             {ACCOUNT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                           </select>
                         </div>
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1">No. de cuenta <span className="text-red-500">*</span></label>
-                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="accountNumber" value={bankForm.accountNumber} onChange={handleBankChange} placeholder="000-000000-0" maxLength={50} required />
+                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="accountNumber" value={bankForm.accountNumber} onChange={handleBankChange} placeholder="000-000000-0" maxLength={50} required />
                         </div>
                       </div>
                       <div>
                         <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1.5">Divisa</label>
                         <div className="flex items-center gap-2">
                           {(['RD$', 'US$', '€'] as const).map((cur) => (
-                            <label key={cur} className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 border font-['Space_Mono'] text-sm font-medium transition-colors ${bankForm.currency === cur ? 'border-[#F5C218] bg-[#F5C218]/10 text-[#1C1C1C]' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}>
+                            <label key={cur} className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 border font-['Space_Mono'] text-sm font-medium transition-colors ${bankForm.currency === cur ? 'border-[#1D4ED8] bg-[#1D4ED8]/10 text-[#0D1B48]' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}>
                               <input type="radio" name="currency" value={cur} checked={bankForm.currency === cur} onChange={handleBankChange} className="sr-only" />
                               {cur}
                             </label>
@@ -707,10 +707,10 @@ export default function SuppliersPage() {
                       </div>
                       <div>
                         <label className="block font-['Barlow_Condensed'] text-xs uppercase tracking-wide text-gray-500 mb-1">Notas</label>
-                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]" name="notes" value={bankForm.notes} onChange={handleBankChange} placeholder="Opcional…" maxLength={200} />
+                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]" name="notes" value={bankForm.notes} onChange={handleBankChange} placeholder="Opcional…" maxLength={200} />
                       </div>
                       <label className="flex items-center gap-2 cursor-pointer font-['DM_Sans'] text-xs text-gray-600">
-                        <input type="checkbox" name="isDefault" checked={bankForm.isDefault} onChange={handleBankChange} className="rounded accent-[#F5C218]" />
+                        <input type="checkbox" name="isDefault" checked={bankForm.isDefault} onChange={handleBankChange} className="rounded accent-[#1D4ED8]" />
                         Establecer como cuenta predeterminada
                       </label>
                       <div className="flex gap-2 pt-1">
@@ -719,8 +719,8 @@ export default function SuppliersPage() {
                         </button>
                         <button type="submit" disabled={isBankPending}
                           className="flex-1 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide py-2 flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-                          style={{ background: '#F5C218', color: '#1C1C1C' }}>
-                          {isBankPending ? <span className="w-3.5 h-3.5 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                          style={{ background: '#1D4ED8', color: '#ffffff' }}>
+                          {isBankPending ? <span className="w-3.5 h-3.5 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
                           {editingAccount ? 'Guardar' : 'Agregar'}
                         </button>
                       </div>
@@ -739,7 +739,7 @@ export default function SuppliersPage() {
                     </p>
                     {!showCreditForm && (
                       <button type="button" onClick={() => setShowCreditForm(true)}
-                        className="text-xs font-bold uppercase tracking-wide px-3 py-1.5 bg-[#F5C218] text-[#1C1C1C] hover:opacity-90 transition-opacity">
+                        className="text-xs font-bold uppercase tracking-wide px-3 py-1.5 bg-[#1D4ED8] text-[#0D1B48] hover:opacity-90 transition-opacity">
                         + Nueva línea
                       </button>
                     )}
@@ -780,7 +780,7 @@ export default function SuppliersPage() {
                       <div className="mt-2 flex gap-2 flex-wrap">
                         {line.isActive && (line as any).balance && (line as any).balance.pending > 0 && (
                           <button type="button" onClick={() => { setSelectedLineId(line.id); setShowPaymentForm(true); }}
-                            className="text-xs font-bold uppercase tracking-wide px-3 py-1 bg-[#1C1C1C] text-white hover:bg-gray-800 transition-colors">
+                            className="text-xs font-bold uppercase tracking-wide px-3 py-1 bg-[#0D1B48] text-white hover:bg-gray-800 transition-colors">
                             Registrar pago
                           </button>
                         )}
@@ -798,7 +798,7 @@ export default function SuppliersPage() {
                           ) : (
                             <table className="w-full text-xs">
                               <thead>
-                                <tr className="bg-[#1C1C1C]">
+                                <tr className="bg-[#0D1B48]">
                                   <th className="text-left px-2 py-1.5 text-[10px] font-['Barlow_Condensed'] uppercase tracking-wider text-gray-400">Fecha</th>
                                   <th className="text-right px-2 py-1.5 text-[10px] font-['Barlow_Condensed'] uppercase tracking-wider text-gray-400">Monto</th>
                                   <th className="text-left px-2 py-1.5 text-[10px] font-['Barlow_Condensed'] uppercase tracking-wider text-gray-400 hidden sm:table-cell">Método</th>
@@ -849,14 +849,14 @@ export default function SuppliersPage() {
                       {creditError && <p className="text-xs text-red-600">{creditError}</p>}
                       <div>
                         <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Límite de crédito *</label>
-                        <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                        <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                           value={creditForm.creditLimit}
                           onChange={(e) => setCreditForm(f => ({ ...f, creditLimit: e.target.value }))}
                           placeholder="300,000.00" />
                       </div>
                       <div>
                         <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Notas</label>
-                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                        <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                           value={creditForm.notes}
                           onChange={(e) => setCreditForm(f => ({ ...f, notes: e.target.value }))}
                           placeholder="Condiciones, plazo, etc." />
@@ -865,7 +865,7 @@ export default function SuppliersPage() {
                         <button type="button" onClick={() => { setShowCreditForm(false); setCreditError(''); }}
                           className="flex-1 text-xs font-bold uppercase py-2 border border-gray-200 hover:bg-gray-50">Cancelar</button>
                         <button type="submit" disabled={createCreditLineMutation.isPending}
-                          className="flex-1 text-xs font-bold uppercase py-2 bg-[#F5C218] text-[#1C1C1C] hover:opacity-90 disabled:opacity-50">
+                          className="flex-1 text-xs font-bold uppercase py-2 bg-[#1D4ED8] text-[#0D1B48] hover:opacity-90 disabled:opacity-50">
                           {createCreditLineMutation.isPending ? 'Guardando…' : 'Guardar'}
                         </button>
                       </div>
@@ -878,20 +878,20 @@ export default function SuppliersPage() {
                       const amount = Number(paymentForm.amount.replace(/,/g, ''));
                       if (!amount || amount <= 0) { setPaymentError('El monto debe ser mayor a 0'); return; }
                       addPaymentMutation.mutate({ lineId: selectedLineId, amount, paymentDate: paymentForm.paymentDate, paymentMethod: paymentForm.paymentMethod, reference: paymentForm.reference || undefined, notes: paymentForm.notes || undefined });
-                    }} className="border border-[#F5C218]/40 p-4 space-y-3 mt-2 bg-yellow-50/30">
+                    }} className="border border-[#1D4ED8]/40 p-4 space-y-3 mt-2 bg-yellow-50/30">
                       <p className="font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide text-gray-700">Registrar pago / abono</p>
                       {paymentError && <p className="text-xs text-red-600">{paymentError}</p>}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Monto *</label>
-                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                          <input className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                             value={paymentForm.amount}
                             onChange={(e) => setPaymentForm(f => ({ ...f, amount: e.target.value }))}
                             placeholder="100,000.00" />
                         </div>
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Fecha *</label>
-                          <input type="date" className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                          <input type="date" className="w-full font-['Space_Mono'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                             value={paymentForm.paymentDate}
                             onChange={(e) => setPaymentForm(f => ({ ...f, paymentDate: e.target.value }))} />
                         </div>
@@ -899,7 +899,7 @@ export default function SuppliersPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Método *</label>
-                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                          <select className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                             value={paymentForm.paymentMethod}
                             onChange={(e) => setPaymentForm(f => ({ ...f, paymentMethod: e.target.value }))}>
                             <option value="TRANSFER">Transferencia</option>
@@ -910,7 +910,7 @@ export default function SuppliersPage() {
                         </div>
                         <div>
                           <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Referencia</label>
-                          <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F5C218]"
+                          <input className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                             value={paymentForm.reference}
                             onChange={(e) => setPaymentForm(f => ({ ...f, reference: e.target.value }))}
                             placeholder="No. cheque / transferencia" />
@@ -920,7 +920,7 @@ export default function SuppliersPage() {
                         <button type="button" onClick={() => { setShowPaymentForm(false); setSelectedLineId(null); setPaymentError(''); }}
                           className="flex-1 text-xs font-bold uppercase py-2 border border-gray-200 hover:bg-gray-50">Cancelar</button>
                         <button type="submit" disabled={addPaymentMutation.isPending}
-                          className="flex-1 text-xs font-bold uppercase py-2 bg-[#1C1C1C] text-white hover:bg-gray-800 disabled:opacity-50">
+                          className="flex-1 text-xs font-bold uppercase py-2 bg-[#0D1B48] text-white hover:bg-gray-800 disabled:opacity-50">
                           {addPaymentMutation.isPending ? 'Guardando…' : 'Registrar pago'}
                         </button>
                       </div>

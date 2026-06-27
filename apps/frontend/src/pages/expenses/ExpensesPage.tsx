@@ -220,12 +220,12 @@ export default function ExpensesPage() {
       {/* Hero header band */}
       <div
         className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5"
-        style={{ background: '#1C1C1C' }}
+        style={{ background: '#0D1B48' }}
       >
         <div>
           <p
             className="text-xs tracking-widest uppercase mb-1"
-            style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}
+            style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8' }}
           >
             MÓDULO / GASTOS
           </p>
@@ -237,7 +237,7 @@ export default function ExpensesPage() {
           </h1>
           <p
             className="text-sm mt-1 h-5 flex items-center"
-            style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
+            style={{ fontFamily: 'Space Mono, monospace', color: '#1D4ED8' }}
           >
             {isLoading
               ? <SkeletonBlock className="h-4 w-32 bg-gray-600" />
@@ -253,7 +253,7 @@ export default function ExpensesPage() {
               title="Descargar plantilla CSV de ejemplo"
               className="flex items-center gap-2 px-3 py-2 border transition-colors"
               style={{ fontFamily: 'DM Sans, sans-serif', borderColor: '#4b5563', color: '#d1d5db', fontSize: '0.875rem' }}
-              onMouseEnter={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#F5C218'; (ev.currentTarget as HTMLButtonElement).style.color = '#F5C218'; }}
+              onMouseEnter={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#1D4ED8'; (ev.currentTarget as HTMLButtonElement).style.color = '#1D4ED8'; }}
               onMouseLeave={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#4b5563'; (ev.currentTarget as HTMLButtonElement).style.color = '#d1d5db'; }}
             >
               <Download className="w-4 h-4" /> Plantilla
@@ -262,7 +262,7 @@ export default function ExpensesPage() {
               onClick={() => fileRef.current?.click()}
               className="flex items-center gap-2 px-3 py-2 border transition-colors"
               style={{ fontFamily: 'DM Sans, sans-serif', borderColor: '#4b5563', color: '#d1d5db', fontSize: '0.875rem' }}
-              onMouseEnter={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#F5C218'; (ev.currentTarget as HTMLButtonElement).style.color = '#F5C218'; }}
+              onMouseEnter={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#1D4ED8'; (ev.currentTarget as HTMLButtonElement).style.color = '#1D4ED8'; }}
               onMouseLeave={(ev) => { (ev.currentTarget as HTMLButtonElement).style.borderColor = '#4b5563'; (ev.currentTarget as HTMLButtonElement).style.color = '#d1d5db'; }}
             >
               <Upload className="w-4 h-4" /> Importar CSV
@@ -272,7 +272,7 @@ export default function ExpensesPage() {
                 onClick={() => setBulkMode(true)}
                 className="flex items-center gap-2 px-3 py-2 border transition-colors"
                 style={{ fontFamily: 'DM Sans, sans-serif', borderColor: '#4b5563', color: '#d1d5db', fontSize: '0.875rem' }}
-                onMouseEnter={(ev) => { ev.currentTarget.style.borderColor = '#F5C218'; ev.currentTarget.style.color = '#F5C218'; }}
+                onMouseEnter={(ev) => { ev.currentTarget.style.borderColor = '#1D4ED8'; ev.currentTarget.style.color = '#1D4ED8'; }}
                 onMouseLeave={(ev) => { ev.currentTarget.style.borderColor = '#4b5563'; ev.currentTarget.style.color = '#d1d5db'; }}
               >
                 <Layers className="w-4 h-4" /> Asignar Item
@@ -281,7 +281,7 @@ export default function ExpensesPage() {
             <Link
               to="/expenses/new"
               className="flex items-center gap-2 px-4 py-2 font-bold uppercase tracking-wide transition-opacity hover:opacity-90"
-              style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}
+              style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}
             >
               <Plus className="w-4 h-4" /> Nuevo Gasto
             </Link>
@@ -298,7 +298,7 @@ export default function ExpensesPage() {
             className="px-4 py-2 border-b-2 transition-colors"
             style={
               selectedProjectId === 'all'
-                ? { borderColor: '#F5C218', color: '#1C1C1C', fontWeight: 600, fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
+                ? { borderColor: '#1D4ED8', color: '#0D1B48', fontWeight: 600, fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
                 : { borderColor: 'transparent', color: '#6b7280', fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
             }
           >
@@ -312,7 +312,7 @@ export default function ExpensesPage() {
               title={p.name}
               style={
                 selectedProjectId === p.id
-                  ? { borderColor: '#F5C218', color: '#1C1C1C', fontWeight: 600, fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
+                  ? { borderColor: '#1D4ED8', color: '#0D1B48', fontWeight: 600, fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
                   : { borderColor: 'transparent', color: '#6b7280', fontFamily: 'Space Mono, monospace', fontSize: '0.75rem' }
               }
             >
@@ -327,12 +327,12 @@ export default function ExpensesPage() {
           return p ? (
             <div
               className="border-l-4 bg-amber-50 px-4 py-3 flex items-center justify-between"
-              style={{ borderLeftColor: '#F5C218' }}
+              style={{ borderLeftColor: '#1D4ED8' }}
             >
               <div>
                 <p
                   className="font-semibold text-sm"
-                  style={{ fontFamily: 'DM Sans, sans-serif', color: '#1C1C1C' }}
+                  style={{ fontFamily: 'DM Sans, sans-serif', color: '#0D1B48' }}
                 >
                   {p.name}
                 </p>
@@ -347,7 +347,7 @@ export default function ExpensesPage() {
                 <p className="text-xs text-gray-500 mb-0.5" style={{ fontFamily: 'DM Sans, sans-serif' }}>Total en vista</p>
                 <p
                   className="font-bold text-sm"
-                  style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
+                  style={{ fontFamily: 'Space Mono, monospace', color: '#1D4ED8' }}
                 >
                   {formatCurrency(tabTotal)}
                 </p>
@@ -361,7 +361,7 @@ export default function ExpensesPage() {
           <div className="relative flex-1 min-w-48">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
-              className="w-full border border-gray-300 rounded-none pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218] focus:border-[#F5C218]"
+              className="w-full border border-gray-300 rounded-none pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1D4ED8] focus:border-[#1D4ED8]"
               style={{ fontFamily: 'DM Sans, sans-serif' }}
               placeholder="Buscar descripción..."
               value={search}
@@ -370,7 +370,7 @@ export default function ExpensesPage() {
           </div>
 
           <select
-            className="border border-gray-300 rounded-none px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218] focus:border-[#F5C218] w-auto"
+            className="border border-gray-300 rounded-none px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1D4ED8] focus:border-[#1D4ED8] w-auto"
             style={{ fontFamily: 'DM Sans, sans-serif' }}
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
@@ -412,7 +412,7 @@ export default function ExpensesPage() {
             className="flex items-center gap-1.5 px-3 py-2 border text-sm font-medium transition-colors"
             style={
               showFilters || activeFilterCount > 0
-                ? { background: '#F5C218', color: '#1C1C1C', borderColor: '#F5C218', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }
+                ? { background: '#1D4ED8', color: '#ffffff', borderColor: '#1D4ED8', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }
                 : { background: 'white', color: '#4b5563', borderColor: '#d1d5db', fontFamily: 'DM Sans, sans-serif' }
             }
           >
@@ -421,7 +421,7 @@ export default function ExpensesPage() {
             {activeFilterCount > 0 && (
               <span
                 className="text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold"
-                style={{ background: '#1C1C1C', color: 'white' }}
+                style={{ background: '#0D1B48', color: 'white' }}
               >
                 {activeFilterCount}
               </span>
@@ -455,7 +455,7 @@ export default function ExpensesPage() {
                   Categoría
                 </label>
                 <select
-                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218]"
+                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]"
                   style={{ fontFamily: 'DM Sans, sans-serif' }}
                   value={categoryId}
                   onChange={(e) => { setCategoryId(e.target.value); setPage(1); }}
@@ -471,7 +471,7 @@ export default function ExpensesPage() {
                   Comprobante (NCF)
                 </label>
                 <select
-                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218]"
+                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]"
                   style={{ fontFamily: 'DM Sans, sans-serif' }}
                   value={hasFiscalDoc}
                   onChange={(e) => { setHasFiscalDoc(e.target.value); setPage(1); }}
@@ -491,7 +491,7 @@ export default function ExpensesPage() {
                 </label>
                 <input
                   type="date"
-                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218]"
+                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]"
                   style={{ fontFamily: 'Space Mono, monospace' }}
                   value={dateFrom}
                   onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
@@ -507,7 +507,7 @@ export default function ExpensesPage() {
                 </label>
                 <input
                   type="date"
-                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#F5C218]"
+                  className="w-full border border-gray-300 rounded-none px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]"
                   style={{ fontFamily: 'Space Mono, monospace' }}
                   value={dateTo}
                   onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
@@ -544,13 +544,13 @@ export default function ExpensesPage() {
           <div className="p-12 text-center border border-gray-100">
             <div
               className="w-14 h-14 flex items-center justify-center mx-auto mb-4"
-              style={{ background: '#1C1C1C' }}
+              style={{ background: '#0D1B48' }}
             >
-              <Receipt className="w-7 h-7" style={{ color: '#F5C218' }} />
+              <Receipt className="w-7 h-7" style={{ color: '#1D4ED8' }} />
             </div>
             <p
               className="text-xl uppercase tracking-widest mb-1"
-              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1C1C1C' }}
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#0D1B48' }}
             >
               Sin gastos registrados
             </p>
@@ -561,7 +561,7 @@ export default function ExpensesPage() {
               <Link
                 to="/expenses/new"
                 className="inline-flex items-center gap-2 px-4 py-2 font-bold uppercase tracking-wide text-sm"
-                style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif' }}
+                style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Barlow Condensed, sans-serif' }}
               >
                 <Plus className="w-4 h-4" /> Registrar primer gasto
               </Link>
@@ -583,16 +583,16 @@ export default function ExpensesPage() {
                   {...(cardProps as any)}
                   className={`bg-white border p-4 flex items-center gap-3 group transition-colors ${
                     bulkMode
-                      ? isSelected ? 'border-[#F5C218] bg-yellow-50' : isVoided ? 'border-gray-100 opacity-50' : 'border-gray-100 hover:border-[#F5C218]'
-                      : 'border-gray-100 hover:border-[#F5C218]'
+                      ? isSelected ? 'border-[#1D4ED8] bg-yellow-50' : isVoided ? 'border-gray-100 opacity-50' : 'border-gray-100 hover:border-[#1D4ED8]'
+                      : 'border-gray-100 hover:border-[#1D4ED8]'
                   }`}
                 >
                   {bulkMode && (
                     <div
                       className="w-5 h-5 shrink-0 border-2 flex items-center justify-center"
-                      style={{ borderColor: isSelected ? '#F5C218' : '#d1d5db', background: isSelected ? '#F5C218' : 'white' }}
+                      style={{ borderColor: isSelected ? '#1D4ED8' : '#d1d5db', background: isSelected ? '#1D4ED8' : 'white' }}
                     >
-                      {isSelected && <Check className="w-3 h-3" style={{ color: '#1C1C1C' }} />}
+                      {isSelected && <Check className="w-3 h-3" style={{ color: '#0D1B48' }} />}
                     </div>
                   )}
                   <div
@@ -602,7 +602,7 @@ export default function ExpensesPage() {
                   <div className="flex-1 min-w-0">
                     <p
                       className="text-sm font-medium truncate"
-                      style={{ fontFamily: 'DM Sans, sans-serif', color: '#1C1C1C' }}
+                      style={{ fontFamily: 'DM Sans, sans-serif', color: '#0D1B48' }}
                     >
                       {e.description}
                     </p>
@@ -610,7 +610,7 @@ export default function ExpensesPage() {
                       {selectedProjectId === 'all' && (
                         <span
                           className="font-medium mr-1"
-                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#0D1B48' }}
                         >
                           {e.project.code} ·
                         </span>
@@ -619,7 +619,7 @@ export default function ExpensesPage() {
                       {e.projectItem && (
                         <span
                           className="ml-1"
-                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C', fontSize: '0.75rem', background: '#F5C218', padding: '0 4px' }}
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#0D1B48', fontSize: '0.75rem', background: '#1D4ED8', padding: '0 4px' }}
                         >
                           #{e.projectItem.number} {e.projectItem.name}
                         </span>
@@ -661,7 +661,7 @@ export default function ExpensesPage() {
                   <div className="text-right shrink-0">
                     <p
                       className="font-bold text-sm"
-                      style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
+                      style={{ fontFamily: 'Space Mono, monospace', color: '#0D1B48' }}
                     >
                       {formatCurrency(Number(e.amount))}
                     </p>
@@ -727,7 +727,7 @@ export default function ExpensesPage() {
             {pagination && pagination.totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 pt-2">
                 <button
-                  className="border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 transition-colors hover:border-[#F5C218]"
+                  className="border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 transition-colors hover:border-[#1D4ED8]"
                   style={{ fontFamily: 'DM Sans, sans-serif' }}
                   disabled={!pagination.hasPrevPage}
                   onClick={() => setPage(p => p - 1)}
@@ -736,12 +736,12 @@ export default function ExpensesPage() {
                 </button>
                 <span
                   className="px-3 py-1.5 text-sm font-bold"
-                  style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Space Mono, monospace' }}
+                  style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Space Mono, monospace' }}
                 >
                   {pagination.page} / {pagination.totalPages}
                 </span>
                 <button
-                  className="border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 transition-colors hover:border-[#F5C218]"
+                  className="border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 transition-colors hover:border-[#1D4ED8]"
                   style={{ fontFamily: 'DM Sans, sans-serif' }}
                   disabled={!pagination.hasNextPage}
                   onClick={() => setPage(p => p + 1)}
@@ -757,11 +757,11 @@ export default function ExpensesPage() {
       {/* Floating bulk assignment bar */}
       {bulkMode && (
         <div
-          className="fixed bottom-0 left-0 right-0 z-40 flex items-center gap-4 px-6 py-4 shadow-2xl border-t border-[#F5C218]/30"
-          style={{ background: '#1C1C1C' }}
+          className="fixed bottom-0 left-0 right-0 z-40 flex items-center gap-4 px-6 py-4 shadow-2xl border-t border-[#1D4ED8]/30"
+          style={{ background: '#0D1B48' }}
         >
           <div className="flex items-center gap-2 shrink-0">
-            <span className="font-['Space_Mono'] text-[#F5C218] text-sm">{selectedIds.size}</span>
+            <span className="font-['Space_Mono'] text-[#1D4ED8] text-sm">{selectedIds.size}</span>
             <span className="font-['DM_Sans'] text-gray-400 text-sm">gastos seleccionados</span>
           </div>
           <div className="flex-1 max-w-xs">
@@ -781,7 +781,7 @@ export default function ExpensesPage() {
             onClick={applyBulkItem}
             disabled={bulkApplying || selectedIds.size === 0 || !bulkItemId}
             className="flex items-center gap-2 px-4 py-2 font-bold uppercase tracking-wide disabled:opacity-40 transition-opacity hover:opacity-90"
-            style={{ background: '#F5C218', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}
+            style={{ background: '#1D4ED8', color: '#ffffff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: '0.875rem' }}
           >
             {bulkApplying
               ? <><span className="font-['Space_Mono'] text-xs">{bulkDone}/{selectedIds.size}</span> Aplicando…</>
@@ -803,18 +803,18 @@ export default function ExpensesPage() {
       {importModal && (() => {
         const invalidCount = editRows.filter((r) => !isRowValid(r)).length;
         const canConfirm   = editRows.length > 0 && invalidCount === 0;
-        const iCls = 'w-full border border-gray-200 px-1.5 py-1 text-xs focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]';
+        const iCls = 'w-full border border-gray-200 px-1.5 py-1 text-xs focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]';
         return (
           <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-2">
             <div className="bg-white shadow-2xl w-full max-w-[96vw] max-h-[96vh] flex flex-col">
 
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ background: '#1C1C1C' }}>
+              <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ background: '#0D1B48' }}>
                 <div>
                   <h2 className="text-lg uppercase tracking-widest text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Validar gastos antes de importar
                   </h2>
-                  <p className="text-xs mt-0.5" style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}>
+                  <p className="text-xs mt-0.5" style={{ fontFamily: 'Space Mono, monospace', color: '#1D4ED8' }}>
                     {editRows.length} filas · edita o elimina antes de confirmar
                     {invalidCount > 0 && <span className="text-red-400 ml-2">— {invalidCount} con errores</span>}
                   </p>
@@ -827,7 +827,7 @@ export default function ExpensesPage() {
               {/* Result after import */}
               {importResult && (
                 <div className="shrink-0">
-                  <div className={`mx-5 mt-4 p-3 text-sm flex items-start gap-2 ${importResult.err === 0 ? 'bg-[#1C1C1C] border border-[#F5C218]/40 text-[#F5C218]' : 'bg-amber-50 text-amber-700'}`} style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <div className={`mx-5 mt-4 p-3 text-sm flex items-start gap-2 ${importResult.err === 0 ? 'bg-[#0D1B48] border border-[#1D4ED8]/40 text-[#1D4ED8]' : 'bg-amber-50 text-amber-700'}`} style={{ fontFamily: 'DM Sans, sans-serif' }}>
                     {importResult.err === 0
                       ? <><CheckCircle className="w-4 h-4 shrink-0 mt-0.5" /> {importResult.ok} gastos importados correctamente.</>
                       : <><AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> {importResult.ok} importados, {importResult.err} con error.</>
@@ -859,7 +859,7 @@ export default function ExpensesPage() {
                 <div className="overflow-auto flex-1 mt-3 px-5">
                   <table className="w-full text-xs border-collapse" style={{ minWidth: '900px' }}>
                     <thead className="sticky top-0 z-10">
-                      <tr style={{ background: '#1C1C1C' }}>
+                      <tr style={{ background: '#0D1B48' }}>
                         {['FECHA', 'DESCRIPCIÓN', 'PROVEEDOR', 'CATEGORÍA', 'MONTO (RD$)', 'MÉTODO', 'PROYECTO', 'NOTAS', ''].map((h) => (
                           <th key={h} className="text-left px-2 py-2 font-semibold whitespace-nowrap" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#9ca3af', letterSpacing: '0.08em', fontSize: '10px' }}>
                             {h}
@@ -1002,7 +1002,7 @@ export default function ExpensesPage() {
                       disabled={importMut.isPending || !canConfirm}
                       title={!canConfirm ? 'Corrige o elimina las filas con errores primero' : ''}
                       className="px-4 py-2 text-sm font-bold uppercase tracking-wide disabled:opacity-40 transition-opacity hover:opacity-90"
-                      style={{ background: canConfirm ? '#F5C218' : '#d1d5db', color: '#1C1C1C', fontFamily: 'Barlow Condensed, sans-serif', cursor: canConfirm ? 'pointer' : 'not-allowed' }}
+                      style={{ background: canConfirm ? '#1D4ED8' : '#d1d5db', color: '#0D1B48', fontFamily: 'Barlow Condensed, sans-serif', cursor: canConfirm ? 'pointer' : 'not-allowed' }}
                     >
                       {importMut.isPending ? 'Importando...' : `Confirmar e importar ${editRows.length} gastos`}
                     </button>
@@ -1020,9 +1020,9 @@ export default function ExpensesPage() {
       {rejectTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-white w-full max-w-md shadow-2xl">
-            <div className="bg-[#1C1C1C] px-5 py-4 flex items-center justify-between">
+            <div className="bg-[#0D1B48] px-5 py-4 flex items-center justify-between">
               <h2 className="font-['Barlow_Condensed'] text-lg font-bold uppercase tracking-wide text-white">Motivo de rechazo</h2>
-              <button onClick={() => setRejectTarget(null)} className="text-gray-400 hover:text-[#F5C218] text-xl leading-none">✕</button>
+              <button onClick={() => setRejectTarget(null)} className="text-gray-400 hover:text-[#1D4ED8] text-xl leading-none">✕</button>
             </div>
             <div className="p-5">
               <textarea
@@ -1031,7 +1031,7 @@ export default function ExpensesPage() {
                 value={rejectReason}
                 onChange={e => setRejectReason(e.target.value)}
                 placeholder="Describe el motivo del rechazo..."
-                className="w-full border border-gray-200 px-3 py-2 font-['DM_Sans'] text-sm focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none resize-none"
+                className="w-full border border-gray-200 px-3 py-2 font-['DM_Sans'] text-sm focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none resize-none"
               />
               <div className="flex gap-3 mt-4">
                 <button onClick={() => setRejectTarget(null)}

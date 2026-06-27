@@ -45,13 +45,13 @@ function timeAgo(iso: string) {
 
 // ─── Stat Card ────────────────────────────────────────────────
 function StatCard({
-  icon: Icon, label, value, sub, color = 'text-[#F5C218]',
+  icon: Icon, label, value, sub, color = 'text-[#1D4ED8]',
 }: { icon: any; label: string; value: string | number; sub?: string; color?: string }) {
   return (
-    <div className="bg-[#1C1C1C] border border-[#2a2a2a] p-4 hover:border-[#F5C218]/40 transition-colors group">
+    <div className="bg-[#0D1B48] border border-[#2a2a2a] p-4 hover:border-[#1D4ED8]/40 transition-colors group">
       <div className="flex items-start gap-3">
         <div className="p-2 rounded-lg bg-[#111] mt-0.5">
-          <Icon className="w-4 h-4 text-gray-600 group-hover:text-[#F5C218]/60 transition-colors" />
+          <Icon className="w-4 h-4 text-gray-600 group-hover:text-[#1D4ED8]/60 transition-colors" />
         </div>
         <div className="min-w-0">
           <p className="font-['DM_Sans'] text-xs text-gray-500 uppercase tracking-wide">{label}</p>
@@ -76,7 +76,7 @@ function MiniBarChart({ data }: { data: { hour: string; requests: number; errors
         return (
           <div key={d.hour} className="flex-1 flex flex-col items-center gap-0.5 group relative">
             <div className="w-full flex flex-col justify-end" style={{ height: '52px' }}>
-              <div style={{ height: `${reqH}%` }} className="w-full bg-[#F5C218]/40 rounded-t-sm relative">
+              <div style={{ height: `${reqH}%` }} className="w-full bg-[#1D4ED8]/40 rounded-t-sm relative">
                 {errH > 0 && (
                   <div
                     style={{ height: `${(d.errors / d.requests) * 100}%` }}
@@ -87,7 +87,7 @@ function MiniBarChart({ data }: { data: { hour: string; requests: number; errors
             </div>
             <span className="font-['Space_Mono'] text-[8px] text-gray-600 leading-none">{label}</span>
             {/* Tooltip */}
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-[#F5C218] text-[#1C1C1C] text-[10px] font-['Space_Mono'] rounded px-1.5 py-0.5 whitespace-nowrap z-10 font-bold">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-[#1D4ED8] text-[#0D1B48] text-[10px] font-['Space_Mono'] rounded px-1.5 py-0.5 whitespace-nowrap z-10 font-bold">
               {d.requests} req / {d.errors} err
             </div>
           </div>
@@ -109,16 +109,16 @@ function LogRow({ log }: { log: SystemLog }) {
         <div className="flex items-center gap-3 mt-0.5 flex-wrap">
           <span className="font-['Space_Mono'] text-[10px] text-gray-600">{timeAgo(log.createdAt)}</span>
           {log.endpoint && (
-            <span className="font-['Space_Mono'] text-[10px] text-[#F5C218]/70 bg-[#1C1C1C] px-1.5 py-0.5 rounded border border-[#2a2a2a]">
+            <span className="font-['Space_Mono'] text-[10px] text-[#1D4ED8]/70 bg-[#0D1B48] px-1.5 py-0.5 rounded border border-[#2a2a2a]">
               {log.method} {log.endpoint}
             </span>
           )}
           {log.statusCode && (
-            <span className={`font-['Space_Mono'] text-[10px] px-1.5 py-0.5 rounded ${log.statusCode >= 500 ? 'bg-red-950/50 text-red-400' : log.statusCode >= 400 ? 'bg-yellow-950/40 text-yellow-400' : 'bg-[#1C1C1C] text-gray-500'}`}>
+            <span className={`font-['Space_Mono'] text-[10px] px-1.5 py-0.5 rounded ${log.statusCode >= 500 ? 'bg-red-950/50 text-red-400' : log.statusCode >= 400 ? 'bg-yellow-950/40 text-yellow-400' : 'bg-[#0D1B48] text-gray-500'}`}>
               {log.statusCode}
             </span>
           )}
-          <span className="font-['Space_Mono'] text-[10px] px-1.5 py-0.5 rounded bg-[#1C1C1C] text-gray-600 border border-[#2a2a2a]">
+          <span className="font-['Space_Mono'] text-[10px] px-1.5 py-0.5 rounded bg-[#0D1B48] text-gray-600 border border-[#2a2a2a]">
             {log.category}
           </span>
         </div>
@@ -134,8 +134,8 @@ function LogRow({ log }: { log: SystemLog }) {
 function UrgencyBadge({ days }: { days: number }) {
   if (days === 0) return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-red-950/60 text-red-400 border border-red-800">HOY</span>;
   if (days === 1) return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-yellow-950/60 text-yellow-400 border border-yellow-800">MAÑANA</span>;
-  if (days <= 3)  return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-[#F5C218]/10 text-[#F5C218] border border-[#F5C218]/30">{days} días</span>;
-  return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-[#1C1C1C] text-gray-500 border border-[#2a2a2a]">{days} días</span>;
+  if (days <= 3)  return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-[#1D4ED8]/10 text-[#1D4ED8] border border-[#1D4ED8]/30">{days} días</span>;
+  return <span className="font-['Space_Mono'] px-2 py-0.5 rounded text-xs font-bold bg-[#0D1B48] text-gray-500 border border-[#2a2a2a]">{days} días</span>;
 }
 
 // ─── Empty form state ─────────────────────────────────────────
@@ -277,14 +277,14 @@ function SubscriptionsTab() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="font-['Barlow_Condensed'] text-lg font-bold tracking-wide uppercase text-white flex items-center gap-2">
-          <CreditCard className="w-4 h-4" style={{ color: '#F5C218' }} />
+          <CreditCard className="w-4 h-4" style={{ color: '#1D4ED8' }} />
           Suscripciones de Servicios
         </h2>
         {isAdmin && (
           <button
             onClick={openCreate}
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg font-['DM_Sans']"
-            style={{ background: '#F5C218', color: '#1C1C1C' }}
+            style={{ background: '#1D4ED8', color: '#ffffff' }}
           >
             <Plus className="w-4 h-4" />
             Nuevo servicio
@@ -294,23 +294,23 @@ function SubscriptionsTab() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-[#1C1C1C] border border-[#2a2a2a] p-4">
+        <div className="bg-[#0D1B48] border border-[#2a2a2a] p-4">
           <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-widest">Costo mensual total</p>
-          <p className="font-['Space_Mono'] text-2xl font-bold mt-1" style={{ color: '#F5C218' }}>
+          <p className="font-['Space_Mono'] text-2xl font-bold mt-1" style={{ color: '#1D4ED8' }}>
             ${totalMonthly.toFixed(2)}
             <span className="font-['DM_Sans'] text-sm font-normal text-gray-500 ml-1">USD</span>
           </p>
         </div>
-        <div className="bg-[#1C1C1C] border border-[#2a2a2a] p-4">
+        <div className="bg-[#0D1B48] border border-[#2a2a2a] p-4">
           <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-widest">Servicios activos</p>
           <p className="font-['Space_Mono'] text-2xl font-bold text-white mt-1">{activeSubs.length}</p>
         </div>
-        <div className="bg-[#1C1C1C] border border-[#2a2a2a] p-4">
+        <div className="bg-[#0D1B48] border border-[#2a2a2a] p-4">
           <p className="font-['Barlow_Condensed'] text-xs text-gray-500 uppercase tracking-widest">Proximos 7 dias</p>
           <div className="flex items-center gap-2 mt-1">
             <p className="font-['Space_Mono'] text-2xl font-bold text-white">{upcoming.length}</p>
             {upcoming.length > 0 && (
-              <span className="font-['DM_Sans'] px-2 py-0.5 rounded text-xs font-bold bg-[#F5C218]/10 text-[#F5C218] border border-[#F5C218]/30">
+              <span className="font-['DM_Sans'] px-2 py-0.5 rounded text-xs font-bold bg-[#1D4ED8]/10 text-[#1D4ED8] border border-[#1D4ED8]/30">
                 {upcoming.length} pago{upcoming.length !== 1 ? 's' : ''}
               </span>
             )}
@@ -320,9 +320,9 @@ function SubscriptionsTab() {
 
       {/* Upcoming payments */}
       {upcoming.length > 0 && (
-        <div className="bg-[#1C1C1C] border border-[#F5C218]/20 overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#F5C218]/10 bg-[#F5C218]/5">
-            <h3 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-[#F5C218] flex items-center gap-2">
+        <div className="bg-[#0D1B48] border border-[#1D4ED8]/20 overflow-hidden">
+          <div className="px-4 py-3 border-b border-[#1D4ED8]/10 bg-[#1D4ED8]/5">
+            <h3 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-[#1D4ED8] flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               Pagos proximos (7 dias)
             </h3>
@@ -337,7 +337,7 @@ function SubscriptionsTab() {
                     <p className="font-['DM_Sans'] text-xs text-gray-600">{item.provider} · dia {item.billingDay}</p>
                   </div>
                 </div>
-                <span className="font-['Space_Mono'] text-sm font-semibold text-[#F5C218]">
+                <span className="font-['Space_Mono'] text-sm font-semibold text-[#1D4ED8]">
                   ${Number(item.monthlyCost).toFixed(2)} {item.currency}
                 </span>
               </div>
@@ -367,7 +367,7 @@ function SubscriptionsTab() {
               <button
                 onClick={openCreate}
                 className="font-['DM_Sans'] mt-3 text-sm font-medium underline"
-                style={{ color: '#F5C218' }}
+                style={{ color: '#1D4ED8' }}
               >
                 Agregar el primero
               </button>
@@ -410,7 +410,7 @@ function SubscriptionsTab() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="hover:underline"
-                            style={{ color: '#F5C218' }}
+                            style={{ color: '#1D4ED8' }}
                           >
                             {item.provider}
                           </a>
@@ -661,7 +661,7 @@ function SubscriptionsTab() {
                   type="submit"
                   disabled={createMut.isPending || updateMut.isPending}
                   className="font-['DM_Sans'] px-4 py-2 text-sm font-semibold rounded-lg disabled:opacity-50"
-                  style={{ background: '#F5C218', color: '#1C1C1C' }}
+                  style={{ background: '#1D4ED8', color: '#ffffff' }}
                 >
                   {createMut.isPending || updateMut.isPending ? 'Guardando...' : editingItem ? 'Guardar cambios' : 'Crear servicio'}
                 </button>
@@ -706,7 +706,7 @@ export default function MonitoringPage() {
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
       a.href     = url;
-      a.download = `backup_servingmi_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `backup_jhota_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e: any) {
@@ -768,10 +768,10 @@ export default function MonitoringPage() {
     <div className="space-y-5 max-w-6xl">
 
       {/* Hero header band */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-5 mb-2" style={{ background: '#1C1C1C' }}>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-5 mb-2" style={{ background: '#0D1B48' }}>
         <div className="max-w-6xl flex items-start justify-between gap-4">
           <div>
-            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.25em] uppercase mb-1" style={{ color: '#F5C218' }}>
+            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.25em] uppercase mb-1" style={{ color: '#1D4ED8' }}>
               ADMINISTRACIÓN / SISTEMA
             </p>
             <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold tracking-tight text-white uppercase">
@@ -782,7 +782,7 @@ export default function MonitoringPage() {
                 Última actualización: {new Date(dashData.generatedAt).toLocaleTimeString('es-DO')}
               </p>
             )}
-            <div className="mt-2 w-12 h-0.5" style={{ background: '#F5C218' }} />
+            <div className="mt-2 w-12 h-0.5" style={{ background: '#1D4ED8' }} />
           </div>
           <div className="flex gap-2 shrink-0 mt-1">
             {isAdmin && activeTab === 'dashboard' && (
@@ -810,7 +810,7 @@ export default function MonitoringPage() {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-0 border-b border-[#2a2a2a] bg-[#1C1C1C] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+      <div className="flex gap-0 border-b border-[#2a2a2a] bg-[#0D1B48] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (
@@ -819,7 +819,7 @@ export default function MonitoringPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`font-['Barlow_Condensed'] flex items-center gap-1.5 px-5 py-3 text-sm font-bold tracking-widest uppercase border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-[#F5C218] text-[#F5C218]'
+                  ? 'border-[#1D4ED8] text-[#1D4ED8]'
                   : 'border-transparent text-gray-600 hover:text-gray-400 hover:border-[#444]'
               }`}
             >
@@ -868,9 +868,9 @@ export default function MonitoringPage() {
                     </span>
                     <span className="font-['DM_Sans'] text-sm text-gray-500 ml-3">
                       DB: {d.health.dbOk ? '✅ Conectada' : '❌ Sin conexión'} &nbsp;·&nbsp;
-                      Uptime: <span className="font-['Space_Mono'] text-[#F5C218]">{fmtUptime(d.health.uptimeSeconds)}</span> &nbsp;·&nbsp;
+                      Uptime: <span className="font-['Space_Mono'] text-[#1D4ED8]">{fmtUptime(d.health.uptimeSeconds)}</span> &nbsp;·&nbsp;
                       Memoria: <span className="font-['Space_Mono']">{d.health.memoryUsedPct.toFixed(1)}%</span> &nbsp;·&nbsp;
-                      Disponibilidad (1h): <span className="font-['Space_Mono'] text-[#F5C218]">{d.uptimePct.toFixed(2)}%</span>
+                      Disponibilidad (1h): <span className="font-['Space_Mono'] text-[#1D4ED8]">{d.uptimePct.toFixed(2)}%</span>
                     </span>
                   </div>
                   <span className={`font-['Space_Mono'] text-xs px-2 py-0.5 rounded font-medium border ${statusCfg.border} ${statusCfg.color}`}>
@@ -882,12 +882,12 @@ export default function MonitoringPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <StatCard icon={Zap}       label="Requests (24h)"     value={fmt(d.metrics.totalRequests)} />
                   <StatCard icon={AlertOctagon} label="Errores (24h)"   value={d.metrics.errorCount}
-                    color={d.metrics.errorCount > 20 ? 'text-red-400' : 'text-[#F5C218]'}
+                    color={d.metrics.errorCount > 20 ? 'text-red-400' : 'text-[#1D4ED8]'}
                     sub={`${d.metrics.errorRate.toFixed(1)}% tasa`} />
                   <StatCard icon={Clock}     label="Resp. promedio"      value={`${d.metrics.avgResponseMs.toFixed(0)}ms`}
-                    color={d.metrics.avgResponseMs > 1000 ? 'text-yellow-400' : 'text-[#F5C218]'} />
+                    color={d.metrics.avgResponseMs > 1000 ? 'text-yellow-400' : 'text-[#1D4ED8]'} />
                   <StatCard icon={Cpu}       label="Memoria usada"       value={`${d.health.memoryUsedPct.toFixed(1)}%`}
-                    color={d.health.memoryUsedPct > 85 ? 'text-red-400' : 'text-[#F5C218]'} />
+                    color={d.health.memoryUsedPct > 85 ? 'text-red-400' : 'text-[#1D4ED8]'} />
                   <StatCard icon={Wallet}    label="Nóminas hoy"         value={d.businessStats.payrolls} />
                   <StatCard icon={FileText}  label="Gastos hoy"          value={d.businessStats.expenses} />
                   <StatCard icon={Users}     label="Usuarios activos"    value={d.businessStats.activeUsers} sub="últimas 24h" />
@@ -900,7 +900,7 @@ export default function MonitoringPage() {
                   {/* Tráfico por hora */}
                   <div className="md:col-span-2 bg-[#111] rounded-xl border border-[#2a2a2a] p-4">
                     <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-400 mb-3 flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4" style={{ color: '#F5C218' }} />
+                      <TrendingUp className="w-4 h-4" style={{ color: '#1D4ED8' }} />
                       Tráfico por hora (últimas 24h)
                       <span className="ml-auto font-['DM_Sans'] text-xs text-gray-600 font-normal normal-case tracking-normal">
                         <span className="inline-block w-2 h-2 rounded-sm mr-1" style={{ background: 'rgba(245,194,24,0.4)' }} />requests
@@ -926,11 +926,11 @@ export default function MonitoringPage() {
                           return (
                             <div key={i}>
                               <div className="flex justify-between text-xs mb-0.5">
-                                <span className="font-['Space_Mono'] truncate max-w-[140px]" style={{ color: '#F5C218' }}>{e.endpoint.replace('/api/v1', '')}</span>
+                                <span className="font-['Space_Mono'] truncate max-w-[140px]" style={{ color: '#1D4ED8' }}>{e.endpoint.replace('/api/v1', '')}</span>
                                 <span className="font-['Space_Mono'] font-semibold text-white ml-2">{e.count}</span>
                               </div>
                               <div className="h-1 bg-[#222] rounded-full overflow-hidden">
-                                <div style={{ width: `${pct}%`, background: '#F5C218' }} className="h-full rounded-full opacity-60" />
+                                <div style={{ width: `${pct}%`, background: '#1D4ED8' }} className="h-full rounded-full opacity-60" />
                               </div>
                             </div>
                           );
@@ -952,7 +952,7 @@ export default function MonitoringPage() {
                         '5xx': 'bg-red-950/60 text-red-400 border-red-800',
                       };
                       return (
-                        <div key={code} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${colorMap[code] ?? 'bg-[#1C1C1C] text-gray-500 border-[#2a2a2a]'}`}>
+                        <div key={code} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${colorMap[code] ?? 'bg-[#0D1B48] text-gray-500 border-[#2a2a2a]'}`}>
                           <span className="font-['Space_Mono'] font-bold">{code}</span>
                           <span className="font-['Space_Mono'] font-semibold">{fmt(count as number)}</span>
                         </div>
@@ -968,7 +968,7 @@ export default function MonitoringPage() {
                 <div className="bg-[#0D0D0D] border overflow-hidden" style={{ borderColor: 'rgba(245,194,24,0.3)' }}>
                   <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: 'rgba(245,194,24,0.15)' }}>
                     <h2 className="font-['Barlow_Condensed'] text-sm font-bold tracking-widest uppercase text-gray-300 flex items-center gap-2">
-                      <Bot className="w-4 h-4" style={{ color: '#F5C218' }} />
+                      <Bot className="w-4 h-4" style={{ color: '#1D4ED8' }} />
                       Asistente IA — Análisis del sistema
                     </h2>
                     <button
@@ -976,8 +976,8 @@ export default function MonitoringPage() {
                       disabled={aiLoading}
                       className="font-['DM_Sans'] flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition disabled:opacity-60"
                       style={{
-                        background: '#F5C218',
-                        color: '#1C1C1C',
+                        background: '#1D4ED8',
+                        color: '#0D1B48',
                         boxShadow: '0 0 20px rgba(245,194,24,0.3)',
                       }}
                     >
@@ -990,7 +990,7 @@ export default function MonitoringPage() {
 
                   {!aiResult && !aiLoading && !aiError && (
                     <div className="px-4 py-10 text-center">
-                      <Bot className="w-8 h-8 mx-auto mb-2 opacity-20" style={{ color: '#F5C218' }} />
+                      <Bot className="w-8 h-8 mx-auto mb-2 opacity-20" style={{ color: '#1D4ED8' }} />
                       <p className="font-['DM_Sans'] text-sm text-gray-600">Presiona <strong className="text-gray-400">Analizar con IA</strong> para obtener un diagnóstico en lenguaje natural del estado actual del sistema.</p>
                     </div>
                   )}
@@ -998,7 +998,7 @@ export default function MonitoringPage() {
                   {aiLoading && (
                     <div className="px-4 py-10 text-center">
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <Bot className="w-5 h-5 animate-pulse" style={{ color: '#F5C218' }} />
+                        <Bot className="w-5 h-5 animate-pulse" style={{ color: '#1D4ED8' }} />
                         <span className="font-['DM_Sans'] text-sm font-medium text-gray-400">Claude está analizando el sistema…</span>
                       </div>
                       <p className="font-['DM_Sans'] text-xs text-gray-600">Esto puede tomar unos segundos</p>
@@ -1026,7 +1026,7 @@ export default function MonitoringPage() {
                     const PRIORITY_BADGE: Record<string, string> = {
                       urgent:   'bg-red-950/60 text-red-400 border-red-800',
                       normal:   'bg-yellow-950/60 text-yellow-400 border-yellow-800',
-                      optional: 'bg-[#1C1C1C] text-gray-500 border-[#2a2a2a]',
+                      optional: 'bg-[#0D1B48] text-gray-500 border-[#2a2a2a]',
                     };
                     const SEVERITY_LABEL: Record<string, string> = { high: 'Alta', medium: 'Media', low: 'Baja' };
                     const PRIORITY_LABEL: Record<string, string> = { urgent: 'Urgente', normal: 'Normal', optional: 'Opcional' };
@@ -1050,7 +1050,7 @@ export default function MonitoringPage() {
                             </h3>
                             <div className="space-y-2">
                               {aiResult.issues.map((issue, i) => (
-                                <div key={i} className="bg-[#1C1C1C] rounded-lg px-3 py-2.5 border border-[#2a2a2a]">
+                                <div key={i} className="bg-[#0D1B48] rounded-lg px-3 py-2.5 border border-[#2a2a2a]">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className={`font-['Space_Mono'] text-[10px] font-semibold px-2 py-0.5 rounded border ${SEVERITY_BADGE[issue.severity] ?? SEVERITY_BADGE.low}`}>
                                       {SEVERITY_LABEL[issue.severity] ?? issue.severity}
@@ -1067,11 +1067,11 @@ export default function MonitoringPage() {
                         {aiResult.recommendations.length > 0 && (
                           <div>
                             <h3 className="font-['Barlow_Condensed'] text-xs font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                              <Lightbulb className="w-3.5 h-3.5" style={{ color: '#F5C218' }} /> Recomendaciones
+                              <Lightbulb className="w-3.5 h-3.5" style={{ color: '#1D4ED8' }} /> Recomendaciones
                             </h3>
                             <div className="space-y-2">
                               {aiResult.recommendations.map((rec, i) => (
-                                <div key={i} className="bg-[#1C1C1C] rounded-lg px-3 py-2.5 border border-[#2a2a2a]">
+                                <div key={i} className="bg-[#0D1B48] rounded-lg px-3 py-2.5 border border-[#2a2a2a]">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className={`font-['Space_Mono'] text-[10px] font-semibold px-2 py-0.5 rounded border ${PRIORITY_BADGE[rec.priority] ?? PRIORITY_BADGE.normal}`}>
                                       {PRIORITY_LABEL[rec.priority] ?? rec.priority}
@@ -1138,7 +1138,7 @@ export default function MonitoringPage() {
                       <select
                         value={logLevel}
                         onChange={e => { setLogLevel(e.target.value); setLogPage(1); }}
-                        className="font-['DM_Sans'] text-xs bg-[#1C1C1C] border border-[#333] text-gray-400 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-yellow-400"
+                        className="font-['DM_Sans'] text-xs bg-[#0D1B48] border border-[#333] text-gray-400 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-yellow-400"
                       >
                         <option value="">Todos los niveles</option>
                         <option value="error">Error</option>
@@ -1148,7 +1148,7 @@ export default function MonitoringPage() {
                       <select
                         value={logCat}
                         onChange={e => { setLogCat(e.target.value); setLogPage(1); }}
-                        className="font-['DM_Sans'] text-xs bg-[#1C1C1C] border border-[#333] text-gray-400 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-yellow-400"
+                        className="font-['DM_Sans'] text-xs bg-[#0D1B48] border border-[#333] text-gray-400 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-yellow-400"
                       >
                         <option value="">Todas las categorías</option>
                         <option value="api">API</option>
@@ -1175,13 +1175,13 @@ export default function MonitoringPage() {
                         <button
                           disabled={logPage <= 1}
                           onClick={() => setLogPage(p => p - 1)}
-                          className="font-['Space_Mono'] text-xs px-2 py-1 border border-[#333] text-gray-500 rounded disabled:opacity-40 hover:bg-[#1C1C1C]"
+                          className="font-['Space_Mono'] text-xs px-2 py-1 border border-[#333] text-gray-500 rounded disabled:opacity-40 hover:bg-[#0D1B48]"
                         >←</button>
                         <span className="font-['Space_Mono'] text-xs px-2 py-1 text-gray-600">Pág. {logPage} / {logsData.pagination.totalPages}</span>
                         <button
                           disabled={logPage >= logsData.pagination.totalPages}
                           onClick={() => setLogPage(p => p + 1)}
-                          className="font-['Space_Mono'] text-xs px-2 py-1 border border-[#333] text-gray-500 rounded disabled:opacity-40 hover:bg-[#1C1C1C]"
+                          className="font-['Space_Mono'] text-xs px-2 py-1 border border-[#333] text-gray-500 rounded disabled:opacity-40 hover:bg-[#0D1B48]"
                         >→</button>
                       </div>
                     </div>

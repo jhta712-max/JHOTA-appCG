@@ -113,8 +113,8 @@ export default function AiUsagePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* HERO */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
-        <p className="text-[#F5C218] text-xs font-['Barlow_Condensed'] uppercase tracking-[0.2em] mb-2">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
+        <p className="text-[#1D4ED8] text-xs font-['Barlow_Condensed'] uppercase tracking-[0.2em] mb-2">
           Administración / IA
         </p>
         <div className="flex items-end justify-between">
@@ -125,7 +125,7 @@ export default function AiUsagePage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSelectedMonth(prevMonth(selectedMonth))}
-              className="text-gray-400 hover:text-[#F5C218] transition-colors"
+              className="text-gray-400 hover:text-[#1D4ED8] transition-colors"
             >
               <ChevronLeft size={20} />
             </button>
@@ -134,7 +134,7 @@ export default function AiUsagePage() {
             </span>
             <button
               onClick={() => setSelectedMonth(nextMonth(selectedMonth))}
-              className="text-gray-400 hover:text-[#F5C218] transition-colors"
+              className="text-gray-400 hover:text-[#1D4ED8] transition-colors"
             >
               <ChevronRight size={20} />
             </button>
@@ -153,7 +153,7 @@ export default function AiUsagePage() {
               <p className="font-['Barlow_Condensed'] text-xs uppercase tracking-[0.15em] text-gray-500 mb-2">
                 Input Tokens
               </p>
-              <p className="font-['Space_Mono'] text-2xl font-bold text-[#1C1C1C]">
+              <p className="font-['Space_Mono'] text-2xl font-bold text-[#0D1B48]">
                 {fmtTokens(summary?.totalInputTokens ?? 0)}
               </p>
             </div>
@@ -162,7 +162,7 @@ export default function AiUsagePage() {
               <p className="font-['Barlow_Condensed'] text-xs uppercase tracking-[0.15em] text-gray-500 mb-2">
                 Output Tokens
               </p>
-              <p className="font-['Space_Mono'] text-2xl font-bold text-[#1C1C1C]">
+              <p className="font-['Space_Mono'] text-2xl font-bold text-[#0D1B48]">
                 {fmtTokens(summary?.totalOutputTokens ?? 0)}
               </p>
             </div>
@@ -171,7 +171,7 @@ export default function AiUsagePage() {
               <p className="font-['Barlow_Condensed'] text-xs uppercase tracking-[0.15em] text-gray-500 mb-2">
                 Costo Est. USD
               </p>
-              <p className="font-['Space_Mono'] text-2xl font-bold text-[#1C1C1C]">
+              <p className="font-['Space_Mono'] text-2xl font-bold text-[#0D1B48]">
                 {fmtUsd(summary?.totalCostUsd ?? 0)}
               </p>
             </div>
@@ -180,7 +180,7 @@ export default function AiUsagePage() {
               <p className="font-['Barlow_Condensed'] text-xs uppercase tracking-[0.15em] text-gray-500 mb-2">
                 Total Llamadas
               </p>
-              <p className="font-['Space_Mono'] text-2xl font-bold text-[#1C1C1C]">
+              <p className="font-['Space_Mono'] text-2xl font-bold text-[#0D1B48]">
                 {summary?.totalCalls ?? 0}
               </p>
             </div>
@@ -202,7 +202,7 @@ export default function AiUsagePage() {
                 onClick={handleToggleEnabled}
                 disabled={!alert || updateAlertMutation.isPending}
                 className={`relative inline-flex h-5 w-9 items-center transition-colors ${
-                  alert?.enabled ? 'bg-[#F5C218]' : 'bg-gray-300'
+                  alert?.enabled ? 'bg-[#1D4ED8]' : 'bg-gray-300'
                 } disabled:opacity-50`}
               >
                 <span
@@ -223,14 +223,14 @@ export default function AiUsagePage() {
                   type="number"
                   value={limitInput}
                   onChange={(e) => setLimitInput(e.target.value)}
-                  className="border border-gray-200 focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] px-2 py-1 font-['Space_Mono'] text-sm w-28 outline-none"
+                  className="border border-gray-200 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] px-2 py-1 font-['Space_Mono'] text-sm w-28 outline-none"
                   step="0.01"
                   min="0"
                 />
                 <button
                   onClick={handleSaveLimit}
                   disabled={updateAlertMutation.isPending}
-                  className="bg-[#F5C218] text-[#1C1C1C] p-1 disabled:opacity-50"
+                  className="bg-[#1D4ED8] text-[#0D1B48] p-1 disabled:opacity-50"
                 >
                   <Check size={14} />
                 </button>
@@ -243,7 +243,7 @@ export default function AiUsagePage() {
               </>
             ) : (
               <>
-                <span className="font-['Space_Mono'] text-xl font-bold text-[#1C1C1C]">
+                <span className="font-['Space_Mono'] text-xl font-bold text-[#0D1B48]">
                   ${limitUsd.toFixed(2)}
                 </span>
                 <button
@@ -251,7 +251,7 @@ export default function AiUsagePage() {
                     setLimitInput(String(alert?.monthlyLimitUsd ?? 50));
                     setEditingLimit(true);
                   }}
-                  className="text-gray-400 hover:text-[#F5C218] transition-colors"
+                  className="text-gray-400 hover:text-[#1D4ED8] transition-colors"
                 >
                   <Pencil size={14} />
                 </button>
@@ -267,7 +267,7 @@ export default function AiUsagePage() {
             </div>
             <div className="bg-gray-200 w-full h-2">
               <div
-                className={`h-2 transition-all ${isOverLimit ? 'bg-red-500' : 'bg-[#F5C218]'}`}
+                className={`h-2 transition-all ${isOverLimit ? 'bg-red-500' : 'bg-[#1D4ED8]'}`}
                 style={{ width: `${progressPct}%` }}
               />
             </div>
@@ -277,7 +277,7 @@ export default function AiUsagePage() {
         {/* BY-FEATURE TABLE */}
         <div className="bg-white border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="font-['Barlow_Condensed'] text-lg uppercase tracking-[0.1em] text-[#1C1C1C] font-bold">
+            <h2 className="font-['Barlow_Condensed'] text-lg uppercase tracking-[0.1em] text-[#0D1B48] font-bold">
               Por Funcionalidad
             </h2>
           </div>
@@ -291,7 +291,7 @@ export default function AiUsagePage() {
             <div className="md:hidden divide-y divide-gray-100">
               {byFeature.map((row) => (
                 <div key={row.feature} className="p-4 space-y-1">
-                  <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C]">
+                  <p className="font-['DM_Sans'] text-sm font-semibold text-[#0D1B48]">
                     {FEATURE_LABELS[row.feature] ?? row.feature}
                   </p>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
@@ -313,7 +313,7 @@ export default function AiUsagePage() {
                     </div>
                     <div>
                       <span className="text-gray-400 font-['DM_Sans']">Costo: </span>
-                      <span className="font-['Space_Mono'] font-bold text-[#1C1C1C]">{fmtUsd(row.costUsd)}</span>
+                      <span className="font-['Space_Mono'] font-bold text-[#0D1B48]">{fmtUsd(row.costUsd)}</span>
                     </div>
                   </div>
                 </div>
@@ -323,7 +323,7 @@ export default function AiUsagePage() {
             <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-[#1C1C1C]">
+                <tr className="bg-[#0D1B48]">
                   <th className="text-left px-6 py-3 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">
                     Feature
                   </th>
@@ -347,7 +347,7 @@ export default function AiUsagePage() {
               <tbody>
                 {byFeature.map((row, i) => (
                   <tr key={row.feature} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-6 py-3 font-['DM_Sans'] text-sm text-[#1C1C1C]">
+                    <td className="px-6 py-3 font-['DM_Sans'] text-sm text-[#0D1B48]">
                       {FEATURE_LABELS[row.feature] ?? row.feature}
                     </td>
                     <td className="px-6 py-3 text-right font-['Space_Mono'] text-sm text-gray-700">
@@ -377,7 +377,7 @@ export default function AiUsagePage() {
         {/* BY-USER TABLE */}
         <div className="bg-white border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="font-['Barlow_Condensed'] text-lg uppercase tracking-[0.1em] text-[#1C1C1C] font-bold">
+            <h2 className="font-['Barlow_Condensed'] text-lg uppercase tracking-[0.1em] text-[#0D1B48] font-bold">
               Por Usuario
             </h2>
           </div>
@@ -392,7 +392,7 @@ export default function AiUsagePage() {
               {byUser.map((row) => (
                 <div key={row.userId ?? 'system'} className="p-4 space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-['DM_Sans'] text-sm font-semibold text-[#1C1C1C]">
+                    <p className="font-['DM_Sans'] text-sm font-semibold text-[#0D1B48]">
                       {row.userId === null ? 'Sistema (cron)' : row.userName}
                     </p>
                     <span className="font-['DM_Sans'] text-xs text-gray-500">{row.userRole ?? '-'}</span>
@@ -408,7 +408,7 @@ export default function AiUsagePage() {
                     </div>
                     <div>
                       <span className="text-gray-400 font-['DM_Sans']">Costo</span>
-                      <p className="font-['Space_Mono'] font-bold text-[#1C1C1C]">{fmtUsd(row.costUsd)}</p>
+                      <p className="font-['Space_Mono'] font-bold text-[#0D1B48]">{fmtUsd(row.costUsd)}</p>
                     </div>
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export default function AiUsagePage() {
             <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-[#1C1C1C]">
+                <tr className="bg-[#0D1B48]">
                   <th className="text-left px-6 py-3 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">
                     Usuario
                   </th>
@@ -439,7 +439,7 @@ export default function AiUsagePage() {
               <tbody>
                 {byUser.map((row, i) => (
                   <tr key={row.userId ?? 'system'} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-6 py-3 font-['DM_Sans'] text-sm text-[#1C1C1C]">
+                    <td className="px-6 py-3 font-['DM_Sans'] text-sm text-[#0D1B48]">
                       {row.userId === null ? 'Sistema (cron)' : row.userName}
                     </td>
                     <td className="px-6 py-3 font-['DM_Sans'] text-sm text-gray-500">

@@ -45,7 +45,7 @@ const validateNcf = (v: string) => NCF_REGEX.test(v) || E_NCF_REGEX.test(v);
 const ORDER_TYPE_CFG: Record<OrderType, { label: string; icon: React.ReactNode; desc: string; dark: string }> = {
   SERVICIO:   { label: 'Servicio',    icon: <FileText className="w-4 h-4" />,     desc: 'Pago por servicios',                 dark: 'border-purple-500' },
   PAYROLL:    { label: 'Nómina',      icon: <Wallet className="w-4 h-4" />,       desc: 'Pago de mano de obra',               dark: 'border-blue-400'   },
-  MATERIALS:  { label: 'Materiales',  icon: <ShoppingCart className="w-4 h-4" />, desc: 'Compra de insumos por transferencia',dark: 'border-[#F5C218]'  },
+  MATERIALS:  { label: 'Materiales',  icon: <ShoppingCart className="w-4 h-4" />, desc: 'Compra de insumos por transferencia',dark: 'border-[#1D4ED8]'  },
   PETTY_CASH: { label: 'Caja chica',  icon: <Sparkles className="w-4 h-4" />,     desc: 'Pagos menores en efectivo',          dark: 'border-green-500'  },
   OFFICE:     { label: 'Gasto de Oficina', icon: <Building2 className="w-4 h-4" />, desc: 'Gasto administrativo de oficina',  dark: 'border-orange-500' },
 };
@@ -139,7 +139,7 @@ function Modal({ title, onClose, wide = false, size, children }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
       <div className={`bg-white w-full ${maxW} max-h-[90vh] overflow-y-auto shadow-2xl`}>
-        <div className="bg-[#1C1C1C] flex items-center justify-between px-6 py-4">
+        <div className="bg-[#0D1B48] flex items-center justify-between px-6 py-4">
           <h2 className="font-black text-white font-['Barlow_Condensed'] text-xl uppercase tracking-wide">{title}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
         </div>
@@ -157,7 +157,7 @@ function ModalFooter({ onCancel, onSave, saving, label }: { onCancel: () => void
         Cancelar
       </button>
       <button onClick={onSave} disabled={saving}
-        className="bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center gap-2">
+        className="bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center gap-2">
         {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</> : <><CheckCircle className="w-4 h-4" /> {label}</>}
       </button>
     </div>
@@ -517,16 +517,16 @@ export default function PaymentOrdersPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1C1C1C] text-[#F5C218] px-5 py-2.5 text-sm font-bold shadow-lg border-l-4 border-[#F5C218] font-['Space_Mono']">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#0D1B48] text-[#1D4ED8] px-5 py-2.5 text-sm font-bold shadow-lg border-l-4 border-[#1D4ED8] font-['Space_Mono']">
           {toast}
         </div>
       )}
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5 mb-6">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5 mb-6">
         <div className="flex items-start md:items-end justify-between gap-3 max-w-5xl">
           <div>
-            <p className="text-[#F5C218] text-xs font-bold tracking-[0.2em] uppercase font-['Space_Mono'] mb-2">
+            <p className="text-[#1D4ED8] text-xs font-bold tracking-[0.2em] uppercase font-['Space_Mono'] mb-2">
               MÓDULO / ÓRDENES DE PAGO
             </p>
             <h1 className="text-3xl md:text-5xl font-black text-white font-['Barlow_Condensed'] uppercase tracking-tight leading-none">
@@ -536,7 +536,7 @@ export default function PaymentOrdersPage() {
           </div>
           <button
             onClick={() => openOrderModal()}
-            className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-4 md:px-5 py-2.5 md:py-3 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors shrink-0">
+            className="flex items-center gap-2 bg-[#1D4ED8] text-[#0D1B48] px-4 md:px-5 py-2.5 md:py-3 font-bold text-sm uppercase tracking-wide hover:bg-yellow-300 transition-colors shrink-0">
             <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nueva orden</span><span className="sm:hidden">Nueva</span>
           </button>
         </div>
@@ -550,7 +550,7 @@ export default function PaymentOrdersPage() {
             <button key={s} onClick={() => setFilterStatus(s)}
               className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide border transition-all ${
                 filterStatus === s
-                  ? 'bg-[#1C1C1C] text-[#F5C218] border-[#1C1C1C]'
+                  ? 'bg-[#0D1B48] text-[#1D4ED8] border-[#0D1B48]'
                   : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
               }`}>
               {s === '' ? 'Todas' : s === 'PENDING' ? 'Pendientes' : s === 'IN_PROCESS' ? 'En proceso' : s === 'REJECTED_BANK' ? 'Rechazadas' : 'Pagadas'}
@@ -561,7 +561,7 @@ export default function PaymentOrdersPage() {
             <button key={t} onClick={() => setFilterType(t)}
               className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide border transition-all ${
                 filterType === t
-                  ? 'bg-[#1C1C1C] text-white border-[#1C1C1C]'
+                  ? 'bg-[#0D1B48] text-white border-[#0D1B48]'
                   : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
               }`}>
               {t === '' ? 'Todos tipos' : ORDER_TYPE_CFG[t as OrderType].label}
@@ -573,9 +573,9 @@ export default function PaymentOrdersPage() {
               <select
                 value={filterCreatedBy}
                 onChange={(e) => setFilterCreatedBy(e.target.value)}
-                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide border transition-all font-['Barlow_Condensed'] focus:outline-none focus:border-[#1C1C1C] ${
+                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide border transition-all font-['Barlow_Condensed'] focus:outline-none focus:border-[#0D1B48] ${
                   filterCreatedBy
-                    ? 'bg-[#1C1C1C] text-[#F5C218] border-[#1C1C1C]'
+                    ? 'bg-[#0D1B48] text-[#1D4ED8] border-[#0D1B48]'
                     : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
                 }`}
               >
@@ -616,7 +616,7 @@ export default function PaymentOrdersPage() {
 
         {/* Detalle expandido */}
         {viewingOrder && (
-          <div className="bg-white border-l-4 border-[#F5C218] border border-gray-200 p-5 space-y-4">
+          <div className="bg-white border-l-4 border-[#1D4ED8] border border-gray-200 p-5 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -624,9 +624,9 @@ export default function PaymentOrdersPage() {
                   <TypeBadge type={viewingOrder.orderType} />
                   <StatusBadge status={viewingOrder.status} />
                 </div>
-                <p className="font-black text-[#1C1C1C] mt-1 text-base font-['Barlow_Condensed'] text-xl uppercase tracking-wide">{viewingOrder.payingCompany}</p>
+                <p className="font-black text-[#0D1B48] mt-1 text-base font-['Barlow_Condensed'] text-xl uppercase tracking-wide">{viewingOrder.payingCompany}</p>
                 <p className="text-sm text-gray-500 mt-0.5">{viewingOrder.concept}</p>
-                <p className="text-xl font-black text-[#1C1C1C] mt-1 font-['Space_Mono']">{fmtMonto(viewingOrder.amount, viewingOrder.currency)}</p>
+                <p className="text-xl font-black text-[#0D1B48] mt-1 font-['Space_Mono']">{fmtMonto(viewingOrder.amount, viewingOrder.currency)}</p>
                 <p className="text-xs text-gray-400 mt-0.5 font-['Space_Mono']">
                   <span className="font-bold">{viewingOrder.project.code}</span>
                   {' — '}{viewingOrder.project.name}
@@ -721,7 +721,7 @@ export default function PaymentOrdersPage() {
             {viewingOrder.generatedText && (
               <div>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 font-['Space_Mono']">Mensaje WhatsApp</p>
-                <div className="bg-[#1C1C1C] text-gray-100 p-4 font-['Space_Mono'] text-xs whitespace-pre-wrap leading-relaxed">
+                <div className="bg-[#0D1B48] text-gray-100 p-4 font-['Space_Mono'] text-xs whitespace-pre-wrap leading-relaxed">
                   {viewingOrder.generatedText}
                 </div>
                 <div className="flex gap-2 mt-2 flex-wrap">
@@ -807,7 +807,7 @@ export default function PaymentOrdersPage() {
                       En proceso
                     </button>
                     <button onClick={() => openPayModal(viewingOrder)}
-                      className="flex items-center gap-1.5 bg-[#F5C218] text-[#1C1C1C] px-3 py-2 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
+                      className="flex items-center gap-1.5 bg-[#1D4ED8] text-[#0D1B48] px-3 py-2 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
                       disabled={markPaidMut.isPending}>
                       {markPaidMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
                       Marcar como pagada
@@ -828,7 +828,7 @@ export default function PaymentOrdersPage() {
                       Rechazada banco
                     </button>
                     <button onClick={() => openPayModal(viewingOrder)}
-                      className="flex items-center gap-1.5 bg-[#F5C218] text-[#1C1C1C] px-3 py-2 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
+                      className="flex items-center gap-1.5 bg-[#1D4ED8] text-[#0D1B48] px-3 py-2 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
                       disabled={markPaidMut.isPending}>
                       {markPaidMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
                       Marcar como pagada
@@ -853,7 +853,7 @@ export default function PaymentOrdersPage() {
                 <p className="text-xs text-gray-500">Gasto de oficina generado al pagar:</p>
                 <a
                   href="/office-expenses"
-                  className="text-xs font-bold font-['DM_Sans'] text-[#F5C218] underline hover:text-[#1C1C1C] transition-colors"
+                  className="text-xs font-bold font-['DM_Sans'] text-[#1D4ED8] underline hover:text-[#0D1B48] transition-colors"
                 >
                   Ver gasto de oficina →
                 </a>
@@ -869,7 +869,7 @@ export default function PaymentOrdersPage() {
                 <button
                   onClick={() => generateExpenseMut.mutate(viewingOrder.id)}
                   disabled={generateExpenseMut.isPending}
-                  className="text-sm text-[#1C1C1C] border border-[#1C1C1C] hover:bg-[#1C1C1C] hover:text-[#F5C218] px-3 py-2 font-bold uppercase tracking-wide flex items-center gap-1.5 transition-colors">
+                  className="text-sm text-[#0D1B48] border border-[#0D1B48] hover:bg-[#0D1B48] hover:text-[#1D4ED8] px-3 py-2 font-bold uppercase tracking-wide flex items-center gap-1.5 transition-colors">
                   {generateExpenseMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
                   Generar gasto
                 </button>
@@ -883,8 +883,8 @@ export default function PaymentOrdersPage() {
           {loadingOrders ? (
             <ProjectListSkeleton />
           ) : orders.length === 0 ? (
-            <div className="bg-[#1C1C1C] text-center py-12">
-              <FileText className="w-10 h-10 mx-auto mb-2 text-[#F5C218]" />
+            <div className="bg-[#0D1B48] text-center py-12">
+              <FileText className="w-10 h-10 mx-auto mb-2 text-[#1D4ED8]" />
               <p className="text-white font-['Barlow_Condensed'] font-black text-xl uppercase tracking-wide">
                 Sin órdenes{filterStatus || filterType ? ' con ese filtro' : ''}.
               </p>
@@ -894,7 +894,7 @@ export default function PaymentOrdersPage() {
               {/* Desktop table */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#1C1C1C]">
+                  <thead className="bg-[#0D1B48]">
                     <tr>
                       <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide font-['Space_Mono']">#</th>
                       <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide">Tipo</th>
@@ -908,24 +908,24 @@ export default function PaymentOrdersPage() {
                   <tbody className="divide-y divide-gray-100">
                     {orders.map((o) => (
                       <tr key={o.id}
-                        className={`hover:bg-gray-50 transition-colors cursor-pointer ${viewingOrder?.id === o.id ? 'bg-yellow-50 border-l-4 border-[#F5C218]' : ''}`}
+                        className={`hover:bg-gray-50 transition-colors cursor-pointer ${viewingOrder?.id === o.id ? 'bg-yellow-50 border-l-4 border-[#1D4ED8]' : ''}`}
                         onClick={() => setViewingOrder(viewingOrder?.id === o.id ? null : o)}>
                         <td className="px-4 py-3 text-xs text-gray-400 font-['Space_Mono'] font-bold">OP-{String(o.number).padStart(3, '0')}</td>
                         <td className="px-4 py-3"><TypeBadge type={o.orderType} /></td>
                         <td className="px-4 py-3">
-                          <p className="font-bold text-[#1C1C1C]">{o.supplier.name}</p>
+                          <p className="font-bold text-[#0D1B48]">{o.supplier.name}</p>
                           <p className="text-xs text-gray-400">{o.supplier.bank ?? ''}</p>
                         </td>
                         <td className="px-4 py-3">
                           <p className="text-xs font-bold text-gray-500 font-['Space_Mono']">{o.project.code}</p>
                           <p className="text-xs text-gray-700 font-medium leading-tight">{o.project.name}</p>
                         </td>
-                        <td className="px-4 py-3 font-black text-[#1C1C1C] font-['Space_Mono']">{fmtMonto(o.amount, o.currency)}</td>
+                        <td className="px-4 py-3 font-black text-[#0D1B48] font-['Space_Mono']">{fmtMonto(o.amount, o.currency)}</td>
                         <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center gap-1 justify-end">
                             <button onClick={(e) => { e.stopPropagation(); copyText(o.generatedText ?? ''); }}
-                              className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] rounded transition-colors" title="Copiar mensaje">
+                              className="p-1.5 text-gray-400 hover:text-[#0D1B48] hover:bg-[#1D4ED8] rounded transition-colors" title="Copiar mensaje">
                               <ClipboardCopy className="w-4 h-4" />
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web')); }}
@@ -944,7 +944,7 @@ export default function PaymentOrdersPage() {
               <div className="md:hidden divide-y divide-gray-100">
                 {orders.map((o) => (
                   <div key={o.id}
-                    className={`p-4 cursor-pointer transition-colors ${viewingOrder?.id === o.id ? 'bg-yellow-50 border-l-4 border-[#F5C218]' : 'hover:bg-gray-50'}`}
+                    className={`p-4 cursor-pointer transition-colors ${viewingOrder?.id === o.id ? 'bg-yellow-50 border-l-4 border-[#1D4ED8]' : 'hover:bg-gray-50'}`}
                     onClick={() => setViewingOrder(viewingOrder?.id === o.id ? null : o)}>
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -954,7 +954,7 @@ export default function PaymentOrdersPage() {
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <button onClick={(e) => { e.stopPropagation(); copyText(o.generatedText ?? ''); }}
-                          className="p-1.5 text-gray-400 hover:text-[#1C1C1C] hover:bg-[#F5C218] transition-colors" title="Copiar">
+                          className="p-1.5 text-gray-400 hover:text-[#0D1B48] hover:bg-[#1D4ED8] transition-colors" title="Copiar">
                           <ClipboardCopy className="w-4 h-4" />
                         </button>
                         <button onClick={(e) => { e.stopPropagation(); shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado — pega en WhatsApp Web')); }}
@@ -963,14 +963,14 @@ export default function PaymentOrdersPage() {
                         </button>
                       </div>
                     </div>
-                    <p className="font-bold text-[#1C1C1C] text-sm">{o.supplier.name}</p>
+                    <p className="font-bold text-[#0D1B48] text-sm">{o.supplier.name}</p>
                     <p className="text-xs text-gray-500 mt-0.5 leading-tight line-clamp-2">{o.concept}</p>
                     <div className="flex items-center justify-between mt-2">
                       <div>
                         <p className="text-xs font-bold text-gray-400 font-['Space_Mono']">{o.project.code}</p>
                         <p className="text-xs text-gray-600 leading-tight">{o.project.name}</p>
                       </div>
-                      <p className="font-black text-[#1C1C1C] font-['Space_Mono'] text-sm">{fmtMonto(o.amount, o.currency)}</p>
+                      <p className="font-black text-[#0D1B48] font-['Space_Mono'] text-sm">{fmtMonto(o.amount, o.currency)}</p>
                     </div>
                   </div>
                 ))}
@@ -1007,7 +1007,7 @@ export default function PaymentOrdersPage() {
               {lastCreatedOrder.generatedText && (
                 <div>
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 font-['Space_Mono']">Mensaje para enviar</p>
-                  <div className="bg-[#1C1C1C] text-gray-100 p-4 font-['Space_Mono'] text-xs whitespace-pre-wrap leading-relaxed">
+                  <div className="bg-[#0D1B48] text-gray-100 p-4 font-['Space_Mono'] text-xs whitespace-pre-wrap leading-relaxed">
                     {lastCreatedOrder.generatedText}
                   </div>
                   <div className="flex gap-2 mt-2 flex-wrap">
@@ -1046,7 +1046,7 @@ export default function PaymentOrdersPage() {
                         <span className="text-gray-500 shrink-0 text-xs font-['Space_Mono']">{fmtMonto(o.amount, o.currency)}</span>
                         <div className="flex gap-1 ml-2">
                           <button onClick={() => copyText(o.generatedText ?? '')} title="Copiar"
-                            className="p-1 text-gray-400 hover:text-[#1C1C1C] rounded"><ClipboardCopy className="w-3.5 h-3.5" /></button>
+                            className="p-1 text-gray-400 hover:text-[#0D1B48] rounded"><ClipboardCopy className="w-3.5 h-3.5" /></button>
                           <button onClick={() => shareWhatsApp(o.generatedText ?? '', () => flash('📋 Copiado'))} title="WhatsApp"
                             className="p-1 text-gray-400 hover:text-green-600 rounded"><MessageCircle className="w-3.5 h-3.5" /></button>
                         </div>
@@ -1062,7 +1062,7 @@ export default function PaymentOrdersPage() {
                   <Plus className="w-4 h-4" /> Crear otra orden
                 </button>
                 <button onClick={closeOrderModal}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300">
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-yellow-300">
                   <CheckCircle className="w-4 h-4" /> Cerrar
                 </button>
               </div>
@@ -1087,8 +1087,8 @@ export default function PaymentOrdersPage() {
                           officeExpenseCategory: '', officeSupplierName: '',
                           ...(!editingOrder ? { amount: '', concept: '' } : {}),
                         }))}
-                        className={`p-3 border-2 text-left transition-all ${active ? `bg-[#1C1C1C] ${cfg.dark}` : 'border-gray-200 bg-white hover:border-gray-400'}`}>
-                        <div className={`mb-1 ${active ? 'text-[#F5C218]' : 'text-gray-400'}`}>{cfg.icon}</div>
+                        className={`p-3 border-2 text-left transition-all ${active ? `bg-[#0D1B48] ${cfg.dark}` : 'border-gray-200 bg-white hover:border-gray-400'}`}>
+                        <div className={`mb-1 ${active ? 'text-[#1D4ED8]' : 'text-gray-400'}`}>{cfg.icon}</div>
                         <p className={`text-xs font-bold uppercase tracking-wide ${active ? 'text-white' : 'text-gray-600'}`}>{cfg.label}</p>
                         <p className={`text-xs mt-0.5 leading-tight ${active ? 'text-gray-400' : 'text-gray-400'}`}>{cfg.desc}</p>
                       </button>
@@ -1099,13 +1099,13 @@ export default function PaymentOrdersPage() {
 
               <div className={`grid gap-4 ${orderForm.orderType === 'OFFICE' ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 <Field label="Empresa pagadora *">
-                  <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                  <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]"
                     placeholder="SERVINGMI SRL" value={orderForm.payingCompany}
                     onChange={(e) => setOrderForm((f) => ({ ...f, payingCompany: e.target.value }))} />
                 </Field>
                 {orderForm.orderType !== 'OFFICE' && (
                   <Field label="Proyecto *">
-                    <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.projectId}
+                    <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]" value={orderForm.projectId}
                       onChange={(e) => setOrderForm((f) => ({ ...f, projectId: e.target.value, payrollId: '', contratoAjustadoId: '', batchItemId: '' }))}>
                       <option value="">— Selecciona —</option>
                       {projects.map((p) => <option key={p.id} value={p.id}>{p.code} — {p.name}</option>)}
@@ -1155,14 +1155,14 @@ export default function PaymentOrdersPage() {
               )}
 
               {orderForm.orderType === 'MATERIALS' && (
-                <div className="bg-amber-50 border-l-4 border-[#F5C218] p-3 text-xs text-amber-700 mb-2">
+                <div className="bg-amber-50 border-l-4 border-[#1D4ED8] p-3 text-xs text-amber-700 mb-2">
                   <strong>Orden de Materiales:</strong> El gasto se vincula desde el detalle una vez que la transferencia sea confirmada.
                 </div>
               )}
 
               <Field label={orderForm.orderType === 'OFFICE' ? 'Suplidor / Beneficiario (opcional)' : 'Suplidor / Beneficiario *'}>
                 <div className="flex gap-2 items-end">
-                  <select className="flex-1 border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.supplierId}
+                  <select className="flex-1 border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]" value={orderForm.supplierId}
                     onChange={(e) => { setOrderForm((f) => ({ ...f, supplierId: e.target.value, bankAccountId: '', contratoAjustadoId: '', creditLineId: null })); setSupplierSearch(''); setLinkToCreditLine(false); setCreditLineSupplierId(''); }}>
                     <option value="">— Selecciona suplidor —</option>
                     {activeSuppliers
@@ -1179,7 +1179,7 @@ export default function PaymentOrdersPage() {
                   <button
                     type="button"
                     onClick={() => { setQuickCreateMode('express'); setQuickCreateOpen(true); }}
-                    className="text-xs border border-[#F5C218] text-[#F5C218] px-3 py-1.5 font-bold uppercase font-['Barlow_Condensed'] hover:bg-[#F5C218] hover:text-[#1C1C1C] transition-colors"
+                    className="text-xs border border-[#1D4ED8] text-[#1D4ED8] px-3 py-1.5 font-bold uppercase font-['Barlow_Condensed'] hover:bg-[#1D4ED8] hover:text-[#0D1B48] transition-colors"
                   >
                     ⚡ Express
                   </button>
@@ -1197,7 +1197,7 @@ export default function PaymentOrdersPage() {
                   const selected = accounts.find((a) => a.id === orderForm.bankAccountId) ?? accounts.find((a) => a.isDefault) ?? accounts[0];
                   return (
                     <div className="-mt-2 mb-4">
-                      <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                      <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]"
                         value={orderForm.bankAccountId || selected?.id || ''}
                         onChange={(e) => setOrderForm((f) => ({ ...f, bankAccountId: e.target.value }))}>
                         {accounts.map((a) => <option key={a.id} value={a.id}>🏦 {a.bank} · {a.accountType} · {a.accountNumber}{a.isDefault ? ' ★' : ''}</option>)}
@@ -1232,7 +1232,7 @@ export default function PaymentOrdersPage() {
                     type="text"
                     value={orderForm.officeSupplierName}
                     onChange={(e) => setOrderForm((f) => ({ ...f, officeSupplierName: e.target.value }))}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none"
                     placeholder="Ej: Ferretería La Industrial"
                   />
                 </div>
@@ -1246,7 +1246,7 @@ export default function PaymentOrdersPage() {
                   <select
                     value={orderForm.officeExpenseCategory}
                     onChange={(e) => setOrderForm((f) => ({ ...f, officeExpenseCategory: e.target.value }))}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] outline-none bg-white"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] outline-none bg-white"
                   >
                     <option value="">Seleccionar categoría...</option>
                     <option value="CLEANING_SUPPLIES">Insumos de Limpieza</option>
@@ -1293,9 +1293,9 @@ export default function PaymentOrdersPage() {
                             <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total pagado</div>
                             <div className="font-bold text-green-700">RD$ {(selectedContrato.totalPagado ?? 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
                           </div>
-                          <div className={`bg-white border px-2 py-1.5 text-center ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
+                          <div className={`bg-white border px-2 py-1.5 text-center ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'border-green-300' : 'border-[#1D4ED8]'}`}>
                             <div className="text-indigo-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Resta pagar</div>
-                            <div className={`font-bold ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
+                            <div className={`font-bold ${(selectedContrato.pendiente ?? selectedContrato.montoContratado) <= 0 ? 'text-green-600' : 'text-[#0D1B48]'}`}>
                               RD$ {(selectedContrato.pendiente ?? selectedContrato.montoContratado).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                             </div>
                           </div>
@@ -1336,9 +1336,9 @@ export default function PaymentOrdersPage() {
                           <div className="text-teal-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Total pagado</div>
                           <div className="font-bold text-green-700">RD$ {(selectedQuotation.totalPagado ?? 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</div>
                         </div>
-                        <div className={`bg-white border px-2 py-1.5 text-center ${(selectedQuotation.pendiente ?? selectedQuotation.total) <= 0 ? 'border-green-300' : 'border-[#F5C218]'}`}>
+                        <div className={`bg-white border px-2 py-1.5 text-center ${(selectedQuotation.pendiente ?? selectedQuotation.total) <= 0 ? 'border-green-300' : 'border-[#1D4ED8]'}`}>
                           <div className="text-teal-400 font-['Barlow_Condensed'] uppercase tracking-wider text-[10px] mb-0.5">Resta pagar</div>
-                          <div className={`font-bold ${(selectedQuotation.pendiente ?? selectedQuotation.total) <= 0 ? 'text-green-600' : 'text-[#1C1C1C]'}`}>
+                          <div className={`font-bold ${(selectedQuotation.pendiente ?? selectedQuotation.total) <= 0 ? 'text-green-600' : 'text-[#0D1B48]'}`}>
                             RD$ {(selectedQuotation.pendiente ?? selectedQuotation.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                           </div>
                         </div>
@@ -1354,7 +1354,7 @@ export default function PaymentOrdersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Monto *">
                   <input type="text" inputMode="decimal"
-                    className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1C1C1C]"
+                    className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#0D1B48]"
                     placeholder="0.00" value={fmtAmountInput(orderForm.amount)}
                     onChange={(e) => {
                       const raw = parseAmountInput(e.target.value);
@@ -1365,7 +1365,7 @@ export default function PaymentOrdersPage() {
                   />
                 </Field>
                 <Field label="Moneda *">
-                  <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]" value={orderForm.currency}
+                  <select className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]" value={orderForm.currency}
                     onChange={(e) => setOrderForm((f) => ({ ...f, currency: e.target.value }))}>
                     {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
                   </select>
@@ -1380,13 +1380,13 @@ export default function PaymentOrdersPage() {
                     {conceptLoading ? <><Loader2 className="w-3 h-3 animate-spin" /> Generando...</> : <><Sparkles className="w-3 h-3" /> IA</>}
                   </button>
                 </div>
-                <textarea className="w-full border border-gray-200 px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-[#1C1C1C]"
+                <textarea className="w-full border border-gray-200 px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-[#0D1B48]"
                   rows={2} placeholder="Pago de servicios..."
                   value={orderForm.concept} onChange={(e) => setOrderForm((f) => ({ ...f, concept: e.target.value }))} />
               </div>
 
               <Field label="Notas (opcional)">
-                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#1C1C1C]"
+                <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]"
                   placeholder="Información adicional" value={orderForm.notes}
                   onChange={(e) => setOrderForm((f) => ({ ...f, notes: e.target.value }))} />
               </Field>
@@ -1406,7 +1406,7 @@ export default function PaymentOrdersPage() {
                           setOrderForm((f) => ({ ...f, creditLineId: null }));
                         }
                       }}
-                      className="accent-[#F5C218]"
+                      className="accent-[#1D4ED8]"
                     />
                     <span className="text-sm font-['DM_Sans'] text-gray-700">Vincular a línea de crédito de suplidor</span>
                   </label>
@@ -1419,7 +1419,7 @@ export default function PaymentOrdersPage() {
                           <select
                             value={orderForm.creditLineId ?? ''}
                             onChange={(e) => setOrderForm((f) => ({ ...f, creditLineId: e.target.value || null }))}
-                            className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] focus:outline-none"
+                            className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] focus:outline-none"
                           >
                             <option value="">Seleccionar línea…</option>
                             {selectedSupplierCreditLines.map((l: any) => (
@@ -1458,12 +1458,12 @@ export default function PaymentOrdersPage() {
               {availableExpenses.map((e: any) => (
                 <label key={e.id}
                   className={`flex items-start gap-3 p-3 border-2 cursor-pointer transition-all ${
-                    selectedExpenseId === e.id ? 'border-[#1C1C1C] bg-gray-50' : 'border-gray-200 hover:border-gray-400'
+                    selectedExpenseId === e.id ? 'border-[#0D1B48] bg-gray-50' : 'border-gray-200 hover:border-gray-400'
                   }`}>
-                  <input type="radio" name="expense" value={e.id} className="mt-1 accent-[#1C1C1C]"
+                  <input type="radio" name="expense" value={e.id} className="mt-1 accent-[#0D1B48]"
                     checked={selectedExpenseId === e.id} onChange={() => setSelectedExpenseId(e.id)} />
                   <div>
-                    <p className="font-bold text-[#1C1C1C] text-sm">{e.description}</p>
+                    <p className="font-bold text-[#0D1B48] text-sm">{e.description}</p>
                     <p className="text-xs text-gray-500 mt-0.5 font-['Space_Mono']">
                       {fmtMonto(e.amount, 'RD$')} &nbsp;·&nbsp; {fmtDate(e.expenseDate)}
                       &nbsp;·&nbsp; {e.category?.name}
@@ -1495,12 +1495,12 @@ export default function PaymentOrdersPage() {
               {projectPayrolls.filter((p: any) => p.status === 'APPROVED').map((p: any) => (
                 <label key={p.id}
                   className={`flex items-start gap-3 p-3 border-2 cursor-pointer transition-all ${
-                    selectedPayrollId === p.id ? 'border-[#1C1C1C] bg-gray-50' : 'border-gray-200 hover:border-gray-400'
+                    selectedPayrollId === p.id ? 'border-[#0D1B48] bg-gray-50' : 'border-gray-200 hover:border-gray-400'
                   }`}>
                   <input type="radio" name="payroll-select" checked={selectedPayrollId === p.id}
-                    onChange={() => setSelectedPayrollId(p.id)} className="mt-0.5 accent-[#1C1C1C]" />
+                    onChange={() => setSelectedPayrollId(p.id)} className="mt-0.5 accent-[#0D1B48]" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[#1C1C1C] text-sm">
+                    <p className="font-bold text-[#0D1B48] text-sm">
                       NOM-{String(p.number).padStart(3, '0')} — {p.description || p.type}
                       <span className={`ml-2 px-2 py-0.5 text-xs font-bold uppercase ${p.status === 'PAID' ? 'bg-green-100 text-green-700' : p.status === 'APPROVED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
                         {p.status === 'PAID' ? 'Pagada' : p.status === 'APPROVED' ? 'Aprobada' : 'Borrador'}
@@ -1540,7 +1540,7 @@ export default function PaymentOrdersPage() {
       {payModal && payingOrder && (
         <Modal title="Confirmar pago" onClose={closePayModal} size="md">
           <div className="space-y-4">
-            <div className="bg-[#1C1C1C] p-3 text-sm space-y-1">
+            <div className="bg-[#0D1B48] p-3 text-sm space-y-1">
               <p className="font-black text-white font-['Barlow_Condensed'] text-lg uppercase tracking-wide">
                 OP-{String(payingOrder.number).padStart(3, '0')} — {payingOrder.concept}
               </p>
@@ -1576,7 +1576,7 @@ export default function PaymentOrdersPage() {
             <div className="space-y-3 border-t border-gray-100 pt-3">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wide font-['Space_Mono']">Transferencia (opcional)</p>
               {payingOrder.currency !== 'RD$' && (
-                <div className="bg-amber-50 border-l-4 border-[#F5C218] p-3 space-y-2">
+                <div className="bg-amber-50 border-l-4 border-[#1D4ED8] p-3 space-y-2">
                   <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">
                     Orden en {payingOrder.currency} — Tasa de cambio requerida
                   </p>

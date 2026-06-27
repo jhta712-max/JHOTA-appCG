@@ -48,8 +48,8 @@ function DownloadButton({
 
   const variants = {
     default: 'border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300',
-    primary: 'border border-[#F5C218]/60 text-[#1C1C1C] bg-[#F5C218]/10 hover:bg-[#F5C218]/20',
-    gold:    'bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400] border border-[#F5C218]',
+    primary: 'border border-[#1D4ED8]/60 text-[#0D1B48] bg-[#1D4ED8]/10 hover:bg-[#1D4ED8]/20',
+    gold:    'bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400] border border-[#1D4ED8]',
   };
 
   return (
@@ -116,14 +116,14 @@ export default function ExportPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white border border-gray-200 p-10 max-w-sm w-full text-center space-y-4">
-          <div className="w-14 h-14 bg-[#1C1C1C] flex items-center justify-center mx-auto">
-            <Shield className="w-7 h-7 text-[#F5C218]" />
+          <div className="w-14 h-14 bg-[#0D1B48] flex items-center justify-center mx-auto">
+            <Shield className="w-7 h-7 text-[#1D4ED8]" />
           </div>
           <h2 className="font-['Barlow_Condensed'] text-2xl font-bold text-gray-900 uppercase tracking-tight">Acceso restringido</h2>
           <p className="font-['DM_Sans'] text-gray-500 text-sm">Este módulo es exclusivo para Administradores y Supervisores.</p>
           <button
             onClick={() => navigate('/')}
-            className="w-full px-6 py-2.5 bg-[#F5C218] text-[#1C1C1C] font-['Barlow_Condensed'] font-semibold uppercase tracking-wide text-sm hover:bg-[#e6b400]"
+            className="w-full px-6 py-2.5 bg-[#1D4ED8] text-[#0D1B48] font-['Barlow_Condensed'] font-semibold uppercase tracking-wide text-sm hover:bg-[#e6b400]"
           >
             Volver al inicio
           </button>
@@ -135,22 +135,22 @@ export default function ExportPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero header */}
-      <div className="bg-[#1C1C1C] px-6 py-6">
+      <div className="bg-[#0D1B48] px-6 py-6">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-[#F5C218] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
+          className="flex items-center gap-1.5 text-[#1D4ED8] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver
         </button>
-        <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-[#F5C218] uppercase mb-1">
+        <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-[#1D4ED8] uppercase mb-1">
           REPORTES / EXPORTACIÓN
         </p>
         <div className="flex items-center gap-3">
           <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight">
             Exportación de Datos
           </h1>
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#1C1C1C] bg-[#F5C218] px-2.5 py-1 font-['Barlow_Condensed'] uppercase tracking-wide">
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#0D1B48] bg-[#1D4ED8] px-2.5 py-1 font-['Barlow_Condensed'] uppercase tracking-wide">
             <Shield className="w-3 h-3" /> Admin
           </span>
         </div>
@@ -163,14 +163,14 @@ export default function ExportPage() {
 
         {/* ── Panel de filtros ─────────────────────────────────────── */}
         <div className="bg-white border border-gray-200">
-          <div className="px-5 py-3 bg-[#1C1C1C] flex items-center justify-between">
+          <div className="px-5 py-3 bg-[#0D1B48] flex items-center justify-between">
             <h2 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-400 uppercase flex items-center gap-2">
               <Filter className="w-3.5 h-3.5" /> Filtros de exportación
             </h2>
             <button
               type="button"
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="text-xs text-[#F5C218] hover:text-white flex items-center gap-1 font-['Barlow_Condensed'] uppercase tracking-wide font-semibold"
+              className="text-xs text-[#1D4ED8] hover:text-white flex items-center gap-1 font-['Barlow_Condensed'] uppercase tracking-wide font-semibold"
             >
               Filtros avanzados {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
@@ -187,7 +187,7 @@ export default function ExportPage() {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                 />
               </div>
               <div>
@@ -198,7 +198,7 @@ export default function ExportPage() {
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                 />
               </div>
               <div>
@@ -208,7 +208,7 @@ export default function ExportPage() {
                 <select
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                 >
                   <option value="">— Todos —</option>
                   {(projects ?? []).map((p) => (
@@ -228,7 +228,7 @@ export default function ExportPage() {
                   <select
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   >
                     <option value="">— Todas —</option>
                     {(categories ?? []).map((c) => (
@@ -243,7 +243,7 @@ export default function ExportPage() {
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   >
                     <option value="">— Todos —</option>
                     <option value="CASH">Efectivo</option>
@@ -260,7 +260,7 @@ export default function ExportPage() {
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   >
                     <option value="ACTIVE">Solo activos</option>
                     <option value="VOIDED">Solo anulados</option>
@@ -273,17 +273,17 @@ export default function ExportPage() {
         </div>
 
         {/* ── Exportación estrella: Excel completo ─────────────────── */}
-        <div className="bg-white border-2 border-[#F5C218] p-6 space-y-4">
+        <div className="bg-white border-2 border-[#1D4ED8] p-6 space-y-4">
           <div className="flex items-start gap-4">
-            <div className="w-11 h-11 bg-[#1C1C1C] flex items-center justify-center shrink-0">
-              <FileSpreadsheet className="w-6 h-6 text-[#F5C218]" />
+            <div className="w-11 h-11 bg-[#0D1B48] flex items-center justify-center shrink-0">
+              <FileSpreadsheet className="w-6 h-6 text-[#1D4ED8]" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
                 <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-gray-900 uppercase tracking-tight">
                   Exportación Completa — Excel Multi-Hoja
                 </h3>
-                <span className="text-xs bg-[#F5C218] text-[#1C1C1C] px-2 py-0.5 font-['Barlow_Condensed'] font-semibold uppercase tracking-wide">
+                <span className="text-xs bg-[#1D4ED8] text-[#0D1B48] px-2 py-0.5 font-['Barlow_Condensed'] font-semibold uppercase tracking-wide">
                   Recomendado
                 </span>
               </div>
@@ -322,8 +322,8 @@ export default function ExportPage() {
             {/* Resumen de todos los proyectos */}
             <div className="bg-white border border-gray-200 p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
-                  <TrendingUp className="w-4 h-4 text-[#F5C218]" />
+                <div className="w-9 h-9 bg-[#0D1B48] flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-4 h-4 text-[#1D4ED8]" />
                 </div>
                 <div>
                   <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
@@ -342,8 +342,8 @@ export default function ExportPage() {
             {/* Gastos todos los proyectos (directos + pagos de crédito) */}
             <div className="bg-white border border-gray-200 p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
-                  <FolderOpen className="w-4 h-4 text-[#F5C218]" />
+                <div className="w-9 h-9 bg-[#0D1B48] flex items-center justify-center shrink-0">
+                  <FolderOpen className="w-4 h-4 text-[#1D4ED8]" />
                 </div>
                 <div>
                   <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
@@ -367,8 +367,8 @@ export default function ExportPage() {
             {/* Gastos de proyecto específico */}
             <div className="bg-white border border-gray-200 p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
-                  <FolderOpen className="w-4 h-4 text-[#F5C218]" />
+                <div className="w-9 h-9 bg-[#0D1B48] flex items-center justify-center shrink-0">
+                  <FolderOpen className="w-4 h-4 text-[#1D4ED8]" />
                 </div>
                 <div>
                   <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
@@ -402,8 +402,8 @@ export default function ExportPage() {
             {/* Comprobantes Fiscales */}
             <div className="bg-white border border-gray-200 p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
-                  <Receipt className="w-4 h-4 text-[#F5C218]" />
+                <div className="w-9 h-9 bg-[#0D1B48] flex items-center justify-center shrink-0">
+                  <Receipt className="w-4 h-4 text-[#1D4ED8]" />
                 </div>
                 <div>
                   <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
@@ -425,8 +425,8 @@ export default function ExportPage() {
             {/* Formato 606 DGII */}
             <div className="bg-white border border-gray-200 p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
-                  <FileSpreadsheet className="w-4 h-4 text-[#F5C218]" />
+                <div className="w-9 h-9 bg-[#0D1B48] flex items-center justify-center shrink-0">
+                  <FileSpreadsheet className="w-4 h-4 text-[#1D4ED8]" />
                 </div>
                 <div>
                   <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
@@ -437,13 +437,13 @@ export default function ExportPage() {
               </div>
               <div className="flex gap-2">
                 <select
-                  className="flex-1 border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  className="flex-1 border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   value={p606Month} onChange={(e) => setP606Month(Number(e.target.value))}>
                   {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
                     .map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
                 </select>
                 <select
-                  className="w-24 border border-gray-200 px-2 py-1.5 text-xs font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  className="w-24 border border-gray-200 px-2 py-1.5 text-xs font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                   value={p606Year} onChange={(e) => setP606Year(Number(e.target.value))}>
                   {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
                     .map((y) => <option key={y} value={y}>{y}</option>)}
@@ -462,8 +462,8 @@ export default function ExportPage() {
             {/* Reportes rápidos */}
             <div className="bg-white border border-gray-200 p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#1C1C1C] flex items-center justify-center shrink-0">
-                  <BarChart3 className="w-4 h-4 text-[#F5C218]" />
+                <div className="w-9 h-9 bg-[#0D1B48] flex items-center justify-center shrink-0">
+                  <BarChart3 className="w-4 h-4 text-[#1D4ED8]" />
                 </div>
                 <div>
                   <h3 className="font-['Barlow_Condensed'] font-bold text-gray-900 text-sm uppercase tracking-tight">
@@ -486,10 +486,10 @@ export default function ExportPage() {
         </div>
 
         {/* Nota informativa */}
-        <div className="bg-[#1C1C1C] border border-[#F5C218]/40 p-4 flex gap-3">
-          <Shield className="w-4 h-4 text-[#F5C218] shrink-0 mt-0.5" />
+        <div className="bg-[#0D1B48] border border-[#1D4ED8]/40 p-4 flex gap-3">
+          <Shield className="w-4 h-4 text-[#1D4ED8] shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="font-['Barlow_Condensed'] font-semibold text-[#F5C218] text-xs uppercase tracking-widest">
+            <p className="font-['Barlow_Condensed'] font-semibold text-[#1D4ED8] text-xs uppercase tracking-widest">
               Módulo de acceso restringido
             </p>
             <p className="font-['DM_Sans'] text-xs text-gray-400">

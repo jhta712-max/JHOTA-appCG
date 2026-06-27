@@ -43,7 +43,7 @@ function ReportCard({ icon, title, description, index, actions }: ReportCardProp
   };
 
   return (
-    <div className="group relative bg-[#1C1C1C] border border-white/10 hover:border-[#F5C218] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(245,194,24,0.12)]">
+    <div className="group relative bg-[#0D1B48] border border-white/10 hover:border-[#1D4ED8] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(245,194,24,0.12)]">
       {/* Index badge */}
       <div className="absolute top-0 right-0 w-8 h-8 bg-white/5 flex items-center justify-center border-l border-b border-white/10">
         <span className="font-['Space_Mono'] text-xs text-white/30">{String(index).padStart(2, '0')}</span>
@@ -51,8 +51,8 @@ function ReportCard({ icon, title, description, index, actions }: ReportCardProp
 
       <div className="p-6 space-y-5">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-[#F5C218]/10 border border-[#F5C218]/30 flex items-center justify-center shrink-0">
-            <div className="text-[#F5C218]">{icon}</div>
+          <div className="w-10 h-10 bg-[#1D4ED8]/10 border border-[#1D4ED8]/30 flex items-center justify-center shrink-0">
+            <div className="text-[#1D4ED8]">{icon}</div>
           </div>
           <div className="flex-1 min-w-0 pt-0.5">
             <h3 className="font-['Barlow_Condensed'] text-lg font-semibold text-white uppercase tracking-wide leading-none">
@@ -70,7 +70,7 @@ function ReportCard({ icon, title, description, index, actions }: ReportCardProp
               disabled={loading === action.label}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-['DM_Sans'] font-medium transition-all disabled:opacity-50
                 ${action.isPrimary !== false
-                  ? 'bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400]'
+                  ? 'bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400]'
                   : 'bg-transparent border border-white/20 text-white hover:border-white/40 hover:bg-white/5'
                 }`}
             >
@@ -131,9 +131,9 @@ export default function ReportsPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* ── Hero Header ────────────────────────────────────────────────── */}
-      <div className="bg-[#1C1C1C]">
+      <div className="bg-[#0D1B48]">
         <div className="max-w-4xl mx-auto px-6 py-10">
-          <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#F5C218] uppercase mb-2">
+          <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#1D4ED8] uppercase mb-2">
             MÓDULO / REPORTES
           </p>
           <h1 className="font-['Barlow_Condensed'] text-5xl font-bold text-white uppercase tracking-tight leading-none">
@@ -150,8 +150,8 @@ export default function ReportsPage() {
         {/* ── Filtros ───────────────────────────────────────────────────── */}
         <div className="bg-white border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-            <Calendar className="w-4 h-4 text-[#F5C218]" />
-            <h2 className="font-['Barlow_Condensed'] text-sm font-semibold tracking-[0.15em] text-[#1C1C1C] uppercase">
+            <Calendar className="w-4 h-4 text-[#1D4ED8]" />
+            <h2 className="font-['Barlow_Condensed'] text-sm font-semibold tracking-[0.15em] text-[#0D1B48] uppercase">
               FILTROS
             </h2>
           </div>
@@ -163,7 +163,7 @@ export default function ReportsPage() {
                 </label>
                 <input
                   type="date"
-                  className="w-full font-['Space_Mono'] text-sm bg-white border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                  className="w-full font-['Space_Mono'] text-sm bg-white border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                 />
@@ -174,7 +174,7 @@ export default function ReportsPage() {
                 </label>
                 <input
                   type="date"
-                  className="w-full font-['Space_Mono'] text-sm bg-white border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                  className="w-full font-['Space_Mono'] text-sm bg-white border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                 />
@@ -184,7 +184,7 @@ export default function ReportsPage() {
                   Proyecto (opcional)
                 </label>
                 <select
-                  className="w-full font-['DM_Sans'] text-sm bg-white border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                  className="w-full font-['DM_Sans'] text-sm bg-white border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
                 >
@@ -354,9 +354,9 @@ export default function ReportsPage() {
         </div>
 
         {/* ── Nota informativa ─────────────────────────────────────────── */}
-        <div className="bg-[#1C1C1C] border border-white/10 p-5 flex items-start gap-4">
-          <div className="w-8 h-8 bg-[#F5C218]/10 border border-[#F5C218]/30 flex items-center justify-center shrink-0">
-            <Download className="w-4 h-4 text-[#F5C218]" />
+        <div className="bg-[#0D1B48] border border-white/10 p-5 flex items-start gap-4">
+          <div className="w-8 h-8 bg-[#1D4ED8]/10 border border-[#1D4ED8]/30 flex items-center justify-center shrink-0">
+            <Download className="w-4 h-4 text-[#1D4ED8]" />
           </div>
           <div className="font-['DM_Sans'] text-xs text-gray-400 space-y-1.5">
             <p className="font-['Barlow_Condensed'] text-sm font-semibold text-white uppercase tracking-wide">

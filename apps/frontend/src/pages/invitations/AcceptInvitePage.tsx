@@ -14,7 +14,7 @@ const ROLE_LABEL: Record<string, string> = {
 
 type InviteInfo = { email: string; roleName: string; expiresAt: string };
 
-const inputCls = "w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent bg-white";
+const inputCls = "w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-transparent bg-white";
 const labelCls = "block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5";
 
 export default function AcceptInvitePage() {
@@ -61,9 +61,9 @@ export default function AcceptInvitePage() {
   // Loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1C1C1C' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D1B48' }}>
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" style={{ color: '#F5C218' }} />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" style={{ color: '#1D4ED8' }} />
           <p className="font-['DM_Sans'] text-gray-400 text-sm">Verificando invitación...</p>
         </div>
       </div>
@@ -73,7 +73,7 @@ export default function AcceptInvitePage() {
   // Token inválido/expirado
   if (invalid) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#1C1C1C' }}>
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0D1B48' }}>
         <div className="bg-white w-full max-w-md p-8 text-center shadow-2xl">
           <div className="w-14 h-14 bg-red-100 flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-7 h-7 text-red-500" />
@@ -93,10 +93,10 @@ export default function AcceptInvitePage() {
   // Cuenta activada
   if (done) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#1C1C1C' }}>
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0D1B48' }}>
         <div className="bg-white w-full max-w-md p-8 text-center shadow-2xl">
-          <div className="w-14 h-14 flex items-center justify-center mx-auto mb-4" style={{ background: '#F5C218' }}>
-            <CheckCircle className="w-7 h-7" style={{ color: '#1C1C1C' }} />
+          <div className="w-14 h-14 flex items-center justify-center mx-auto mb-4" style={{ background: '#1D4ED8' }}>
+            <CheckCircle className="w-7 h-7" style={{ color: '#0D1B48' }} />
           </div>
           <h2 className="font-['Barlow_Condensed'] text-xl font-bold uppercase tracking-wide text-gray-900 mb-2">
             Cuenta activada
@@ -110,13 +110,13 @@ export default function AcceptInvitePage() {
 
   // Formulario
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#1C1C1C' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0D1B48' }}>
       <div className="w-full max-w-md space-y-5">
 
         {/* Logo / branding */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 mb-4" style={{ background: '#F5C218' }}>
-            <Receipt className="w-7 h-7" style={{ color: '#1C1C1C' }} />
+          <div className="inline-flex items-center justify-center w-14 h-14 mb-4" style={{ background: '#1D4ED8' }}>
+            <Receipt className="w-7 h-7" style={{ color: '#0D1B48' }} />
           </div>
           <h1 className="font-['Barlow_Condensed'] text-3xl font-bold uppercase tracking-tight text-white">
             Activa tu cuenta
@@ -125,8 +125,8 @@ export default function AcceptInvitePage() {
         </div>
 
         {/* Info de la invitación */}
-        <div className="bg-[#F5C218]/10 border border-[#F5C218]/30 p-4">
-          <p className="font-['Barlow_Condensed'] text-xs uppercase tracking-wide font-semibold mb-1" style={{ color: '#F5C218' }}>
+        <div className="bg-[#1D4ED8]/10 border border-[#1D4ED8]/30 p-4">
+          <p className="font-['Barlow_Condensed'] text-xs uppercase tracking-wide font-semibold mb-1" style={{ color: '#1D4ED8' }}>
             Tu acceso
           </p>
           <p className="font-['DM_Sans'] text-sm text-white font-medium">{info?.email}</p>
@@ -139,7 +139,7 @@ export default function AcceptInvitePage() {
         <div className="bg-white p-6 shadow-2xl space-y-4">
 
           {/* Header of form panel */}
-          <div className="-mx-6 -mt-6 px-6 pt-4 pb-3 mb-2" style={{ background: '#1C1C1C' }}>
+          <div className="-mx-6 -mt-6 px-6 pt-4 pb-3 mb-2" style={{ background: '#0D1B48' }}>
             <h2 className="font-['Barlow_Condensed'] text-lg font-bold uppercase tracking-wide text-white">
               Configura tu contraseña
             </h2>
@@ -225,7 +225,7 @@ export default function AcceptInvitePage() {
             type="button"
             onClick={handleSubmit(onSubmit)}
             className="w-full py-3 font-['Barlow_Condensed'] uppercase text-sm font-bold tracking-wide flex items-center justify-center gap-2 transition-all hover:opacity-90"
-            style={{ background: '#F5C218', color: '#1C1C1C' }}
+            style={{ background: '#1D4ED8', color: '#ffffff' }}
           >
             <CheckCircle className="w-5 h-5" />
             Activar mi cuenta
@@ -234,7 +234,7 @@ export default function AcceptInvitePage() {
 
         <p className="text-center font-['DM_Sans'] text-xs text-gray-500">
           ¿Ya tienes cuenta?{' '}
-          <button onClick={() => navigate('/login')} className="hover:underline" style={{ color: '#F5C218' }}>
+          <button onClick={() => navigate('/login')} className="hover:underline" style={{ color: '#1D4ED8' }}>
             Iniciar sesión
           </button>
         </p>

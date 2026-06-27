@@ -25,7 +25,7 @@ function fmt(n: number, currency = 'DOP') {
 
 function PctBar({ pct }: { pct: number }) {
   const clamped = Math.min(100, Math.max(0, pct));
-  const color = clamped >= 100 ? '#22c55e' : clamped > 50 ? '#F5C218' : '#60a5fa';
+  const color = clamped >= 100 ? '#22c55e' : clamped > 50 ? '#1D4ED8' : '#60a5fa';
   return (
     <div className="h-2 bg-gray-200 overflow-hidden">
       <div className="h-full transition-all" style={{ width: `${clamped}%`, background: color }} />
@@ -38,7 +38,7 @@ const ALL_STATUSES: QuotationStatus[] = [
   'PARTIAL_INVOICED', 'INVOICED', 'PAID', 'CANCELLED',
 ];
 
-const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white";
+const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] bg-white";
 const labelCls = "block text-xs font-semibold uppercase tracking-wide text-gray-500 font-['Barlow_Condensed'] mb-1";
 
 export default function QuotationDetailPage() {
@@ -135,9 +135,9 @@ export default function QuotationDetailPage() {
     const meta = PAGE_META['/quotations'];
     return (
       <div>
-        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#1C1C1C' }}>
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5" style={{ background: '#0D1B48' }}>
           <div>
-            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}>
+            <p className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8' }}>
               {meta.module}
             </p>
             <h1 className="text-3xl uppercase tracking-widest text-white leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -169,7 +169,7 @@ export default function QuotationDetailPage() {
     <div className="max-w-2xl mx-auto">
 
       {/* Hero header */}
-      <div className="px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#0D1B48' }}>
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
@@ -184,7 +184,7 @@ export default function QuotationDetailPage() {
                 {quotation.supplierName}
               </h1>
               {quotation.quotationNumber && (
-                <span className="font-['Space_Mono'] text-sm" style={{ color: '#F5C218' }}>
+                <span className="font-['Space_Mono'] text-sm" style={{ color: '#1D4ED8' }}>
                   #{quotation.quotationNumber}
                 </span>
               )}
@@ -198,7 +198,7 @@ export default function QuotationDetailPage() {
             <Link
               to={`/quotations/${id}/edit`}
               className="flex items-center gap-1.5 px-3 py-2 font-['Barlow_Condensed'] uppercase text-xs font-bold shrink-0"
-              style={{ background: '#F5C218', color: '#1C1C1C' }}
+              style={{ background: '#1D4ED8', color: '#ffffff' }}
             >
               <Edit className="w-3.5 h-3.5" /> Editar
             </Link>
@@ -233,7 +233,7 @@ export default function QuotationDetailPage() {
         {/* Status change form */}
         {showStatusForm && (
           <div className="border border-gray-200">
-            <div className="px-5 py-3 font-['Barlow_Condensed'] uppercase tracking-widest text-sm text-white" style={{ background: '#1C1C1C' }}>
+            <div className="px-5 py-3 font-['Barlow_Condensed'] uppercase tracking-widest text-sm text-white" style={{ background: '#0D1B48' }}>
               Cambiar estado
             </div>
             <div className="p-5 space-y-3 bg-white">
@@ -256,7 +256,7 @@ export default function QuotationDetailPage() {
                 </button>
                 <button
                   className="flex-1 py-2 font-['Barlow_Condensed'] uppercase text-sm font-bold disabled:opacity-50"
-                  style={{ background: '#F5C218', color: '#1C1C1C' }}
+                  style={{ background: '#1D4ED8', color: '#ffffff' }}
                   disabled={!newStatus || statusMutation.isPending}
                   onClick={() => statusMutation.mutate()}
                 >
@@ -270,7 +270,7 @@ export default function QuotationDetailPage() {
         {/* Financial summary */}
         {summary && (
           <div className="border border-gray-200">
-            <div className="px-5 py-3" style={{ background: '#1C1C1C' }}>
+            <div className="px-5 py-3" style={{ background: '#0D1B48' }}>
               <span className="font-['Barlow_Condensed'] uppercase tracking-widest text-sm text-white">Resumen financiero</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-gray-200">
@@ -302,7 +302,7 @@ export default function QuotationDetailPage() {
 
         {/* Details */}
         <div className="border border-gray-200">
-          <div className="px-5 py-3" style={{ background: '#1C1C1C' }}>
+          <div className="px-5 py-3" style={{ background: '#0D1B48' }}>
             <span className="font-['Barlow_Condensed'] uppercase tracking-widest text-sm text-white">Detalles</span>
           </div>
           <div className="p-4 md:p-5 space-y-4 bg-white">
@@ -396,12 +396,12 @@ export default function QuotationDetailPage() {
 
         {/* Payments */}
         <div className="border border-gray-200">
-          <div className="flex items-center justify-between px-5 py-3" style={{ background: '#1C1C1C' }}>
+          <div className="flex items-center justify-between px-5 py-3" style={{ background: '#0D1B48' }}>
             <div className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4" style={{ color: '#F5C218' }} />
+              <CreditCard className="w-4 h-4" style={{ color: '#1D4ED8' }} />
               <span className="font-['Barlow_Condensed'] uppercase tracking-widest text-sm text-white">Pagos y anticipos</span>
               {quotation.payments && quotation.payments.length > 0 && (
-                <span className="font-['Space_Mono'] text-xs px-2 py-0.5" style={{ background: '#F5C218', color: '#1C1C1C' }}>
+                <span className="font-['Space_Mono'] text-xs px-2 py-0.5" style={{ background: '#1D4ED8', color: '#ffffff' }}>
                   {quotation.payments.length}
                 </span>
               )}
@@ -470,7 +470,7 @@ export default function QuotationDetailPage() {
                 </button>
                 <button
                   className="flex-1 py-2 font-['Barlow_Condensed'] uppercase text-sm font-bold disabled:opacity-50"
-                  style={{ background: '#F5C218', color: '#1C1C1C' }}
+                  style={{ background: '#1D4ED8', color: '#ffffff' }}
                   disabled={paymentMutation.isPending}
                   onClick={() => {
                     if (!payForm.amount || !payForm.paymentDate || !payForm.description) {
@@ -528,13 +528,13 @@ export default function QuotationDetailPage() {
         {/* Expense links */}
         {quotation.expenseLinks && (
           <div className="border border-gray-200">
-            <div className="flex items-center gap-2 px-5 py-3" style={{ background: '#1C1C1C' }}>
-              <FileText className="w-4 h-4" style={{ color: '#F5C218' }} />
+            <div className="flex items-center gap-2 px-5 py-3" style={{ background: '#0D1B48' }}>
+              <FileText className="w-4 h-4" style={{ color: '#1D4ED8' }} />
               <span className="font-['Barlow_Condensed'] uppercase tracking-widest text-sm text-white">
                 Facturas / gastos vinculados
               </span>
               {quotation.expenseLinks.length > 0 && (
-                <span className="font-['Space_Mono'] text-xs px-2 py-0.5" style={{ background: '#F5C218', color: '#1C1C1C' }}>
+                <span className="font-['Space_Mono'] text-xs px-2 py-0.5" style={{ background: '#1D4ED8', color: '#ffffff' }}>
                   {quotation.expenseLinks.length}
                 </span>
               )}
@@ -572,9 +572,9 @@ export default function QuotationDetailPage() {
 
         {/* Attachments */}
         <div className="border border-gray-200">
-          <div className="flex items-center justify-between px-5 py-3" style={{ background: '#1C1C1C' }}>
+          <div className="flex items-center justify-between px-5 py-3" style={{ background: '#0D1B48' }}>
             <div className="flex items-center gap-2">
-              <Paperclip className="w-4 h-4" style={{ color: '#F5C218' }} />
+              <Paperclip className="w-4 h-4" style={{ color: '#1D4ED8' }} />
               <span className="font-['Barlow_Condensed'] uppercase tracking-widest text-sm text-white">Adjuntos</span>
             </div>
             <label className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-['Barlow_Condensed'] uppercase border border-gray-500 text-gray-300 hover:text-white hover:border-white cursor-pointer transition-colors">

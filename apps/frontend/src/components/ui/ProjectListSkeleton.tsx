@@ -13,7 +13,7 @@ export function ProjectListSkeleton() {
       <div className="space-y-2">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="bg-white border border-gray-200 p-4 flex items-center gap-4">
-            <div className="w-10 h-10 shrink-0" style={{ background: '#1C1C1C' }} />
+            <div className="w-10 h-10 shrink-0" style={{ background: '#0D1B48' }} />
             <div className="flex-1 min-w-0">
               <SkeletonText lines={2} />
             </div>

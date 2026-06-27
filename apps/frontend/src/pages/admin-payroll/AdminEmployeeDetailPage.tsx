@@ -7,7 +7,7 @@ import FormModal from '../../components/ui/FormModal';
 import { useRole } from '../../hooks/useRole';
 
 const fmt = (n: number) => new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2 }).format(n);
-const inputCls = "w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]";
+const inputCls = "w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]";
 
 export default function AdminEmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -50,8 +50,8 @@ export default function AdminEmployeeDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
-        <button onClick={() => navigate('/admin-payroll/employees')} className="flex items-center gap-1 text-[#F5C218] text-xs uppercase font-['Barlow_Condensed'] mb-3">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
+        <button onClick={() => navigate('/admin-payroll/employees')} className="flex items-center gap-1 text-[#1D4ED8] text-xs uppercase font-['Barlow_Condensed'] mb-3">
           <ChevronLeft size={14} /> Empleados
         </button>
         <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">{emp.name}</h1>
@@ -83,7 +83,7 @@ export default function AdminEmployeeDetailPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-['Barlow_Condensed'] text-sm font-bold uppercase text-gray-500 tracking-[0.1em]">Beneficios Fijos</h2>
               {canEdit && (
-                <button onClick={() => setBenefitModal({ open: true, data: {} })} className="flex items-center gap-1 text-xs bg-[#F5C218] text-[#1C1C1C] px-3 py-1 font-bold uppercase font-['Barlow_Condensed']">
+                <button onClick={() => setBenefitModal({ open: true, data: {} })} className="flex items-center gap-1 text-xs bg-[#1D4ED8] text-[#0D1B48] px-3 py-1 font-bold uppercase font-['Barlow_Condensed']">
                   <Plus size={12} /> Agregar
                 </button>
               )}
@@ -93,7 +93,7 @@ export default function AdminEmployeeDetailPage() {
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[#1C1C1C]">
+                  <tr className="bg-[#0D1B48]">
                     {['Concepto','Monto','Afecta ISR',''].map((h) => (
                       <th key={h} className="text-left px-3 py-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.1em]">{h}</th>
                     ))}
@@ -124,7 +124,7 @@ export default function AdminEmployeeDetailPage() {
             <h2 className="font-['Barlow_Condensed'] text-sm font-bold uppercase text-gray-500 tracking-[0.1em] mb-4">Historial Salarial</h2>
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#1C1C1C]">
+                <tr className="bg-[#0D1B48]">
                   {['Salario base','Vigente desde'].map((h) => (
                     <th key={h} className="text-left px-3 py-2 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.1em]">{h}</th>
                   ))}
@@ -170,7 +170,7 @@ export default function AdminEmployeeDetailPage() {
                 Cancelar
               </button>
               <button type="submit" disabled={addBenefitMut.isPending}
-                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50">
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#1D4ED8] text-[#0D1B48] disabled:opacity-50">
                 {addBenefitMut.isPending ? 'Guardando…' : 'Agregar'}
               </button>
             </div>

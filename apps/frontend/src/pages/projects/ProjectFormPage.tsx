@@ -22,7 +22,7 @@ type FormData = {
 
 type AddendumForm = { amount: string; description: string; date: string };
 
-const inputCls = "w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#F5C218] focus:border-transparent bg-white";
+const inputCls = "w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-transparent bg-white";
 const labelCls = "block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5";
 
 function AddendumRow({
@@ -306,13 +306,13 @@ export default function ProjectFormPage() {
     <div className="max-w-2xl mx-auto space-y-0 pb-10">
 
       {/* Hero header */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#1C1C1C' }}>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 md:px-6 py-4 md:py-5 mb-6" style={{ background: '#0D1B48' }}>
         <div className="max-w-2xl flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 text-gray-400 hover:text-[#F5C218] transition-colors">
+          <button onClick={() => navigate(-1)} className="p-2 text-gray-400 hover:text-[#1D4ED8] transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#F5C218' }}>
+            <p className="font-['Barlow_Condensed'] text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#1D4ED8' }}>
               MÓDULO / PROYECTOS
             </p>
             <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold tracking-tight text-white uppercase">
@@ -330,7 +330,7 @@ export default function ProjectFormPage() {
         {/* Información básica */}
         <div className="bg-white border border-gray-100 p-4 md:p-5 space-y-4">
           <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-            <span className="w-6 h-6 text-xs font-bold flex items-center justify-center" style={{ background: '#F5C218', color: '#1C1C1C' }}>1</span>
+            <span className="w-6 h-6 text-xs font-bold flex items-center justify-center" style={{ background: '#1D4ED8', color: '#ffffff' }}>1</span>
             <h2 className="font-['Barlow_Condensed'] text-base font-bold uppercase tracking-wide text-gray-800">Información básica</h2>
           </div>
 
@@ -404,19 +404,19 @@ export default function ProjectFormPage() {
 
           {/* Toggle partidas / lotes */}
           <div
-            className={`flex items-start gap-4 border p-4 cursor-pointer transition-colors ${batchesEnabled ? 'border-[#F5C218] bg-[#1C1C1C]' : 'border-gray-200 bg-gray-50'}`}
+            className={`flex items-start gap-4 border p-4 cursor-pointer transition-colors ${batchesEnabled ? 'border-[#1D4ED8] bg-[#0D1B48]' : 'border-gray-200 bg-gray-50'}`}
             onClick={batchesLoading ? undefined : handleToggleBatches}
           >
-            <div className={`mt-0.5 w-5 h-5 shrink-0 flex items-center justify-center border-2 transition-colors ${batchesEnabled ? 'border-[#F5C218] bg-[#F5C218]' : 'border-gray-400 bg-white'}`}>
-              {batchesEnabled && <Check className="w-3 h-3 text-[#1C1C1C]" strokeWidth={3} />}
+            <div className={`mt-0.5 w-5 h-5 shrink-0 flex items-center justify-center border-2 transition-colors ${batchesEnabled ? 'border-[#1D4ED8] bg-[#1D4ED8]' : 'border-gray-400 bg-white'}`}>
+              {batchesEnabled && <Check className="w-3 h-3 text-[#0D1B48]" strokeWidth={3} />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <Layers className={`w-4 h-4 shrink-0 ${batchesEnabled ? 'text-[#F5C218]' : 'text-gray-500'}`} />
+                <Layers className={`w-4 h-4 shrink-0 ${batchesEnabled ? 'text-[#1D4ED8]' : 'text-gray-500'}`} />
                 <p className={`font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide ${batchesEnabled ? 'text-white' : 'text-gray-800'}`}>
                   Proyecto con partidas / ítems
                 </p>
-                {batchesLoading && <span className="w-3.5 h-3.5 border-2 border-[#F5C218] border-t-transparent rounded-full animate-spin" />}
+                {batchesLoading && <span className="w-3.5 h-3.5 border-2 border-[#1D4ED8] border-t-transparent rounded-full animate-spin" />}
               </div>
               <p className={`font-['DM_Sans'] text-xs mt-1 ${batchesEnabled ? 'text-gray-400' : 'text-gray-500'}`}>
                 Activa esto si el proyecto maneja presupuesto dividido en partidas o lotes de trabajo. Permite vincular pagos a ítems específicos.
@@ -451,7 +451,7 @@ export default function ProjectFormPage() {
                 type="button"
                 onClick={() => { setShowNewForm(true); setNewError(''); }}
                 className="flex items-center gap-1.5 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide px-3 py-1.5 transition-colors"
-                style={{ background: '#F5C218', color: '#1C1C1C' }}
+                style={{ background: '#1D4ED8', color: '#ffffff' }}
               >
                 <Plus className="w-3.5 h-3.5" /> Agregar adenda
               </button>
@@ -484,7 +484,7 @@ export default function ProjectFormPage() {
             {addendums.length > 0 && (
               <div className="overflow-x-auto border border-gray-200">
                 <table className="w-full text-sm">
-                  <thead style={{ background: '#1C1C1C' }}>
+                  <thead style={{ background: '#0D1B48' }}>
                     <tr>
                       <th className="px-3 py-2.5 text-left font-['Barlow_Condensed'] uppercase tracking-wide text-xs text-white w-10">N°</th>
                       <th className="px-3 py-2.5 text-left font-['Barlow_Condensed'] uppercase tracking-wide text-xs text-white">Monto</th>
@@ -566,10 +566,10 @@ export default function ProjectFormPage() {
                     onClick={handleCreateAddendum}
                     disabled={savingNew}
                     className="flex-1 font-['Barlow_Condensed'] text-xs font-bold uppercase tracking-wide py-2 flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-                    style={{ background: '#F5C218', color: '#1C1C1C' }}
+                    style={{ background: '#1D4ED8', color: '#ffffff' }}
                   >
                     {savingNew
-                      ? <span className="w-3.5 h-3.5 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" />
+                      ? <span className="w-3.5 h-3.5 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" />
                       : <Check className="w-4 h-4" />}
                     Guardar adenda
                   </button>
@@ -603,7 +603,7 @@ export default function ProjectFormPage() {
                     <div className="flex items-center gap-3">
                       <div
                         className="w-8 h-8 flex items-center justify-center text-xs font-bold uppercase"
-                        style={{ background: '#1C1C1C', color: '#F5C218' }}
+                        style={{ background: '#0D1B48', color: '#1D4ED8' }}
                       >
                         {a.user.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                       </div>
@@ -642,10 +642,10 @@ export default function ProjectFormPage() {
                   onClick={handleAssign}
                   disabled={!selectedUserId || assignSaving}
                   className="font-['Barlow_Condensed'] uppercase text-xs font-bold px-4 py-2 flex items-center gap-1.5 disabled:opacity-50 transition-all hover:opacity-90"
-                  style={{ background: '#F5C218', color: '#1C1C1C' }}
+                  style={{ background: '#1D4ED8', color: '#ffffff' }}
                 >
                   {assignSaving
-                    ? <span className="w-3.5 h-3.5 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" />
+                    ? <span className="w-3.5 h-3.5 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" />
                     : <UserPlus className="w-4 h-4" />
                   }
                   Asignar
@@ -682,10 +682,10 @@ export default function ProjectFormPage() {
             type="submit"
             disabled={mutation.isPending}
             className="flex-1 font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide py-3 flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
-            style={{ background: '#F5C218', color: '#1C1C1C' }}
+            style={{ background: '#1D4ED8', color: '#ffffff' }}
           >
             {mutation.isPending
-              ? <><span className="w-4 h-4 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> Guardando...</>
+              ? <><span className="w-4 h-4 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" /> Guardando...</>
               : <><Save className="w-4 h-4" /> {isEdit ? 'Guardar cambios' : 'Crear proyecto'}</>
             }
           </button>

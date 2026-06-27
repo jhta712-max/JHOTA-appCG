@@ -27,7 +27,7 @@ const ROLE_LABEL: Record<string, string> = {
   operator:   'Operador',
 };
 
-const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#F5C218] bg-white";
+const inputCls = "w-full border border-gray-300 rounded-none px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] bg-white";
 const labelCls = "block text-xs font-semibold uppercase tracking-wide text-gray-500 font-['Barlow_Condensed'] mb-1";
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -166,10 +166,10 @@ export default function UsersPage() {
     <div className="space-y-5 max-w-3xl mx-auto pb-10">
 
       {/* Hero header */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-[#F5C218] mb-1">
+            <p className="font-['Barlow_Condensed'] uppercase tracking-widest text-xs text-[#1D4ED8] mb-1">
               ADMINISTRACIÓN / USUARIOS
             </p>
             <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">
@@ -183,7 +183,7 @@ export default function UsersPage() {
             <button
               onClick={openInvite}
               className="flex items-center gap-2 px-4 py-2.5 font-['Barlow_Condensed'] uppercase tracking-wide text-sm font-bold shrink-0"
-              style={{ background: '#F5C218', color: '#1C1C1C' }}
+              style={{ background: '#1D4ED8', color: '#ffffff' }}
             >
               <UserPlus className="w-4 h-4" /> Invitar usuario
             </button>
@@ -206,7 +206,7 @@ export default function UsersPage() {
                 <button
                   onClick={copyLink}
                   className="text-xs font-['Barlow_Condensed'] uppercase font-bold shrink-0 px-2 py-1"
-                  style={{ color: '#1C1C1C' }}
+                  style={{ color: '#0D1B48' }}
                 >
                   <Copy className="w-3 h-3 inline mr-1" />
                   {copied ? '¡Copiado!' : 'Copiar'}
@@ -238,7 +238,7 @@ export default function UsersPage() {
         <div className="border border-gray-200 divide-y divide-gray-100">
           {(users ?? []).map((u: any) => (
             <div key={u.id} className="flex items-center gap-4 px-5 py-4">
-              <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-[#1C1C1C]">
+              <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-[#0D1B48]">
                 <span className="font-['Barlow_Condensed'] text-lg font-bold text-white">
                   {u.name.charAt(0).toUpperCase()}
                 </span>
@@ -294,8 +294,8 @@ export default function UsersPage() {
           <div className="border border-gray-200 divide-y divide-gray-100">
             {(pendingInvites ?? []).map((inv: any) => (
               <div key={inv.id} className="flex items-center gap-3 px-5 py-3.5">
-                <div className="w-8 h-8 flex items-center justify-center shrink-0" style={{ background: '#F5C218' }}>
-                  <Mail className="w-4 h-4" style={{ color: '#1C1C1C' }} />
+                <div className="w-8 h-8 flex items-center justify-center shrink-0" style={{ background: '#1D4ED8' }}>
+                  <Mail className="w-4 h-4" style={{ color: '#0D1B48' }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-['Space_Mono'] text-sm text-gray-800 truncate">{inv.email}</p>
@@ -317,7 +317,7 @@ export default function UsersPage() {
       )}
 
       {/* Roles info */}
-      <div className="border-l-4 border-[#F5C218] bg-amber-50 p-4 flex items-start gap-3">
+      <div className="border-l-4 border-[#1D4ED8] bg-amber-50 p-4 flex items-start gap-3">
         <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         <div className="font-['DM_Sans'] text-xs text-amber-800 space-y-1">
           <p><strong className="font-['Barlow_Condensed'] uppercase">Admin:</strong> acceso total, gestión de usuarios y categorías.</p>
@@ -332,9 +332,9 @@ export default function UsersPage() {
       {modal === 'invite' && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 bg-[#1C1C1C]">
+            <div className="flex items-center justify-between px-6 py-4 bg-[#0D1B48]">
               <h3 className="font-['Barlow_Condensed'] uppercase tracking-wide text-white flex items-center gap-2">
-                <UserPlus className="w-4 h-4" style={{ color: '#F5C218' }} /> Invitar nuevo usuario
+                <UserPlus className="w-4 h-4" style={{ color: '#1D4ED8' }} /> Invitar nuevo usuario
               </h3>
               <button onClick={closeModal} className="p-1 text-gray-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
@@ -382,7 +382,7 @@ export default function UsersPage() {
                 </button>
                 <button type="submit" disabled={inviteMutation.isPending}
                   className="flex-1 py-2.5 font-['Barlow_Condensed'] uppercase text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2"
-                  style={{ background: '#F5C218', color: '#1C1C1C' }}>
+                  style={{ background: '#1D4ED8', color: '#ffffff' }}>
                   {inviteMutation.isPending
                     ? <><span className="w-4 h-4 border-2 border-gray-800 border-t-transparent rounded-full animate-spin" /> Enviando...</>
                     : <><Mail className="w-4 h-4" /> Enviar invitación</>
@@ -398,7 +398,7 @@ export default function UsersPage() {
       {modal === 'edit' && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 bg-[#1C1C1C]">
+            <div className="flex items-center justify-between px-6 py-4 bg-[#0D1B48]">
               <h3 className="font-['Barlow_Condensed'] uppercase tracking-wide text-white">Editar usuario</h3>
               <button onClick={closeModal} className="p-1 text-gray-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
@@ -442,7 +442,7 @@ export default function UsersPage() {
                 </button>
                 <button type="submit" disabled={updateMutation.isPending}
                   className="flex-1 py-2.5 font-['Barlow_Condensed'] uppercase text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2"
-                  style={{ background: '#F5C218', color: '#1C1C1C' }}>
+                  style={{ background: '#1D4ED8', color: '#ffffff' }}>
                   {updateMutation.isPending
                     ? <><span className="w-4 h-4 border-2 border-gray-800 border-t-transparent rounded-full animate-spin" /> Guardando...</>
                     : <><CheckCircle className="w-4 h-4" /> Guardar</>

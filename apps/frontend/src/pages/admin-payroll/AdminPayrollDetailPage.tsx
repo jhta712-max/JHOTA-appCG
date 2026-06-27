@@ -7,7 +7,7 @@ import FormModal from '../../components/ui/FormModal';
 import { useRole } from '../../hooks/useRole';
 
 const fmt  = (n: number) => new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2 }).format(n);
-const inputCls = "w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]";
+const inputCls = "w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]";
 
 const STATUS_COLOR: Record<string, string> = {
   DRAFT: 'bg-gray-100 text-gray-600', APPROVED: 'bg-blue-100 text-blue-800',
@@ -73,8 +73,8 @@ export default function AdminPayrollDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
-        <button onClick={() => navigate('/admin-payroll')} className="flex items-center gap-1 text-[#F5C218] text-xs uppercase font-['Barlow_Condensed'] mb-3">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
+        <button onClick={() => navigate('/admin-payroll')} className="flex items-center gap-1 text-[#1D4ED8] text-xs uppercase font-['Barlow_Condensed'] mb-3">
           <ChevronLeft size={14} /> Períodos
         </button>
         <div className="flex items-start justify-between">
@@ -88,7 +88,7 @@ export default function AdminPayrollDetailPage() {
           </div>
           <div className="flex items-center gap-3 mt-2">
             <span className={`px-3 py-1 text-xs font-bold uppercase ${STATUS_COLOR[p.status]}`}>{STATUS_LABEL[p.status]}</span>
-            <a href={adminPayrollsApi.exportUrl(p.id)} className="flex items-center gap-1 px-3 py-1 border border-gray-600 text-gray-300 text-xs font-['DM_Sans'] hover:border-[#F5C218] hover:text-[#F5C218]">
+            <a href={adminPayrollsApi.exportUrl(p.id)} className="flex items-center gap-1 px-3 py-1 border border-gray-600 text-gray-300 text-xs font-['DM_Sans'] hover:border-[#1D4ED8] hover:text-[#1D4ED8]">
               <Download size={12} /> Excel
             </a>
             {canAct && isDraft && (
@@ -97,7 +97,7 @@ export default function AdminPayrollDetailPage() {
               </button>
             )}
             {canAct && isApproved && (
-              <button onClick={() => setPayModal(true)} className="flex items-center gap-1 px-3 py-1 bg-[#F5C218] text-[#1C1C1C] text-xs font-bold uppercase font-['Barlow_Condensed']">
+              <button onClick={() => setPayModal(true)} className="flex items-center gap-1 px-3 py-1 bg-[#1D4ED8] text-[#0D1B48] text-xs font-bold uppercase font-['Barlow_Condensed']">
                 <DollarSign size={12} /> Registrar Pago
               </button>
             )}
@@ -129,7 +129,7 @@ export default function AdminPayrollDetailPage() {
         <div className="bg-white border border-gray-200 overflow-x-auto">
           <table className="w-full text-sm min-w-[900px]">
             <thead>
-              <tr className="bg-[#1C1C1C]">
+              <tr className="bg-[#0D1B48]">
                 {['#','Empleado','Salario Base','Beneficios','Bruto','AFP','TSS','ISR','Otros Desc.','Neto'].map((h) => (
                   <th key={h} className="text-left px-3 py-3 font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.1em]">{h}</th>
                 ))}
@@ -157,7 +157,7 @@ export default function AdminPayrollDetailPage() {
                             updateLineMut.mutate({ lineId: line.id, d: { otherDeductions: val, otherDeductionsNote: line.otherDeductionsNote } });
                           }
                         }}
-                        className="w-24 border border-gray-200 px-2 py-1 text-xs font-['Space_Mono'] focus:outline-none focus:border-[#F5C218]"
+                        className="w-24 border border-gray-200 px-2 py-1 text-xs font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8]"
                       />
                     ) : (
                       <span className="font-['Space_Mono'] text-xs text-red-600">{fmt(line.otherDeductions)}</span>
@@ -201,7 +201,7 @@ export default function AdminPayrollDetailPage() {
                 Cancelar
               </button>
               <button type="submit" disabled={payMut.isPending}
-                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#F5C218] text-[#1C1C1C] disabled:opacity-50">
+                className="px-4 py-2 text-sm font-bold uppercase font-['Barlow_Condensed'] bg-[#1D4ED8] text-[#0D1B48] disabled:opacity-50">
                 {payMut.isPending ? 'Guardando…' : 'Registrar Pago'}
               </button>
             </div>

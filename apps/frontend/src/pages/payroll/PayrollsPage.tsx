@@ -75,12 +75,12 @@ export default function PayrollsPage() {
       {/* Hero Header */}
       <div
         className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5"
-        style={{ background: '#1C1C1C' }}
+        style={{ background: '#0D1B48' }}
       >
         <div>
           <p
             className="text-xs uppercase tracking-widest mb-1"
-            style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#F5C218' }}
+            style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8' }}
           >
             MÓDULO / NÓMINAS
           </p>
@@ -92,7 +92,7 @@ export default function PayrollsPage() {
           </h1>
           <p
             className="text-sm mt-1 h-5 flex items-center"
-            style={{ fontFamily: 'Space Mono, monospace', color: '#F5C218' }}
+            style={{ fontFamily: 'Space Mono, monospace', color: '#1D4ED8' }}
           >
             {isLoading
               ? <SkeletonBlock className="h-4 w-28 bg-gray-600" />
@@ -105,8 +105,8 @@ export default function PayrollsPage() {
             to="/payrolls/new"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold uppercase tracking-wide transition-opacity hover:opacity-80"
             style={{
-              background: '#F5C218',
-              color: '#1C1C1C',
+              background: '#1D4ED8',
+              color: '#0D1B48',
               fontFamily: 'Barlow Condensed, sans-serif',
             }}
           >
@@ -135,7 +135,7 @@ export default function PayrollsPage() {
             className="flex items-center gap-2 px-3 py-2 border text-sm font-medium transition-colors"
             style={
               showFilters
-                ? { background: '#1C1C1C', color: '#F5C218', borderColor: '#1C1C1C', fontFamily: 'DM Sans, sans-serif', borderRadius: 0 }
+                ? { background: '#0D1B48', color: '#1D4ED8', borderColor: '#0D1B48', fontFamily: 'DM Sans, sans-serif', borderRadius: 0 }
                 : { background: 'white', color: '#374151', borderColor: '#D1D5DB', fontFamily: 'DM Sans, sans-serif', borderRadius: 0 }
             }
           >
@@ -215,9 +215,9 @@ export default function PayrollsPage() {
           <div className="text-center py-16">
             <div
               className="w-14 h-14 flex items-center justify-center mx-auto mb-4"
-              style={{ background: '#1C1C1C' }}
+              style={{ background: '#0D1B48' }}
             >
-              <Wallet className="w-7 h-7" style={{ color: '#F5C218' }} />
+              <Wallet className="w-7 h-7" style={{ color: '#1D4ED8' }} />
             </div>
             <p
               className="text-xl uppercase tracking-widest text-gray-800 mb-1"
@@ -229,7 +229,7 @@ export default function PayrollsPage() {
               <Link
                 to="/payrolls/new"
                 className="mt-4 inline-flex items-center gap-1 text-sm font-medium"
-                style={{ color: '#F5C218', fontFamily: 'DM Sans, sans-serif' }}
+                style={{ color: '#1D4ED8', fontFamily: 'DM Sans, sans-serif' }}
               >
                 <Plus className="w-4 h-4" /> Crear primera nómina
               </Link>
@@ -243,11 +243,11 @@ export default function PayrollsPage() {
                 <div key={p.id} className="p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div>
-                      <span className="font-bold text-sm" style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}>
+                      <span className="font-bold text-sm" style={{ fontFamily: 'Space Mono, monospace', color: '#0D1B48' }}>
                         NOM-{String(p.number).padStart(3, '0')}
                       </span>
                       {p.status === 'APPROVED' && (
-                        <span className="ml-2 text-xs" style={{ color: '#F5C218', fontFamily: 'DM Sans, sans-serif' }}>
+                        <span className="ml-2 text-xs" style={{ color: '#1D4ED8', fontFamily: 'DM Sans, sans-serif' }}>
                           → Crear orden de pago
                         </span>
                       )}
@@ -265,7 +265,7 @@ export default function PayrollsPage() {
                         {TYPE_LABEL[p.type]}
                       </span>
                     </div>
-                    <span className="font-bold text-sm" style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}>
+                    <span className="font-bold text-sm" style={{ fontFamily: 'Space Mono, monospace', color: '#0D1B48' }}>
                       RD$ {Number(p.totalAmount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
@@ -285,7 +285,7 @@ export default function PayrollsPage() {
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
-                <thead style={{ background: '#1C1C1C' }}>
+                <thead style={{ background: '#0D1B48' }}>
                   <tr>
                     <th
                       className="px-4 py-3 text-left text-xs uppercase tracking-wider text-gray-300"
@@ -337,7 +337,7 @@ export default function PayrollsPage() {
                       <td className="px-4 py-3">
                         <span
                           className="font-bold text-sm"
-                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#0D1B48' }}
                         >
                           NOM-{String(p.number).padStart(3, '0')}
                         </span>
@@ -377,7 +377,7 @@ export default function PayrollsPage() {
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <span
                           className="font-bold text-sm"
-                          style={{ fontFamily: 'Space Mono, monospace', color: '#1C1C1C' }}
+                          style={{ fontFamily: 'Space Mono, monospace', color: '#0D1B48' }}
                         >
                           RD$ {Number(p.totalAmount).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                         </span>
@@ -390,7 +390,7 @@ export default function PayrollsPage() {
                           {p.status === 'APPROVED' && (
                             <span
                               className="text-xs hidden sm:inline"
-                              style={{ color: '#F5C218', fontFamily: 'DM Sans, sans-serif' }}
+                              style={{ color: '#1D4ED8', fontFamily: 'DM Sans, sans-serif' }}
                             >
                               → Crear orden de pago
                             </span>

@@ -161,9 +161,9 @@ export default function NotificationContactsPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C]">
+      <div className="bg-[#0D1B48]">
         <div className="max-w-4xl mx-auto px-6 py-10">
-          <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#F5C218] uppercase mb-2">
+          <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#1D4ED8] uppercase mb-2">
             ADMINISTRACIÓN / NOTIFICACIONES
           </p>
           <div className="flex items-end justify-between gap-4 flex-wrap">
@@ -179,7 +179,7 @@ export default function NotificationContactsPage() {
               <button
                 onClick={() => testWhatsAppMutation.mutate()}
                 disabled={testWhatsAppMutation.isPending}
-                className="flex items-center gap-2 border border-white/20 text-white px-3 py-2 font-['DM_Sans'] text-sm hover:border-[#F5C218] hover:text-[#F5C218] transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 border border-white/20 text-white px-3 py-2 font-['DM_Sans'] text-sm hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition-colors disabled:opacity-50"
               >
                 {testWhatsAppMutation.isPending
                   ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -190,7 +190,7 @@ export default function NotificationContactsPage() {
               <button
                 onClick={() => runChecksMutation.mutate()}
                 disabled={runChecksMutation.isPending}
-                className="flex items-center gap-2 border border-white/20 text-white px-3 py-2 font-['DM_Sans'] text-sm hover:border-[#F5C218] hover:text-[#F5C218] transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 border border-white/20 text-white px-3 py-2 font-['DM_Sans'] text-sm hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition-colors disabled:opacity-50"
               >
                 {runChecksMutation.isPending
                   ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -200,7 +200,7 @@ export default function NotificationContactsPage() {
               </button>
               <button
                 onClick={openCreate}
-                className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-4 py-2 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors"
+                className="flex items-center gap-2 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors"
               >
                 <Plus className="w-4 h-4" /> Agregar contacto
               </button>
@@ -213,7 +213,7 @@ export default function NotificationContactsPage() {
 
         {/* Feedback */}
         {apiOk && (
-          <div className="flex items-center gap-2 bg-[#1C1C1C] border border-[#F5C218]/40 text-[#F5C218] p-3 font-['DM_Sans'] text-sm">
+          <div className="flex items-center gap-2 bg-[#0D1B48] border border-[#1D4ED8]/40 text-[#1D4ED8] p-3 font-['DM_Sans'] text-sm">
             <CheckCircle className="w-4 h-4 shrink-0" />
             <span className="flex-1">{apiOk}</span>
             <button onClick={() => setApiOk('')}><X className="w-3.5 h-3.5" /></button>
@@ -229,15 +229,15 @@ export default function NotificationContactsPage() {
         )}
 
         {/* Info panel */}
-        <div className="bg-[#1C1C1C] border border-white/10 p-5 flex items-start gap-4">
-          <div className="w-8 h-8 bg-[#F5C218]/10 border border-[#F5C218]/30 flex items-center justify-center shrink-0">
-            <Bell className="w-4 h-4 text-[#F5C218]" />
+        <div className="bg-[#0D1B48] border border-white/10 p-5 flex items-start gap-4">
+          <div className="w-8 h-8 bg-[#1D4ED8]/10 border border-[#1D4ED8]/30 flex items-center justify-center shrink-0">
+            <Bell className="w-4 h-4 text-[#1D4ED8]" />
           </div>
           <div className="font-['DM_Sans'] text-xs text-gray-400 space-y-1">
             <p className="font-['Barlow_Condensed'] text-sm font-semibold text-white uppercase tracking-wide">Cómo funcionan los contactos externos</p>
             <p>Los contactos con <span className="text-white">teléfono</span> reciben alertas por WhatsApp (requiere UltraMsg configurado).</p>
             <p>Los contactos con <span className="text-white">email</span> reciben los mismos avisos por correo que los administradores.</p>
-            <p>Si los tipos de alerta están vacíos, el contacto recibe <span className="text-[#F5C218]">todas las alertas</span>.</p>
+            <p>Si los tipos de alerta están vacíos, el contacto recibe <span className="text-[#1D4ED8]">todas las alertas</span>.</p>
           </div>
         </div>
 
@@ -245,13 +245,13 @@ export default function NotificationContactsPage() {
         {isLoading ? (
           <ProjectListSkeleton />
         ) : (contacts ?? []).length === 0 ? (
-          <div className="bg-[#1C1C1C] border border-white/10 p-14 text-center">
+          <div className="bg-[#0D1B48] border border-white/10 p-14 text-center">
             <Bell className="w-10 h-10 text-white/10 mx-auto mb-4" />
             <p className="font-['DM_Sans'] text-gray-400 font-medium">No hay contactos externos aún</p>
             <p className="font-['DM_Sans'] text-sm text-gray-500 mt-1">Agrega personas que deben recibir las alertas automáticas</p>
             <button
               onClick={openCreate}
-              className="mt-5 bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors"
+              className="mt-5 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors"
             >
               <Plus className="w-4 h-4 inline mr-1.5" /> Agregar contacto
             </button>
@@ -261,8 +261,8 @@ export default function NotificationContactsPage() {
             {(contacts ?? []).map((c) => (
               <div key={c.id} className="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
                 {/* Avatar */}
-                <div className={`w-9 h-9 flex items-center justify-center shrink-0 mt-0.5 ${c.isActive ? 'bg-[#1C1C1C]' : 'bg-gray-100'}`}>
-                  <User className={`w-4 h-4 ${c.isActive ? 'text-[#F5C218]' : 'text-gray-400'}`} />
+                <div className={`w-9 h-9 flex items-center justify-center shrink-0 mt-0.5 ${c.isActive ? 'bg-[#0D1B48]' : 'bg-gray-100'}`}>
+                  <User className={`w-4 h-4 ${c.isActive ? 'text-[#1D4ED8]' : 'text-gray-400'}`} />
                 </div>
 
                 {/* Content */}
@@ -317,14 +317,14 @@ export default function NotificationContactsPage() {
                     className={`font-['DM_Sans'] text-xs px-2.5 py-1.5 border font-medium transition-colors
                       ${c.isActive
                         ? 'border-gray-200 text-gray-500 hover:bg-gray-50'
-                        : 'border-[#F5C218]/40 text-[#F5C218] hover:bg-[#F5C218]/10'
+                        : 'border-[#1D4ED8]/40 text-[#1D4ED8] hover:bg-[#1D4ED8]/10'
                       }`}
                   >
                     {c.isActive ? 'Desactivar' : 'Activar'}
                   </button>
                   <button
                     onClick={() => openEdit(c)}
-                    className="p-1.5 text-gray-400 hover:text-[#F5C218] hover:bg-[#F5C218]/10 transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-[#1D4ED8] hover:bg-[#1D4ED8]/10 transition-colors"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
@@ -346,11 +346,11 @@ export default function NotificationContactsPage() {
         <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-[#1C1C1C] sticky top-0 z-10">
+            <div className="flex items-center justify-between px-6 py-4 bg-[#0D1B48] sticky top-0 z-10">
               <h3 className="font-['Barlow_Condensed'] text-lg font-semibold text-white uppercase tracking-wide">
                 {modal === 'create' ? 'Agregar contacto' : 'Editar contacto'}
               </h3>
-              <button onClick={closeModal} className="text-gray-400 hover:text-[#F5C218] transition-colors">
+              <button onClick={closeModal} className="text-gray-400 hover:text-[#1D4ED8] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -367,7 +367,7 @@ export default function NotificationContactsPage() {
                   Nombre *
                 </label>
                 <input
-                  className={`w-full font-['DM_Sans'] text-sm border text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors ${form.formState.errors.name ? 'border-red-400' : 'border-gray-200'}`}
+                  className={`w-full font-['DM_Sans'] text-sm border text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors ${form.formState.errors.name ? 'border-red-400' : 'border-gray-200'}`}
                   placeholder="Nombre completo"
                   {...form.register('name', { required: 'El nombre es requerido' })}
                 />
@@ -381,7 +381,7 @@ export default function NotificationContactsPage() {
                   Teléfono (WhatsApp)
                 </label>
                 <input
-                  className="w-full font-['Space_Mono'] text-sm border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                  className="w-full font-['Space_Mono'] text-sm border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                   placeholder="+1809XXXXXXX"
                   {...form.register('phone')}
                 />
@@ -394,7 +394,7 @@ export default function NotificationContactsPage() {
                 </label>
                 <input
                   type="email"
-                  className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                  className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                   placeholder="nombre@empresa.com"
                   {...form.register('email')}
                 />
@@ -419,7 +419,7 @@ export default function NotificationContactsPage() {
                         key={opt.value}
                         className={`flex items-start gap-3 p-3 border cursor-pointer transition-colors ${
                           checked
-                            ? 'border-[#F5C218]/40 bg-[#F5C218]/5'
+                            ? 'border-[#1D4ED8]/40 bg-[#1D4ED8]/5'
                             : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
                         }`}
                       >
@@ -427,7 +427,7 @@ export default function NotificationContactsPage() {
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleNotifType(opt.value)}
-                          className="mt-0.5 accent-[#F5C218]"
+                          className="mt-0.5 accent-[#1D4ED8]"
                         />
                         <div className="min-w-0">
                           <p className="font-['DM_Sans'] text-sm font-medium text-gray-800">{opt.label}</p>
@@ -455,10 +455,10 @@ export default function NotificationContactsPage() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isPending
-                    ? <><span className="w-4 h-4 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> Guardando...</>
+                    ? <><span className="w-4 h-4 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" /> Guardando...</>
                     : <><CheckCircle className="w-4 h-4" /> Guardar</>
                   }
                 </button>

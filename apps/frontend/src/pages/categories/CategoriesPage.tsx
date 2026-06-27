@@ -93,9 +93,9 @@ export default function CategoriesPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* Hero Header */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
         <div className="max-w-4xl mx-auto">
-          <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#F5C218] uppercase mb-2">
+          <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-[#1D4ED8] uppercase mb-2">
             ADMINISTRACIÓN / CATEGORÍAS
           </p>
           <div className="flex items-end justify-between gap-4">
@@ -110,7 +110,7 @@ export default function CategoriesPage() {
             {isAdmin && (
               <button
                 onClick={openCreate}
-                className="flex items-center gap-2 bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors shrink-0"
+                className="flex items-center gap-2 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors shrink-0"
               >
                 <Plus className="w-4 h-4" /> Nueva categoría
               </button>
@@ -122,7 +122,7 @@ export default function CategoriesPage() {
       <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">
 
         {apiOk && (
-          <div className="flex items-center gap-2 bg-[#1C1C1C] border border-[#F5C218]/40 text-[#F5C218] p-3 text-sm font-['DM_Sans']">
+          <div className="flex items-center gap-2 bg-[#0D1B48] border border-[#1D4ED8]/40 text-[#1D4ED8] p-3 text-sm font-['DM_Sans']">
             <CheckCircle className="w-4 h-4 shrink-0" />
             <span className="flex-1">{apiOk}</span>
             <button onClick={() => setApiOk('')}><X className="w-3 h-3" /></button>
@@ -136,7 +136,7 @@ export default function CategoriesPage() {
             {/* Categorías del sistema */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-5 h-5 bg-[#1C1C1C] border border-white/20 flex items-center justify-center">
+                <div className="w-5 h-5 bg-[#0D1B48] border border-white/20 flex items-center justify-center">
                   <Lock className="w-3 h-3 text-gray-400" />
                 </div>
                 <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-gray-500 uppercase">
@@ -164,8 +164,8 @@ export default function CategoriesPage() {
             {customCats.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-5 h-5 bg-[#F5C218] flex items-center justify-center">
-                    <Tag className="w-3 h-3 text-[#1C1C1C]" />
+                  <div className="w-5 h-5 bg-[#1D4ED8] flex items-center justify-center">
+                    <Tag className="w-3 h-3 text-[#0D1B48]" />
                   </div>
                   <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-[0.2em] text-gray-500 uppercase">
                     CATEGORÍAS PERSONALIZADAS
@@ -178,7 +178,7 @@ export default function CategoriesPage() {
                       key={c.id}
                       onClick={() => isAdmin && openEdit(c)}
                       className={`bg-white border border-gray-200 p-3 flex items-center gap-2 transition-all
-                        ${isAdmin ? 'cursor-pointer hover:border-[#F5C218] hover:shadow-[0_2px_12px_rgba(245,194,24,0.15)]' : ''}`}
+                        ${isAdmin ? 'cursor-pointer hover:border-[#1D4ED8] hover:shadow-[0_2px_12px_rgba(245,194,24,0.15)]' : ''}`}
                     >
                       {c.icon && <span className="text-xl">{c.icon}</span>}
                       <div className="flex-1 min-w-0">
@@ -195,12 +195,12 @@ export default function CategoriesPage() {
             )}
 
             {customCats.length === 0 && isAdmin && (
-              <div className="bg-[#1C1C1C] border border-white/10 p-12 text-center">
+              <div className="bg-[#0D1B48] border border-white/10 p-12 text-center">
                 <Tag className="w-8 h-8 text-white/20 mx-auto mb-3" />
                 <p className="font-['DM_Sans'] text-sm text-gray-400">No hay categorías personalizadas</p>
                 <button
                   onClick={openCreate}
-                  className="mt-4 bg-[#F5C218] text-[#1C1C1C] px-4 py-2 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors"
+                  className="mt-4 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors"
                 >
                   Crear primera categoría
                 </button>
@@ -215,13 +215,13 @@ export default function CategoriesPage() {
         <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-md shadow-2xl">
             {/* Modal header — dark band */}
-            <div className="flex items-center justify-between px-6 py-4 bg-[#1C1C1C]">
+            <div className="flex items-center justify-between px-6 py-4 bg-[#0D1B48]">
               <h3 className="font-['Barlow_Condensed'] text-lg font-semibold text-white uppercase tracking-wide">
                 {modal === 'create' ? 'Nueva categoría' : 'Editar categoría'}
               </h3>
               <button
                 onClick={closeModal}
-                className="text-gray-400 hover:text-[#F5C218] transition-colors"
+                className="text-gray-400 hover:text-[#1D4ED8] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -240,7 +240,7 @@ export default function CategoriesPage() {
                   Nombre *
                 </label>
                 <input
-                  className={`w-full font-['DM_Sans'] text-sm border text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors ${errors.name ? 'border-red-400' : 'border-gray-200'}`}
+                  className={`w-full font-['DM_Sans'] text-sm border text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors ${errors.name ? 'border-red-400' : 'border-gray-200'}`}
                   placeholder="Ej: Equipos Pesados"
                   {...register('name', { required: 'El nombre es requerido', minLength: { value: 2, message: 'Mínimo 2 caracteres' } })}
                 />
@@ -252,7 +252,7 @@ export default function CategoriesPage() {
                   Descripción
                 </label>
                 <input
-                  className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#1C1C1C] px-3 py-2 focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218] transition-colors"
+                  className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-colors"
                   placeholder="Descripción opcional"
                   {...register('description')}
                 />
@@ -270,7 +270,7 @@ export default function CategoriesPage() {
                       onClick={() => setValue('icon', watchedIcon === icon ? '' : icon)}
                       className={`text-xl p-1.5 transition-all text-center border
                         ${watchedIcon === icon
-                          ? 'bg-[#F5C218]/10 border-[#F5C218]'
+                          ? 'bg-[#1D4ED8]/10 border-[#1D4ED8]'
                           : 'border-transparent hover:bg-gray-100 hover:border-gray-200'
                         }`}
                     >
@@ -294,10 +294,10 @@ export default function CategoriesPage() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 bg-[#F5C218] text-[#1C1C1C] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isPending
-                    ? <><span className="w-4 h-4 border-2 border-[#1C1C1C] border-t-transparent rounded-full animate-spin" /> Guardando...</>
+                    ? <><span className="w-4 h-4 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" /> Guardando...</>
                     : <><CheckCircle className="w-4 h-4" /> {modal === 'create' ? 'Crear' : 'Guardar'}</>
                   }
                 </button>

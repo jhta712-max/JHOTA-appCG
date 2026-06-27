@@ -7,7 +7,7 @@ export interface SavedFilter<T> {
   createdAt: string;
 }
 
-const STORAGE_KEY = 'servingmi:saved-filters';
+const STORAGE_KEY = 'jhota:saved-filters';
 
 function readAll(): Record<string, SavedFilter<unknown>[]> {
   try {

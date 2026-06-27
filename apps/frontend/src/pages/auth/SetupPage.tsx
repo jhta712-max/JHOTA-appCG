@@ -102,7 +102,7 @@ export default function SetupPage() {
 
   // ── Formulario de primer acceso ──
   return (
-    <div className="min-h-screen flex" style={{ background: '#1C1C1C' }}>
+    <div className="min-h-screen flex" style={{ background: '#0D1B48' }}>
 
       {/* Panel izquierdo */}
       <div className="hidden lg:flex flex-col justify-between w-2/5 p-12"
@@ -122,7 +122,7 @@ export default function SetupPage() {
           </div>
           <h2 className="text-3xl font-bold text-white leading-snug mb-4">
             Primer acceso<br />
-            <span style={{ color: '#F5C218' }}>al sistema</span>
+            <span style={{ color: '#1D4ED8' }}>al sistema</span>
           </h2>
           <p className="text-gray-400 text-sm leading-relaxed">
             Crea la cuenta de administrador principal. Este formulario

@@ -169,15 +169,15 @@ export default function PayrollFormPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero header */}
-      <div className="bg-[#1C1C1C] px-4 md:px-6 py-4 md:py-5">
+      <div className="bg-[#0D1B48] px-4 md:px-6 py-4 md:py-5">
         <Link
           to={isEdit ? `/payrolls/${id}` : '/payrolls'}
-          className="flex items-center gap-1.5 text-[#F5C218] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
+          className="flex items-center gap-1.5 text-[#1D4ED8] text-xs font-['Barlow_Condensed'] tracking-widest uppercase mb-3 hover:opacity-80"
         >
           <ArrowLeft className="w-4 h-4" />
           {isEdit ? 'Volver al detalle' : 'Volver a nóminas'}
         </Link>
-        <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-[#F5C218] uppercase mb-1">
+        <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-[#1D4ED8] uppercase mb-1">
           MÓDULO / NÓMINAS
         </p>
         <h1 className="font-['Barlow_Condensed'] text-3xl md:text-5xl font-bold text-white uppercase tracking-tight">
@@ -192,10 +192,10 @@ export default function PayrollFormPage() {
 
       <div className="px-4 md:px-6 py-4 md:py-5 max-w-4xl space-y-5">
         {error && (
-          <div className="bg-[#1C1C1C] border border-red-500/40 text-red-400 text-sm px-4 py-3 flex items-start gap-2 font-['DM_Sans']">
+          <div className="bg-[#0D1B48] border border-red-500/40 text-red-400 text-sm px-4 py-3 flex items-start gap-2 font-['DM_Sans']">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
-            <button onClick={() => setError('')} className="ml-auto text-gray-400 hover:text-[#F5C218]">
+            <button onClick={() => setError('')} className="ml-auto text-gray-400 hover:text-[#1D4ED8]">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -219,7 +219,7 @@ export default function PayrollFormPage() {
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
                   required
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]"
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                 >
                   <option value="">— Seleccione un proyecto —</option>
                   {projects.map((p: any) => (
@@ -254,7 +254,7 @@ export default function PayrollFormPage() {
                 {(['LABOR', 'SERVICE'] as const).map((t) => (
                   <label key={t} className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="type" value={t} checked={type === t}
-                      onChange={() => setType(t)} className="accent-[#F5C218]" />
+                      onChange={() => setType(t)} className="accent-[#1D4ED8]" />
                     <span className="text-sm text-gray-700 font-['DM_Sans']">
                       {t === 'LABOR' ? '👷 Mano de obra' : '🔧 Servicios'}
                     </span>
@@ -271,7 +271,7 @@ export default function PayrollFormPage() {
                 </label>
                 <input type="date" value={periodStart}
                   onChange={(e) => setPeriodStart(e.target.value)} required
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
               </div>
               <div>
                 <label className="block font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1">
@@ -279,7 +279,7 @@ export default function PayrollFormPage() {
                 </label>
                 <input type="date" value={periodEnd} min={periodStart}
                   onChange={(e) => setPeriodEnd(e.target.value)} required
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
               </div>
             </div>
 
@@ -291,7 +291,7 @@ export default function PayrollFormPage() {
               <input type="text" value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="ej. Pago semana 3 — cuadrilla albañilería" required
-                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
             </div>
 
             {/* Notas */}
@@ -301,14 +301,14 @@ export default function PayrollFormPage() {
               </label>
               <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)}
                 placeholder="Observaciones opcionales…"
-                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] resize-none focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                className="w-full border border-gray-200 px-3 py-2 text-sm font-['DM_Sans'] resize-none focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
             </div>
           </div>
 
           {/* ── Líneas de trabajo (solo al crear) ─────────────── */}
           {!isEdit && (
             <div className="bg-white border border-gray-200 overflow-hidden">
-              <div className="px-4 py-3 bg-[#1C1C1C] flex items-center justify-between">
+              <div className="px-4 py-3 bg-[#0D1B48] flex items-center justify-between">
                 <h2 className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-gray-400 uppercase">
                   Líneas de trabajo
                   <span className="ml-2 text-gray-500">
@@ -316,14 +316,14 @@ export default function PayrollFormPage() {
                   </span>
                 </h2>
                 <button type="button" onClick={addLine}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400] font-['Barlow_Condensed'] tracking-wide uppercase">
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400] font-['Barlow_Condensed'] tracking-wide uppercase">
                   <Plus className="w-3.5 h-3.5" /> Agregar línea
                 </button>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#1C1C1C]">
+                  <thead className="bg-[#0D1B48]">
                     <tr>
                       <th className="px-3 py-2.5 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em] w-36">Nombre Suplidor</th>
                       <th className="px-3 py-2.5 text-left font-['Barlow_Condensed'] text-xs text-gray-400 uppercase tracking-[0.15em]">Concepto de Servicio</th>
@@ -345,18 +345,18 @@ export default function PayrollFormPage() {
                             <input placeholder="Nombre del suplidor"
                               value={line.supplierName}
                               onChange={(e) => updateLine(idx, 'supplierName', e.target.value)}
-                              className="w-full border border-gray-200 px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                              className="w-full border border-gray-200 px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
                           </td>
                           <td className="px-2 py-1.5">
                             <input placeholder="Concepto o descripción del servicio"
                               value={line.description}
                               onChange={(e) => updateLine(idx, 'description', e.target.value)}
-                              className="w-full border border-gray-200 px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                              className="w-full border border-gray-200 px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
                           </td>
                           <td className="px-2 py-1.5">
                             <select value={line.unit}
                               onChange={(e) => updateLine(idx, 'unit', e.target.value)}
-                              className="w-full border border-gray-200 px-1 py-1 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]">
+                              className="w-full border border-gray-200 px-1 py-1 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]">
                               {UNITS.map((u) => <option key={u}>{u}</option>)}
                             </select>
                           </td>
@@ -364,13 +364,13 @@ export default function PayrollFormPage() {
                             <input type="number" min="0" step="0.001" placeholder="0"
                               value={line.quantity}
                               onChange={(e) => updateLine(idx, 'quantity', e.target.value)}
-                              className="w-full border border-gray-200 px-2 py-1 text-sm text-right font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                              className="w-full border border-gray-200 px-2 py-1 text-sm text-right font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
                           </td>
                           <td className="px-2 py-1.5">
                             <input type="number" min="0" step="0.01" placeholder="0.00"
                               value={line.unitPrice}
                               onChange={(e) => updateLine(idx, 'unitPrice', e.target.value)}
-                              className="w-full border border-gray-200 px-2 py-1 text-sm text-right font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                              className="w-full border border-gray-200 px-2 py-1 text-sm text-right font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
                           </td>
                           <td className="px-3 py-1.5 text-right font-['Space_Mono'] font-semibold text-gray-800 text-xs whitespace-nowrap">
                             {sub > 0 ? `RD$ ${sub.toLocaleString('es-DO', { minimumFractionDigits: 2 })}` : '—'}
@@ -379,13 +379,13 @@ export default function PayrollFormPage() {
                             <input placeholder="Ej: Banco Popular"
                               value={line.bankName}
                               onChange={(e) => updateLine(idx, 'bankName', e.target.value)}
-                              className="w-full border border-gray-200 px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                              className="w-full border border-gray-200 px-2 py-1 text-sm font-['DM_Sans'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
                           </td>
                           <td className="px-2 py-1.5">
                             <input placeholder="No. de cuenta"
                               value={line.bankAccount}
                               onChange={(e) => updateLine(idx, 'bankAccount', e.target.value)}
-                              className="w-full border border-gray-200 px-2 py-1 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#F5C218] focus:ring-1 focus:ring-[#F5C218]" />
+                              className="w-full border border-gray-200 px-2 py-1 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]" />
                           </td>
                           <td className="px-1 py-1.5 text-center">
                             {lines.length > 1 && (
@@ -400,9 +400,9 @@ export default function PayrollFormPage() {
                     })}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t-2 border-[#F5C218] bg-[#1C1C1C]">
-                      <td colSpan={5} className="px-3 py-3 text-right font-['Barlow_Condensed'] font-bold text-[#F5C218] text-sm uppercase tracking-widest">TOTAL A PAGAR</td>
-                      <td className="px-3 py-3 text-right font-['Space_Mono'] font-bold text-[#F5C218] whitespace-nowrap">
+                    <tr className="border-t-2 border-[#1D4ED8] bg-[#0D1B48]">
+                      <td colSpan={5} className="px-3 py-3 text-right font-['Barlow_Condensed'] font-bold text-[#1D4ED8] text-sm uppercase tracking-widest">TOTAL A PAGAR</td>
+                      <td className="px-3 py-3 text-right font-['Space_Mono'] font-bold text-[#1D4ED8] whitespace-nowrap">
                         RD$ {total.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                       </td>
                       <td colSpan={3} />
@@ -416,7 +416,7 @@ export default function PayrollFormPage() {
           {/* ── Acciones ──────────────────────────────────────── */}
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={isPending}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold font-['Barlow_Condensed'] uppercase tracking-wide bg-[#F5C218] text-[#1C1C1C] hover:bg-[#e6b400] disabled:opacity-50">
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold font-['Barlow_Condensed'] uppercase tracking-wide bg-[#1D4ED8] text-[#0D1B48] hover:bg-[#e6b400] disabled:opacity-50">
               <Wallet className="w-4 h-4" />
               {isPending ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear Nómina'}
             </button>
