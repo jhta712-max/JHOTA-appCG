@@ -18,23 +18,29 @@ async function start() {
       '20260602000001_add_bidding_to_office_expense_category',
       '20260615000002_payment_order_credit_line',
     ];
+    // Locate prisma CLI inside pnpm store (works regardless of workspace layout)
+    const prismaBin = execSync(
+      "find /app/node_modules/.pnpm -type f -name 'index.js' -path '*/prisma/build/index.js' 2>/dev/null | head -1",
+      { encoding: 'utf8' }
+    ).trim() || './node_modules/.bin/prisma';
+    const schemaPath = '/app/apps/backend/prisma/schema.prisma';
+
     for (const m of rolledBack) {
       try {
-        execSync(`./node_modules/.bin/prisma migrate resolve --rolled-back ${m} --schema ./prisma/schema.prisma`, { stdio: 'pipe', cwd: process.cwd() });
+        execSync(`node "${prismaBin}" migrate resolve --rolled-back ${m} --schema "${schemaPath}"`, { stdio: 'pipe' });
         logger.info(`Migration rolled-back: ${m}`);
       } catch (_) { /* no estaba en failed, ignorar */ }
     }
     // Marca la baseline como aplicada (los 20260518* ya crearon el schema base).
     try {
-      execSync('./node_modules/.bin/prisma migrate resolve --applied 20260531000000_init_baseline --schema ./prisma/schema.prisma', { stdio: 'pipe', cwd: process.cwd() });
+      execSync(`node "${prismaBin}" migrate resolve --applied 20260531000000_init_baseline --schema "${schemaPath}"`, { stdio: 'pipe' });
       logger.info('Baseline migration marcada como applied.');
     } catch (_) { /* ya está aplicada, ignorar */ }
 
     try {
       logger.info('Ejecutando migraciones de base de datos...');
-      execSync('./node_modules/.bin/prisma migrate deploy --schema ./prisma/schema.prisma', {
+      execSync(`node "${prismaBin}" migrate deploy --schema "${schemaPath}"`, {
         stdio: 'inherit',
-        cwd: process.cwd(),
       });
       logger.info('Migraciones completadas.');
     } catch (migrationErr) {
