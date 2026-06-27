@@ -385,9 +385,6 @@ export default function Layout() {
           <AppIcon className="w-9 h-10 shrink-0" />
           <div className="min-w-0">
             <p className="font-bold text-white text-base uppercase tracking-widest leading-none font-['Barlow_Condensed']">
-              JHOTACO
-            </p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-tight mt-0.5 font-['Barlow_Condensed']">
               JHOTA Construcciones
             </p>
           </div>
@@ -468,8 +465,7 @@ export default function Layout() {
           <div className="flex items-center gap-3">
             <AppIcon className="w-8 h-9 shrink-0" />
             <div>
-              <p className="font-bold text-white uppercase tracking-widest font-['Barlow_Condensed']">JHOTACO</p>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-['Barlow_Condensed']">JHOTA Construcciones</p>
+              <p className="font-bold text-white uppercase tracking-widest font-['Barlow_Condensed']">JHOTA Construcciones</p>
             </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} aria-label="Cerrar menú" className="text-gray-400 hover:text-white p-1">
