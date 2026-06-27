@@ -16,6 +16,10 @@ COPY apps ./apps
 # Install and build
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 WORKDIR /app/apps/frontend
+# VITE_API_URL must be available at build time (Vite bakes it into the bundle).
+# Default hardcoded so it works even if Render doesn't pass it as a build arg.
+ARG VITE_API_URL=https://jhota-backend.onrender.com/api/v1
+ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm run build
 
 # Production stage - Nginx

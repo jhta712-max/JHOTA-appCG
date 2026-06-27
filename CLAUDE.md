@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Frontend:** React 18 + Vite + TailwindCSS + TanStack Query + Zustand
 - **Deploy:** Render.com (Docker), monorepo pnpm workspaces
 - **Rama principal:** `main` (auto-deploy en Render)
-- **Backend live:** https://servingmi-backend.onrender.com
+- **Backend live:** https://jhota-backend.onrender.com
 
 ## Comandos clave
 
@@ -167,7 +167,13 @@ utils/
 
 **`buildPaginatedResponse` requiere objeto PaginationParams:** La función en `apps/backend/src/utils/pagination.ts` acepta `(data, total, { page, limit, skip })` como tercer argumento — no `page` y `limit` separados. Construir el objeto inline: `buildPaginatedResponse(data, total, { page: query.page, limit: query.limit, skip: (query.page - 1) * query.limit })`.
 
-**Migración baseline en desarrollo local:** El repo tiene una migración `20260531000000_init_baseline` que es un snapshot completo del schema. `prisma migrate deploy` desde una BD vacía falla con `type "project_status" already exists` porque las migraciones `20260518*` también están presentes. Solución documentada en `.claude/skills/run-servingmi/SKILL.md` → Setup §4.
+**Migración baseline en fresh DB (Render o local desde cero):** El repo tiene una migración `20260531000000_init_baseline` que es un snapshot completo del schema. En una BD nueva, las migraciones `20260518*` ya crean todos los tipos/tablas, por lo que el baseline falla con P3009 (`type "project_status" already exists`). La solución está implementada en `apps/backend/src/server.ts`: al arrancar, resuelve via `prisma migrate resolve --rolled-back` las migraciones que entraron en failed state, luego marca la baseline como `--applied` sin correrla, y finalmente corre `migrate deploy`. El array `rolledBack` en `server.ts` debe incluir cualquier migración que quede en estado failed tras un deploy fallido — agregar el nombre exacto del directorio de la migración y redeploy.
+
+**`CREATE TYPE IF NOT EXISTS` no existe para enums en PostgreSQL:** A diferencia de `CREATE TABLE IF NOT EXISTS`, PostgreSQL no soporta `CREATE TYPE IF NOT EXISTS` para tipos ENUM en ninguna versión. Usar siempre el patrón: `DO $$ BEGIN CREATE TYPE "nombre" AS ENUM (...); EXCEPTION WHEN duplicate_object THEN NULL; END $$;`
+
+**Conflicto de orden en migraciones con mismo prefijo timestamp:** Si dos migraciones tienen el mismo prefijo de fecha (ej: `20260615000002_add_anticipos` y `20260615000002_payment_order_credit_line`), Prisma las aplica en orden alfabético del nombre. Si `B` tiene una FK a una tabla creada por `A` pero `B` < `A` alfabéticamente, `B` fallará. Solución: mover la FK conflictiva a la migración posterior, o reescribir `B` para solo añadir la columna (sin FK) y agregar el FK en `A`.
+
+**Setup del primer admin:** El endpoint de setup inicial es `POST /api/v1/setup` (registrado directamente en `app.ts` — NO bajo `/api/v1/auth/`). Solo funciona si no existe ningún usuario en la BD.
 
 **`bankAccountId` en update de PaymentOrder:** El frontend envía `bankAccountId` en el payload tanto para crear como para editar. En creación se usa para lookup de cuenta bancaria; en actualización debe excluirse del spread de Prisma (no existe como campo en el modelo `PaymentOrder`). Se desestructura y descarta en la línea: `const { payrollId, bankAccountId: _bankAccountId, ... } = data as any`. Además, `bankAccountId` se usa para regenerar `generatedText` en el update — si el usuario cambió la cuenta, el texto debe reflejar la nueva cuenta, no la default.
 
