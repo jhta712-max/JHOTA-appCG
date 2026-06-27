@@ -1,14 +1,35 @@
 -- Fill baseline gap: creates objects that exist in 20260531000000_init_baseline
 -- but were NOT created by the pre-baseline migrations (20260518*).
--- Uses IF NOT EXISTS throughout so this is a no-op on DBs that already ran the baseline.
+-- All statements are idempotent (IF NOT EXISTS / DO blocks).
 
--- Missing enums (CREATE TYPE has no IF NOT EXISTS for enums in PostgreSQL — use DO blocks)
+-- ============================================================
+-- STEP 1: Missing enums
+-- (CREATE TYPE has no IF NOT EXISTS for enums in PostgreSQL — use DO blocks)
+-- ============================================================
 DO $$ BEGIN CREATE TYPE "quotation_status" AS ENUM ('PENDING', 'APPROVED', 'ADVANCE_PAID', 'IN_PROGRESS', 'PARTIAL_INVOICED', 'INVOICED', 'PAID', 'CANCELLED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE "quotation_link_type" AS ENUM ('ADVANCE', 'PARTIAL_INVOICE', 'FINAL_INVOICE', 'COMPLEMENTARY'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE "office_expense_category" AS ENUM ('CLEANING_SUPPLIES', 'CONSUMABLES', 'OFFICE_SERVICES', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE "office_expense_status" AS ENUM ('ACTIVE', 'VOIDED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- Missing tables
+-- ============================================================
+-- STEP 2: Missing columns in EXISTING tables
+-- (inicio_sistema created these tables without certain columns)
+-- ============================================================
+
+-- expenses: company_card_id, foreign_amount, foreign_currency, exchange_rate
+ALTER TABLE "expenses" ADD COLUMN IF NOT EXISTS "company_card_id" INTEGER;
+ALTER TABLE "expenses" ADD COLUMN IF NOT EXISTS "foreign_amount" DECIMAL(15,2);
+ALTER TABLE "expenses" ADD COLUMN IF NOT EXISTS "foreign_currency" VARCHAR(10);
+ALTER TABLE "expenses" ADD COLUMN IF NOT EXISTS "exchange_rate" DECIMAL(10,4);
+
+-- payroll_lines: payment_bank, payment_reference, paid_at
+ALTER TABLE "payroll_lines" ADD COLUMN IF NOT EXISTS "payment_bank" VARCHAR(100);
+ALTER TABLE "payroll_lines" ADD COLUMN IF NOT EXISTS "payment_reference" VARCHAR(100);
+ALTER TABLE "payroll_lines" ADD COLUMN IF NOT EXISTS "paid_at" TIMESTAMP(3);
+
+-- ============================================================
+-- STEP 3: Missing tables (new in baseline, not in 20260518*)
+-- ============================================================
 CREATE TABLE IF NOT EXISTS "company_cards" (
     "id" SERIAL NOT NULL,
     "holder_name" VARCHAR(150) NOT NULL,
@@ -153,7 +174,11 @@ CREATE TABLE IF NOT EXISTS "quotation_attachments" (
     CONSTRAINT "quotation_attachments_pkey" PRIMARY KEY ("id")
 );
 
--- Indexes
+-- ============================================================
+-- STEP 4: Indexes
+-- ============================================================
+CREATE INDEX IF NOT EXISTS "expenses_company_card_id_idx" ON "expenses"("company_card_id");
+
 CREATE INDEX IF NOT EXISTS "quotations_project_id_idx" ON "quotations"("project_id");
 CREATE INDEX IF NOT EXISTS "quotations_status_idx" ON "quotations"("status");
 CREATE INDEX IF NOT EXISTS "quotations_supplier_name_idx" ON "quotations"("supplier_name");
@@ -183,7 +208,9 @@ CREATE INDEX IF NOT EXISTS "office_expenses_created_at_idx" ON "office_expenses"
 
 CREATE INDEX IF NOT EXISTS "quotation_attachments_quotation_id_idx" ON "quotation_attachments"("quotation_id");
 
--- Foreign keys (wrapped in DO blocks to be idempotent)
+-- ============================================================
+-- STEP 5: Foreign keys (wrapped in DO blocks to be idempotent)
+-- ============================================================
 DO $$ BEGIN
   ALTER TABLE "expenses" ADD CONSTRAINT "expenses_company_card_id_fkey" FOREIGN KEY ("company_card_id") REFERENCES "company_cards"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
