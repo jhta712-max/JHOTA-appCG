@@ -32,6 +32,10 @@ pnpm --filter backend test              # Vitest (todos los tests)
 pnpm --filter backend test -- --run src/modules/expenses/__tests__/  # un directorio
 pnpm --filter backend test -- --run src/utils/__tests__/fiscal.utils.test.ts  # un archivo
 
+# Base de datos — extras
+pnpm --filter backend db:studio            # Prisma Studio UI → http://localhost:5555
+pnpm --filter backend db:seed             # Carga roles, categorías y usuario admin inicial
+
 # Mantenimiento manual
 pnpm --filter backend exec tsx ../../scripts/maintenance-agent.ts
 ```
@@ -174,6 +178,8 @@ utils/
 **Conflicto de orden en migraciones con mismo prefijo timestamp:** Si dos migraciones tienen el mismo prefijo de fecha (ej: `20260615000002_add_anticipos` y `20260615000002_payment_order_credit_line`), Prisma las aplica en orden alfabético del nombre. Si `B` tiene una FK a una tabla creada por `A` pero `B` < `A` alfabéticamente, `B` fallará. Solución: mover la FK conflictiva a la migración posterior, o reescribir `B` para solo añadir la columna (sin FK) y agregar el FK en `A`.
 
 **Setup del primer admin:** El endpoint de setup inicial es `POST /api/v1/setup` (registrado directamente en `app.ts` — NO bajo `/api/v1/auth/`). Solo funciona si no existe ningún usuario en la BD.
+
+**`VITE_API_URL` debe ser ARG de Docker en tiempo de build:** Vite bakea las variables de entorno en el bundle durante `vite build`. Si `Dockerfile.frontend` no declara `ARG VITE_API_URL` + `ENV VITE_API_URL=$VITE_API_URL` antes del `RUN pnpm run build`, la variable queda undefined y todas las llamadas API usan URLs relativas (apuntando al propio Nginx del frontend, que devuelve 405 para POST). Render pasa las `envVars` del `render.yaml` como runtime vars, no como build args — por eso el Dockerfile usa un default hardcodeado: `ARG VITE_API_URL=https://jhota-backend.onrender.com/api/v1`.
 
 **`bankAccountId` en update de PaymentOrder:** El frontend envía `bankAccountId` en el payload tanto para crear como para editar. En creación se usa para lookup de cuenta bancaria; en actualización debe excluirse del spread de Prisma (no existe como campo en el modelo `PaymentOrder`). Se desestructura y descarta en la línea: `const { payrollId, bankAccountId: _bankAccountId, ... } = data as any`. Además, `bankAccountId` se usa para regenerar `generatedText` en el update — si el usuario cambió la cuenta, el texto debe reflejar la nueva cuenta, no la default.
 
