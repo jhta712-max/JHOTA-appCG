@@ -1,15 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <clipPath id="hex-clip">
-      <polygon points="256,14 466,135 466,377 256,498 46,377 46,135"/>
-    </clipPath>
-  </defs>
-  <!-- Yellow hexagon border -->
-  <polygon points="256,14 466,135 466,377 256,498 46,377 46,135" fill="#F5C218"/>
-  <!-- Dark hexagon body -->
-  <polygon points="256,26 455,141 455,371 256,486 57,371 57,141" fill="#1C1C1C"/>
-  <!-- Three yellow diagonal stripes (clipped to hexagon) -->
-  <polygon points="80,340 200,120 240,140 120,360" fill="#F5C218" clip-path="url(#hex-clip)"/>
-  <polygon points="180,380 300,160 340,180 220,400" fill="#F5C218" clip-path="url(#hex-clip)"/>
-  <polygon points="280,380 400,160 440,180 320,400" fill="#F5C218" clip-path="url(#hex-clip)"/>
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#0D1B48"/>
+
+  <!-- J letter — white on navy, matching the uploaded JHOTA logo proportions -->
+  <!-- Top-right serif cap of J -->
+  <rect x="164" y="80" width="184" height="52" fill="white"/>
+  <!-- Small left extension at top -->
+  <rect x="164" y="80" width="52" height="20" fill="white"/>
+  <!-- Vertical stem -->
+  <rect x="296" y="80" width="52" height="290" fill="white"/>
+  <!-- Bottom left foot of J -->
+  <rect x="112" y="360" width="236" height="52" fill="white"/>
+  <!-- Connecting curve approximation (bottom-right of stem to left foot) -->
+  <!-- Bottom line accent -->
+  <rect x="80" y="444" width="352" height="18" fill="white" opacity="0.5"/>
 </svg>
