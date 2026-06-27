@@ -1,5 +1,5 @@
 /**
- * SERVINGMI — Agente de Mantenimiento Semanal
+ * JHOTA Construcciones — Agente de Mantenimiento Semanal
  *
  * Flujo:
  *  1. Autentica en el backend con credenciales de admin
@@ -11,11 +11,11 @@
  *   npx tsx scripts/maintenance-agent.ts
  *
  * Variables de entorno requeridas:
- *   SERVINGMI_ADMIN_EMAIL   — email del usuario admin
- *   SERVINGMI_ADMIN_PASS    — contraseña del usuario admin
- *   SERVINGMI_BACKEND_URL   — https://servingmi-backend.onrender.com
+ *   JHOTA_ADMIN_EMAIL   — email del usuario admin
+ *   JHOTA_ADMIN_PASS    — contraseña del usuario admin
+ *   JHOTA_BACKEND_URL   — https://jhota-backend.onrender.com
  *   GH_TOKEN                — GitHub token con permiso issues:write
- *   GH_REPO                 — owner/repo  ej: jhta712-max/servingmi-appcg
+ *   GH_REPO                 — owner/repo  ej: jhta712-max/JHOTA-appCG
  */
 
 import * as fs from 'fs';
@@ -82,9 +82,9 @@ interface RemediationResult {
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
-const BACKEND_URL = (process.env.SERVINGMI_BACKEND_URL ?? 'https://servingmi-backend.onrender.com').replace(/\/$/, '');
-const ADMIN_EMAIL = process.env.SERVINGMI_ADMIN_EMAIL ?? '';
-const ADMIN_PASS  = process.env.SERVINGMI_ADMIN_PASS  ?? '';
+const BACKEND_URL = (process.env.SERVINGMI_BACKEND_URL ?? 'https://jhota-backend.onrender.com').replace(/\/$/, '');
+const ADMIN_EMAIL = process.env.SERVINGMI_ADMIN_EMAIL ?? process.env.JHOTA_ADMIN_EMAIL ?? '';
+const ADMIN_PASS  = process.env.SERVINGMI_ADMIN_PASS ?? process.env.JHOTA_ADMIN_PASS  ?? '';
 const GH_TOKEN    = process.env.GH_TOKEN              ?? '';
 const GH_REPO     = process.env.GH_REPO               ?? '';
 const TRIGGER_TYPE = process.env.TRIGGER_TYPE ?? 'manual';   // 'weekly' | 'post-deploy' | 'manual'
@@ -368,7 +368,7 @@ ${securitySection}${deployContext ? `### 🚀 Cambios Desplegados Esta Semana\n\
 
 - **Analizado:** ${new Date(result.analyzedAt).toLocaleString('es-DO')}
 - **Modo:** ${triggerType === 'post-deploy' ? 'Post-deploy automático' : 'Diagnóstico semanal programado'}
-- **Generado por:** Agente de Mantenimiento SERVINGMI (Claude via \`/monitoring/ai-analyze\`)
+- **Generado por:** Agente de Mantenimiento JHOTA Construcciones (Claude via \`/monitoring/ai-analyze\`)
 - **Backend:** \`${BACKEND_URL}\`
 
 </details>
@@ -571,7 +571,7 @@ async function sendWhatsAppAlert(analysis: AiAnalysisResult, issueUrl: string, t
   const statusEmoji = analysis.status === 'critical' ? '🔴' : '🟡';
   const topIssues   = analysis.issues.slice(0, 3).map(i => `• ${i.title}`).join('\n');
   const message = [
-    `${statusEmoji} *SERVINGMI — Alerta del Sistema*`,
+    `${statusEmoji} *JHOTA Construcciones — Alerta del Sistema*`,
     ``,
     `Estado: *${analysis.status.toUpperCase()}*`,
     `Issues detectados: ${analysis.issues.length}`,
@@ -605,7 +605,7 @@ async function sendWhatsAppRecovery(token: string): Promise<void> {
   const recipients = await getWhatsAppRecipients(token);
   if (recipients.length === 0) return;
 
-  const message = `✅ *SERVINGMI — Sistema Recuperado*\n\nEl sistema ha vuelto a estado saludable.\n\nNo se requieren acciones.`;
+  const message = `✅ *JHOTA Construcciones — Sistema Recuperado*\n\nEl sistema ha vuelto a estado saludable.\n\nNo se requieren acciones.`;
 
   for (const to of recipients) {
     try {
@@ -637,7 +637,7 @@ async function commentAndCloseIssue(issueNumber: number): Promise<void> {
     method: 'POST',
     headers,
     body: JSON.stringify({
-      body: `✅ **Sistema recuperado** — ${new Date().toLocaleString('es-DO')}\n\nEl sistema ha vuelto al estado \`healthy\`. Tasa de error dentro de límites normales.\n\n> _Cierre automático por el Agente de Mantenimiento SERVINGMI_`,
+      body: `✅ **Sistema recuperado** — ${new Date().toLocaleString('es-DO')}\n\nEl sistema ha vuelto al estado \`healthy\`. Tasa de error dentro de límites normales.\n\n> _Cierre automático por el Agente de Mantenimiento JHOTA Construcciones_`,
     }),
   });
 
@@ -653,11 +653,11 @@ async function commentAndCloseIssue(issueNumber: number): Promise<void> {
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('\n🔧 SERVINGMI — Agente de Mantenimiento');
+  console.log('\n🔧 JHOTA Construcciones — Agente de Mantenimiento');
   console.log('━'.repeat(45));
 
   if (!ADMIN_EMAIL || !ADMIN_PASS) {
-    console.error('❌ SERVINGMI_ADMIN_EMAIL y SERVINGMI_ADMIN_PASS son requeridos');
+    console.error('❌ JHOTA_ADMIN_EMAIL y JHOTA_ADMIN_PASS son requeridos');
     process.exit(1);
   }
 
