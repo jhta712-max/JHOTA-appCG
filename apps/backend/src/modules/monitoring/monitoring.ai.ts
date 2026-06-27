@@ -1,5 +1,5 @@
 /**
- * Análisis de Monitoreo con IA — SERVINGMI
+ * Análisis de Monitoreo con IA — JHOTA Construcciones
  *
  * Usa Claude (Anthropic) para analizar el estado del sistema
  * y generar recomendaciones en lenguaje natural.
@@ -113,7 +113,7 @@ Usuarios activos: ${bizStats.activeUsers}
 `;
 
   // ── Prompt para Claude ────────────────────────────────────────
-  const prompt = `Eres el asistente de monitoreo técnico del sistema SERVINGMI, una aplicación de gestión de gastos por proyectos para una empresa de ingeniería y minería en República Dominicana.
+  const prompt = `Eres el asistente de monitoreo técnico del sistema JHOTA Construcciones, una aplicación de gestión de gastos por proyectos para una empresa constructora en República Dominicana.
 
 Analiza los siguientes datos del sistema y proporciona un diagnóstico completo en ESPAÑOL:
 

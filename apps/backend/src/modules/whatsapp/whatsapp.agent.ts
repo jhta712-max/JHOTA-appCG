@@ -54,7 +54,7 @@ const AGENT_TOOLS: Anthropic.Tool[] = [
       'Llama esta herramienta ÚNICAMENTE cuando tengas TODOS los datos necesarios para ejecutar una acción.',
       'Para CREATE_EXPENSE necesitas: projectId, amount, description, categoryId, paymentMethod.',
       'Para CREATE_PROJECT necesitas: name, code (generado automáticamente), startDate (hoy).',
-      'Para CREATE_PAYMENT_ORDER necesitas: supplierId, projectId, amount, concept, orderType (default SERVICIO), payingCompany (default SERVINGMI), currency (default RD$).',
+      'Para CREATE_PAYMENT_ORDER necesitas: supplierId, projectId, amount, concept, orderType (default SERVICIO), payingCompany (default JHOTA Construcciones), currency (default RD$).',
       'No llames esta herramienta si aún faltan datos — en su lugar responde con una pregunta.',
     ].join(' '),
     input_schema: {
@@ -78,7 +78,7 @@ const AGENT_TOOLS: Anthropic.Tool[] = [
   },
 ];
 
-const SYSTEM_PROMPT = `Eres el asistente de gestión financiera de ServingMI.
+const SYSTEM_PROMPT = `Eres el asistente de gestión financiera de JHOTA Construcciones.
 Los usuarios te contactan por WhatsApp para registrar gastos, crear proyectos y consultar balances.
 
 REGLAS:
@@ -107,7 +107,7 @@ PARA ÓRDENES DE PAGO (CREATE_PAYMENT_ORDER) necesitas:
 3. amount (número positivo)
 4. concept (descripción del pago, mínimo 3 caracteres)
 5. orderType: SERVICIO | PAYROLL | MATERIALS | PETTY_CASH — infiere del concepto; default SERVICIO
-6. payingCompany: "SERVINGMI" por defecto si el usuario no indica
+6. payingCompany: "JHOTA Construcciones" por defecto si el usuario no indica
 7. currency: "RD$" | "US$" | "€" — default "RD$"`;
 
 // ── Build Anthropic messages array ─────────────────────────────

@@ -1,5 +1,5 @@
 /**
- * Servicio de Monitoreo del Sistema — SERVINGMI
+ * Servicio de Monitoreo del Sistema — JHOTA Construcciones
  *
  * Responsabilidades:
  *   - Verificar estado del servidor y BD (health check)

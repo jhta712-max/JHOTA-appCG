@@ -1,5 +1,5 @@
 /**
- * Middleware de Request Logger — SERVINGMI
+ * Middleware de Request Logger — JHOTA Construcciones
  *
  * Registra cada petición a la API en la tabla system_logs:
  *   - Endpoint, método, status code, duración (ms)

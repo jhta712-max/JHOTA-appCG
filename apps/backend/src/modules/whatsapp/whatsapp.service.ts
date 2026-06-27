@@ -76,7 +76,7 @@ async function executeConfirmedAction(
         amount:        p.amount,
         concept:       p.concept,
         orderType:     (p.orderType ?? 'SERVICIO') as 'SERVICIO' | 'PAYROLL' | 'MATERIALS' | 'PETTY_CASH',
-        payingCompany: p.payingCompany ?? 'SERVINGMI',
+        payingCompany: p.payingCompany ?? 'JHOTA Construcciones',
         currency:      (p.currency ?? 'RD$') as 'RD$' | 'US$' | '€',
       },
       userId,

@@ -528,7 +528,7 @@ export async function generateFullExpensesExcel(
   });
 
   const wb = new ExcelJS.Workbook();
-  wb.creator  = 'Sistema Control de Gastos — SERVINGMI';
+  wb.creator  = 'Sistema Control de Gastos — JHOTA Construcciones';
   wb.created  = new Date();
   wb.modified = new Date();
 
@@ -546,7 +546,7 @@ export async function generateFullExpensesExcel(
   function addSheetTitle(ws: ExcelJS.Worksheet, title: string, cols: number) {
     const endCol = String.fromCharCode(64 + cols);
     ws.mergeCells(`A1:${endCol}1`);
-    ws.getCell('A1').value     = `SERVINGMI — ${title}`;
+    ws.getCell('A1').value     = `JHOTA Construcciones — ${title}`;
     ws.getCell('A1').font      = { bold: true, size: 13, color: { argb: 'FF1A1A1A' } };
     ws.getCell('A1').fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5C218' } };
     ws.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
@@ -799,7 +799,7 @@ export async function generateFullExpensesExcel(
   wsNcf.views = [{ state: 'frozen', xSplit: 0, ySplit: 4 }];
 
   // ── Enviar respuesta ────────────────────────────────────────────────────────
-  const filename = `SERVINGMI-gastos-${filters.startDate ?? 'todo'}_${filters.endDate ?? new Date().toISOString().split('T')[0]}.xlsx`;
+  const filename = `JHOTA-gastos-${filters.startDate ?? 'todo'}_${filters.endDate ?? new Date().toISOString().split('T')[0]}.xlsx`;
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   await wb.xlsx.write(res);

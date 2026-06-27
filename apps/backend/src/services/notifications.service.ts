@@ -1,6 +1,6 @@
 /**
  * Servicio de Notificaciones — Email + WhatsApp
- * SERVINGMI Sistema de Gastos por Proyectos
+ * JHOTA Construcciones — Sistema de Gastos por Proyectos
  *
  * Canales soportados:
  *   - Email: nodemailer (SMTP / Gmail / SendGrid)
@@ -21,7 +21,7 @@ const SMTP_PASS     = process.env.SMTP_PASS            ?? '';
 const ULTRAMSG_INSTANCE = process.env.ULTRAMSG_INSTANCE_ID ?? '';
 const ULTRAMSG_TOKEN    = process.env.ULTRAMSG_TOKEN        ?? '';
 
-const APP_NAME      = 'SERVINGMI — Gastos';
+const APP_NAME      = 'JHOTA — Control de Gastos';
 const APP_URL       = process.env.APP_URL ?? 'http://localhost:3001';
 
 // ─── Email transporter (lazy init) ───────────────────────────

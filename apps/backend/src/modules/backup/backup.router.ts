@@ -113,10 +113,10 @@ router.get('/export', authenticate, authorize('admin'), async (req: Request, res
   console.log('[BACKUP] export by user:', (req as any).user?.userId);
   try {
     const { tables, counts } = await generateBackup();
-    const filename = 'backup_servingmi_' + new Date().toISOString().slice(0, 10) + '.json';
+    const filename = 'backup_jhota_' + new Date().toISOString().slice(0, 10) + '.json';
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', 'attachment; filename="' + filename + '"');
-    res.send(JSON.stringify({ exportedAt: new Date().toISOString(), version: '3.0', database: 'servingmi', counts, tables }, bigIntReplacer));
+    res.send(JSON.stringify({ exportedAt: new Date().toISOString(), version: '3.0', database: 'jhota_gastos', counts, tables }, bigIntReplacer));
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -137,7 +137,7 @@ router.post('/auto', async (req: Request, res: Response) => {
   try {
     const { tables, counts } = await generateBackup();
     const backup   = JSON.stringify({ exportedAt: new Date().toISOString(), version: '3.0', counts, tables }, bigIntReplacer);
-    const filename = 'backup_servingmi_' + new Date().toISOString().slice(0, 10) + '.json';
+    const filename = 'backup_jhota_' + new Date().toISOString().slice(0, 10) + '.json';
     const dest     = env.BACKUP_EMAIL ?? env.GMAIL_USER;
 
     let emailSent  = false;
@@ -146,7 +146,7 @@ router.post('/auto', async (req: Request, res: Response) => {
       try {
         const t = nodemailer.createTransport({ service: 'gmail', auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD } });
         await t.sendMail({
-          from: '"Backup SERVINGMI" <' + env.GMAIL_USER + '>',
+          from: 'JHOTA Construcciones <' + env.GMAIL_USER + '>',
           to: dest,
           subject: 'Backup automatico ' + new Date().toISOString().slice(0, 10),
           text: 'Registros: ' + JSON.stringify(counts),

@@ -86,7 +86,7 @@ export async function generateCreditReportXlsx(res: Response, includeInactive = 
   const ws = wb.addWorksheet('Estado de Crédito');
 
   ws.mergeCells('A1:J1');
-  ws.getCell('A1').value = 'ESTADO DE CRÉDITO POR SUPLIDOR — SERVINGMI';
+  ws.getCell('A1').value = 'ESTADO DE CRÉDITO POR SUPLIDOR — JHOTA Construcciones';
   ws.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF1E3A5F' } };
   ws.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
   ws.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };

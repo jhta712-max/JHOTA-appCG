@@ -1,5 +1,5 @@
 /**
- * Jobs de Monitoreo Programados — SERVINGMI
+ * Jobs de Monitoreo Programados — JHOTA Construcciones
  *
  * Requiere: npm install node-cron
  * (agregar al package.json: "node-cron": "^3.0.3" y "@types/node-cron": "^3.0.11")

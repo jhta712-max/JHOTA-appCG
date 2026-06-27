@@ -230,7 +230,7 @@ export async function exportExcel(id: string, res: Response) {
 
   // ── Hoja 1: Resumen ──────────────────────────────────────────
   const ws1 = wb.addWorksheet('Resumen');
-  ws1.addRow(['SERVINGMI — NÓMINA ADMINISTRATIVA']);
+  ws1.addRow(['JHOTA CONSTRUCCIONES — NÓMINA ADMINISTRATIVA']);
   ws1.getRow(1).font = { bold: true, size: 14 };
   ws1.addRow([]);
   ws1.addRow(['Número', `NOM-ADMIN-${String(p.number).padStart(3, '0')}`]);

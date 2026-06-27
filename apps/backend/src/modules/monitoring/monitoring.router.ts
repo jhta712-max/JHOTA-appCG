@@ -1,5 +1,5 @@
 /**
- * Router de Monitoreo — SERVINGMI
+ * Router de Monitoreo — JHOTA Construcciones
  *
  * Rutas públicas:
  *   GET /health/detailed        → health check detallado (sin auth, para Railway)

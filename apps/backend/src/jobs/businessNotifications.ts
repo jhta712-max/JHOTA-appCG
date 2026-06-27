@@ -389,7 +389,7 @@ async function checkAiCostAlert(): Promise<void> {
 
     if (summary.estimatedCostUsd >= alertConfig.monthlyLimitUsd) {
       const pct     = ((summary.estimatedCostUsd / alertConfig.monthlyLimitUsd) * 100).toFixed(0);
-      const message = `⚠️ *ALERTA CONSUMO IA* — SERVINGMI\n\nEl costo estimado de Claude API en ${month} es *$${summary.estimatedCostUsd.toFixed(4)} USD* (${pct}% del límite de $${alertConfig.monthlyLimitUsd} USD).\n\nTokens de entrada: ${summary.totalInputTokens.toLocaleString()}\nTokens de salida: ${summary.totalOutputTokens.toLocaleString()}\nLlamadas totales: ${summary.totalCalls}`;
+      const message = `⚠️ *ALERTA CONSUMO IA* — JHOTA Construcciones\n\nEl costo estimado de Claude API en ${month} es *$${summary.estimatedCostUsd.toFixed(4)} USD* (${pct}% del límite de $${alertConfig.monthlyLimitUsd} USD).\n\nTokens de entrada: ${summary.totalInputTokens.toLocaleString()}\nTokens de salida: ${summary.totalOutputTokens.toLocaleString()}\nLlamadas totales: ${summary.totalCalls}`;
       await sendWhatsApp(message, 'SYSTEM');
     }
   } catch (err) {

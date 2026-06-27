@@ -552,7 +552,7 @@ const WHITE   = 'FFFFFFFF';
 const GRAY_BG = 'FFF2F2F2';
 
 function addTitle(ws: ExcelJS.Worksheet, title: string, cols: number) {
-  ws.addRow(['SERVINGMI — Servicios de Ingeniería & Minería']);
+  ws.addRow(['JHOTA Construcciones, SRL']);
   ws.addRow([title]);
   ws.addRow([`Generado: ${new Date().toLocaleString('es-DO')}`]);
   ws.addRow([]);
@@ -585,7 +585,7 @@ export async function exportPayrollExcel(id: string, res: Response) {
   if (!payroll) throw new AppError(404, 'Nómina no encontrada', 'NOT_FOUND');
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SERVINGMI';
+  wb.creator = 'JHOTA Construcciones';
   wb.created = new Date();
 
   const typeLabel  = payroll.type === 'LABOR' ? 'Mano de Obra' : 'Servicios';
@@ -707,7 +707,7 @@ export async function exportPayrollExcel(id: string, res: Response) {
     row.height = 18;
   });
 
-  const filename = `SERVINGMI-nomina-${String(payroll.number).padStart(3,'0')}-${payroll.project.code}.xlsx`;
+  const filename = `JHOTA-nomina-${String(payroll.number).padStart(3,'0')}-${payroll.project.code}.xlsx`;
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   await wb.xlsx.write(res);
@@ -903,7 +903,7 @@ export async function exportPayrollDocx(id: string, res: Response) {
           children: [
             new Paragraph({
               children: [
-                new TextRun({ text: 'SERVINGMI — Servicios de Ingeniería & Minería', bold: true, size: 18, font: 'Arial', color: DARK_TEXT }),
+                new TextRun({ text: 'JHOTA Construcciones, SRL', bold: true, size: 18, font: 'Arial', color: DARK_TEXT }),
                 new TextRun({ text: `\t${dateStr}`, size: 17, font: 'Arial', color: '666666' }),
               ],
               tabStops: [{ type: 'right' as any, position: CONTENT_W }],
@@ -992,7 +992,7 @@ export async function exportPayrollDocx(id: string, res: Response) {
   });
 
   const buffer = await Packer.toBuffer(doc);
-  const filename = `SERVINGMI-nomina-${String(payroll.number).padStart(3,'0')}-${payroll.project.code}.docx`;
+  const filename = `JHOTA-nomina-${String(payroll.number).padStart(3,'0')}-${payroll.project.code}.docx`;
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   res.send(buffer);
