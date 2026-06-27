@@ -14,6 +14,7 @@ async function start() {
     // Cada resolve falla silenciosamente si la migración no está en ese estado.
     const rolledBack = [
       '20260531000000_init_baseline',
+      '20260531000001_fill_baseline_gap',
       '20260602000001_add_bidding_to_office_expense_category',
     ];
     for (const m of rolledBack) {

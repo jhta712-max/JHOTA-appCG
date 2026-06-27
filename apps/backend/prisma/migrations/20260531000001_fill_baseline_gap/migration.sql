@@ -2,11 +2,11 @@
 -- but were NOT created by the pre-baseline migrations (20260518*).
 -- Uses IF NOT EXISTS throughout so this is a no-op on DBs that already ran the baseline.
 
--- Missing enums
-CREATE TYPE IF NOT EXISTS "quotation_status" AS ENUM ('PENDING', 'APPROVED', 'ADVANCE_PAID', 'IN_PROGRESS', 'PARTIAL_INVOICED', 'INVOICED', 'PAID', 'CANCELLED');
-CREATE TYPE IF NOT EXISTS "quotation_link_type" AS ENUM ('ADVANCE', 'PARTIAL_INVOICE', 'FINAL_INVOICE', 'COMPLEMENTARY');
-CREATE TYPE IF NOT EXISTS "office_expense_category" AS ENUM ('CLEANING_SUPPLIES', 'CONSUMABLES', 'OFFICE_SERVICES', 'OTHER');
-CREATE TYPE IF NOT EXISTS "office_expense_status" AS ENUM ('ACTIVE', 'VOIDED');
+-- Missing enums (CREATE TYPE has no IF NOT EXISTS for enums in PostgreSQL — use DO blocks)
+DO $$ BEGIN CREATE TYPE "quotation_status" AS ENUM ('PENDING', 'APPROVED', 'ADVANCE_PAID', 'IN_PROGRESS', 'PARTIAL_INVOICED', 'INVOICED', 'PAID', 'CANCELLED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE "quotation_link_type" AS ENUM ('ADVANCE', 'PARTIAL_INVOICE', 'FINAL_INVOICE', 'COMPLEMENTARY'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE "office_expense_category" AS ENUM ('CLEANING_SUPPLIES', 'CONSUMABLES', 'OFFICE_SERVICES', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE "office_expense_status" AS ENUM ('ACTIVE', 'VOIDED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Missing tables
 CREATE TABLE IF NOT EXISTS "company_cards" (
