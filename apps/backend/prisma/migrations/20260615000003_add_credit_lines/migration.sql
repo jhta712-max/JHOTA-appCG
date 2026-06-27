@@ -45,6 +45,12 @@ ALTER TABLE "expenses" ADD CONSTRAINT "expenses_credit_line_id_fkey"
     FOREIGN KEY ("credit_line_id") REFERENCES "supplier_credit_lines"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- CreateIndex
-CREATE INDEX "supplier_credit_lines_supplier_id_idx" ON "supplier_credit_lines"("supplier_id");
-CREATE INDEX "supplier_credit_payments_credit_line_id_idx" ON "supplier_credit_payments"("credit_line_id");
-CREATE INDEX "expenses_credit_line_id_idx" ON "expenses"("credit_line_id");
+CREATE INDEX IF NOT EXISTS "supplier_credit_lines_supplier_id_idx" ON "supplier_credit_lines"("supplier_id");
+CREATE INDEX IF NOT EXISTS "supplier_credit_payments_credit_line_id_idx" ON "supplier_credit_payments"("credit_line_id");
+CREATE INDEX IF NOT EXISTS "expenses_credit_line_id_idx" ON "expenses"("credit_line_id");
+
+-- FK for payment_orders.credit_line_id (column added in 20260615000002, table only exists here)
+DO $$ BEGIN
+  ALTER TABLE "payment_orders" ADD CONSTRAINT "payment_orders_credit_line_id_fkey"
+    FOREIGN KEY ("credit_line_id") REFERENCES "supplier_credit_lines"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
