@@ -19,7 +19,7 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 function AppLogo({ className = 'w-12 h-14' }: { className?: string }) {
-  return <img src="/logo.png" alt="SERVINGMI" className={className} style={{ objectFit: 'contain' }}/>;
+  return <img src="/logo.png" alt="JHOTA Construcciones" className={className} style={{ objectFit: 'contain' }}/>;
 }
 
 export default function ResetPasswordPage() {

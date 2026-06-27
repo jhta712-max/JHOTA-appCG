@@ -5,7 +5,7 @@ export default function PrivacyPolicyPage() {
       <div style={{ background: '#0D1B48', padding: '24px 40px', display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div>
           <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
-            SERVINGMI
+            JHOTA Construcciones
           </p>
           <h1 style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', fontSize: '28px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
             Política de Privacidad
@@ -24,8 +24,8 @@ export default function PrivacyPolicyPage() {
             1. Identificación del Responsable
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>
-            <strong>SERVINGMI</strong> es un sistema de gestión y control de gastos por proyectos para empresas
-            del sector de la construcción, operado por <strong>SERVINGMI S.R.L.</strong>, República Dominicana.
+            <strong>JHOTA Construcciones</strong> es un sistema de gestión y control de gastos por proyectos para empresas
+            del sector de la construcción, operado por <strong>JHOTA Constructora, SRL.</strong>, República Dominicana.
             Para consultas sobre privacidad, puede contactarnos a través de los canales habilitados en la plataforma.
           </p>
         </section>
@@ -50,7 +50,7 @@ export default function PrivacyPolicyPage() {
             3. Uso de WhatsApp y Mensajería
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7, marginBottom: '12px' }}>
-            SERVINGMI utiliza la API de WhatsApp Business (a través de UltraMsg) para:
+            JHOTA Construcciones utiliza la API de WhatsApp Business (a través de UltraMsg) para:
           </p>
           <ul style={{ color: '#374151', lineHeight: 2, paddingLeft: '24px' }}>
             <li>Enviar notificaciones operativas a usuarios que han optado por recibirlas (alertas de presupuesto, nóminas, órdenes de pago).</li>
@@ -120,7 +120,7 @@ export default function PrivacyPolicyPage() {
             <li>Solicitar la eliminación de su cuenta al administrador del sistema.</li>
           </ul>
           <p style={{ color: '#374151', lineHeight: 1.7, marginTop: '12px' }}>
-            Para ejercer estos derechos, contacte al administrador de su organización o al soporte de SERVINGMI.
+            Para ejercer estos derechos, contacte al administrador de su organización o al soporte de JHOTA Construcciones.
           </p>
         </section>
 
@@ -148,7 +148,7 @@ export default function PrivacyPolicyPage() {
         {/* Footer */}
         <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '24px', marginTop: '48px', textAlign: 'center' }}>
           <p style={{ color: '#9ca3af', fontSize: '13px' }}>
-            © 2026 SERVINGMI S.R.L. — República Dominicana
+            © 2026 JHOTA Constructora, SRL. — República Dominicana
           </p>
           <p style={{ color: '#9ca3af', fontSize: '12px', marginTop: '4px' }}>
             Esta página es públicamente accesible sin necesidad de autenticación.

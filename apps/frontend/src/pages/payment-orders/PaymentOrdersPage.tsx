@@ -1100,7 +1100,7 @@ export default function PaymentOrdersPage() {
               <div className={`grid gap-4 ${orderForm.orderType === 'OFFICE' ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 <Field label="Empresa pagadora *">
                   <input className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]"
-                    placeholder="SERVINGMI SRL" value={orderForm.payingCompany}
+                    placeholder="JHOTA Constructora, SRL" value={orderForm.payingCompany}
                     onChange={(e) => setOrderForm((f) => ({ ...f, payingCompany: e.target.value }))} />
                 </Field>
                 {orderForm.orderType !== 'OFFICE' && (

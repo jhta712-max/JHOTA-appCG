@@ -5,7 +5,8 @@ set -e
 # SKIP_STARTUP_MIGRATIONS=1 cuando preDeployCommand está activo.
 if [ "$SKIP_STARTUP_MIGRATIONS" != "1" ]; then
   echo "Running database migrations..."
-  node /app/node_modules/.bin/prisma migrate deploy --schema /app/prisma/schema.prisma
+  PRISMA_BIN=$(find /app/node_modules/.pnpm -type f -name "index.js" -path "*/prisma/build/index.js" 2>/dev/null | head -1)
+  node "$PRISMA_BIN" migrate deploy --schema /app/prisma/schema.prisma
 fi
 echo "Starting server..."
 exec node dist/server.js

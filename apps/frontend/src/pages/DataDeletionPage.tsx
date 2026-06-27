@@ -5,7 +5,7 @@ export default function DataDeletionPage() {
       <div style={{ background: '#0D1B48', padding: '24px 40px', display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div>
           <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#1D4ED8', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
-            SERVINGMI
+            JHOTA Construcciones
           </p>
           <h1 style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', fontSize: '28px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
             Eliminación de Datos de Usuario
@@ -24,7 +24,7 @@ export default function DataDeletionPage() {
             ¿Cómo solicitar la eliminación de sus datos?
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>
-            Si desea que sus datos personales sean eliminados de la plataforma SERVINGMI, puede hacerlo
+            Si desea que sus datos personales sean eliminados de la plataforma JHOTA Construcciones, puede hacerlo
             a través de cualquiera de los siguientes métodos:
           </p>
         </section>
@@ -34,7 +34,7 @@ export default function DataDeletionPage() {
             Opción 1 — Contactar al administrador de su organización
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>
-            Comuníquese con el administrador de su empresa en la plataforma SERVINGMI y solicite
+            Comuníquese con el administrador de su empresa en la plataforma JHOTA Construcciones y solicite
             la eliminación de su cuenta y datos asociados. El administrador podrá procesar
             la solicitud directamente desde el panel de gestión de usuarios.
           </p>
@@ -42,7 +42,7 @@ export default function DataDeletionPage() {
 
         <section style={{ marginBottom: '40px' }}>
           <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', color: '#0D1B48', borderBottom: '2px solid #1D4ED8', paddingBottom: '8px', marginBottom: '16px' }}>
-            Opción 2 — Contactar al soporte de SERVINGMI
+            Opción 2 — Contactar al soporte de JHOTA Construcciones
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7, marginBottom: '12px' }}>
             Envíe un correo electrónico a <strong>admin.jhota7@gmail.com</strong> con el asunto
@@ -81,7 +81,7 @@ export default function DataDeletionPage() {
             Datos de conexión con Facebook / WhatsApp
           </h2>
           <p style={{ color: '#374151', lineHeight: 1.7 }}>
-            Si se conectó a SERVINGMI a través de WhatsApp Business, los mensajes intercambiados
+            Si se conectó a JHOTA Construcciones a través de WhatsApp Business, los mensajes intercambiados
             se almacenan por un máximo de 90 días. Para eliminar estos datos antes de ese plazo,
             incluya en su solicitud la frase <strong>"incluyendo datos de WhatsApp"</strong>.
           </p>
@@ -90,7 +90,7 @@ export default function DataDeletionPage() {
         {/* Footer */}
         <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '24px', marginTop: '48px', textAlign: 'center' }}>
           <p style={{ color: '#9ca3af', fontSize: '13px' }}>
-            © 2026 SERVINGMI S.R.L. — República Dominicana
+            © 2026 JHOTA Constructora, SRL. — República Dominicana
           </p>
           <p style={{ color: '#9ca3af', fontSize: '12px', marginTop: '4px' }}>
             Esta página es públicamente accesible sin necesidad de autenticación.
