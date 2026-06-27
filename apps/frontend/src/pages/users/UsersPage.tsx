@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import {
-  Users, UserPlus, Edit, X, CheckCircle, AlertCircle,
-  ShieldCheck, Copy, Clock, Mail, Trash2, MessageCircle,
+  UserPlus, Edit, X, CheckCircle, AlertCircle,
+  ShieldCheck, Copy, Clock, Mail, Trash2,
 } from 'lucide-react';
 import { usersApi } from '../../api';
 import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
@@ -13,16 +13,7 @@ import { useRole } from '../../hooks/useRole';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
-type EditForm = { name: string; email: string; phone?: string; roleId: string; whatsappOptIn?: boolean };
-
-const NOTIF_TYPE_OPTIONS = [
-  { value: 'BUDGET',           label: 'Alertas de presupuesto',        desc: 'Proyectos al 80%/90% del presupuesto' },
-  { value: 'PAYROLL',          label: 'Nominas sin pagar',             desc: 'Nominas aprobadas +3 dias sin pagar' },
-  { value: 'ORDERS',           label: 'Ordenes pendientes',            desc: 'Ordenes de pago +5 dias sin ejecutar' },
-  { value: 'SERVICE_PAYMENTS', label: 'Pagos de suscripciones',        desc: 'Servicios proximos a vencer' },
-  { value: 'SYSTEM',           label: 'Errores del sistema',           desc: 'Alertas criticas del sistema (solo administradores)' },
-  { value: 'SECURITY',         label: 'Vulnerabilidades de seguridad', desc: 'Auditoria de dependencias (solo administradores)' },
-] as const;
+type EditForm = { name: string; email: string; phone?: string; roleId: string };
 type InviteForm = { email: string; roleId: string };
 
 const ROLE_BADGE: Record<string, string> = {
@@ -52,9 +43,6 @@ export default function UsersPage() {
   const [apiOk,       setApiOk]       = useState('');
   const [inviteLink,  setInviteLink]  = useState('');
   const [copied,      setCopied]      = useState(false);
-  const [notifTypes,  setNotifTypes]  = useState<string[]>([]);
-  const [editWhatsapp, setEditWhatsapp] = useState(false);
-
   const editForm   = useForm<EditForm>();
   const inviteForm = useForm<InviteForm>();
 
@@ -122,13 +110,6 @@ export default function UsersPage() {
     onError:   (err: any) => setApiError(err.response?.data?.error || 'Error'),
   });
 
-  const whatsappToggle = useMutation({
-    mutationFn: ({ id, whatsappOptIn }: { id: string; whatsappOptIn: boolean }) =>
-      usersApi.update(id, { whatsappOptIn }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
-    onError:   (err: any) => setApiError(err.response?.data?.error || 'Error'),
-  });
-
   const revokeMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/invitations/${id}`),
     onSuccess:  () => refetchInvites(),
@@ -139,18 +120,10 @@ export default function UsersPage() {
   function openEdit(u: any) {
     setEditing(u);
     setApiError('');
-    setNotifTypes(u.notifTypes ?? []);
-    setEditWhatsapp(u.whatsappOptIn ?? false);
     editForm.reset({
       name: u.name, email: u.email, phone: u.phone ?? '', roleId: u.role?.id?.toString() ?? '',
     });
     setModal('edit');
-  }
-
-  function toggleNotifType(value: string) {
-    setNotifTypes((prev) =>
-      prev.includes(value) ? prev.filter((t) => t !== value) : [...prev, value]
-    );
   }
 
   function openInvite() {
@@ -184,8 +157,6 @@ export default function UsersPage() {
         email: data.email,
         phone: data.phone || undefined,
         roleId: Number(data.roleId),
-        whatsappOptIn: editWhatsapp,
-        notifTypes,
       },
     });
   };
@@ -288,26 +259,22 @@ export default function UsersPage() {
                 <p className="font-['Space_Mono'] text-xs text-gray-400 truncate mt-0.5">{u.email}</p>
               </div>
 
-              {isAdmin && u.id !== self?.id && (
+              {isAdmin && (
                 <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    title={u.whatsappOptIn ? 'WhatsApp activo — click para desactivar' : 'Activar notificaciones WhatsApp'}
-                    onClick={() => whatsappToggle.mutate({ id: u.id, whatsappOptIn: !u.whatsappOptIn })}
-                    className={`p-1.5 transition-colors ${u.whatsappOptIn ? 'text-green-600 bg-green-50 hover:bg-green-100' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => toggleMutation.mutate({ id: u.id, isActive: !u.isActive })}
-                    className={`text-xs px-2.5 py-1 border font-['Barlow_Condensed'] uppercase font-medium transition-colors ${
-                      u.isActive ? 'border-gray-200 text-gray-500 hover:bg-gray-50' : 'border-green-200 text-green-600 hover:bg-green-50'
-                    }`}
-                  >
-                    {u.isActive ? 'Desactivar' : 'Activar'}
-                  </button>
+                  {u.id !== self?.id && (
+                    <button
+                      onClick={() => toggleMutation.mutate({ id: u.id, isActive: !u.isActive })}
+                      className={`text-xs px-2.5 py-1 border font-['Barlow_Condensed'] uppercase font-medium transition-colors ${
+                        u.isActive ? 'border-gray-200 text-gray-500 hover:bg-gray-50' : 'border-green-200 text-green-600 hover:bg-green-50'
+                      }`}
+                    >
+                      {u.isActive ? 'Desactivar' : 'Activar'}
+                    </button>
+                  )}
                   <button
                     onClick={() => openEdit(u)}
                     className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                    title="Editar usuario"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
@@ -467,75 +434,6 @@ export default function UsersPage() {
                   ))}
                 </select>
               </div>
-
-              {/* WhatsApp opt-in toggle */}
-              <div>
-                <label
-                  className="flex items-center justify-between p-3 border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <div>
-                    <p className={`${labelCls} mb-0`}>Notificaciones WhatsApp</p>
-                    <p className="font-['DM_Sans'] text-xs text-gray-400 mt-0.5">
-                      Recibir alertas automaticas por WhatsApp
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setEditWhatsapp((v) => !v)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ml-3 ${
-                      editWhatsapp ? 'bg-green-500' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                        editWhatsapp ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </label>
-              </div>
-
-              {/* Notification type checkboxes — shown only when WhatsApp is enabled */}
-              {editWhatsapp && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1 border-t border-gray-200" />
-                    <span className="font-['Barlow_Condensed'] text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Tipos de alerta WhatsApp
-                    </span>
-                    <div className="flex-1 border-t border-gray-200" />
-                  </div>
-                  <p className="font-['DM_Sans'] text-xs text-gray-400 mb-3">
-                    Sin seleccion = recibe todas las alertas.
-                  </p>
-                  <div className="space-y-2">
-                    {NOTIF_TYPE_OPTIONS.map((opt) => {
-                      const checked = notifTypes.includes(opt.value);
-                      return (
-                        <label
-                          key={opt.value}
-                          className={`flex items-start gap-3 p-3 border cursor-pointer transition-colors ${
-                            checked
-                              ? 'border-yellow-300 bg-yellow-50'
-                              : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => toggleNotifType(opt.value)}
-                            className="mt-0.5 accent-[#F5C218]"
-                          />
-                          <div className="min-w-0">
-                            <p className="font-['DM_Sans'] text-sm font-medium text-gray-800">{opt.label}</p>
-                            <p className="font-['DM_Sans'] text-xs text-gray-400 mt-0.5">{opt.desc}</p>
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={closeModal}
