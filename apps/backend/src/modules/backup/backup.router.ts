@@ -154,9 +154,8 @@ router.post('/auto', async (req: Request, res: Response) => {
       if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD && dest) {
         try {
           console.log('[BACKUP] Intentando enviar email a', dest);
-          const t = nodemailer.createTransport({ service: 'gmail', auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD } });
-          await t.verify();
-          console.log('[BACKUP] SMTP verificado OK');
+          const t = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD } });
+          console.log('[BACKUP] SMTP conectando puerto 587...');
           await t.sendMail({
             from: 'JHOTA Construcciones <' + env.GMAIL_USER + '>',
             to: dest,
