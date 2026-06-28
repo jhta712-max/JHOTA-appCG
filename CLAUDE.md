@@ -61,7 +61,7 @@ modules/
   admin-payrolls/ # Nóminas administrativas independientes de proyectos; cálculos AFP/TSS/ISR automáticos
   ocr/            # OCR síncrono: POST devuelve resultado inline (ver nota OCR)
   monitoring/     # Health check + análisis IA (Claude API)
-  notifications/  # In-app + WhatsApp (UltraMsg) + Email (Gmail SMTP)
+  notifications/  # In-app + WhatsApp (UltraMsg) + Email (Resend HTTP API)
   notification-contacts/ # Contactos externos para notificaciones
   reports/        # Exportación Excel/Word + DGII 606 (.xlsx)
   backup/         # Backup de BD (auth con timingSafeEqual)
