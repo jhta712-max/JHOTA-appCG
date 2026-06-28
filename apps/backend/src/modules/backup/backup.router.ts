@@ -150,9 +150,13 @@ router.post('/auto', async (req: Request, res: Response) => {
       const filename = 'backup_jhota_' + new Date().toISOString().slice(0, 10) + '.json';
       const dest     = env.BACKUP_EMAIL ?? env.GMAIL_USER;
 
+      console.log('[BACKUP] Generacion completada. Tablas:', Object.keys(counts).length, '| GMAIL_USER:', env.GMAIL_USER ?? 'NO DEFINIDO', '| dest:', dest ?? 'NO DEFINIDO');
       if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD && dest) {
         try {
+          console.log('[BACKUP] Intentando enviar email a', dest);
           const t = nodemailer.createTransport({ service: 'gmail', auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD } });
+          await t.verify();
+          console.log('[BACKUP] SMTP verificado OK');
           await t.sendMail({
             from: 'JHOTA Construcciones <' + env.GMAIL_USER + '>',
             to: dest,
@@ -160,10 +164,12 @@ router.post('/auto', async (req: Request, res: Response) => {
             text: 'Registros: ' + JSON.stringify(counts),
             attachments: [{ filename, content: Buffer.from(backup), contentType: 'application/json' }],
           });
-          console.log('[BACKUP] Email enviado a', dest, '| registros:', JSON.stringify(counts));
+          console.log('[BACKUP] ✅ Email enviado a', dest, '| registros:', JSON.stringify(counts));
         } catch (mailErr: any) {
-          console.error('[BACKUP] Email failed:', mailErr.message);
+          console.error('[BACKUP] ❌ Email failed:', mailErr.message, '| code:', mailErr.code, '| responseCode:', mailErr.responseCode);
         }
+      } else {
+        console.warn('[BACKUP] Email no configurado — GMAIL_USER o GMAIL_APP_PASSWORD faltantes');
       }
     } catch (err: any) {
       console.error('[BACKUP] Error generando backup:', err.message);
