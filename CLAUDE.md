@@ -199,6 +199,7 @@ utils/
 - Production URL (frontend): https://jhota-frontend.onrender.com
 - Render Service ID (backend): srv-d900ouok1i2s73f8f0n0
 - Render Service ID (frontend): srv-d900pg9o3t8c73bqb640
+- Backup cron secret key: 64b435a7dfc189e95092d744e6affcb54be0c87c875883f0dfb7b66718fea65a
 - Production URL (frontend): https://jhota-frontend.onrender.com
 - Deploy workflow: automatic — Render picks up push to `main` branch
 - Deploy status command: HTTP health check
