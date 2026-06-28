@@ -10,8 +10,6 @@ services:
 
     dockerfilePath: Dockerfile.backend
 
-    # Migraciones en pre-deploy: resuelve baseline fallida primero, luego deploy
-    preDeployCommand: "P=$(find /app/node_modules/.pnpm -type f -name 'index.js' -path '*/prisma/build/index.js' 2>/dev/null | head -1); node \"$P\" migrate resolve --rolled-back 20260531000000_init_baseline --schema /app/apps/backend/prisma/schema.prisma 2>/dev/null; node \"$P\" migrate resolve --applied 20260531000000_init_baseline --schema /app/apps/backend/prisma/schema.prisma 2>/dev/null; node \"$P\" migrate resolve --rolled-back 20260615000002_payment_order_credit_line --schema /app/apps/backend/prisma/schema.prisma 2>/dev/null; node \"$P\" migrate deploy --schema /app/apps/backend/prisma/schema.prisma && echo 'Migraciones OK' || (echo 'MIGRATE FAILED' && exit 0)"
 
     envVars:
       - key: NODE_ENV
