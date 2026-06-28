@@ -139,35 +139,36 @@ router.post('/auto', async (req: Request, res: Response) => {
   if (!valid) {
     res.status(401).json({ success: false, error: 'Clave invalida' }); return;
   }
-  try {
-    const { tables, counts } = await generateBackup();
-    const backup   = JSON.stringify({ exportedAt: new Date().toISOString(), version: '3.0', counts, tables }, bigIntReplacer);
-    const filename = 'backup_jhota_' + new Date().toISOString().slice(0, 10) + '.json';
-    const dest     = env.BACKUP_EMAIL ?? env.GMAIL_USER;
 
-    let emailSent  = false;
-    let emailError = '';
-    if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD && dest) {
-      try {
-        const t = nodemailer.createTransport({ service: 'gmail', auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD } });
-        await t.sendMail({
-          from: 'JHOTA Construcciones <' + env.GMAIL_USER + '>',
-          to: dest,
-          subject: 'Backup automatico ' + new Date().toISOString().slice(0, 10),
-          text: 'Registros: ' + JSON.stringify(counts),
-          attachments: [{ filename, content: Buffer.from(backup), contentType: 'application/json' }],
-        });
-        emailSent = true;
-      } catch (mailErr: any) {
-        emailError = mailErr.message;
-        console.error('[BACKUP] Email failed:', mailErr.message);
+  // Responder inmediatamente para evitar timeout del cron job
+  res.json({ success: true, message: 'Backup iniciado en background' });
+
+  setImmediate(async () => {
+    try {
+      const { tables, counts } = await generateBackup();
+      const backup   = JSON.stringify({ exportedAt: new Date().toISOString(), version: '3.0', counts, tables }, bigIntReplacer);
+      const filename = 'backup_jhota_' + new Date().toISOString().slice(0, 10) + '.json';
+      const dest     = env.BACKUP_EMAIL ?? env.GMAIL_USER;
+
+      if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD && dest) {
+        try {
+          const t = nodemailer.createTransport({ service: 'gmail', auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD } });
+          await t.sendMail({
+            from: 'JHOTA Construcciones <' + env.GMAIL_USER + '>',
+            to: dest,
+            subject: 'Backup automatico ' + new Date().toISOString().slice(0, 10),
+            text: 'Registros: ' + JSON.stringify(counts),
+            attachments: [{ filename, content: Buffer.from(backup), contentType: 'application/json' }],
+          });
+          console.log('[BACKUP] Email enviado a', dest, '| registros:', JSON.stringify(counts));
+        } catch (mailErr: any) {
+          console.error('[BACKUP] Email failed:', mailErr.message);
+        }
       }
+    } catch (err: any) {
+      console.error('[BACKUP] Error generando backup:', err.message);
     }
-
-    res.json({ success: true, counts, emailSent, emailError: emailError || undefined });
-  } catch (err: any) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+  });
 });
 
 
