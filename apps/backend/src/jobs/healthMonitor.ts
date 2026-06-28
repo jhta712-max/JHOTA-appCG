@@ -213,6 +213,20 @@ export function startCleanupJob() {
   console.log('[Monitor] Cleanup job iniciado (Domingos 3:00 AM)');
 }
 
+// ─── Job 6: Self-ping para evitar que Render duerma el servidor ─
+export function startSelfPingJob() {
+  const selfUrl = (process.env.RENDER_EXTERNAL_URL ?? 'http://localhost:' + (process.env.PORT ?? '3001')) + '/health';
+  cron.schedule('*/10 * * * *', async () => {
+    try {
+      const res = await fetch(selfUrl, { signal: AbortSignal.timeout(10_000) });
+      console.log('[Monitor] Self-ping OK →', res.status);
+    } catch (err: any) {
+      console.warn('[Monitor] Self-ping failed:', err.message);
+    }
+  }, { timezone: TZ });
+  console.log('[Monitor] Self-ping job iniciado (cada 10 min) →', selfUrl);
+}
+
 // ─── Arrancar todos los jobs ──────────────────────────────────
 export function startAllMonitoringJobs() {
   startHealthCheckJob();
@@ -220,5 +234,6 @@ export function startAllMonitoringJobs() {
   startDailyReportJob();
   startWeeklyReportJob();
   startCleanupJob();
+  startSelfPingJob();
   console.log('[Monitor] ✅ Todos los jobs de monitoreo activos');
 }
