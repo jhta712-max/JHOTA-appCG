@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { timingSafeEqual } from 'crypto';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { authenticate } from '../../middlewares/authenticate';
 import { authorize }    from '../../middlewares/authorize';
 import prisma           from '../../config/database';
@@ -150,25 +150,28 @@ router.post('/auto', async (req: Request, res: Response) => {
       const filename = 'backup_jhota_' + new Date().toISOString().slice(0, 10) + '.json';
       const dest     = env.BACKUP_EMAIL ?? env.GMAIL_USER;
 
-      console.log('[BACKUP] Generacion completada. Tablas:', Object.keys(counts).length, '| GMAIL_USER:', env.GMAIL_USER ?? 'NO DEFINIDO', '| dest:', dest ?? 'NO DEFINIDO');
-      if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD && dest) {
+      console.log('[BACKUP] Generacion completada. Tablas:', Object.keys(counts).length, '| dest:', dest ?? 'NO DEFINIDO');
+      if (env.RESEND_API_KEY && dest) {
         try {
-          console.log('[BACKUP] Intentando enviar email a', dest);
-          const t = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD } });
-          console.log('[BACKUP] SMTP conectando puerto 587...');
-          await t.sendMail({
-            from: 'JHOTA Construcciones <' + env.GMAIL_USER + '>',
+          console.log('[BACKUP] Enviando via Resend a', dest);
+          const resend = new Resend(env.RESEND_API_KEY);
+          const { error } = await resend.emails.send({
+            from: 'JHOTA Backup <onboarding@resend.dev>',
             to: dest,
             subject: 'Backup automatico ' + new Date().toISOString().slice(0, 10),
             text: 'Registros: ' + JSON.stringify(counts),
-            attachments: [{ filename, content: Buffer.from(backup), contentType: 'application/json' }],
+            attachments: [{ filename, content: Buffer.from(backup).toString('base64') }],
           });
-          console.log('[BACKUP] ✅ Email enviado a', dest, '| registros:', JSON.stringify(counts));
+          if (error) {
+            console.error('[BACKUP] ❌ Resend error:', JSON.stringify(error));
+          } else {
+            console.log('[BACKUP] ✅ Email enviado via Resend a', dest);
+          }
         } catch (mailErr: any) {
-          console.error('[BACKUP] ❌ Email failed:', mailErr.message, '| code:', mailErr.code, '| responseCode:', mailErr.responseCode);
+          console.error('[BACKUP] ❌ Email failed:', mailErr.message);
         }
       } else {
-        console.warn('[BACKUP] Email no configurado — GMAIL_USER o GMAIL_APP_PASSWORD faltantes');
+        console.warn('[BACKUP] RESEND_API_KEY no configurada — email omitido');
       }
     } catch (err: any) {
       console.error('[BACKUP] Error generando backup:', err.message);
