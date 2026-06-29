@@ -60,7 +60,7 @@ modules/
   admin-employees/# Empleados administrativos con historial salarial y beneficios fijos
   admin-payrolls/ # Nóminas administrativas independientes de proyectos; cálculos AFP/TSS/ISR automáticos
   ocr/            # OCR síncrono: POST devuelve resultado inline (ver nota OCR)
-  monitoring/     # Health check + análisis IA (Claude API)
+  monitoring/     # Health check + análisis IA (Claude API); error-report.router.ts → POST /errors/report (rate 5/hr/IP, auth opcional, envía email admin via Resend)
   notifications/  # In-app + WhatsApp (UltraMsg) + Email (Resend HTTP API)
   notification-contacts/ # Contactos externos para notificaciones
   reports/        # Exportación Excel/Word + DGII 606 (.xlsx)
@@ -76,7 +76,7 @@ services/
   ai-usage.service.ts     # Wrapper central trackAiCall() — envuelve client.messages.create(), persiste log en ai_usage_logs via setImmediate (nunca bloquea)
 jobs/
   businessNotifications.ts  # Cron diario 8 AM: alertas presupuesto/nóminas/órdenes + checkAiCostAlert() si costo mensual supera límite configurado
-  healthMonitor.ts          # Monitor de salud del sistema (cada 5 min)
+  healthMonitor.ts          # Monitor de salud (cada 5 min) + startSelfPingJob() (cada 10 min GET a RENDER_EXTERNAL_URL/health para prevenir sleep en Render free tier)
   quotationNotifications.ts # Alertas de cotizaciones próximas a vencer
 ```
 
@@ -120,6 +120,8 @@ utils/
 
 **Vite/esbuild TDZ en producción:** Si en un componente React se usa una variable de `useForm` (ej: `watch`, `setValue`) ANTES de la línea donde se llama a `useForm({...})`, el build de producción falla con `ReferenceError: Cannot access 'X' before initialization`. El minificador combina las declaraciones `const` en una sola cadena, haciendo visible el TDZ. Regla: llamar siempre a `useForm()` ANTES de usar cualquiera de sus valores retornados (`watch`, `setValue`, etc.).
 
+**Fusión de categorías:** `POST /categories/:id/merge` (admin) acepta `{ targetId }`. Transacción: `updateMany` expenses + quotations al target, `deleteMany` presupuestos del source, `delete` source. Source no puede ser `isSystem`. Frontend: botón "Fusionar" en el modal de edición de CategoriesPage — expandible, solo visible en categorías personalizadas.
+
 **Líneas de crédito de suplidores:** Modelos `SupplierCreditLine` y `SupplierCreditPayment`. Balance calculado en runtime: `consumed` = suma de `Expense` no-VOID con `creditLineId`; `paid` = suma de `SupplierCreditPayment.amount`; `pending = consumed - paid`; `available = creditLimit - pending`. La lógica de agregación global está en `modules/suppliers/credit-summary.service.ts`. Cuando una `PaymentOrder` con `creditLineId` se marca como pagada (`markAsPaid`), se auto-crea un `SupplierCreditPayment` dentro de la misma transacción. Rutas `/credit-summary` y `/credit-report` deben ir ANTES de `/:id` en el router o Express las captura como parámetro.
 
 **Trazabilidad bancaria de pagos (Orden de Pago → Gasto):** Cuando se marca una `PaymentOrder` como pagada, los campos `paymentBank` y `paymentReference` se propagan automáticamente al `Expense` auto-generado dentro de la misma transacción. Esto ocurre en `buildExpenseData()` en `payment-orders.service.ts` — la función acepta `paymentBank?` y `paymentReference?` en `ExpenseSourceData` y los incluye en el objeto Prisma. No modificar este flujo sin verificar que ambos campos se pasan desde `markAsPaid()` a `buildExpenseData()`.
@@ -140,7 +142,7 @@ utils/
 
 2. **Prisma:** Si cambias `schema.prisma` → ejecuta `pnpm --filter backend db:generate` ANTES de push. Schema debe tener: `binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]`. Al quitar una relación de un modelo, buscar también el lado inverso en el modelo relacionado (ej: quitar FK en `OfficeExpense` requiere quitar también `officeExpenses[]` en `Supplier`). Buscar además en todos los `*.service.ts` que puedan filtrar por el campo eliminado. **Si `pnpm build:backend` lanza `does not exist in type` para un campo que SÍ está en `schema.prisma`, el cliente Prisma está desactualizado — ejecuta `db:generate`.**
 
-3. **Migrations en producción:** usar `prisma migrate deploy` (no `dev`) en Render. Configurado como `preDeployCommand` en `render.yaml`. La startup migration en `entrypoint.sh` solo corre si `SKIP_STARTUP_MIGRATIONS` no está seteada.
+3. **Migrations en producción:** usar `prisma migrate deploy` (no `dev`) en Render. Las migraciones se ejecutan al arrancar el servidor en `apps/backend/src/server.ts` — NO como `preDeployCommand` en `render.yaml` (fue eliminado para evitar que falle antes de tener DATABASE_URL disponible). El array `rolledBack` en `server.ts` resuelve migraciones en estado failed antes de correr `migrate deploy`.
 
 4. **Antes de cada push a main:** Ejecuta `workspace/DEPLOYMENT/DEPLOY_CHECKLIST.md`.
 
@@ -209,9 +211,10 @@ utils/
 
 ### Notes
 - Health check route in app: `GET /health` (matches render.yaml `healthCheckPath: /health`)
-- Pre-deploy command (configured in render.yaml): `prisma migrate deploy`
-- Current live backend (servingmi branding): https://servingmi-backend.onrender.com/health responds 200
+- Pre-deploy command: **eliminado de render.yaml** — migraciones corren en `server.ts` al startup
 - render.yaml service names: `jhota-backend` and `jhota-frontend`
+- Email transaccional: **Resend HTTP API** (`utils/mailer.ts`). Env vars: `RESEND_API_KEY`, `RESEND_FROM` (opcional; default `onboarding@resend.dev`). Render bloquea SMTP (465/587) — nunca usar nodemailer.
+- Render sleep: el servidor se auto-pinga cada 10 min via `startSelfPingJob()` (fetch a `RENDER_EXTERNAL_URL/health`). Render mide actividad por HTTP — cron jobs internos no cuentan.
 
 ### Custom deploy hooks
 - Pre-merge: `pnpm build:backend` (TypeScript typecheck)
