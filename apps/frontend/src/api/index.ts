@@ -983,3 +983,9 @@ export const aiUsageApi = {
   updateAlert: (monthlyLimitUsd: number, enabled: boolean) =>
     api.put<{ success: boolean; data: AiUsageAlert }>('/ai-usage/alert', { monthlyLimitUsd, enabled }),
 };
+
+
+export const errorReportApi = {
+  report: (payload: { message: string; statusCode?: number; endpoint?: string; userDescription?: string }) =>
+    api.post<{ success: boolean; message: string }>('/errors/report', payload),
+};
