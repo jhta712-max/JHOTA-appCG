@@ -1,24 +1,17 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { env } from '../config/env';
 
-// ─── Transporter ─────────────────────────────────────────────────────────────
+// ─── Resend client ────────────────────────────────────────────────────────────
 
-let transporter: nodemailer.Transporter | null = null;
+function getResend() {
+  return new Resend(env.RESEND_API_KEY);
+}
 
-function getTransporter() {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: env.GMAIL_USER,
-        pass: env.GMAIL_APP_PASSWORD,
-      },
-      connectionTimeout: 10_000,  // 10 segundos para conectar
-      greetingTimeout:   10_000,  // 10 segundos para saludo SMTP
-      socketTimeout:     15_000,  // 15 segundos de inactividad
-    });
-  }
-  return transporter;
+async function sendMail(opts: { to: string; subject: string; html: string }) {
+  const resend = getResend();
+  const from = env.RESEND_FROM ?? 'JHOTA Construcciones <onboarding@resend.dev>';
+  const { error } = await resend.emails.send({ from, to: opts.to, subject: opts.subject, html: opts.html });
+  if (error) throw new Error(JSON.stringify(error));
 }
 
 // ─── Template base ────────────────────────────────────────────────────────────
@@ -144,12 +137,7 @@ export async function sendInvitationEmail(opts: {
       <span style="color:#2563EB;word-break:break-all;">${opts.inviteUrl}</span>
     </p>`;
 
-  await getTransporter().sendMail({
-    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
-    to:      opts.toEmail,
-    subject: `Invitación al Sistema de Control de Gastos`,
-    html:    baseTemplate(content),
-  });
+  await sendMail({ to: opts.toEmail, subject: `Invitación al Sistema de Control de Gastos`, html: baseTemplate(content) });
 }
 
 // ─── Email: Bienvenida (al aceptar invitación) ────────────────────────────────
@@ -183,12 +171,7 @@ export async function sendWelcomeEmail(opts: {
       Guarda bien tu contraseña. Si la olvidas, contacta al administrador.
     </p>`;
 
-  await getTransporter().sendMail({
-    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
-    to:      opts.toEmail,
-    subject: `Bienvenido al Sistema de Control de Gastos`,
-    html:    baseTemplate(content),
-  });
+  await sendMail({ to: opts.toEmail, subject: `Bienvenido al Sistema de Control de Gastos`, html: baseTemplate(content) });
 }
 
 
@@ -290,12 +273,7 @@ export async function sendQuotationExpiringEmail(opts: {
     </p>`;
 
   const plural = count > 1 ? 'es' : '';
-  await getTransporter().sendMail({
-    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
-    to:      opts.toEmail,
-    subject: `${count} cotizacion${plural} proxima${plural} a vencer - Control de Gastos`,
-    html:    baseTemplate(content),
-  });
+  await sendMail({ to: opts.toEmail, subject: `${count} cotizacion${plural} proxima${plural} a vencer - Control de Gastos`, html: baseTemplate(content) });
 }
 
 // ─── Email: Alerta de presupuesto ─────────────────────────────────────────────
@@ -357,12 +335,7 @@ export async function sendBudgetAlertEmail(opts: {
       </tr>
     </table>`;
 
-  await getTransporter().sendMail({
-    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
-    to:      opts.toEmail,
-    subject: `${emoji} Proyecto ${opts.projectCode} al ${opts.pct}% del presupuesto - Control de Gastos`,
-    html:    baseTemplate(content),
-  });
+  await sendMail({ to: opts.toEmail, subject: `${emoji} Proyecto ${opts.projectCode} al ${opts.pct}% del presupuesto - Control de Gastos`, html: baseTemplate(content) });
 }
 
 // ─── Email: Órdenes de pago pendientes ────────────────────────────────────────
@@ -430,12 +403,7 @@ export async function sendPendingOrdersEmail(opts: {
       </tr>
     </table>`;
 
-  await getTransporter().sendMail({
-    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
-    to:      opts.toEmail,
-    subject: `⏳ ${count} orden${count !== 1 ? 'es' : ''} de pago pendiente${count !== 1 ? 's' : ''} - Control de Gastos`,
-    html:    baseTemplate(content),
-  });
+  await sendMail({ to: opts.toEmail, subject: `⏳ ${count} orden${count !== 1 ? 'es' : ''} de pago pendiente${count !== 1 ? 's' : ''} - Control de Gastos`, html: baseTemplate(content) });
 }
 
 // ─── Email: Nóminas aprobadas sin pagar ──────────────────────────────────────
@@ -501,10 +469,5 @@ export async function sendApprovedPayrollsEmail(opts: {
       </tr>
     </table>`;
 
-  await getTransporter().sendMail({
-    from:    `"Control de Gastos" <${env.GMAIL_USER}>`,
-    to:      opts.toEmail,
-    subject: `🧾 ${count} nómina${count !== 1 ? 's' : ''} aprobada${count !== 1 ? 's' : ''} sin pagar - Control de Gastos`,
-    html:    baseTemplate(content),
-  });
+  await sendMail({ to: opts.toEmail, subject: `🧾 ${count} nómina${count !== 1 ? 's' : ''} aprobada${count !== 1 ? 's' : ''} sin pagar - Control de Gastos`, html: baseTemplate(content) });
 }

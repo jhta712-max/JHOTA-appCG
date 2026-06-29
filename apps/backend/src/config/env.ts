@@ -30,6 +30,7 @@ const envSchema = z.object({
   BACKUP_SECRET_KEY:      z.string().min(16, 'BACKUP_SECRET_KEY debe tener al menos 16 caracteres').optional(),
   BACKUP_EMAIL:           z.string().email().optional(),
   RESEND_API_KEY:         z.string().optional(),
+  RESEND_FROM:            z.string().optional(),
   // Notificaciones WhatsApp (UltraMsg)
   ULTRAMSG_INSTANCE_ID:        z.string().optional(),
   ULTRAMSG_TOKEN:              z.string().optional(),
