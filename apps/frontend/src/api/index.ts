@@ -131,6 +131,7 @@ export const categoriesApi = {
   list:   () => api.get<{ success: boolean; data: Category[] }>('/categories'),
   create: (data: unknown) => api.post('/categories', data),
   update: (id: number, data: unknown) => api.put(`/categories/${id}`, data),
+  merge:  (sourceId: number, targetId: number) => api.post(`/categories/${sourceId}/merge`, { targetId }),
 };
 
 // ── Usuarios ──────────────────────────────────────────────────

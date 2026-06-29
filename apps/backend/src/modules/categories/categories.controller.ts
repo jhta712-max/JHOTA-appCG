@@ -23,6 +23,13 @@ export async function update(req: Request, res: Response, next: NextFunction) {
   } catch (err) { next(err); }
 }
 
+export async function mergeCategories(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await service.merge(Number(req.params.id), Number(req.body.targetId));
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}
+
 export async function remove(req: Request, res: Response, next: NextFunction) {
   try {
     await service.remove(Number(req.params.id));

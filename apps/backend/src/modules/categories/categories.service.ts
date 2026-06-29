@@ -29,6 +29,21 @@ export async function update(id: number, data: UpdateCategoryInput) {
   return prisma.expenseCategory.update({ where: { id }, data });
 }
 
+export async function merge(sourceId: number, targetId: number) {
+  if (sourceId === targetId) throw new AppError(400, 'La categoría origen y destino no pueden ser la misma', 'SAME_CATEGORY');
+  const [source, target] = await Promise.all([getById(sourceId), getById(targetId)]);
+  if (source.isSystem) throw new AppError(400, 'No se puede fusionar una categoría del sistema como origen', 'SYSTEM_CATEGORY');
+
+  await prisma.$transaction([
+    prisma.expense.updateMany({ where: { categoryId: sourceId }, data: { categoryId: targetId } }),
+    prisma.quotation.updateMany({ where: { categoryId: sourceId }, data: { categoryId: targetId } }),
+    prisma.projectCategoryBudget.deleteMany({ where: { categoryId: sourceId } }),
+    prisma.expenseCategory.delete({ where: { id: sourceId } }),
+  ]);
+
+  return { merged: source.name, into: target.name };
+}
+
 export async function remove(id: number) {
   const cat = await getById(id);
   if (cat.isSystem) {

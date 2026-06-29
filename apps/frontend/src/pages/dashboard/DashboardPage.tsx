@@ -349,18 +349,14 @@ export default function DashboardPage() {
                     contentStyle={{ fontSize: 12, border: '1px solid #333', background: '#252525', color: '#fff', borderRadius: 0, fontFamily: 'DM Sans' }}
                     labelStyle={{ color: '#9ca3af', fontFamily: 'Barlow Condensed' }}
                   />
-                  <Bar dataKey="total" radius={[0, 0, 0, 0]}>
-                    {statsData.byMonth.map((_, i) => (
-                      <Cell key={i} fill={i === statsData.byMonth.length - 1 ? '#1D4ED8' : '#D4A017'} fillOpacity={i === statsData.byMonth.length - 1 ? 1 : 0.75} />
-                    ))}
-                  </Bar>
+                  <Bar dataKey="total" radius={[0, 0, 0, 0]} fill="#F5C218" fillOpacity={0.9} />
                   <Line
                     type="monotone"
                     dataKey="total"
-                    stroke="#1D4ED8"
+                    stroke="#ffffff"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: '#1D4ED8', strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: '#1D4ED8' }}
+                    dot={{ r: 3, fill: '#ffffff', strokeWidth: 0 }}
+                    activeDot={{ r: 5, fill: '#F5C218' }}
                   />
                 </ComposedChart>
               </ResponsiveContainer>

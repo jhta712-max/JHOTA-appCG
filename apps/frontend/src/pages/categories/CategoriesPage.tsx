@@ -3,7 +3,7 @@ import { ProjectListSkeleton } from '../../components/ui/ProjectListSkeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import {
-  Tag, Plus, Edit, X, CheckCircle, AlertCircle, Lock,
+  Tag, Plus, Edit, X, CheckCircle, AlertCircle, Lock, GitMerge,
 } from 'lucide-react';
 import { categoriesApi } from '../../api';
 import { useRole } from '../../hooks/useRole';
@@ -16,10 +16,12 @@ export default function CategoriesPage() {
   const qc   = useQueryClient();
   const { isAdmin } = useRole();
 
-  const [modal,    setModal]    = useState<'create' | 'edit' | null>(null);
-  const [editing,  setEditing]  = useState<any>(null);
-  const [apiError, setApiError] = useState('');
-  const [apiOk,    setApiOk]    = useState('');
+  const [modal,      setModal]      = useState<'create' | 'edit' | null>(null);
+  const [editing,    setEditing]    = useState<any>(null);
+  const [apiError,   setApiError]   = useState('');
+  const [apiOk,      setApiOk]      = useState('');
+  const [mergeMode,  setMergeMode]  = useState(false);
+  const [mergeTarget, setMergeTarget] = useState('');
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<CatForm>();
   const watchedIcon = watch('icon', '');
@@ -69,6 +71,8 @@ export default function CategoriesPage() {
     setModal(null);
     setEditing(null);
     setApiError('');
+    setMergeMode(false);
+    setMergeTarget('');
   }
 
   const onSubmit = (data: CatForm) => {
@@ -85,7 +89,18 @@ export default function CategoriesPage() {
     }
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const mergeMutation = useMutation({
+    mutationFn: ({ sourceId, targetId }: { sourceId: number; targetId: number }) =>
+      categoriesApi.merge(sourceId, targetId),
+    onSuccess: (res: any) => {
+      qc.invalidateQueries({ queryKey: ['categories'] });
+      setApiOk(`Categoría "${res.data.data.merged}" fusionada con "${res.data.data.into}"`);
+      closeModal();
+    },
+    onError: (err: any) => setApiError(err.response?.data?.error || 'Error al fusionar'),
+  });
+
+  const isPending = createMutation.isPending || updateMutation.isPending || mergeMutation.isPending;
   const systemCats  = (categories ?? []).filter((c: any) => c.isSystem);
   const customCats  = (categories ?? []).filter((c: any) => !c.isSystem);
 
@@ -283,6 +298,59 @@ export default function CategoriesPage() {
                 )}
               </div>
 
+              {modal === 'edit' && (
+                <div className="border-t border-gray-100 pt-4">
+                  {!mergeMode ? (
+                    <button
+                      type="button"
+                      onClick={() => { setMergeMode(true); setApiError(''); }}
+                      className="flex items-center gap-2 text-gray-400 hover:text-red-600 font-['DM_Sans'] text-xs transition-colors"
+                    >
+                      <GitMerge className="w-3.5 h-3.5" />
+                      Fusionar con otra categoría...
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="font-['Barlow_Condensed'] text-xs font-semibold tracking-widest text-red-600 uppercase">
+                        Fusionar — todos los gastos pasarán a la categoría destino y esta se eliminará
+                      </p>
+                      <select
+                        value={mergeTarget}
+                        onChange={e => setMergeTarget(e.target.value)}
+                        className="w-full font-['DM_Sans'] text-sm border border-gray-200 text-[#0D1B48] px-3 py-2 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                      >
+                        <option value="">— Seleccionar categoría destino —</option>
+                        {(categories ?? [])
+                          .filter((c: any) => c.id !== editing?.id)
+                          .map((c: any) => (
+                            <option key={c.id} value={c.id}>{c.name}{c.isSystem ? ' (sistema)' : ''}</option>
+                          ))}
+                      </select>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => { setMergeMode(false); setMergeTarget(''); setApiError(''); }}
+                          className="flex-1 border border-gray-200 text-gray-600 px-3 py-2 font-['DM_Sans'] text-xs font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          Cancelar fusión
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!mergeTarget || mergeMutation.isPending}
+                          onClick={() => mergeMutation.mutate({ sourceId: editing.id, targetId: Number(mergeTarget) })}
+                          className="flex-1 bg-red-600 text-white px-3 py-2 font-['DM_Sans'] text-xs font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                        >
+                          {mergeMutation.isPending
+                            ? <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Fusionando...</>
+                            : <><GitMerge className="w-3 h-3" /> Confirmar fusión</>
+                          }
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex gap-3 pt-2 border-t border-gray-100">
                 <button
                   type="button"
@@ -291,16 +359,18 @@ export default function CategoriesPage() {
                 >
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="flex-1 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isPending
-                    ? <><span className="w-4 h-4 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" /> Guardando...</>
-                    : <><CheckCircle className="w-4 h-4" /> {modal === 'create' ? 'Crear' : 'Guardar'}</>
-                  }
-                </button>
+                {!mergeMode && (
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="flex-1 bg-[#1D4ED8] text-[#0D1B48] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold hover:bg-[#e6b400] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isPending
+                      ? <><span className="w-4 h-4 border-2 border-[#0D1B48] border-t-transparent rounded-full animate-spin" /> Guardando...</>
+                      : <><CheckCircle className="w-4 h-4" /> {modal === 'create' ? 'Crear' : 'Guardar'}</>
+                    }
+                  </button>
+                )}
               </div>
             </form>
           </div>
