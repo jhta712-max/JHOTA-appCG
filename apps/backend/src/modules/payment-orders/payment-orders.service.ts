@@ -187,15 +187,21 @@ export async function getAvailableContracts(projectId: string, supplierId: strin
     orderBy: { fechaContrato: 'desc' },
     select:  {
       id: true, descripcionTrabajo: true, montoContratado: true, fechaContrato: true,
-      adendas:       { select: { monto: true } },
-      paymentOrders: { where: { status: 'PAID' }, select: { amount: true } },
+      adendas:  { select: { monto: true } },
+      // Single source of truth for "pagado": non-VOIDED expenses linked to the
+      // contract — the SAME calculation the contratos-ajustados module uses
+      // (calcTotals). Summing only PAID payment orders undercounts reality:
+      // payroll orders link their expense at PENDING, expenses can be linked
+      // directly without a payment order, and foreign-currency orders store the
+      // expense already converted to DOP.
+      expenses: { where: { status: { not: 'VOIDED' } }, select: { amount: true } },
     },
   });
   return contratos.map((c) => {
     const montoBase   = parseFloat(c.montoContratado.toString());
     const adendas     = c.adendas.reduce((s, a) => s + parseFloat(a.monto.toString()), 0);
     const montoTotal  = montoBase + adendas;
-    const totalPagado = c.paymentOrders.reduce((s, po) => s + parseFloat(po.amount.toString()), 0);
+    const totalPagado = c.expenses.reduce((s, e) => s + parseFloat(e.amount.toString()), 0);
     return { id: c.id, descripcionTrabajo: c.descripcionTrabajo, montoContratado: montoTotal, montoBase, adendas, fechaContrato: c.fechaContrato, totalPagado, pendiente: montoTotal - totalPagado };
   });
 }
