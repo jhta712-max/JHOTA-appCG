@@ -734,6 +734,19 @@ export default function DashboardPage() {
                   );
                 })}
               </tbody>
+              <tfoot>
+                <tr className="bg-[#0D1B48]/5 border-t-2 border-[#0D1B48]">
+                  <td colSpan={5} className="px-3 py-2 text-right font-['Barlow_Condensed'] uppercase tracking-[0.1em] text-[#0D1B48] font-bold whitespace-nowrap">
+                    Total comprometido
+                  </td>
+                  <td className="px-3 py-2 font-['Space_Mono'] text-right whitespace-nowrap font-bold text-blue-600">
+                    {new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(
+                      portfolio.reduce((s, p) => s + (p.committed ?? 0), 0),
+                    )}
+                  </td>
+                  <td colSpan={2} />
+                </tr>
+              </tfoot>
             </table>
           </div>
           {/* Tarjetas portfolio — solo móvil */}
@@ -787,6 +800,14 @@ export default function DashboardPage() {
                 </div>
               );
             })}
+            <div className="p-4 bg-[#0D1B48]/5 border-t-2 border-[#0D1B48] flex items-center justify-between">
+              <p className="text-[#0D1B48] text-xs uppercase font-bold font-['Barlow_Condensed'] tracking-[0.1em]">Total comprometido</p>
+              <p className="font-['Space_Mono'] text-sm font-bold text-blue-600">
+                {new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 0 }).format(
+                  portfolio.reduce((s, p) => s + (p.committed ?? 0), 0),
+                )}
+              </p>
+            </div>
           </div>
           {/* Legend */}
           <div className="flex items-center gap-4 pt-1">
