@@ -76,6 +76,10 @@ export default function NewExpensePage() {
   const [creditSupplierId, setCreditSupplierId] = useState('');
   const [creditLineId,     setCreditLineId]     = useState('');
 
+  // Selección opcional de suplidor (activada por checkbox)
+  const [selectSupplier,    setSelectSupplier]    = useState(false);
+  const [expenseSupplierId, setExpenseSupplierId] = useState('');
+
   const { register, handleSubmit, watch, formState: { errors }, reset, setValue, getValues } =
     useForm<FormData>({
       defaultValues: { expenseDate: new Date().toISOString().split('T')[0], hasFiscalDoc: false },
@@ -156,6 +160,8 @@ export default function NewExpensePage() {
       setUseCreditLine(false);
       setCreditLineId('');
       setCreditSupplierId('');
+      setSelectSupplier(false);
+      setExpenseSupplierId('');
       setTimeout(() => navigate('/expenses'), 1500);
     },
     onError: (err: any) => {
@@ -204,6 +210,7 @@ export default function NewExpensePage() {
     }
     if (data.batchItemId) payload.batchItemId = data.batchItemId;
     if (useCreditLine && creditLineId) payload.creditLineId = creditLineId;
+    if (selectSupplier && expenseSupplierId) payload.supplierId = expenseSupplierId;
 
     // Check for potential duplicates before submitting
     try {
@@ -776,6 +783,32 @@ export default function NewExpensePage() {
                   <option value="OTHER">Otro</option>
                 </select>
               </AiField>
+            </div>
+
+            {/* Suplidor (opcional) — activado por checkbox */}
+            <div className="border border-gray-100 p-3 bg-gray-50">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={selectSupplier} onChange={(e) => {
+                  setSelectSupplier(e.target.checked);
+                  if (!e.target.checked) setExpenseSupplierId('');
+                }} className="accent-[#1D4ED8]" />
+                <span className="font-['Barlow_Condensed'] text-sm font-bold uppercase tracking-wide text-gray-700">
+                  Asociar suplidor
+                </span>
+              </label>
+              {selectSupplier && (
+                <div className="mt-3">
+                  <label className="block font-['Barlow_Condensed'] text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">Suplidor</label>
+                  <select
+                    className="w-full font-['DM_Sans'] text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
+                    value={expenseSupplierId}
+                    onChange={(e) => setExpenseSupplierId(e.target.value)}>
+                    <option value="">— Selecciona suplidor —</option>
+                    {(suppliers as any[])?.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                  <p className="font-['DM_Sans'] text-xs text-gray-400 mt-1">Opcional. Vincula este gasto a un suplidor registrado.</p>
+                </div>
+              )}
             </div>
 
             {/* Crédito de proveedor */}

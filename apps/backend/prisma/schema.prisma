@@ -373,9 +373,12 @@ model Expense {
   contratoAjustadoPagos ContratoAjustadoPago[] @relation("ContratoAjustadoPagoGasto")
   creditLineId   String?             @map("credit_line_id") @db.Uuid
   creditLine     SupplierCreditLine? @relation("ExpenseCreditLine", fields: [creditLineId], references: [id], onDelete: SetNull)
+  supplierId     String?             @map("supplier_id") @db.Uuid
+  supplier       Supplier?           @relation("SupplierExpenses", fields: [supplierId], references: [id], onDelete: SetNull)
 
   deletedAt  DateTime? @map("deleted_at")
   @@index([projectId])
+  @@index([supplierId])
   @@index([expenseDate])
   @@index([categoryId])
   @@index([userId])
@@ -820,6 +823,7 @@ model Supplier {
   quotations         Quotation[]            @relation("QuotationSupplier")
   creditLines        SupplierCreditLine[]
   projects           ProjectSupplier[]
+  expenses           Expense[]              @relation("SupplierExpenses")
 
   deletedAt  DateTime? @map("deleted_at")
   @@index([name])

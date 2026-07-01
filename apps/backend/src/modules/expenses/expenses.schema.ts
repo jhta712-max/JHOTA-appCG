@@ -44,6 +44,7 @@ const baseExpenseSchema = z.object({
   projectItemId:   z.string().uuid().optional().nullable(),
   batchItemId:     z.string().uuid().optional().nullable(),
   creditLineId:    z.string().uuid().optional().nullable(),
+  supplierId:      z.string().uuid().optional().nullable(),
   paymentBank:     z.string().max(100).optional(),
   paymentReference: z.string().max(100).optional(),
 });

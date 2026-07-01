@@ -254,6 +254,21 @@ export default function ExpenseDetailPage() {
             </div>
           )}
 
+          {(expense as any).supplier && (
+            <div className="flex items-start gap-2">
+              <User className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-['DM_Sans'] text-xs text-gray-400">Suplidor</p>
+                <p className="font-['DM_Sans'] font-medium text-gray-800">
+                  {(expense as any).supplier.name}
+                  {(expense as any).supplier.rnc && (
+                    <span className="font-['Space_Mono'] text-xs text-gray-400 ml-1">· RNC {(expense as any).supplier.rnc}</span>
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+
           {expense.registeredBy && (
             <div className="flex items-start gap-2 col-span-2">
               <User className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
