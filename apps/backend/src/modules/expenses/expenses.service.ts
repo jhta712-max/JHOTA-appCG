@@ -17,6 +17,7 @@ const EXPENSE_INCLUDE = {
   category:     { select: { id: true, name: true, icon: true } },
   registeredBy: { select: { id: true, name: true } },
   companyCard:  { select: { id: true, holderName: true, lastFour: true, cardType: true, bank: true } },
+  supplier:     { select: { id: true, name: true, rnc: true } },
   approvedBy:   { select: { id: true, name: true } },
   rejectedBy:   { select: { id: true, name: true } },
   fiscalVoucher: true,
@@ -134,6 +135,14 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
     }
   }
 
+  // Validate supplier if provided (optional — selección manual con checkbox)
+  if (data.supplierId) {
+    const supplier = await prisma.supplier.findUnique({ where: { id: data.supplierId } });
+    if (!supplier || !supplier.isActive) {
+      throw new AppError(400, 'Suplidor no encontrado o inactivo', 'INVALID_SUPPLIER');
+    }
+  }
+
   const batchItemId = await resolveBatchItemId(data.projectId, data.batchItemId ?? data.projectItemId);
 
   const expense = await prisma.expense.create({
@@ -154,6 +163,7 @@ export async function createExpense(data: CreateExpenseInput, userId: string, us
       foreignCurrency: data.foreignCurrency ?? null,
       exchangeRate:    data.exchangeRate    ?? null,
       creditLineId:    data.creditLineId    ?? null,
+      supplierId:      data.supplierId      ?? null,
       paymentBank:     data.paymentBank     ?? null,
       paymentReference: data.paymentReference ?? null,
       ...(data.hasFiscalDoc && data.fiscalVoucher && {
@@ -254,6 +264,14 @@ export async function updateExpense(id: string, data: UpdateExpenseInput, userId
       if (!line || !line.isActive) {
         throw new AppError(400, 'Línea de crédito no encontrada o inactiva', 'INVALID_CREDIT_LINE');
       }
+    }
+  }
+
+  // Validate supplier if being changed
+  if (data.supplierId !== undefined && data.supplierId !== null) {
+    const supplier = await prisma.supplier.findUnique({ where: { id: data.supplierId } });
+    if (!supplier || !supplier.isActive) {
+      throw new AppError(400, 'Suplidor no encontrado o inactivo', 'INVALID_SUPPLIER');
     }
   }
 
