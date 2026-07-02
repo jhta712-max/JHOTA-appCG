@@ -1,15 +1,36 @@
 import { z } from 'zod';
 
-export const createContratoSchema = z.object({
+const baseContratoSchema = z.object({
   projectId:          z.string().uuid(),
   supplierId:         z.string().uuid(),
   descripcionTrabajo: z.string().min(3).max(2000),
-  montoContratado:    z.coerce.number().positive(),
+  modalidad:          z.enum(['MONTO_FIJO', 'PRECIO_UNITARIO']).default('MONTO_FIJO'),
+  // MONTO_FIJO: monto requerido. PRECIO_UNITARIO: se calcula desde precio × cantidad (opcional aquí).
+  montoContratado:    z.coerce.number().positive().optional(),
+  // PRECIO_UNITARIO: precio requerido, unidad requerida, cantidad estimada opcional.
+  precioUnitario:     z.coerce.number().positive().optional().nullable(),
+  unidad:             z.string().max(30).nullable().optional(),
+  cantidadEstimada:   z.coerce.number().positive().optional().nullable(),
   fechaContrato:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   observaciones:      z.string().max(2000).nullable().optional(),
 });
 
-export const updateContratoSchema = createContratoSchema.partial().extend({
+// Validación cruzada según modalidad
+export const createContratoSchema = baseContratoSchema.refine(
+  (data) => {
+    if (data.modalidad === 'PRECIO_UNITARIO') {
+      return data.precioUnitario != null && data.precioUnitario > 0 && !!data.unidad && !!data.unidad.trim();
+    }
+    // MONTO_FIJO (default)
+    return data.montoContratado != null && data.montoContratado > 0;
+  },
+  {
+    message: 'Para MONTO_FIJO indique el monto contratado (> 0). Para PRECIO_UNITARIO indique precio unitario (> 0) y unidad.',
+    path: ['modalidad'],
+  },
+);
+
+export const updateContratoSchema = baseContratoSchema.partial().extend({
   estado: z.enum(['ACTIVO', 'COMPLETADO', 'CANCELADO']).optional(),
 });
 

@@ -1135,7 +1135,14 @@ model ContratoAjustado {
   projectId          String                 @map("project_id") @db.Uuid
   supplierId         String                 @map("supplier_id") @db.Uuid
   descripcionTrabajo String                 @map("descripcion_trabajo") @db.Text
+  // Modalidad del contrato: MONTO_FIJO (tope fijo) o PRECIO_UNITARIO (precio por unidad).
+  // Para PRECIO_UNITARIO, montoContratado guarda el total estimado = precioUnitario * cantidadEstimada
+  // (0 si no hay cantidad estimada — contrato "abierto" sin tope).
+  modalidad          ContratoModalidad      @default(MONTO_FIJO)
   montoContratado    Decimal                @map("monto_contratado") @db.Decimal(15, 2)
+  precioUnitario     Decimal?               @map("precio_unitario") @db.Decimal(15, 2)
+  unidad             String?                @db.VarChar(30)
+  cantidadEstimada   Decimal?               @map("cantidad_estimada") @db.Decimal(15, 3)
   fechaContrato      DateTime               @map("fecha_contrato") @db.Date
   estado             ContratoAjustadoEstado @default(ACTIVO)
   observaciones      String?                @db.Text
@@ -1202,6 +1209,13 @@ model ContratoAjustadoPago {
   @@index([nominaId])
   @@index([creadoPorId])
   @@map("contrato_ajustado_pagos")
+}
+
+enum ContratoModalidad {
+  MONTO_FIJO
+  PRECIO_UNITARIO
+
+  @@map("contrato_modalidad")
 }
 
 enum ContratoAjustadoEstado {
