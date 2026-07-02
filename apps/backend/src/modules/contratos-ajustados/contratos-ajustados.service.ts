@@ -17,18 +17,41 @@ const INCLUDE = {
 
 function calcTotals(contrato: any) {
   const pagado    = contrato.expenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
+  // montoContratado guarda el total de referencia: monto fijo (MONTO_FIJO) o
+  // total estimado precio × cantidad (PRECIO_UNITARIO). Es 0 cuando un contrato
+  // por precio unitario no tiene cantidad estimada — "abierto", sin tope.
   const montoBase = Number(contrato.montoContratado);
   const sumAdendas = (contrato.adendas ?? []).reduce((s: number, a: any) => s + Number(a.monto), 0);
   const monto     = montoBase + sumAdendas;
+  const esUnitario = contrato.modalidad === 'PRECIO_UNITARIO';
+  // "tieneTope": existe una referencia contra la cual medir balance/% ejecución.
+  //   MONTO_FIJO → siempre. PRECIO_UNITARIO → solo si hay total estimado (montoBase > 0).
+  const tieneTope = esUnitario ? montoBase > 0 : true;
   return {
     ...contrato,
     montoEfectivo:       monto,
     sumAdendas,
     pagadoAcumulado:     pagado,
-    balancePendiente:    monto - pagado,
-    porcentajeEjecutado: monto > 0 ? (pagado / monto) * 100 : 0,
-    sobregirado:         pagado > monto,
+    balancePendiente:    tieneTope ? monto - pagado : null,
+    porcentajeEjecutado: tieneTope && monto > 0 ? (pagado / monto) * 100 : 0,
+    sobregirado:         tieneTope ? pagado > monto : false,
+    tieneTope,
   };
+}
+
+// Calcula el monto de referencia a persistir en montoContratado según la modalidad.
+function computeMontoContratado(input: {
+  modalidad?: string | null;
+  montoContratado?: number | null;
+  precioUnitario?: number | null;
+  cantidadEstimada?: number | null;
+}): number {
+  if (input.modalidad === 'PRECIO_UNITARIO') {
+    const precio = Number(input.precioUnitario ?? 0);
+    const cant   = input.cantidadEstimada != null ? Number(input.cantidadEstimada) : null;
+    return precio > 0 && cant != null && cant > 0 ? precio * cant : 0;
+  }
+  return Number(input.montoContratado ?? 0);
 }
 
 export async function getContratos(query: ContratoQuery) {
@@ -74,12 +97,18 @@ export async function createContrato(data: CreateContratoInput, userId: string) 
   const supplier = await prisma.supplier.findUnique({ where: { id: data.supplierId } });
   if (!supplier) throw new AppError(404, 'Suplidor no encontrado', 'NOT_FOUND');
 
+  const modalidad = data.modalidad ?? 'MONTO_FIJO';
+  const esUnitario = modalidad === 'PRECIO_UNITARIO';
   const c = await prisma.contratoAjustado.create({
     data: {
       projectId:          data.projectId,
       supplierId:         data.supplierId,
       descripcionTrabajo: data.descripcionTrabajo,
-      montoContratado:    data.montoContratado,
+      modalidad,
+      montoContratado:    computeMontoContratado(data),
+      precioUnitario:     esUnitario ? (data.precioUnitario ?? null) : null,
+      unidad:             esUnitario ? (data.unidad?.trim() || null) : null,
+      cantidadEstimada:   esUnitario ? (data.cantidadEstimada ?? null) : null,
       fechaContrato:      new Date(data.fechaContrato),
       observaciones:      data.observaciones ?? null,
       createdById:        userId,
@@ -97,17 +126,41 @@ export async function updateContrato(id: string, data: UpdateContratoInput, user
     throw new AppError(400, 'No se puede cancelar un contrato con pagos registrados', 'HAS_PAYMENTS');
   }
 
+  // Modalidad + campos de precio unitario: se mezclan con lo existente (update parcial)
+  // y se recalcula montoContratado (total de referencia) de forma consistente.
+  const modalidad  = data.modalidad ?? existing.modalidad;
+  const esUnitario = modalidad === 'PRECIO_UNITARIO';
+  const precioUnitario   = data.precioUnitario   !== undefined ? data.precioUnitario
+                          : (existing.precioUnitario != null ? Number(existing.precioUnitario) : null);
+  const cantidadEstimada = data.cantidadEstimada !== undefined ? data.cantidadEstimada
+                          : (existing.cantidadEstimada != null ? Number(existing.cantidadEstimada) : null);
+  const unidad           = data.unidad !== undefined ? (data.unidad?.trim() || null) : existing.unidad;
+  const montoContratadoInput = data.montoContratado !== undefined ? data.montoContratado : Number(existing.montoContratado);
+
+  if (esUnitario && (precioUnitario == null || precioUnitario <= 0)) {
+    throw new AppError(400, 'Un contrato por precio unitario requiere un precio unitario mayor a 0', 'INVALID_UNIT_PRICE');
+  }
+  if (!esUnitario && (montoContratadoInput == null || montoContratadoInput <= 0)) {
+    throw new AppError(400, 'Un contrato por monto fijo requiere un monto contratado mayor a 0', 'INVALID_AMOUNT');
+  }
+
+  const newMonto = computeMontoContratado({ modalidad, montoContratado: montoContratadoInput, precioUnitario, cantidadEstimada });
+
   const c = await prisma.contratoAjustado.update({
     where: { id },
     data: {
       ...(data.projectId          && { projectId: data.projectId }),
       ...(data.supplierId         && { supplierId: data.supplierId }),
       ...(data.descripcionTrabajo && { descripcionTrabajo: data.descripcionTrabajo }),
-      ...(data.montoContratado    && { montoContratado: data.montoContratado }),
       ...(data.fechaContrato      && { fechaContrato: new Date(data.fechaContrato) }),
       ...(data.estado             && { estado: data.estado }),
       ...(data.observaciones !== undefined && { observaciones: data.observaciones ?? null }),
-      updatedById: userId,
+      modalidad,
+      montoContratado:  newMonto,
+      precioUnitario:   esUnitario ? precioUnitario   : null,
+      unidad:           esUnitario ? unidad           : null,
+      cantidadEstimada: esUnitario ? cantidadEstimada : null,
+      updatedById:      userId,
     },
     include: INCLUDE,
   });
@@ -194,22 +247,27 @@ export async function getResumen() {
 
   for (const c of contratos) {
     const sumAdendas = c.adendas.reduce((s, a) => s + Number(a.monto), 0);
-    const monto  = Number(c.montoContratado) + sumAdendas;
-    const pagado = c.expenses.reduce((s, e) => s + Number(e.amount), 0);
-    totalContratado += monto;
+    const montoBase  = Number(c.montoContratado);
+    const monto      = montoBase + sumAdendas;
+    const pagado     = c.expenses.reduce((s, e) => s + Number(e.amount), 0);
+    // Contratos por precio unitario sin cantidad estimada no tienen tope: su referencia
+    // de "contratado" es lo pagado (0 pendiente, nunca sobregirado) para no distorsionar totales.
+    const tieneTope     = c.modalidad === 'PRECIO_UNITARIO' ? montoBase > 0 : true;
+    const contratadoRef = tieneTope ? monto : pagado;
+    totalContratado += contratadoRef;
     totalPagado     += pagado;
     if (c.estado === 'ACTIVO')     activos++;
     if (c.estado === 'COMPLETADO') completados++;
-    if (pagado > monto)            sobregirados++;
+    if (tieneTope && pagado > monto) sobregirados++;
 
     const pKey = c.project.id;
     if (!byProject[pKey]) byProject[pKey] = { project: c.project, contratado: 0, pagado: 0 };
-    byProject[pKey].contratado += monto;
+    byProject[pKey].contratado += contratadoRef;
     byProject[pKey].pagado     += pagado;
 
     const sKey = c.supplier.id;
     if (!bySupplier[sKey]) bySupplier[sKey] = { supplier: c.supplier, contratado: 0, pagado: 0 };
-    bySupplier[sKey].contratado += monto;
+    bySupplier[sKey].contratado += contratadoRef;
     bySupplier[sKey].pagado     += pagado;
   }
 

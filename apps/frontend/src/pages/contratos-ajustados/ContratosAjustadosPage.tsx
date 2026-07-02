@@ -22,15 +22,22 @@ const ESTADO_CFG = {
   CANCELADO:  { label: 'Cancelado',  cls: 'bg-gray-100 text-gray-500',     dot: 'bg-gray-400' },
 } as const;
 
+type Modalidad = 'MONTO_FIJO' | 'PRECIO_UNITARIO';
 type ContratoForm = {
   projectId: string; supplierId: string; descripcionTrabajo: string;
-  montoContratado: string; fechaContrato: string; observaciones: string;
+  modalidad: Modalidad;
+  montoContratado: string;
+  precioUnitario: string; unidad: string; cantidadEstimada: string;
+  fechaContrato: string; observaciones: string;
   estado: 'ACTIVO' | 'COMPLETADO' | 'CANCELADO';
 };
 
 const EMPTY_FORM: ContratoForm = {
   projectId: '', supplierId: '', descripcionTrabajo: '',
-  montoContratado: '', fechaContrato: new Date().toISOString().split('T')[0],
+  modalidad: 'MONTO_FIJO',
+  montoContratado: '',
+  precioUnitario: '', unidad: '', cantidadEstimada: '',
+  fechaContrato: new Date().toISOString().split('T')[0],
   observaciones: '', estado: 'ACTIVO',
 };
 
@@ -57,7 +64,12 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
   const [form, setForm] = useState<ContratoForm>(
     editing ? {
       projectId: editing.projectId, supplierId: editing.supplierId,
-      descripcionTrabajo: editing.descripcionTrabajo, montoContratado: String(editing.montoContratado),
+      descripcionTrabajo: editing.descripcionTrabajo,
+      modalidad: editing.modalidad ?? 'MONTO_FIJO',
+      montoContratado: String(editing.montoContratado),
+      precioUnitario: editing.precioUnitario != null ? String(editing.precioUnitario) : '',
+      unidad: editing.unidad ?? '',
+      cantidadEstimada: editing.cantidadEstimada != null ? String(editing.cantidadEstimada) : '',
       fechaContrato: editing.fechaContrato.split('T')[0], observaciones: editing.observaciones ?? '',
       estado: editing.estado,
     } : EMPTY_FORM,
@@ -74,9 +86,17 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
     mutationFn: () => {
       const payload: any = {
         projectId: form.projectId, supplierId: form.supplierId,
-        descripcionTrabajo: form.descripcionTrabajo, montoContratado: parseFloat(form.montoContratado),
+        descripcionTrabajo: form.descripcionTrabajo,
+        modalidad: form.modalidad,
         fechaContrato: form.fechaContrato, ...(editing ? { estado: form.estado } : {}),
       };
+      if (form.modalidad === 'PRECIO_UNITARIO') {
+        payload.precioUnitario = parseFloat(form.precioUnitario);
+        payload.unidad = form.unidad.trim();
+        if (form.cantidadEstimada.trim()) payload.cantidadEstimada = parseFloat(form.cantidadEstimada);
+      } else {
+        payload.montoContratado = parseFloat(form.montoContratado);
+      }
       if (form.observaciones?.trim()) payload.observaciones = form.observaciones;
       return editing ? contratosAjustadosApi.update(editing.id, payload) : contratosAjustadosApi.create(payload);
     },
@@ -98,8 +118,18 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
     if (!form.projectId)           return setError('Selecciona un proyecto');
     if (!form.supplierId)          return setError('Selecciona un suplidor');
     if (!form.descripcionTrabajo.trim()) return setError('La descripción es requerida');
-    const monto = parseFloat(form.montoContratado);
-    if (isNaN(monto) || monto <= 0) return setError('El monto contratado debe ser mayor a 0');
+    if (form.modalidad === 'PRECIO_UNITARIO') {
+      const precio = parseFloat(form.precioUnitario);
+      if (isNaN(precio) || precio <= 0) return setError('El precio unitario debe ser mayor a 0');
+      if (!form.unidad.trim())          return setError('La unidad de medida es requerida (ej. m³, m², ml, ud)');
+      if (form.cantidadEstimada.trim()) {
+        const cant = parseFloat(form.cantidadEstimada);
+        if (isNaN(cant) || cant <= 0) return setError('La cantidad estimada debe ser mayor a 0');
+      }
+    } else {
+      const monto = parseFloat(form.montoContratado);
+      if (isNaN(monto) || monto <= 0) return setError('El monto contratado debe ser mayor a 0');
+    }
     if (!form.fechaContrato)       return setError('La fecha es requerida');
     mutation.mutate();
   };
@@ -140,18 +170,82 @@ function ContratoFormModal({ editing, onClose, onSuccess }: {
               placeholder="Descripción detallada del trabajo contratado..." />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Monto (RD$)</label>
-              <input type="number" min="0" step="0.01" value={form.montoContratado} onChange={(e) => set('montoContratado', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#0D1B48]" placeholder="0.00" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha de Contrato</label>
-              <input type="date" value={form.fechaContrato} onChange={(e) => set('fechaContrato', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]" />
+          {/* Modalidad del contrato */}
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Modalidad</label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { v: 'MONTO_FIJO',      t: 'Monto fijo',      d: 'Tope contratado fijo' },
+                { v: 'PRECIO_UNITARIO', t: 'Precio unitario', d: 'Precio por unidad' },
+              ] as const).map((opt) => (
+                <button type="button" key={opt.v} onClick={() => set('modalidad', opt.v)}
+                  className={clsx('text-left px-3 py-2.5 border transition-colors',
+                    form.modalidad === opt.v ? 'border-[#0D1B48] bg-[#0D1B48] text-white' : 'border-gray-200 hover:border-gray-300 text-gray-700')}>
+                  <span className="block text-sm font-bold uppercase tracking-wide font-['Barlow_Condensed']">{opt.t}</span>
+                  <span className={clsx('block text-xs', form.modalidad === opt.v ? 'text-gray-300' : 'text-gray-400')}>{opt.d}</span>
+                </button>
+              ))}
             </div>
           </div>
+
+          {form.modalidad === 'MONTO_FIJO' ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Monto (RD$)</label>
+                <input type="number" min="0" step="0.01" value={form.montoContratado} onChange={(e) => set('montoContratado', e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#0D1B48]" placeholder="0.00" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha de Contrato</label>
+                <input type="date" value={form.fechaContrato} onChange={(e) => set('fechaContrato', e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]" />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Precio unitario (RD$) *</label>
+                  <input type="number" min="0" step="0.01" value={form.precioUnitario} onChange={(e) => set('precioUnitario', e.target.value)}
+                    className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#0D1B48]" placeholder="0.00" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Unidad de medida *</label>
+                  <input type="text" value={form.unidad} onChange={(e) => set('unidad', e.target.value)}
+                    className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]" placeholder="m³, m², ml, ud, qq..." maxLength={30} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Cantidad estimada (opcional)</label>
+                  <input type="number" min="0" step="0.001" value={form.cantidadEstimada} onChange={(e) => set('cantidadEstimada', e.target.value)}
+                    className="w-full border border-gray-200 px-3 py-2.5 text-sm font-['Space_Mono'] focus:outline-none focus:border-[#0D1B48]" placeholder="Sin volumetría definida" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Fecha de Contrato</label>
+                  <input type="date" value={form.fechaContrato} onChange={(e) => set('fechaContrato', e.target.value)}
+                    className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#0D1B48]" />
+                </div>
+              </div>
+              {(() => {
+                const precio = parseFloat(form.precioUnitario);
+                const cant   = parseFloat(form.cantidadEstimada);
+                if (!isNaN(precio) && precio > 0 && !isNaN(cant) && cant > 0) {
+                  return (
+                    <div className="bg-[#0D1B48] px-3 py-2 flex items-center justify-between">
+                      <span className="text-xs text-gray-400 uppercase tracking-wide font-['Space_Mono']">Total estimado (referencia)</span>
+                      <span className="text-sm font-black text-[#1D4ED8] font-['Space_Mono']">{fmt(precio * cant)}</span>
+                    </div>
+                  );
+                }
+                return (
+                  <p className="text-xs text-gray-500 bg-gray-50 border border-dashed border-gray-200 px-3 py-2">
+                    Sin cantidad estimada, el contrato queda <strong>abierto</strong>: se registra el precio unitario y el pagado acumulado, sin balance ni % de ejecución.
+                  </p>
+                );
+              })()}
+            </>
+          )}
 
           {editing && (
             <div>
@@ -401,12 +495,36 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                 )}
               </div>
 
+              {/* Modalidad / precio unitario */}
+              {detail.modalidad === 'PRECIO_UNITARIO' && (
+                <div className="grid grid-cols-3 gap-3 text-sm bg-gray-50 border border-gray-200 p-4">
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-0.5 font-['Space_Mono']">Modalidad</p>
+                    <p className="font-bold text-[#0D1B48]">Precio unitario</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-0.5 font-['Space_Mono']">Precio unitario</p>
+                    <p className="font-black text-gray-800 font-['Space_Mono']">{fmt(Number(detail.precioUnitario ?? 0))}<span className="text-xs text-gray-400 font-normal">/{detail.unidad}</span></p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-0.5 font-['Space_Mono']">Cantidad estimada</p>
+                    <p className="font-black text-gray-800 font-['Space_Mono']">
+                      {detail.cantidadEstimada != null ? `${Number(detail.cantidadEstimada).toLocaleString('es-DO')} ${detail.unidad}` : '— (abierto)'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Financiero */}
               <div className="bg-[#0D1B48] p-5 space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 font-['Space_Mono']">Monto base</p>
-                    <p className="font-black text-white font-['Space_Mono'] text-lg">{fmt(Number(detail.montoContratado))}</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 font-['Space_Mono']">
+                      {detail.modalidad === 'PRECIO_UNITARIO' ? 'Total estimado' : 'Monto base'}
+                    </p>
+                    <p className="font-black text-white font-['Space_Mono'] text-lg">
+                      {detail.tieneTope === false ? '— Abierto' : fmt(Number(detail.montoContratado))}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 font-['Space_Mono']">Pagado</p>
@@ -415,7 +533,7 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 font-['Space_Mono']">Balance</p>
                     <p className={clsx('font-black font-[\'Space_Mono\'] text-lg', detail.sobregirado ? 'text-red-400' : 'text-[#1D4ED8]')}>
-                      {fmt(detail.balancePendiente ?? 0)}
+                      {detail.balancePendiente == null ? '—' : fmt(detail.balancePendiente)}
                     </p>
                   </div>
                 </div>
@@ -425,10 +543,14 @@ function ContratoDetailPanel({ contrato, onClose, onEdit, canEdit }: {
                     <span>Total efectivo: <strong>{fmt(detail.montoEfectivo ?? Number(detail.montoContratado))}</strong></span>
                   </div>
                 )}
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-2 font-['Space_Mono']">Progreso de ejecución</p>
-                  <ProgressBar pct={detail.porcentajeEjecutado ?? 0} sobregirado={detail.sobregirado ?? false} />
-                </div>
+                {detail.tieneTope === false ? (
+                  <p className="text-xs text-gray-400 font-['Space_Mono']">Contrato abierto por precio unitario — sin tope de referencia, no aplica % de ejecución.</p>
+                ) : (
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-2 font-['Space_Mono']">Progreso de ejecución</p>
+                    <ProgressBar pct={detail.porcentajeEjecutado ?? 0} sobregirado={detail.sobregirado ?? false} />
+                  </div>
+                )}
               </div>
 
               {/* Adendas */}
@@ -802,8 +924,12 @@ export default function ContratosAjustadosPage() {
                   <p className="text-xs text-gray-500 line-clamp-2">{c.descripcionTrabajo}</p>
                   <div className="flex items-center justify-between gap-2">
                     <div>
-                      <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Contratado</p>
-                      <p className="font-black text-[#0D1B48] font-['Space_Mono'] text-sm">{fmt(c.montoEfectivo ?? c.montoContratado)}</p>
+                      <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">{c.tieneTope === false ? 'Precio unit.' : 'Contratado'}</p>
+                      <p className="font-black text-[#0D1B48] font-['Space_Mono'] text-sm">
+                        {c.tieneTope === false
+                          ? <>{fmt(Number(c.precioUnitario ?? 0))}<span className="text-[10px] text-gray-400 font-normal">/{c.unidad}</span></>
+                          : fmt(c.montoEfectivo ?? c.montoContratado)}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Pagado</p>
@@ -812,11 +938,15 @@ export default function ContratosAjustadosPage() {
                     <div className="text-right">
                       <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Balance</p>
                       <p className={clsx('font-black font-[\'Space_Mono\'] text-sm', c.sobregirado ? 'text-red-600' : 'text-[#1D4ED8]')}>
-                        {fmt(c.balancePendiente)}
+                        {c.balancePendiente == null ? '—' : fmt(c.balancePendiente)}
                       </p>
                     </div>
                   </div>
-                  <ProgressBar pct={c.porcentajeEjecutado} sobregirado={c.sobregirado} />
+                  {c.tieneTope === false ? (
+                    <p className="text-xs text-gray-400 font-['Space_Mono'] uppercase tracking-wide">Precio unitario · abierto</p>
+                  ) : (
+                    <ProgressBar pct={c.porcentajeEjecutado} sobregirado={c.sobregirado} />
+                  )}
                   <div className="flex items-center gap-1 pt-1">
                     <button onClick={() => setDetailContrato(c)}
                       className="p-1.5 text-gray-400 hover:text-[#0D1B48] hover:bg-[#1D4ED8] transition-colors" title="Ver detalle">
@@ -869,9 +999,18 @@ export default function ContratosAjustadosPage() {
                         <p className="text-gray-700 truncate max-w-[200px]">{c.descripcionTrabajo}</p>
                       </td>
                       <td className="px-4 py-3 text-right font-black text-[#0D1B48] whitespace-nowrap font-['Space_Mono']">
-                        {fmt(c.montoEfectivo ?? c.montoContratado)}
-                        {c.sumAdendas > 0 && (
-                          <p className="text-[10px] text-indigo-400 font-normal">+{fmt(c.sumAdendas)} adendas</p>
+                        {c.tieneTope === false ? (
+                          <span>{fmt(Number(c.precioUnitario ?? 0))}<span className="text-[10px] text-gray-400 font-normal">/{c.unidad}</span></span>
+                        ) : (
+                          <>
+                            {fmt(c.montoEfectivo ?? c.montoContratado)}
+                            {c.modalidad === 'PRECIO_UNITARIO' && (
+                              <p className="text-[10px] text-indigo-400 font-normal">P.U. {fmt(Number(c.precioUnitario ?? 0))}/{c.unidad}</p>
+                            )}
+                            {c.sumAdendas > 0 && (
+                              <p className="text-[10px] text-indigo-400 font-normal">+{fmt(c.sumAdendas)} adendas</p>
+                            )}
+                          </>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right text-green-700 hidden md:table-cell whitespace-nowrap font-['Space_Mono'] font-bold">
@@ -879,11 +1018,13 @@ export default function ContratosAjustadosPage() {
                       </td>
                       <td className="px-4 py-3 text-right hidden lg:table-cell whitespace-nowrap">
                         <span className={clsx('font-black font-[\'Space_Mono\']', c.sobregirado ? 'text-red-600' : 'text-[#1D4ED8]')}>
-                          {fmt(c.balancePendiente)}
+                          {c.balancePendiente == null ? '—' : fmt(c.balancePendiente)}
                         </span>
                       </td>
                       <td className="px-4 py-3 hidden lg:table-cell w-36">
-                        <ProgressBar pct={c.porcentajeEjecutado} sobregirado={c.sobregirado} />
+                        {c.tieneTope === false
+                          ? <span className="text-xs text-gray-400 font-['Space_Mono'] uppercase">Abierto</span>
+                          : <ProgressBar pct={c.porcentajeEjecutado} sobregirado={c.sobregirado} />}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">

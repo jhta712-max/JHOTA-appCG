@@ -364,7 +364,11 @@ export interface ContratoAjustado {
   supplierId:         string;
   supplier:           { id: string; name: string; rnc: string | null };
   descripcionTrabajo: string;
+  modalidad:          'MONTO_FIJO' | 'PRECIO_UNITARIO';
   montoContratado:    number;
+  precioUnitario:     number | null;
+  unidad:             string | null;
+  cantidadEstimada:   number | null;
   fechaContrato:      string;
   estado:             'ACTIVO' | 'COMPLETADO' | 'CANCELADO';
   observaciones:      string | null;
@@ -373,10 +377,13 @@ export interface ContratoAjustado {
   createdAt:          string;
   updatedAt:          string;
   // Calculated
+  montoEfectivo:      number;
+  sumAdendas:         number;
   pagadoAcumulado:    number;
-  balancePendiente:   number;
+  balancePendiente:   number | null;
   porcentajeEjecutado: number;
   sobregirado:        boolean;
+  tieneTope:          boolean;
   expenses: Array<{
     id: string; amount: number; expenseDate: string;
     description: string; status: string;
